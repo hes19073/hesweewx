@@ -29,12 +29,12 @@
   </head>
 
 <body>
- <div id="hes11"> 
+ <div id="hes11">
    #include $Extras.header
   <div id="stats_group">
     #include $Extras.current
-  </div> <!--End class "stats_group" -->  
-  <div id="content">        
+  </div> <!--End class "stats_group" -->
+  <div id="content">
    <div id="about">
     <div class="header"><h2>Sonnenschein</h2></div>
      <hr />
@@ -128,7 +128,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
       <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
+            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.12, "second", "group_elapsed")).format("%.0f")</td>
           #else
             <td style="background-color: #FFFFFF;">-</td>
           #end if
@@ -151,7 +151,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
       <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshinehours.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
+            <td style="background-color: #23FF9E;">$month.sunshinehours.sum_ge((0.12, "second", "group_elapsed")).format("%.0f")</td>
           #else
             <td style="background-color: #FFFFFF;">-</td>
           #end if
@@ -205,7 +205,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
                  <td class="hest14">$month.radiation.sum.formatted</td>
              #elif $month.radiation.sum.raw < 120000
                  <td class="hest15">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw > 120000 
+             #elif $month.radiation.sum.raw > 120000
                  <td class="hest16">$month.radiation.sum.formatted</td>
              #end if
           #else
@@ -247,7 +247,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
- </div> 
+ </div>
 
   #include $Extras.footer
 
