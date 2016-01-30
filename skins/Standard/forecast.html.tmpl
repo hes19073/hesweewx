@@ -1,0 +1,88 @@
+## exfoliation for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: forecast.html.tmpl 674 2013-10-12 03:48:37Z mwall $
+#errorCatcher Echo
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <title>$station.location Vorschau</title>
+    <link rel='stylesheet' type='text/css' href='hesweewx.css'/>
+    <link rel='icon' type='image/png' href='favicon.ico' />
+    <!-- <script type='text/javascript' src='exfoliation.js'></script> -->
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+    <script>
+      window.onload = function() { applypopups(); }
+    </script>
+    <script type='text/javascript'>
+function toggle(control, id) {
+  elem = document.getElementById(id + '.hours');
+  if(elem) {
+    if(elem.style.display != 'none') {
+      elem.style.display = 'none';
+      control.src = 'xicons/triangle-right.png'
+    } else {
+      elem.style.display = 'inline';
+      control.src = 'xicons/triangle-down.png'
+    }
+  }
+}
+   </script>
+  </head>
+
+<body>
+<div id="hes11">
+
+  <div id="container">
+   
+    #include $Extras.header
+            
+   <div id="stats_group">
+
+    #include $Extras.current
+
+  </div> <!--End class "stats_group" -->
+   <div id="content">
+      <div id="about">
+         <div class="header">
+            Vorschaudaten für Station Klein Rogahn
+         </div>
+      </div> 
+       <iframe id="forecast_embed" type="text/html" frameborder="0" height="245" width="100%" src="http://forecast.io/embed/#lat=53.605963&lon=11.341407&name=Klein Rogahn, Germany&color=#3d6c87&font=Georgia&units=si"> </iframe>
+      <p>Stündliche Wettervorhersage von Wunderground </p>
+      <div style="width:100%;">
+         #include $Extras.forecast
+      </div>
+      <p>&nbsp;</p>
+<div style="width: 640px; height: 15px; font-size: 14px; font-family: Arial,Helvetica,sans-serif;">
+	<span style="float:left;"><a target="_top" href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright" style="color: #2fa900; font-weight:bold; text-decoration:none;" title="Wetter Widget">YoWindow.com</a></span>
+	<span style="float:right; color:#888888;">Forecast by&nbsp;<a href="http://yr.no" style="color: #2fa900; text-decoration:none;">yr.no</a></span>
+</div>
+<div style="width:800px; height:420px;">
+    <object type="application/x-shockwave-flash" data="http://swf.yowindow.com/yowidget3.swf" width="800" height="420">
+    	<param name="movie" value="http://swf.yowindow.com/yowidget3.swf"/>
+    	<param name="allowfullscreen" value="true"/>
+    	<param name="wmode" value="opaque"/>
+    	<param name="bgcolor" value="#FFFFFF"/>
+    	<param name="flashvars" 
+    	value="location_id=gn:2834282&amp;location_name=Schwerin&amp;time_format=24&amp;unit_system=metric&amp;lang=de&amp;background=#FFFFFF&amp;mini_action=window&amp;copyright_bar=false"
+    />
+        <a href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright"
+        style="width:800px;height:420px;display: block;text-indent: -50000px;font-size: 0px;background:#DDF url(http://yowindow.com/img/logo.png) no-repeat scroll 50% 50%;"
+        >Wetter Widget</a>
+    </object>
+</div>
+<div style="width: 800px; height: 15px; font-size: 14px; font-family: Arial,Helvetica,sans-serif;">
+	<span style="float:left;"><a target="_top" href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright" style="color: #2fa900; font-weight:bold; text-decoration:none;" title="Wetter Widget">YoWindow.com</a></span>
+	<span style="float:right; color:#888888;">Forecast by&nbsp;<a href="http://yr.no" style="color: #2fa900; text-decoration:none;">yr.no</a></span>
+</div>
+
+</div><!-- Ende containt -->
+</div>
+
+    #include $Extras.footer
+
+</div>
+</body>
+</html>

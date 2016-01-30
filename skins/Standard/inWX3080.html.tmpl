@@ -1,0 +1,634 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim
+                 mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 minutes" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location Aktuelles Wetter</title>
+
+     <link rel='stylesheet' type='text/css' href='hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script type='text/javascript' src='js/hesweewx.js'></script>
+     <script>
+       window.onload = function() { applypopups(); }
+     </script>
+ </head>
+
+<body>
+ <div id='hes11'>
+ #include $Extras.header
+ #include $Extras.cwarn
+#if $varExists('forecast')
+   #set $summary = $forecast.weather_summary($Extras.forecast_service)
+#end if
+
+<div id='hescontainer'><section>
+ <div id='popupanchor' style='float:left'></div>
+
+#if $varExists('forecast')
+ <div class='hes'>
+  <div class='hesbox'>
+   <table class="hes_prog">
+     <tr>
+      <td class='hes1_wol'>
+   #if $summary.clouds is not None
+     #set $simg = 'xicons/' + $summary.clouds + '.png'
+          <a href='forecast.html'><img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
+   #end if
+      </td>
+      <td class='hes1_wol'>
+   #for $k in $summary.precip
+       #set $precip_img = 'xicons/' + $k + '.png'
+          <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+   #end for
+      </td>
+      <td class='hes1_wol'>
+   #for $k in $summary.obvis
+       #set $obvis_img = 'xicons/' + $k + '.png'
+          <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+   #end for
+        </td>
+       </tr>
+      </table>
+       $forecast.label('Zambretti', $forecast.zambretti.code)
+       #set $summary = $forecast.weather_summary('WU')
+       <p>
+        Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
+        Wind aus&nbsp;$forecast.label('Weather', $summary.windDir)&nbsp;
+        mit einer Geschwindigkeit von&nbsp;$forecast.label('Weather', $summary.windSpeed).&nbsp;
+        Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp; und&nbsp;
+        $forecast.label('Weather', $summary.tempMax).&nbsp;
+        Luftfeuchtigkeit von ca.&nbsp;$forecast.label('Weather',
+        $summary.humidity).&nbsp;<br />
+       Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)</p>
+  </div>
+ </div>
+#end if
+
+#if $day($data_binding='uv_binding').outTemp.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Temperatur<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').outTemp</a></td>
+    #if $trend($data_binding='uv_binding').outTemp.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').outTemp</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').outTemp</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.tempMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.tempMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').outTemp.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').outTemp.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').outTemp.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').outTemp.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Temperatur -->
+#end if
+
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+#if $latest($data_binding='uv_binding').outTemp.raw < 10 
+    <tr>
+     <td class='hes1_kopfa'>Windchill<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').windchill</a></td>
+    #if $trend($data_binding='uv_binding').windchill.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').windchill</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').windchill</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.feelslikeMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.feelslikeMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').windchill.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').windchill.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').windchill.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').windchill.min</span></td>
+    </tr>
+#else 
+    <tr>
+     <td class='hes1_kopfa'>Hitzeindex<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').heatindex</a></td>
+    #if $trend($data_binding='uv_binding').heatindex.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').heatindex</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').heatindex</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.feelslikeMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.feelslikeMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').heatindex.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').heatindex.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').heatindex.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').heatindex.min</span></td>
+    </tr>
+#end if
+   </table>
+  </div>
+</div> <!-- ende Windchill oder Hitzeindex -->
+
+
+#if $day($data_binding='uv_binding').dewpoint.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Taupunkt<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').dewpoint</a></td>
+    #if $trend($data_binding='uv_binding').dewpoint.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').dewpoint</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').dewpoint</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.dewpointMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.dewpointMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').dewpoint.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').dewpoint.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').dewpoint.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').dewpoint.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Taupunkt -->
+#end if
+
+#if $day($data_binding='uv_binding').outHumidity.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Luftfeuchte<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').outHumidity</a></td>
+    #if $trend($data_binding='uv_binding').outHumidity.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').outHumidity</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').outHumidity</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.humidityMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.humidityMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').outHumidity.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').outHumidity.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').outHumidity.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').outHumidity.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Luftfeuchte -->
+#end if
+
+#if $day($data_binding='uv_binding').barometer.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Luftdruck<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').barometer</a></td>
+    #if $trend($data_binding='uv_binding').barometer.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').barometer</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').barometer</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.mslpMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.mslpMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').barometer.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').barometer.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').barometer.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').barometer.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Barometer -->
+#end if
+
+#if $day($data_binding='uv_binding').windSpeed.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Wind<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').windSpeed</a></td>
+    #if $trend($data_binding='uv_binding').windSpeed.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').windSpeed</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').windSpeed</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.windSpeedMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.windSpeedMin</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>seit Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').windSpeed.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').windSpeed.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').windSpeed.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').windSpeed.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Wind -->
+#end if
+#if $day($data_binding='uv_binding').windDir.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Windrichtung<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Kompas</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').windDir</a></td>
+     <td colspan="2">$latest($data_binding='uv_binding').windDir.ordinal_compass</td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende WindDir -->
+#end if
+
+
+#if $day($data_binding='uv_binding').rain.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Regen<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Heute</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').rain</a></td>
+     <td>&nbsp;</td><td>$day($data_binding='uv_binding').rain.sum</td>
+    </tr>
+    #if $varExists('forecast')
+    <tr>
+     <td colspan='2'><span class='hes1_m'>Niederschlagswahrscheinlichkeit</span></td>
+      #if $summary.pop.raw > 0
+          <td class='hes1_valhi'>
+              $summary.pop
+          </td>
+          <td>
+        #if $summary.qpf.raw > 0
+             $summary.qpf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
+        #end if
+          </td>
+          <td>
+        #if $summary.qsf.raw > 0
+          $summary.qsf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/snowflake.png' alt='schnee'/>
+        #end if
+         </td>
+      #else
+       <td colspan='3'>&nbsp;</td>
+      #end if
+      </tr>
+    #end if
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>$yesterday($data_binding='uv_binding').rain.sum</span></td>
+     <td></td>
+     <td><span class="hes1_m">Woche</span></td>
+     <td><span class='hes1_m'>$week($data_binding='uv_binding').rain.sum</span></td>
+    </tr>
+    <tr>
+     <td><span class='hes1_m'>Monat</span></td>
+     <td><span class='hes1_m'>$month($data_binding='uv_binding').rain.sum</span></td>
+     <td></td>
+     <td><span class="hes1_m">Jahr</span></td>
+     <td><span class='hes1_m'>$year($data_binding='uv_binding').rain.sum</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Niederschlag -->
+#end if
+
+#if $day($data_binding='uv_binding').lighting.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Helligkeit<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').lighting</a></td>
+    #if $trend($data_binding='uv_binding').lighting.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').lighting</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').lighting</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').lighting.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').lighting.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').lighting.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').lighting.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Hell -->
+#end if
+
+#if $day($data_binding='uv_binding').radiation.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Radiation<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').radiation</a></td>
+    #if $trend($data_binding='uv_binding').radiation.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').radiation</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').radiation</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').radiation.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='uv_binding').radiation.min</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').radiation.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='uv_binding').radiation.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Sonne -->
+#end if
+
+#if $day($data_binding='uv_binding').UV.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>UV-Index<br />&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayhumid.png' class='popup'>$latest($data_binding='uv_binding').UV</a></td>
+    #if $trend($data_binding='uv_binding').UV.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='uv_binding').UV</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='uv_binding').UV</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td class='hes1_kopfb'>Tagesprognose</td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='hes1_valhi'>$summary.uvIndexMax</span></td>
+      <td><span class="hes1_m">&nbsp;</span></td>
+      <td><span class='hes1_m'>&nbsp;</span></td>
+     </tr>
+    #end if
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='uv_binding').UV.max</span></td>
+     <td><span class="hes1_m">&nbsp;</span></td>
+     <td><span class='hes1_m'>&nbsp;</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='uv_binding').UV.max</span></td>
+     <td><span class="hes1_m">&nbsp;</span></td>
+     <td><span class='hes1_vallo'>&nbsp;</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende UV-Index -->
+#end if
+
+
+<div class="hes">
+ <div class='hesbox'>
+    <a href="http://info.flagcounter.com/Qo1g"><img src="http://s11.flagcounter.com/count/Qo1g/bg_FFFFFF/txt_000000/border_CCCCCC/columns_3/maxflags_12/viewers_0/labels_0/pageviews_0/flags_0/" alt="Flag Counter" border="0"></a>
+ </div>
+</div> <!-- end counter -->
+   
+</section >
+   
+</div> <!-- ende container -->
+    
+     #include $Extras.footer
+ </div>
+</body>
+   
+</html>
+

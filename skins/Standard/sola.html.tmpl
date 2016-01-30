@@ -1,0 +1,257 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## sola.html.tmpl  2016-01-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Sonnen Kalender</title>
+    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    #include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="header"><h2>Sonnenschein</h2></div>
+     <hr />
+     <h3>Die letzten 24 Stunden</h3>
+    #if $day.radiation.sum.raw > 0
+     <table>
+      #for $zeit in range(24)
+          <tr><td>Sonne vor</td><td>$zeit</td><td>h</td>
+         #if $hours_ago($hours_ago=$zeit).radiation.sum.raw > 0
+           #if $hours_ago($hours_ago=$zeit).radiation.sum.raw < 50
+              <td class="tab_datab" style="background-color: #84ebff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 100
+              <td class="tab_datab" style="background-color: #57ddff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 300
+              <td class="tab_datab" style="background-color: #23c5ff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 10000
+              <td class="tab_datab" style="background-color: #009eff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 20000
+              <td class="tab_datab" style="background-color: #0077f7">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #else
+              <td>$hours_ago($hours_ago=$zeit).radiation.sum</td>
+           #end if
+         #else
+           <td>&nbsp;</td>
+         #end if
+          </tr>
+      #end for
+     </table>
+    #else
+      <p>&nbsp;</p>
+    #end if
+     <hr />
+
+<h2>Sonne</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
+<p>Sonnenschein wird über eine Solarzelle ermittelt.<br />
+Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
+<p>&nbsp;</p>
+
+<div id="Report">
+
+<table>
+  <tr>
+   <td>Anzahl der <br />nach Jahren</td>
+   <td style="background-color: #FF4949;">Sonnentage</td>
+  </tr>
+
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      <td style="background-color: #FF4949;">$year.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
+   </tr>
+#end for
+</table>
+<hr />
+
+<h3>Sonnentage nach Monaten in den Jahren</h3>
+<table>
+    <tr>
+     <td>Jahr&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.radiation.max.raw is not None:
+            <td style="background-color: #23FF9E;">$month.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
+          #else
+            <td style="background-color: #FFFFFF;">-</td>
+          #end if
+      #end for
+    </tr>
+#end for
+</table>
+<h3>Sonne nach Monaten in den Jahren</h3>
+<table>
+    <tr>
+     <td>Jahr&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.radiation.max.raw is not None:
+            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
+          #else
+            <td style="background-color: #FFFFFF;">-</td>
+          #end if
+      #end for
+    </tr>
+#end for
+</table>
+<h3>Sonne2 nach Monaten in den Jahren</h3>
+<table>
+    <tr>
+     <td>Jahr&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.radiation.max.raw is not None:
+            <td style="background-color: #23FF9E;">$month.sunshinehours.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
+          #else
+            <td style="background-color: #FFFFFF;">-</td>
+          #end if
+      #end for
+    </tr>
+#end for
+</table>
+
+<h3>Sonne in w/m²</h3>
+ <p>&nbsp; </p>
+ <table>
+    <tr>
+     <td>Jahr&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+ #for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.radiation.sum.raw is not None:
+             #if $month.radiation.sum.raw < 50
+                 <td class="hest01">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 150
+                 <td class="hest02">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 300
+                 <td class="hest03">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 5000
+                 <td class="hest04">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 10000
+                 <td class="hest05">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 20000
+                 <td class="hest06">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 30000
+                 <td class="hest07">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 40000
+                 <td class="hest08">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 50000
+                 <td class="hest09">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 60000
+                 <td class="hest10">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 70000
+                 <td class="hest11">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 80000
+                 <td class="hest12">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 90000
+                 <td class="hest13">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 100000
+                 <td class="hest14">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 120000
+                 <td class="hest15">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw > 120000 
+                 <td class="hest16">$month.radiation.sum.formatted</td>
+             #end if
+          #else
+                 <td class="hest00">-</td>
+          #end if
+       #end for
+    </tr>
+ #end for
+ </table>
+<hr />
+
+<h3>Sonne nach Jahreszeiten</h3>
+<p>&nbsp;</p>
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>21.03. - 20.06</td>
+      <td>21.06. - 20.09.</td>
+      <td>21.09. - 20.12.</td>
+      <td>21.12. - 20.03</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+     <td>Frühlings-Regen</td>
+     <td>Sommern-Regen</td>
+     <td>Herbst-Regen</td>
+     <td>Winter-Regen</td>
+    </tr>
+    <tr>
+     <td>$year.dateTime.format("%Y")</td>
+     <td>$spring.radiation.sum.formatted </td>
+     <td>$summer.radiation.sum.formatted </td>
+     <td>$autumm.radiation.sum.formatted </td>
+     <td>$winter.radiation.sum.formatted </td>
+    </tr>
+</table>
+
+<hr />
+
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+ </div> 
+
+  #include $Extras.footer
+
+
+</body>
+
+</html>

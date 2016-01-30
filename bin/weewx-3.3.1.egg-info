@@ -1,0 +1,25 @@
+Metadata-Version: 1.1
+Name: weewx
+Version: 3.3.1
+Summary: weather software
+Home-page: http://www.weewx.com
+Author: Tom Keffer
+Author-email: tkeffer@gmail.com
+License: GPLv3
+Description: weewx interacts with a weather station to produce graphs, reports, and HTML pages.  weewx can upload data to services such as the WeatherUnderground, PWSweather.com, or CWOP.
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: GPLv3
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Requires: configobj(>=4.5)
+Requires: serial(>=2.3)
+Requires: Cheetah(>=2.0)
+Requires: sqlite3(>=2.5)
+Requires: PIL(>=1.1.6)
+Provides: weedb
+Provides: weeplot
+Provides: weeutil
+Provides: weewx

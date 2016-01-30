@@ -1,0 +1,206 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+#encoding UTF-8
+
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Statistik</title>
+    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+<div id="hes11"> 
+
+ #include $Extras.header
+ #include $Extras.cwarn
+ <div id="stats_group">
+
+  #include $Extras.current
+
+ </div> <!--End class "stats_group" -->  
+
+ <div id="content">        
+  <div id="about">
+   <div class="header">Übersichten seit dem 31.10.2013 (Beginn dieser Wetteraufzeichnungen) </div>
+    <p>Es werden die Messergebnisse der Wetterstation WX-2013 und von 13 one-wire Sensoren erfasst und gespeichert.</p>
+    <table>
+     <caption class="caption">Koordinaten der Wetterstation</caption>
+      <tr>
+       <td class="label">Breitengrad:</td>
+       <td class="data">$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</td>
+      </tr>
+      <tr>
+       <td class="label">L&auml;ngengrad:</td>
+       <td class="data">$station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]</td>
+      </tr>
+      <tr>
+       <td class="label">H&ouml;he:</td>
+       <td class="data">$station.altitude</td>
+      </tr>
+     </table>
+     <hr />
+    <h3>Jahresarchiv</h3>
+ #for $yr in $SummaryByYear
+     #set $hesweby = "Archiv/KR-" + $yr + "-table.html"
+     #set $heslisy = $yr
+     <input type="button" value="$heslisy" onclick="openURL('$hesweby')" />
+ #end for
+ <hr />
+
+     <h3>Monatsarchive</h3>
+<table>
+  #for $year in $alltime.years
+    <tr>
+     <td>$year.dateTime.format("%Y")</td>
+     #set $yearhes = $year.dateTime.format("%Y")
+     #for $month in $year.months
+        #if $month.outTemp.avg.raw is not None:
+           #set $monthes = $month.dateTime.format("%m")
+           #set $montheb = $month.dateTime.format("%B")  
+           #set $hesweb = "Archiv/KR-" + $yearhes + "-" +  $monthes + "-table.html"
+           <td><input type="button" value="$montheb" onclick="openURL('$hesweb')" /></td>
+        #else
+           <td>-</td>
+        #end if
+     
+     #end for
+     </tr>
+  #end for
+</table>
+<hr />
+ <h3><a href="temp.html">Temperaturen</a></h3>
+    #include $Extras.summe
+
+ <h3><a href="rain.html">Regentage</a></h3>
+<table>
+  <tr>
+   <td>Anzahl der <br />nach Jahren</td>
+   <td style="background-color: #FF4949;">Regentage</td>
+   <td >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="background-color: #FF8C5F;">Tage mit &gt;= 3 mm</td>
+   <td style="background-color: #FFAC4B;">Tage mit &gt;= 5 mm</td>
+   <td style="background-color: #33FF33;">Tage mit &gt;= 10 mm</td>
+   <td style="background-color: #23FF9E;">Tage mit &gt;= 30 mm</td>
+   <td style="background-color: #4B84FF;">Tage mit &gt;= 50 mm</td>
+  </tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      <td style="background-color: #FF4949;">$year.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
+      <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+      <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.3, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #33FF33;">$year.rain.sum_ge((1.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #23FF9E;">$year.rain.sum_ge((3.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.rain.sum_ge((5.0, "cm", "group_rain")).format("%.0f")</td>
+   </tr>
+#end for
+</table>
+<hr />
+<h3><a href="wind.html">Wind in km/h</a></h3>
+<table>
+    <tr>
+     <td>Anzahl <br />nach Jahren</td>
+     <td style="background-color: #FF4949;">Windstill        <br /> 0</td>
+     <td style="background-color: #FF6969;">leiser Zug       <br /> 1</td>
+     <td style="background-color: #FF8C5F;">leiche Briese    <br /> 2</td>
+     <td style="background-color: #FFAC4B;">schwache Briese  <br /> 3</td>
+     <td style="background-color: #33FF33;">mäßige Briese    <br /> 4</td>
+     <td style="background-color: #23FF9E;">frische Briese   <br /> 5</td>
+     <td style="background-color: #4B84FF;">starker Wind     <br /> 6</td>
+     <td style="background-color: #4B84FF;">steifer Wind     <br /> 7</td>
+     <td style="background-color: #4B84FF;">stürmischer Wind <br /> 8</td>
+     <td style="background-color: #4B84FF;">Sturm            <br /> 9</td>
+     <td style="background-color: #4B84FF;">schwerer Sturm   <br /> 10</td>
+     <td style="background-color: #4B84FF;">orkanartiger Sturm<br /> 11</td>
+     <td style="background-color: #4B84FF;">Orkan             <br /> 12</td>
+    </tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      <td style="background-color: #FF4949;">$year.windGust.max_le((5, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #FF6969;">$year.windGust.max_ge((5, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #FF8C5F;">$year.windGust.max_ge((11, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #FFAC4B;">$year.windGust.max_ge((19, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #33FF33;">$year.windGust.max_ge((28, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #23FF9E;">$year.windGust.max_ge((38, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((49, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((61, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((74, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((88, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((102, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((117, "km_per_hour", "group_speed")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.windGust.max_ge((300, "km_per_hour", "group_speed")).format("%.0f")</td>
+   </tr>
+#end for
+</table>
+
+
+
+<hr />
+
+
+     <h3> Verschiedene Auswertungen</h3>
+     <div class="navbar">
+      <input type="button" value=" Woche mit Tageswerten " onclick="openURL('week-table.html')" />
+      <input type="button" value=" Monat mit Tageswerten " onclick="openURL('month-table.html')" />
+      <input type="button" value=" Die letzten 30 Tage " onclick="openURL('thirty-day.html')" />
+      <input type="button" value=" Jahr mit Monatswerten " onclick="openURL('year-table.html')" />
+     </div>
+     <p>NOAA - Dateien
+      <select NAME=noaaselect onchange="openNoaaFile(value)">
+      #for $monthYear in $SummaryByMonth
+          <option value="$monthYear">$monthYear</option>
+      #end for
+          <option selected>- Monat -</option>
+      </select>
+      &#8656;&nbsp;Auswahl:&nbsp;&#8658;
+      <select NAME=noaaselect onchange="openNoaaFile(value)">
+      #for $yr in $SummaryByYear
+          <option value="$yr">$yr</option>
+      #end for
+          <option selected>- Jahr -</option>
+      </select>
+     </p>
+     <p>Messwerte als Monatsübersichten per
+     &#8658;&nbsp;Auswahl:
+     <select NAME=archivselect onchange="openArchivFile(value)">
+     #for $monthYear in $SummaryByMonth
+         <option value="$monthYear">$monthYear</option>
+     #end for
+         <option selected>- Jahr-Monat -</option>
+     </select>
+     </p>
+     <hr />
+     <img src="pict0049.jpg" alt="Wetterstation" style="width:320px; height:340px;" />
+     <img src="pict0056.jpg" alt="Wetterstation" style="width:320px; height:340px;" />
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+<!-- </div> -->
+
+  #include $Extras.footer
+
+
+</body>
+
+</html>

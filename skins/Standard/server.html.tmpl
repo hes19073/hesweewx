@@ -1,0 +1,84 @@
+#errorCatcher Echo
+##    $Revision: 1126 $
+##    $Author: tkeffer $
+##    $Date: 2013-03-27 14:52:32 -0700 (Wed, 27 Mar 2013) $
+#encoding UTF-8
+<!doctype html>
+<html>
+  <head>
+    #if $encoding == 'utf8'
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    #end if    
+    <title>$station.location Aktuelle Wetter Bedingungen</title>
+    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <!-- <script type='text/javascript' src='exfoliation.js'></script> -->
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+    <script>
+      window.onload = function() { applypopups(); }
+    </script>
+
+  </head>
+
+<body>
+   <div id="container">
+
+    #include $Extras.header
+ 
+   <div id="stats_group">
+
+    #include $Extras.current
+
+    #set global $period1 = $yesterday
+    #set global $period2 = $day
+    #set global $period1Name = "Gestern"
+    #set global $period2Name = "Heute"
+
+    #include $Extras.chart
+
+   </div> <!--End class "stats_group" -->
+
+      <div id="content">
+        <div id="about">
+          <div class="header">
+            Der AMD 350 / 16 MB Ram / 1 TB Raid 1
+          </div>
+          <hr />
+          <div id="plots">
+                Der Tag<br />
+                <img src="daycpu.png" alt="cpu" /><br />
+                <img src="daycpu1.png" alt="cpu" /><br />
+                <img src="dayload.png" alt="load" /><br /> 
+                <img src="daydisk.png" alt="disk" /><br /> 
+                <img src="daymem.png" alt="mem" /><br /> 
+                <img src="daynet.png" alt="net" /><br />
+                <img src="daycputemp.png" alt="CPUTemp" />
+                <hr />
+                Die Wetterstation<br />
+                <img src="dayBate.png" alt="CPUTemp" />
+                <img src="dayStat.png" alt="CPUTemp" />
+                
+             <br /><hr /><br />Die Woche<br /><hr />
+                <img src="weekcpu.png" alt="cpu" /><br />
+                <img src="weekcpu1.png" alt="cpu" /><br />
+                <img src="weekload.png" alt="load" /><br />
+                <img src="weekdisk.png" alt="disk" /><br />
+                <img src="weekmem.png" alt="mem" /><br />
+                <img src="weeknet.png" alt="net" />
+                <img src="weekcputemp.png" alt="CPU temp" />
+                <img src="weekBate.png" alt="CPUTemp" />
+                <img src="weekStat.png" alt="CPUTemp" />
+                <br /><hr />
+                <img src="monthBate.png" alt="CPUTemp" />
+                <img src="monthStat.png" alt="CPUTemp" />
+<br />
+                
+          </div> <!-- End id "plots" -->
+       </div> <!-- End id "about" -->  
+    </div> <!-- End id "content" -->
+
+  #include $Extras.footer
+
+</body>
+
+</html>

@@ -1,0 +1,1164 @@
+## jahres monatssicht for weewx - Copyright 2015- Hartmut
+## KR-YYYY-MM-table.html.tmpl  2015-04-26 12:01:24Z hes $
+#errorCatcher Echo
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>$station.location Wetterdatenarchiv</title>
+    <link rel="stylesheet" type="text/css" href="./../hesweewx.css" />
+    <link rel="icon" type="image/png" href="./../favicon.ico" />
+    <script type='text/javascript' src='./../hesweewx.js'></script>
+
+  </head>
+
+<body>
+
+<div id='header'>
+ <div id="masthead">
+  <h1>Wetterstation&nbsp;$station.location</h1>
+  <p>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
+       $station.latitude[2]&nbsp;&brvbar;&nbsp;
+      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
+      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
+      H&ouml;he:&nbsp;$station.altitude</p>
+  <div class="navbar">
+   <ul id="nav">
+    <li><input type="button" value=" WX - 2013 Neu " onclick="openURL('./../index.html')" /></li>
+    <li><input type="button" value=" owfs-Sensoren " onclick="openURL('./../index2.html')" /></li>
+    <li><input type="button" value=" Tag - Aktuell " onclick="openURL('./../day.html')" /></li>
+    <li><input type="button" value="   Prognose    " onclick="openURL('./../forecast.html')" /></li>
+    <li><input type="button" value="   Statistik   " onclick="openURL('./../statistik.html')" /></li>
+   </ul>
+  </div> <!-- End navbar -->
+ </div><!-- Ende masthead -->
+</div> <!-- Ende header -->
+
+  <div class="mittetab">
+   <h2>Jahr&nbsp;$year_name&nbsp;mit den Maximal-, Minimal- und Durchschnittswerten</h2>
+   <table border="2" width="100%">
+    <thead>
+     <tr>
+      <td rowspan='2'>Wetter<br />Klein Rogahn</td>
+      <td colspan='3' style="background-image: -moz-linear-gradient(left, #FC4D0D 0%, #0029E5 100%)">Lufttemperatur&nbsp;$unit.label.outTemp</td>
+      <td colspan='3' style="background-image: -moz-linear-gradient(left, #DDDBE1 0%, #794BD5 100%)">Luftfeuchte&nbsp;$unit.label.outHumidity</td>
+      <td colspan='3' style="background-image: -moz-linear-gradient(left, #F4FA58 0%, #A5DF00 100%)">Luftdruck&nbsp;$unit.label.barometer</td>
+      <td colspan='2' style="background-image: -moz-linear-gradient(left, #84ebff 0%, #001c5b 100%)">Regen&nbsp;$unit.label.rain</td>
+      <td colspan='3' style="background-image: -moz-linear-gradient(left, #D4D4FA 0%, #4646EB 100%)">Wind&nbsp;$unit.label.wind</td>
+      <td colspan='3' style="background-image: -moz-linear-gradient(left, #D4D4FA 0%, #4646EB 100%)">Windböen&nbsp;$unit.label.wind</td>
+      <td>Notiz</td>
+     </tr>
+     <tr>
+      <!-- <td></td> -->
+      <td>max</td><td>min</td><td>&Oslash;</td>
+      <td>max</td><td>min</td><td>&Oslash;</td>
+      <td>max</td><td>min</td><td>&Oslash;</td>
+      <td>Summe</td><td>pro Stunde</td>
+      <td>max</td><td>&Oslash;</td><td>Richtung</td>
+      <td>max</td><td>&Oslash;</td>
+      <td>Bf.</td>
+      <td>&nbsp;</td>
+     </tr>
+    </thead>
+    <tfoot>
+     <tr>
+      <td>Monats<br />max / min / &Oslash;</td>
+      <td>$year.outTemp.max.formatted<br />
+       <small>$year.outTemp.maxtime.format("%d.%m")</small></td>
+      <td>$year.outTemp.min.formatted<br />
+       <small>$year.outTemp.mintime.format("%d.%m")</small></td>
+      <td>$year.outTemp.avg.formatted</td>
+      <td>$year.outHumidity.max.formatted<br />
+       <small>$year.outHumidity.maxtime.format("%d.%m")</small></td>
+      <td>$year.outHumidity.min.formatted<br />
+       <small>$year.outHumidity.mintime.format("%d.%m")</small></td>
+      <td>$year.outHumidity.avg.formatted</td>
+      <td>$year.barometer.max.formatted<br />
+       <small>$year.barometer.maxtime.format("%d.%m")</small></td>
+      <td>$year.barometer.min.formatted<br />
+       <small>$year.barometer.mintime.format("%d.%m")</small></td>
+      <td>$year.barometer.avg.formatted</td>
+      <td>Sum: $year.rain.sum.formatted</td>
+      <td>$year.rainRate.max.formatted<br />
+       <small>$year.rainRate.maxtime.format("%d.%m")</small></td>
+      <td>$year.windSpeed.max.formatted<br />
+       <small>$year.windSpeed.maxtime.format("%d.%m")</small></td>
+      <td>$year.windSpeed.avg.formatted</td>
+      <td>&nbsp;</td>
+      <td>$year.windGust.max.formatted<br />
+       <small>$year.windGust.maxtime.format("%d.%m")</small></td>
+      <td>$year.windGust.avg.formatted</td>
+      <td>-</td>
+      <td>&nbsp;</td>
+     </tr>
+    </tfoot>
+   <tbody>
+
+#for $month in $year.months
+
+  <tr>
+      <td>$month.dateTime.format("%m.%Y")</td>
+   #if $month.outTemp.max.raw is not None:
+      #if $month.outTemp.max.raw < -51
+          <td class="tab_data" style="background-color: #0029e5">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > -50 and $month.outTemp.max.raw < -11
+          <td class="tab_data" style="background-color: #0186e7">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > -10 and $month.outTemp.max.raw < 1
+          <td class="tab_data" style="background-color: #02e3ea">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 0 and $month.outTemp.max.raw < 6
+          <td class="tab_data" style="background-color: #04ec97">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 5 and $month.outTemp.max.raw < 11
+          <td class="tab_data" style="background-color: #05ef3d">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 10 and $month.outTemp.max.raw < 16
+          <td class="tab_data" style="background-color: #2bf207">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 15 and $month.outTemp.max.raw < 21
+          <td class="tab_data" style="background-color: #8af408">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 20 and $month.outTemp.max.raw < 26
+          <td class="tab_data" style="background-color: #e9f70a">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 25 and $month.outTemp.max.raw < 31
+          <td class="tab_data" style="background-color: #f9a90b">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else if $month.outTemp.max.raw > 30 and $month.outTemp.max.raw < 36
+          <td class="tab_data" style="background-color: #fc4d0d">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #else
+          <td class="tab_data" style="background-color: #ff0f2d">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+      #end if
+    #else
+          <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.outTemp.min.raw is not None:
+       #if $month.outTemp.min.raw < -51
+          <td class="tab_data" style="background-color: #0029e5">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > -50 and $month.outTemp.min.raw < -11
+          <td class="tab_data" style="background-color: #1886e7">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > -10 and $month.outTemp.min.raw < -6
+          <td class="tab_data" style="background-color: #02e3ea">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > -5 and $month.outTemp.min.raw < 1
+          <td class="tab_data" style="background-color: #04ec97">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 0 and $month.outTemp.min.raw < 6
+          <td class="tab_data" style="background-color: #05ef3d">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 5 and $month.outTemp.min.raw < 11
+          <td class="tab_data" style="background-color: #2bf207">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 10 and $month.outTemp.min.raw < 16
+          <td class="tab_data" style="background-color: #8af408">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 15 and $month.outTemp.min.raw < 21
+          <td class="tab_data" style="background-color: #e9f70a">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 20 and $month.outTemp.min.raw < 26
+          <td class="tab_data" style="background-color: #f9a90b">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else if $month.outTemp.min.raw > 25 and $month.outTemp.min.raw < 36
+          <td class="tab_data" style="background-color: #fc4d0d">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #else
+          <td class="tab_data" style="background-color: #ff0f2d">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+       #end if
+    #else
+          <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.outTemp.avg.raw is not None:
+         <td class="tab_datab">$month.outTemp.avg.formatted</td>
+    #else
+         <td class="tab_datab" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.outHumidity.max.raw is not None:
+       #if $month.outHumidity.max.raw < 31
+          <td class="tab_data" style="background-color: #dddbe1">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 30 and $month.outHumidity.max.raw < 41
+          <td class="tab_data" style="background-color: #d6d0e0">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 40 and $month.outHumidity.max.raw < 51
+          <td class="tab_data" style="background-color: #cfcfe0">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+<OB       #else if $month.outHumidity.max.raw > 50 and $month.outHumidity.max.raw < 61
+          <td class="tab_data" style="background-color: #c8bbe1">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 60 and $month.outHumidity.max.raw < 71
+          <td class="tab_data" style="background-color: #baa8de">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 70 and $month.outHumidity.max.raw < 81
+          <td class="tab_data" style="background-color: #a890da">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 80 and $month.outHumidity.max.raw < 91
+          <td class="tab_data" style="background-color: #8a64d7">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else if $month.outHumidity.max.raw > 90 and $month.outHumidity.max.raw < 101
+          <td class="tab_data" style="background-color: #794bd5 color: #ffffff">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #else
+          <td class="tab_data" style="background-color: #ffffff">$month.outHumidity.max.formatted<br /><small>$month.outHumidity.maxtime</small></td>
+       #end if
+    #else
+          <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.outHumidity.min.raw is not None:
+       #if $month.outHumidity.min.raw < 31
+          <td class="tab_data" style="background-color: #dddbe1">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 30 and $month.outHumidity.min.raw < 41
+          <td class="tab_data" style="background-color: #d6d0e0">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 40 and $month.outHumidity.min.raw < 51
+          <td class="tab_data" style="background-color: #cfcfe0">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 50 and $month.outHumidity.min.raw < 61
+          <td class="tab_data" style="background-color: #c8bbe1">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 60 and $month.outHumidity.min.raw < 71
+          <td class="tab_data" style="background-color: #baa8de">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 70 and $month.outHumidity.min.raw < 81
+          <td class="tab_data" style="background-color: #a890da">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 80 and $month.outHumidity.min.raw < 91
+          <td class="tab_data" style="background-color: #8a64d7">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else if $month.outHumidity.min.raw > 90 and $month.outHumidity.min.raw < 101
+          <td class="tab_data" style="background-color: #794bd5 color: #ffffff">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #else
+          <td class="tab_data" style="background-color: #ffffff">$month.outHumidity.min.formatted<br /><small>$month.outHumidity.mintime</small></td>
+       #end if
+    #else
+          <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.outHumidity.avg.raw is not None:
+         <td class="tab_datab" style="background-color: #ffffff">$month.outHumidity.avg.formatted</td>
+    #else
+         <td calss="tab_datab" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.barometer.max.raw is not None:
+       #if $month.barometer.max.raw  < 1010
+          <td class="tab_data" style="background-color: #F4FA58">$month.barometer.max.formatted<br /><small>$month.barometer.maxtime</small></td>
+       #else
+          <td class="tab_data" style="background-color: #A5DF00">$month.barometer.max.formatted<br /><small>$month.barometer.maxtime</small></td>
+       #end if
+    #else
+          <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.barometer.min.raw is not None:
+      #if $month.barometer.min.raw  < 1010
+         <td class="tab_data" style="background-color: #f4fa58">$month.barometer.min.formatted<br /><small>$month.barometer.mintime</small></td>
+      #else
+         <td class="tab_data" style="background-color: #a5df00">$month.barometer.min.formatted<br /><small>$month.barometer.mintime</small></td>
+      #end if
+    #else
+        <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.barometer.avg.raw is not None:
+       <td class="tab_datab">$month.barometer.avg.formatted</td>
+    #else
+       <td class="tab_datab">-</td>
+    #end if
+
+    #if $month.rain.sum.raw is not None:
+      #if $month.rain.sum.raw < 0.1
+          <td class="tab_datab" style="background-color: #84ebff">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 0.5
+          <td class="tab_datab" style="background-color: #57ddff">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 2.5
+          <td class="tab_datab" style="background-color: #23c5ff">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 4
+          <td class="tab_datab" style="background-color: #009eff">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 8
+          <td class="tab_datab" style="background-color: #0077f7">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 16
+          <td class="tab_datab" style="background-color: #0050a9 color: #ffffff">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 30
+          <td class="tab_datab" style="background-color: #001c5b color: #ffffff">$month.rain.sum.formatted</td>
+      #else
+          <td class="tab_datab" style="background-color: #0000ff color: #ffffff">$month.rain.sum.formatted</td>
+      #end if
+    #else
+          <td calss="tab_datab" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.rainRate.max.raw is not None:
+      #if $month.rainRate.max.raw < 0.1
+         <td class="tab_data" style="background-color: #84ebff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 0.5
+         <td class="tab_data" style="background-color: #57ddff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 2.5
+         <td class="tab_data" style="background-color: #23c5ff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 4
+         <td class="tab_data" style="background-color: #009eff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 8
+         <td class="tab_data" style="background-color: #0077f7">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 16
+         <td class="tab_data" style="background-color: #0050a9 color: #ffffff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else if $month.rainRate.max.raw < 30
+         <td class="tab_data" style="background-color: #19326b color: #ffffff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #else
+         <td class="tab_data" style="background-color: #001951 color: #ffffff">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+      #end if
+    #else
+         <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.windSpeed.max.raw is not None:
+       #if $month.windSpeed.max.raw < 2
+           <td class="tab_data" style="background-color: #ffffff;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 1 and $month.windSpeed.max.raw < 6
+           <td class="tab_data" style="background-color: #d4d4fa;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 5 and $month.windSpeed.max.raw < 12
+           <td class="tab_data" style="background-color: #bcbcfa;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 11 and $month.windSpeed.max.raw < 20
+           <td class="tab_data" style="background-color: #a4a4f8;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 19 and $month.windSpeed.max.raw < 29
+           <td class="tab_data" style="background-color: #8d8df6;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 28 and $month.windSpeed.max.raw < 39
+           <td class="tab_data" style="background-color: #7575f2;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 38 and $month.windSpeed.max.raw < 50
+           <td class="tab_data" style="background-color: #6363f0;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 49 and $month.windSpeed.max.raw < 62
+           <td class="tab_data" style="background-color: #5252ed;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 61 and $month.windSpeed.max.raw < 75
+           <td class="tab_data" style="background-color: #4646eb;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 74 and $month.windSpeed.max.raw < 89
+           <td class="tab_data" style="background-color: #3838e8; color: #ffffff;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 88 and $month.windSpeed.max.raw < 103
+           <td class="tab_data" style="background-color: #2929e5; color: #ffffff;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 102 and $month.windSpeed.max.raw < 118
+           <td class="tab_data" style="background-color: #1616e3; color: #ffffff;">$month.windSpeed.max.formatted<br /><small>$month.windSpeed.maxtime</small></td>
+       #else if $month.windSpeed.max.raw > 117
+           <td class="tab_data" style="background-color: #000000; color: #ffffff;">$month.windSpeed.max.formatted</td>
+       #end if
+    #else
+           <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+    #if $month.windSpeed.avg.raw is not None:
+       #if $month.windSpeed.avg.raw < 2
+          <td class="tab_datab" style="background-color: #ffffff;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 1 and $month.windSpeed.avg.raw < 6
+          <td class="tab_datab" style="background-color: #d4d4fa;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 5 and $month.windSpeed.avg.raw < 12
+          <td class="tab_datab" style="background-color: #bcbcfa;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 11 and $month.windSpeed.avg.raw < 20
+          <td class="tab_datab" style="background-color: #a4a4f8;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 19 and $month.windSpeed.avg.raw < 29
+          <td class="tab_datab" style="background-color: #8d8df6;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 28 and $month.windSpeed.avg.raw < 39
+          <td class="tab_datab" style="background-color: #7575f2;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 38 and $month.windSpeed.avg.raw < 50
+           <td class="tab_datab" style="background-color: #6363f0;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 49 and $month.windSpeed.avg.raw < 62
+           <td class="tab_datab" style="background-color: #5252ed;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 61 and $month.windSpeed.avg.raw < 75
+           <td class="tab_datab" style="background-color: #4646eb;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 74 and $month.windSpeed.avg.raw < 89
+           <td class="tab_datab" style="background-color: #3838e8; color: #ffffff;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 88 and $month.windSpeed.avg.raw < 103
+           <td class="tab_datab" style="background-color: #2929e5; color: #ffffff;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 102 and $month.windSpeed.avg.raw < 118
+           <td class="tab_datab" style="background-color: #1616e3; color: #ffffff;">$month.windSpeed.avg.formatted</td>
+       #else if $month.windSpeed.avg.raw > 117
+           <td class="tab_datab" style="background-color: #000000; color: #ffffff;">$month.windSpeed.avg.formatted</td>
+       #end if
+    #else
+           <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.wind.vecdir.raw is not None:
+       <td class="tab_datab">$month.wind.vecdir <br />&nbsp;</td>
+    #else
+       <td>-</td>
+    #end if
+
+    #if $month.windGust.max.raw is not None:
+       #if $month.windGust.max.raw < 2
+           <td class="tab_data" style="background-color: #ffffff;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 1 and $month.windGust.max.raw < 6
+           <td class="tab_data" style="background-color: #d4d4fa;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 5 and $month.windGust.max.raw < 12
+           <td class="tab_data" style="background-color: #bcbcfa;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 11 and $month.windGust.max.raw < 20
+           <td class="tab_data" style="background-color: #a4a4f8;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 19 and $month.windGust.max.raw < 29
+           <td class="tab_data" style="background-color: #8d8df6;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 28 and $month.windGust.max.raw < 39
+           <td class="tab_data" style="background-color: #7575f2;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 38 and $month.windGust.max.raw < 50
+           <td class="tab_data" style="background-color: #6363f0;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 49 and $month.windGust.max.raw < 62
+           <td class="tab_data" style="background-color: #5252ed;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 61 and $month.windGust.max.raw < 75
+           <td class="tab_data" style="background-color: #4646eb;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 74 and $month.windGust.max.raw < 89
+           <td class="tab_data" style="background-color: #3838e8; color: #ffffff;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 88 and $month.windGust.max.raw < 103
+         <td class="tab_data" style="background-color: #2929e5; color: #ffffff;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 102 and $month.windGust.max.raw < 118
+         <td class="tab_data" style="background-color: #1616e3; color: #ffffff;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #else if $month.windGust.max.raw > 117
+         <td class="tab_data" style="background-color: #000000; color: #ffffff;">$month.windGust.max.formatted<br /><small>$month.windGust.maxtime</small></td>
+       #end if
+     #else
+         <td class="tab_data" style="background-color: #ffffff">-</td>
+     #end if
+     #if $month.windGust.avg.raw is not None:
+      #if $month.windGust.avg.raw < 2
+          <td class="tab_datab" style="background-color: #ffffff;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 1 and $month.windGust.avg.raw < 6
+          <td class="tab_datab" style="background-color: #d4d4fa;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 5 and $month.windGust.avg.raw < 12
+          <td class="tab_datab" style="background-color: #bcbcfa;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 11 and $month.windGust.avg.raw < 20
+          <td class="tab_datab" style="background-color: #a4a4f8;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 19 and $month.windGust.avg.raw < 29
+          <td class="tab_datab" style="background-color: #8d8df6;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 28 and $month.windGust.avg.raw < 39
+          <td class="tab_datab" style="background-color: #7575f2;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 38 and $month.windGust.avg.raw < 50
+          <td class="tab_datab" style="background-color: #6363f0;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 49 and $month.windGust.avg.raw < 62
+          <td class="tab_datab" style="background-color: #5252ed;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 61 and $month.windGust.avg.raw < 75
+          <td class="tab_datab" style="background-color: #4646eb;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 74 and $month.windGust.avg.raw < 89
+         <td class="tab_datab" style="background-color: #3838e8; color: #ffffff;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 88 and $month.windGust.avg.raw < 103
+         <td class="tab_datab" style="background-color: #2929e5; color: #ffffff;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 102 and $month.windGust.avg.raw < 118
+         <td class="tab_datab" style="background-color: #1616e3; color: #ffffff;">$month.windGust.avg.formatted</td>
+      #else if $month.windGust.avg.raw > 117
+         <td class="tab_datab" style="background-color: #000000; color: #ffffff;">$month.windGust.avg.formatted</td>
+      #end if
+    #else
+       <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    #if $month.beaufort.max.raw is not None:
+       #if $month.beaufort.max.raw < 1
+           <td class="tab_data" style="background-color: #ffffff;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 2
+           <td class="tab_data" style="background-color: #d4d4fa;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 3
+           <td class="tab_data" style="background-color: #bcbcfa;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 4
+           <td class="tab_data" style="background-color: #a4a4f8;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 5
+           <td class="tab_data" style="background-color: #8d8df6;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 6
+           <td class="tab_data" style="background-color: #7575f2;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 7
+           <td class="tab_data" style="background-color: #6363f0;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 8
+           <td class="tab_data" style="background-color: #5252ed;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 9
+           <td class="tab_data" style="background-color: #4646eb;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 10
+           <td class="tab_data" style="background-color: #3838e8; color: #ffffff;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 11
+           <td class="tab_data" style="background-color: #2929e5; color: #ffffff;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw < 12
+           <td class="tab_data" style="background-color: #1616e3; color: #ffffff;">$month.beaufort.max.formatted<br /><small>$month.beaufort.maxtime</small></td>
+       #else if $month.beaufort.max.raw > 12
+           <td class="tab_data" style="background-color: #000000; color: #ffffff;">$month.beaufort.max.formatted</td>
+       #end if
+    #else
+           <td class="tab_data" style="background-color: #ffffff">-</td>
+    #end if
+
+    <!-- Besonderheiten -->
+   <td class="tab_data" style="background-color: #ffffff"></td>
+
+  </tr>
+#end for
+
+</tbody>
+</table>
+
+<h2>Jahr&nbsp;$year_name&nbsp;mit den Maximal-, Minimal- und Durchschnittswerten</h2>
+<h3>Wassertemperatur der Teiche </h3>
+ <table border="2" width="100%">
+  <tr>
+   <td rowspan='2'></td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Teich $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Schwimmteich $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Schwimmteich Grund $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Gartenteich $unit.label.outTemp</td>
+  </tr>
+  <tr>
+   <!-- <td></td> -->
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+  </tr>
+#for $month in $year.months
+  <tr>
+          <td>$month.dateTime.format("%m.%Y")</td>
+
+         #if $month.extraTemp1.max.raw is not None:
+          #if $month.extraTemp1.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > -50 and $month.extraTemp1.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > -10 and $month.extraTemp1.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 0 and $month.extraTemp1.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 5 and $month.extraTemp1.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 10 and $month.extraTemp1.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 15 and $month.extraTemp1.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 20 and $month.extraTemp1.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 25 and $month.extraTemp1.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else if $month.extraTemp1.max.raw > 30 and $month.extraTemp1.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp1.max.formatted<br /><small>$month.extraTemp1.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.extraTemp1.min.raw is not None:
+          #if $month.extraTemp1.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > -50 and $month.extraTemp1.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > -10 and $month.extraTemp1.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > -5 and $month.extraTemp1.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 0 and $month.extraTemp1.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 5 and $month.extraTemp1.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 10 and $month.extraTemp1.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 15 and $month.extraTemp1.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 20 and $month.extraTemp1.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else if $month.extraTemp1.min.raw > 25 and $month.extraTemp1.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp1.min.formatted<br /><small>$month.extraTemp1.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.extraTemp1.avg.raw is not None:
+             <td class="tab_datab">$month.extraTemp1.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+         #if $month.extraTemp2.max.raw is not None:
+          #if $month.extraTemp2.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > -50 and $month.extraTemp2.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > -10 and $month.extraTemp2.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 0 and $month.extraTemp2.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 5 and $month.extraTemp2.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 10 and $month.extraTemp2.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 15 and $month.extraTemp2.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 20 and $month.extraTemp2.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 25 and $month.extraTemp2.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else if $month.extraTemp2.max.raw > 30 and $month.extraTemp2.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp2.max.formatted<br /><small>$month.extraTemp2.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+
+         #if $month.extraTemp2.min.raw is not None:
+          #if $month.extraTemp2.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > -50 and $month.extraTemp2.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > -10 and $month.extraTemp2.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > -5 and $month.extraTemp2.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 0 and $month.extraTemp2.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 5 and $month.extraTemp2.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 10 and $month.extraTemp2.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 15 and $month.extraTemp2.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 20 and $month.extraTemp2.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else if $month.extraTemp2.min.raw > 25 and $month.extraTemp2.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp2.min.formatted<br /><small>$month.extraTemp2.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.extraTemp2.avg.raw is not None:
+             <td class="tab_datab">$month.extraTemp2.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+         #if $month.extraTemp3.max.raw is not None:
+          #if $month.extraTemp3.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > -50 and $month.extraTemp3.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > -10 and $month.extraTemp3.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 0 and $month.extraTemp3.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 5 and $month.extraTemp3.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 10 and $month.extraTemp3.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 15 and $month.extraTemp3.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 20 and $month.extraTemp3.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 25 and $month.extraTemp3.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else if $month.extraTemp3.max.raw > 30 and $month.extraTemp3.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp3.max.formatted<br /><small>$month.extraTemp3.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+
+         #if $month.extraTemp3.min.raw is not None:
+          #if $month.extraTemp3.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > -50 and $month.extraTemp3.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > -10 and $month.extraTemp3.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > -5 and $month.extraTemp3.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 0 and $month.extraTemp3.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 5 and $month.extraTemp3.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 10 and $month.extraTemp3.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 15 and $month.extraTemp3.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 20 and $month.extraTemp3.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else if $month.extraTemp3.min.raw > 25 and $month.extraTemp3.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp3.min.formatted<br /><small>$month.extraTemp3.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.extraTemp3.avg.raw is not None:
+             <td class="tab_datab">$month.extraTemp3.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.extraTemp6.max.raw is not None:
+          #if $month.extraTemp6.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > -50 and $month.extraTemp6.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > -10 and $month.extraTemp6.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 0 and $month.extraTemp6.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 5 and $month.extraTemp6.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 10 and $month.extraTemp6.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 15 and $month.extraTemp6.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 20 and $month.extraTemp6.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 25 and $month.extraTemp6.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else if $month.extraTemp6.max.raw > 30 and $month.extraTemp6.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp6.max.formatted<br /><small>$month.extraTemp6.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.extraTemp6.min.raw is not None:
+          #if $month.extraTemp6.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > -50 and $month.extraTemp6.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > -10 and $month.extraTemp6.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > -5 and $month.extraTemp6.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 0 and $month.extraTemp6.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 5 and $month.extraTemp6.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 10 and $month.extraTemp6.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 15 and $month.extraTemp6.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 20 and $month.extraTemp6.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else if $month.extraTemp6.min.raw > 25 and $month.extraTemp6.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp6.min.formatted<br /><small>$month.extraTemp6.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.extraTemp6.avg.raw is not None:
+             <td class="tab_datab">$month.extraTemp6.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+  </tr>
+
+#end for
+ </table>
+<h2>Jahr&nbsp;$year_name&nbsp;mit den Maximal-, Minimal- und Durchschnittswerten</h2>
+<h3>Bodentemperaturen</h3>
+
+ <table border="2" width="100%">
+<tr>
+   <td></td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei +5cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -5cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -10cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -20cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -50cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -100cm $unit.label.outTemp</td>
+  </tr>
+  <tr>
+   <td></td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+   <td>max</td><td>min</td><td>&Oslash;</td>
+  </tr>
+#for $month in $year.months
+  <tr>
+      <td>$month.dateTime.format("%m.%Y")</td>
+   #if $month.extraTemp5.max.raw is not None:
+     #if $month.extraTemp5.max.raw < -51
+       <td class="tab_data" style="background-color: #0029e5">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > -50 and $month.extraTemp5.max.raw < -11
+       <td class="tab_data" style="background-color: #0186e7">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > -10 and $month.extraTemp5.max.raw < 1
+       <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 0 and $month.extraTemp5.max.raw < 6
+       <td class="tab_data" style="background-color: #04ec97">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 5 and $month.extraTemp5.max.raw < 11
+       <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 10 and $month.extraTemp5.max.raw < 16
+       <td class="tab_data" style="background-color: #2bf207">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 15 and $month.extraTemp5.max.raw < 21
+       <td class="tab_data" style="background-color: #8af408">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 20 and $month.extraTemp5.max.raw < 26
+       <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 25 and $month.extraTemp5.max.raw < 31
+       <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else if $month.extraTemp5.max.raw > 30 and $month.extraTemp5.max.raw < 36
+       <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #else
+       <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp5.max.formatted<br /><small>$month.extraTemp5.maxtime</small></td>
+     #end if
+   #else
+       <td class="tab_data" style="background-color: #ffffff">-</td>
+   #end if
+   #if $month.extraTemp5.min.raw is not None:
+     #if $month.extraTemp5.min.raw < -51
+       <td class="tab_data" style="background-color: #0029e5">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > -50 and $month.extraTemp5.min.raw < -11
+       <td class="tab_data" style="background-color: #1886e7">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > -10 and $month.extraTemp5.min.raw < -6
+       <td class="tab_data" style="background-color: #02e3ea">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > -5 and $month.extraTemp5.min.raw < 1
+       <td class="tab_data" style="background-color: #04ec97">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 0 and $month.extraTemp5.min.raw < 6
+       <td class="tab_data" style="background-color: #05ef3d">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 5 and $month.extraTemp5.min.raw < 11
+       <td class="tab_data" style="background-color: #2bf207">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 10 and $month.extraTemp5.min.raw < 16
+       <td class="tab_data" style="background-color: #8af408">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 15 and $month.extraTemp5.min.raw < 21
+       <td class="tab_data" style="background-color: #e9f70a">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 20 and $month.extraTemp5.min.raw < 26
+       <td class="tab_data" style="background-color: #f9a90b">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else if $month.extraTemp5.min.raw > 25 and $month.extraTemp5.min.raw < 36
+       <td class="tab_data" style="background-color: #fc4d0d">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #else
+       <td class="tab_data" style="background-color: #ff0f2d">$month.extraTemp5.min.formatted<br /><small>$month.extraTemp5.mintime</small></td>
+     #end if
+   #else
+       <td class="tab_data" style="background-color: #ffffff">-</td>
+   #end if
+   #if $month.extraTemp5.avg.raw is not None:
+       <td class="tab_datab">$month.extraTemp5.avg.formatted</td>
+   #else
+       <td class="tab_datab" style="background-color: #ffffff">-</td>
+   #end if
+
+  #if $month.soilTemp1.max.raw is not None:
+    #if $month.soilTemp1.max.raw < -51
+      <td class="tab_data" style="background-color: #0029e5">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > -50 and $month.soilTemp1.max.raw < -11
+         <td class="tab_data" style="background-color: #0186e7">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > -10 and $month.soilTemp1.max.raw < 1
+         <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 0 and $month.soilTemp1.max.raw < 6
+         <td class="tab_data" style="background-color: #04ec97">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 5 and $month.soilTemp1.max.raw < 11
+         <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 10 and $month.soilTemp1.max.raw < 16
+         <td class="tab_data" style="background-color: #2bf207">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 15 and $month.soilTemp1.max.raw < 21
+         <td class="tab_data" style="background-color: #8af408">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 20 and $month.soilTemp1.max.raw < 26
+         <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 25 and $month.soilTemp1.max.raw < 31
+         <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else if $month.soilTemp1.max.raw > 30 and $month.soilTemp1.max.raw < 36
+         <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #else
+         <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp1.max.formatted<br /><small>$month.soilTemp1.maxtime</small></td>
+    #end if
+  #else
+         <td class="tab_data" style="background-color: #ffffff">-</td>
+  #end if
+         #if $month.soilTemp1.min.raw is not None:
+          #if $month.soilTemp1.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > -50 and $month.soilTemp1.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > -10 and $month.soilTemp1.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > -5 and $month.soilTemp1.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 0 and $month.soilTemp1.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 5 and $month.soilTemp1.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 10 and $month.soilTemp1.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 15 and $month.soilTemp1.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 20 and $month.soilTemp1.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else if $month.soilTemp1.min.raw > 25 and $month.soilTemp1.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp1.min.formatted<br /><small>$month.soilTemp1.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp1.avg.raw is not None:
+             <td class="tab_datab">$month.soilTemp1.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp2.max.raw is not None:
+          #if $month.soilTemp2.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > -50 and $month.soilTemp2.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > -10 and $month.soilTemp2.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 0 and $month.soilTemp2.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 5 and $month.soilTemp2.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 10 and $month.soilTemp2.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 15 and $month.soilTemp2.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 20 and $month.soilTemp2.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 25 and $month.soilTemp2.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else if $month.soilTemp2.max.raw > 30 and $month.soilTemp2.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp2.max.formatted<br /><small>$month.soilTemp2.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.soilTemp2.min.raw is not None:
+          #if $month.soilTemp2.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > -50 and $month.soilTemp2.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > -10 and $month.soilTemp2.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > -5 and $month.soilTemp2.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 0 and $month.soilTemp2.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 5 and $month.soilTemp2.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 10 and $month.soilTemp2.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 15 and $month.soilTemp2.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 20 and $month.soilTemp2.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else if $month.soilTemp2.min.raw > 25 and $month.soilTemp2.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp2.min.formatted<br /><small>$month.soilTemp2.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp2.avg.raw is not None:
+             <td class="tab_datab">$month.soilTemp2.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+     #if $month.soilTemp3.max.raw is not None:
+          #if $month.soilTemp3.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > -50 and $month.soilTemp3.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > -10 and $month.soilTemp3.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 0 and $month.soilTemp3.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 5 and $month.soilTemp3.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 10 and $month.soilTemp3.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 15 and $month.soilTemp3.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 20 and $month.soilTemp3.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 25 and $month.soilTemp3.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else if $month.soilTemp3.max.raw > 30 and $month.soilTemp3.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp3.max.formatted<br /><small>$month.soilTemp3.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.soilTemp3.min.raw is not None:
+          #if $month.soilTemp3.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > -50 and $month.soilTemp3.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > -10 and $month.soilTemp3.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > -5 and $month.soilTemp3.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 0 and $month.soilTemp3.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 5 and $month.soilTemp3.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 10 and $month.soilTemp3.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 15 and $month.soilTemp3.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 20 and $month.soilTemp3.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else if $month.soilTemp3.min.raw > 25 and $month.soilTemp3.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp3.min.formatted<br /><small>$month.soilTemp3.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp3.avg.raw is not None:
+             <td class="tab_datab">$month.soilTemp3.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+
+        #if $month.soilTemp4.max.raw is not None:
+          #if $month.soilTemp4.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > -50 and $month.soilTemp4.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > -10 and $month.soilTemp4.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 0 and $month.soilTemp4.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 5 and $month.soilTemp4.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 10 and $month.soilTemp4.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 15 and $month.soilTemp4.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 20 and $month.soilTemp4.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 25 and $month.soilTemp4.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else if $month.soilTemp4.max.raw > 30 and $month.soilTemp4.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp4.max.formatted<br /><small>$month.soilTemp4.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.soilTemp4.min.raw is not None:
+          #if $month.soilTemp4.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > -50 and $month.soilTemp4.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > -10 and $month.soilTemp4.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > -5 and $month.soilTemp4.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 0 and $month.soilTemp4.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 5 and $month.soilTemp4.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 10 and $month.soilTemp4.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 15 and $month.soilTemp4.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 20 and $month.soilTemp4.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else if $month.soilTemp4.min.raw > 25 and $month.soilTemp4.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp4.min.formatted<br /><small>$month.soilTemp4.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp4.avg.raw is not None:
+             <td class="tab_datab">$month.soilTemp4.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp5.max.raw is not None:
+          #if $month.soilTemp5.max.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > -50 and $month.soilTemp5.max.raw < -11
+             <td class="tab_data" style="background-color: #0186e7">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > -10 and $month.soilTemp5.max.raw < 1
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 0 and $month.soilTemp5.max.raw < 6
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 5 and $month.soilTemp5.max.raw < 11
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 10 and $month.soilTemp5.max.raw < 16
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 15 and $month.soilTemp5.max.raw < 21
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 20 and $month.soilTemp5.max.raw < 26
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 25 and $month.soilTemp5.max.raw < 31
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else if $month.soilTemp5.max.raw > 30 and $month.soilTemp5.max.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp5.max.formatted<br /><small>$month.soilTemp5.maxtime</small></td>
+          #end if
+         #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+         #end if
+         #if $month.soilTemp5.min.raw is not None:
+          #if $month.soilTemp5.min.raw < -51
+             <td class="tab_data" style="background-color: #0029e5">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > -50 and $month.soilTemp5.min.raw < -11
+             <td class="tab_data" style="background-color: #1886e7">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > -10 and $month.soilTemp5.min.raw < -6
+             <td class="tab_data" style="background-color: #02e3ea">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > -5 and $month.soilTemp5.min.raw < 1
+             <td class="tab_data" style="background-color: #04ec97">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 0 and $month.soilTemp5.min.raw < 6
+             <td class="tab_data" style="background-color: #05ef3d">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 5 and $month.soilTemp5.min.raw < 11
+             <td class="tab_data" style="background-color: #2bf207">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 10 and $month.soilTemp5.min.raw < 16
+             <td class="tab_data" style="background-color: #8af408">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 15 and $month.soilTemp5.min.raw < 21
+             <td class="tab_data" style="background-color: #e9f70a">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 20 and $month.soilTemp5.min.raw < 26
+             <td class="tab_data" style="background-color: #f9a90b">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else if $month.soilTemp5.min.raw > 25 and $month.soilTemp5.min.raw < 36
+             <td class="tab_data" style="background-color: #fc4d0d">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #else
+             <td class="tab_data" style="background-color: #ff0f2d">$month.soilTemp5.min.formatted<br /><small>$month.soilTemp5.mintime</small></td>
+          #end if
+        #else
+             <td class="tab_data" style="background-color: #ffffff">-</td>
+        #end if
+
+        #if $month.soilTemp5.avg.raw is not None:
+             <td class="tab_datab">$month.soilTemp5.avg.formatted</td>
+        #else
+             <td class="tab_datab" style="background-color: #ffffff">-</td>
+        #end if
+  </tr>
+
+#end for
+ </table>
+
+   </div> <!-- ende mittetab -->
+ </div>  <!-- ende hes_data -->
+
+##include $Extras.footer
+<div id='footer'><footer>
+
+<div style="background-color: gold">
+      <p>
+      Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
+       $station.latitude[2]&nbsp;&brvbar;&nbsp;
+      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
+      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
+      H&ouml;he:&nbsp;$station.altitude
+      </p>
+</div>
+
+<div style="background-color:yellow">
+     weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     weewx  Version:&nbsp; $station.version&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Wetterstation:&nbsp; $station.hardware&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Zusatz: forecast; cmon; owfs und 13 one-wire-Sensoren
+</div>
+  <p>
+   #if $Extras.has_key('station_subtitle')
+       $Extras.station_subtitle<br/>
+   #end if
+  </p>
+<hr />
+<div id="fzei">
+  <div class="lthes">Copyright &copy; 2013 -&nbsp;$year_name&nbsp; by Hartmut Schweidler</div>
+  <div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime</div>
+  <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
+                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a></div>
+</div>
+</footer></div><!-- end id "footer" -->
+
+</body>
+</html>
