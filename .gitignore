@@ -1,0 +1,11 @@
+*~
+.idea
+.project
+.pydevproject
+.settings
+*.pyc
+build
+dist
+MANIFEST
+junk*
+
