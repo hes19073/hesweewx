@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: owfs.py 1159 2014-12-04 04:40:32Z mwall $
+# owfs.py 1396 2016-01-21 05:08:45Z mwall $
 #
 # Copyright 2013 Matthew Wall
 # Thanks to Mark Cressey (onewireweewx) and Howard Walter (TAI code).
@@ -169,7 +169,8 @@ import weewx
 from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
-VERSION = "0.11"
+DRIVER_NAME = 'OWFS'
+DRIVER_VERSION = "0.18"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'owfs: %s' % msg)
@@ -231,7 +232,7 @@ def average(key, path, last_data, ts):
     return x
 
 def rainwise_bucket(key, path, last_data, ts):
-    cnt = delta(key, "%s%s" % (path, "/counters.B"), last_data, ts)
+    cnt = counter(key, "%s%s" % (path, "/counters.B"), last_data, ts)
     if cnt is not None:
         cnt *= 0.0254 # rainwise bucket is 0.01 inches per tip, convert to cm
     return cnt
@@ -294,8 +295,7 @@ def inspeed_winddir(key, path, last_data, ts):
     Formula from the Hobby-Boards Inspeed anemometer user manual."""
     vdd = get_float('%s%s' % (path, '/VDD'))
     vad = get_float('%s%s' % (path, '/VAD'))
-    d = (400*(vad-0.05*vdd))/vdd
-    return d
+    return (400*(vad-0.05*vdd))/vdd if vdd else None
 
 def aag_windspeed(key, path, last_data, ts):
     ws = average(key, "%s%s" % (path, "/counters.A"), last_data, ts)
@@ -474,13 +474,11 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
         self.sensor_type = stn_dict.get('sensor_type', {})
         self.interface = stn_dict.get('interface', 'u')
         self.polling_interval = int(stn_dict.get('polling_interval', 10))
-        self.max_tries = int(stn_dict.get('max_tries', 3))
-        self.retry_wait = int(stn_dict.get('retry_wait', 5))
         self.unit_system = stn_dict.get('unit_system', 'METRIC').lower()
         self.last_data = {}
         self.units = weewx.US if self.unit_system == 'us' else weewx.METRIC
 
-        loginf('driver version is %s' % VERSION)
+        loginf('driver version is %s' % DRIVER_VERSION)
         loginf('interface is %s' % self.interface)
         loginf('sensor map is %s' % self.sensor_map)
         loginf('sensor type map is %s' % self.sensor_type)
@@ -497,37 +495,28 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
         return 'OWFS'
 
     def genLoopPackets(self):
-        ntries = 0
-        while ntries < self.max_tries:
-            ntries += 1
-            try:
-                last_data = dict(self.last_data)
-                p = {'usUnits': self.units,
-                     'dateTime': int(time.time() + 0.5)}
-                for s in self.sensor_map:
-                    st = 'gauge'
-                    if s in self.sensor_type:
-                        st = self.sensor_type[s]
-                    if st in SENSOR_TYPES:
+        while True:
+            last_data = dict(self.last_data)
+            p = {'usUnits': self.units,
+                 'dateTime': int(time.time() + 0.5)}
+            for s in self.sensor_map:
+                p[s] = None
+                st = 'gauge'
+                if s in self.sensor_type:
+                    st = self.sensor_type[s]
+                if st in SENSOR_TYPES:
+                    try:
                         func = SENSOR_TYPES[st]
                         p[s] = func(s, self.sensor_map[s],
                                     last_data, p['dateTime'])
-                    else:
-                        logerr("unknown sensor type '%s' for %s" % (st, s))
-                ntries = 0
-                self.last_data.update(last_data)
-                self.calculate_derived(p)
-                yield p
-                time.sleep(self.polling_interval)
-            except ow.exError, e:
-                logerr("Failed attempt %d of %d to get sensor data: %s" %
-                       (ntries, self.max_tries, e))
-                logdbg("Waiting %d seconds before retry" % self.retry_wait)
-                time.sleep(self.retry_wait)
-        else:
-            msg = "Max retries (%d) exceeded for sensor data" % self.max_tries
-            logerr(msg)
-            raise weewx.RetriesExceeded(msg)
+                    except ow.exError, e:
+                        logerr("Failed to get sensor data: %s" % e)
+                else:
+                    logerr("unknown sensor type '%s' for %s" % (st, s))
+            self.last_data.update(last_data)
+            self.calculate_derived(p)
+            yield p
+            time.sleep(self.polling_interval)
 
     def calculate_derived(self, data):
         if 'windSpeed' in data:
@@ -555,14 +544,12 @@ class OWFSService(weewx.engine.StdService):
         self.sensor_map = d['sensor_map']
         self.sensor_type = d.get('sensor_type', {})
         self.interface = d.get('interface', 'u')
-        self.max_tries = int(d.get('max_tries', 3))
-        self.retry_wait = int(d.get('retry_wait', 5))
         self.unit_system = d.get('unit_system', 'METRIC').lower()
         self.binding = d.get('binding', 'archive')
         self.last_data = {}
         self.units = weewx.US if self.unit_system == 'us' else weewx.METRIC
 
-        loginf('service version is %s' % VERSION)
+        loginf('service version is %s' % DRIVER_VERSION)
         loginf('binding is %s' % self.binding)
         loginf('interface is %s' % self.interface)
         loginf('sensor map is %s' % self.sensor_map)
@@ -580,10 +567,10 @@ class OWFSService(weewx.engine.StdService):
         event.packet.update(data)
 
     def handle_new_archive(self, event):
-        #delto = time.time() - event.record['dateTime']
-        #if delto > event.record['interval'] * 60:
-        #    logdbg("Skipping record: time difference %s too big" % delto)
-        #    return
+        delta = time.time() - event.record['dateTime']
+        if delta > event.record['interval'] * 60:
+            logdbg("Skipping record: time difference %s too big" % delta)
+            return
         data = self.getData(event.record)
         event.record.update(data)
 
@@ -591,36 +578,30 @@ class OWFSService(weewx.engine.StdService):
     # if the packets to which we append are something other than metric, then
     # we do a conversion after we have all the data.
     def getData(self, packet):
-        ntries = 0
-        while ntries < self.max_tries:
-            ntries += 1
-            try:
-                last_data = dict(self.last_data)
-                p = {'usUnits': self.units}
-                for s in self.sensor_map:
-                    st = 'gauge'
-                    if s in self.sensor_type:
-                        st = self.sensor_type[s]
-                    if st in SENSOR_TYPES:
-                        func = SENSOR_TYPES[st]
-                        p[s] = func(s, self.sensor_map[s],
-                                    last_data, packet['dateTime'])
-                    else:
-                        logerr("unknown sensor type '%s' for %s" % (st, s))
-                self.last_data.update(last_data)
-                break
-            except ow.exError, e:
-                logerr("Failed DATA attempt %d of %d to get onewire data: %s" %
-                       (ntries, self.max_tries, e))
-                logdbg("Waiting %d seconds before retry" % self.retry_wait)
-                time.sleep(self.retry_wait)
-        else:
-            msg = "Max retries (%d) exceeded for onewire data" % self.max_tries
-            logerr(msg)
+        last_data = dict(self.last_data)
+        p = {'usUnits': self.units}
+        for s in self.sensor_map:
+            p[s] = None
+            st = 'gauge'
+            if s in self.sensor_type:
+                st = self.sensor_type[s]
+            if st in SENSOR_TYPES:
+                func = SENSOR_TYPES[st]
+                try:
+                    p[s] = func(s, self.sensor_map[s],
+                                last_data, packet['dateTime'])
+                except ow.exError, e:
+                    logerr("Failed to get onewire data: %s" % e)
+            else:
+                logerr("unknown sensor type '%s' for %s" % (st, s))
+        self.last_data.update(last_data)
 
         if packet['usUnits'] != self.units:
+            p['usUnits'] = self.units
             converter = weewx.units.StdUnitConverters[packet['usUnits']]
             p = converter.convertDict(p)
+            if 'usUnits' in p:
+                del p['usUnits']
         return p
 
 # define a main entry point for basic testing without weewx engine and service
@@ -649,7 +630,7 @@ if __name__ == '__main__':
         (options, args) = parser.parse_args()
 
         if options.version:
-            print "owfs version %s" % VERSION
+            print "owfs version %s" % DRIVER_VERSION
             exit(1)
 
         # default to usb for the interface
@@ -686,7 +667,12 @@ if __name__ == '__main__':
             elif k.startswith('_'):
                 print '%s%s: %s' % ('  '*level, k, d[k])
             else:
-                print '%s%s: %s' % ('  '*level, d[k], ow.owfs_get(d[k]))
+                v = 'UNKNOWN'
+                try:
+                    v = ow.owfs_get(d[k])
+                except ow.exError, e:
+                    v = 'FAIL: %s' % e
+                print '%s%s: %s' % ('  '*level, d[k], v)
 
     def traverse(device, func):
         for s in device.sensors():
