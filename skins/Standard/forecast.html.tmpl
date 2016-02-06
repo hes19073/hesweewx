@@ -48,8 +48,12 @@ function toggle(control, id) {
          <div class="header">
             Vorschaudaten für Station Klein Rogahn
          </div>
-      </div> 
-       <iframe id="forecast_embed" type="text/html" frameborder="0" height="245" width="100%" src="http://forecast.io/embed/#lat=53.605963&lon=11.341407&name=Klein Rogahn, Germany&color=#3d6c87&font=Georgia&units=si"> </iframe>
+      </div>
+      <p>
+       <iframe id="forecast_WU" type="text/html" frameborder="0" height="880" width="100%" src="forecast/WU-forecast.php"></iframe>
+      </p>
+      <hr />
+       <!-- <iframe id="forecast_embed" type="text/html" frameborder="0" height="245" width="100%" src="http://forecast.io/embed/#lat=53.605963&lon=11.341407&name=Klein Rogahn, Germany&color=#3d6c87&font=Georgia&units=si"> </iframe> -->
       <p>Stündliche Wettervorhersage von Wunderground </p>
       <div style="width:100%;">
          #include $Extras.forecast
