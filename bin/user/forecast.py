@@ -1,5 +1,5 @@
-# forecast.py 1281 2015-09-11 22:10:53Z hes mwall $
-# Copyright 2013 Matthew Wall
+# forecast.py 1385 2015-11-15 08:31:04Z mwall $
+# Copyright 2013 -2016 Matthew Wall
 """weewx module that provides forecasts
 
 Compatibility:
@@ -461,7 +461,7 @@ except Exception:
         except Exception:
             json = None
 
-VERSION = "3.0.6.a"
+VERSION = "3.0.8.a"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'forecast: %s: %s' % 
@@ -567,7 +567,7 @@ def get_default_binding_dict():
    tstms        TSTMS                                     wx/condition
    drizzle      DRIZZLE                                   wx/condition
    snow         SNOW                                      wx/condition
-   snowshwrs    SNOW SHWRS                                wx/condition
+   snowshwrs    SNOWSHWRS                                 wx/condition
    flurries     FLURRIES                                  wx/condition
    sleet        SLEET                                     wx/condition
    frzngrain    FRZNG RAIN                                wx/condition
@@ -1412,7 +1412,8 @@ nws_schema_dict = {
     'TSTMS'     : 'tstms',
     'DRIZZLE'   : 'drizzle',
     'SNOW'      : 'snow',
-    'SNOW SHWRS': 'snowshwrs',
+    'SNOWSHWRS' : 'snowshwrs', # official docs indicate no space
+    'SNOW SHWRS': 'snowshwrs', # but space shows up in some cases
     'FLURRIES'  : 'flurries',
     'SLEET'     : 'sleet',
     'FRZNG RAIN': 'frzngrain',
@@ -1807,7 +1808,7 @@ class WUForecast(Forecast):
 
         errmsg = []
         if json is None:
-            errmsg.appen('json is not installed')
+            errmsg.append('json is not installed')
         if self.api_key is None or self.api_key.startswith('INSERT_'):
             errmsg.append('API key (api_key) is not specified')
         if self.location is None:
