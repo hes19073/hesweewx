@@ -174,7 +174,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
             packet['windSpeed'] = wind['speed']
             # packet['windGust'] = wind['speed']
             packet['windDir'] = wind['deg']
-            # packet['windGust'] = main['deg']
+            # packet['windGust'] = Wind['deg']
 
             # packet['rainRate'] = rsp_dict['rain']['1h'] Element nicht permanent FIXME 
 
