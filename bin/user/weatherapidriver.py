@@ -39,7 +39,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
         self.loop_interval = float(stn_dict.get('loop_interval', 5))
 
         # e.g.'http://api.openweathermap.org/data/2.5/weather?q=Otterlo,nl&units=imperial'
-        #  http://api.openweathermap.org/data/2.5/weather?q=KleinRogahn.de&units=metric&appid=727a7ae5d06e77d4bc43795b12f5e6c0
+        #  http://api.openweathermap.org/data/2.5/weather?q=KleinRogahn.de&units=metric&appid=testtest
         self.openweathermap_url = ''.join(stn_dict.get('openweathermap_url'))
         syslog.syslog(syslog.LOG_INFO, "WeatherAPIStation: openweathermap_url=%s" % self.openweathermap_url)
 
