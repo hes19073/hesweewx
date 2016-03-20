@@ -84,6 +84,7 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "humidex"            : "group_temperature",
                               "dewpoint"           : "group_temperature",
                               "inDewpoint"         : "group_temperature",
+                              "feelsLike"          : "group_temperature",
                               "extraTemp1"         : "group_temperature",
                               "extraTemp2"         : "group_temperature",
                               "extraTemp3"         : "group_temperature",
@@ -122,9 +123,11 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "soilTemp4"          : "group_temperature",
                               "soilTemp5"          : "group_temperature",
                               "windchill"          : "group_temperature",
+                              "wetBulb"            : "group_temperature",
                               "dateTime"           : "group_time",
                               "leafWet1"           : "group_count",
                               "leafWet2"           : "group_count",
+                              "cbIndex"            : "group_count",
                               "UV"                 : "group_uv",
                               "consBatteryVoltage" : "group_volt",
                               "heatingVoltage"     : "group_volt",
@@ -132,16 +135,15 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "supplyVoltage"      : "group_volt",
                               "cloudbase"          : "group_altitude",
                               "windrun"            : "group_distance",
+                              "windDruck"          : "group_druck2",
+                              "airDensity"         : "group_druck3",
                               "lighting"           : "group_lux",
                               "sunshineS"          : "group_elapsed",
-                              "sunshinehours"      : "group_elapsed",
                               "beaufort"           : "group_anzahl",
                               "lightning"          : "group_anzahl",
                               "gas"                : "group_anzahl",
                               "ele"                : "group_anzahl",
                               "was"                : "group_anzahl",
-                              "airDensity"         : "group_druck",
-                              "windDruck"          : "group_druck2",
                               "mem_total"          : "group_data",
                               "mem_free"           : "group_data",
                               "mem_used"           : "group_data",
@@ -151,9 +153,7 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "net_eth0_rbytes"    : "group_data",
                               "net_eth0_tbytes"    : "group_data",
                               "disk_root_total"    : "group_data",
-                              "disk_root_used"     : "group_data",
-                              "airDensity"         : "group_druck",
-                              "windDruck"          : "group_druck2"})
+                              "disk_root_used"     : "group_data"})
 
 # Some aggregations when applied to a type result in a different unit
 # group. This data structure maps aggregation type to the group:
@@ -172,7 +172,7 @@ agg_group = {'mintime'    : "group_time",
              'vecdir'     : "group_direction",
              'gustdir'    : "group_direction"}
 
-# This dictionary maps unit groups to a standard unit type in the
+# This dictionary maps unit groups to a standard unit type in the 
 # US customary unit system:
 USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_count"       : "count",
@@ -201,11 +201,11 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_volume"      : "gallon",
                        "group_data"        : "byte",
                        "group_distance"    : "mile",
-                       "group_druck"       : "N_per_meter_squared",
-                       "group_druck2"      : "kg_per_meter_qubic",
+                       "group_druck3"      : "kg_per_meter_qubit",
+                       "group_druck2"      : "n_per_meter_squared",
                        "group_length"      : "inch"})
 
-# This dictionary maps unit groups to a standard unit type in the
+# This dictionary maps unit groups to a standard unit type in the 
 # metric unit system:
 MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_count"       : "count",
@@ -234,11 +234,11 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_volume"      : "litre",
                            "group_data"        : "byte",
                            "group_distance"    : "km",
-                           "group_druck"       : "N_per_meter_squared",
-                           "group_druck2"      : "kg_per_meter_qubic",
+                           "group_druck3"      : "kg_per_meter_qubit",
+                           "group_druck2"      : "n_per_meter_squared",
                            "group_length"      : "cm"})
 
-# This dictionary maps unit groups to a standard unit type in the
+# This dictionary maps unit groups to a standard unit type in the 
 # "Metric WX" unit system. It's the same as the "Metric" system,
 # except for rain and speed:
 MetricWXUnits = ListOfDicts(MetricUnits)
@@ -394,8 +394,8 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "anzahl"             : "%.0f",
                             "watt_per_meter_squared" : "%.0f",
                             "lume_per_meter_squared" : "%.0f",
-                            "N_per_meter_squared"    : "%.2f",
-                            "kg_per_meter_qubic"     : "%.3f",
+                            "kg_per_meter_qubit"     : "%.4f",
+                            "n_per_meter_squared"    : "%.3f",
                             "NONE"              : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
@@ -445,10 +445,10 @@ default_unit_label_dict = { "amp"               : " amp",
                             "anzahl"            : "   ",
                             "kilobyte"          : " KB",
                             "watt_per_meter_squared" : " W/m\xc2\xb2",
-                            "lume_per_meter_squared" : "lm/m\xc2\xb2",
-                            "N_per_meter_squared"    : "N/m\xc2\xb2",
-                            "kg_per_meter_qubic"     : "kg/m\xc2\xb3",
-                           "NONE"              : "" }
+                            "lume_per_meter_squared" : " lm/m\xc2\xb2",
+                            "kg_per_meter_qubit"     : " kg/m\xc2\xb3",
+                            "n_per_meter_squared"    : " N/m\xc2\xb2",
+                            "NONE"              : "" }
 
 # Default strftime formatting to be used in the absence of a skin
 # configuration file. The entry for delta_time uses a special
@@ -526,18 +526,6 @@ class Formatter(object):
     20.0°C
     >>> print f.toString((83.2, "degree_F", "group_temperature"))
     83.2°F
-    >>> # Try the Spanish locale, which will use comma decimal separators.
-    >>> # For this to work, the Spanish locale must have been installed.
-    >>> # You can do this with the command:
-    >>> #     sudo locale-gen es_ES.UTF-8 && sudo update-locale
-    >>> x = locale.setlocale(locale.LC_NUMERIC, 'es_ES.utf-8')
-    >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=True)
-    83,2°F
-    >>> # Try it again, but overriding the localization:
-    >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=False)
-    83.2°F
-    >>> # Set locale back to default
-    >>> x = locale.setlocale(locale.LC_NUMERIC, '')
     >>> print f.toString((123456789,  "unix_epoch", "group_time"))
     29-Nov-1973 13:33
     >>> print f.to_ordinal_compass((5.0, "degree_compass", "group_direction"))
@@ -644,15 +632,15 @@ class Formatter(object):
             return ''
 
         # Is the label a simple string? If so, return it
-        if isinstance(label, basestring):
+        if isinstance(label, str):
             return label
         else:
             # It is not a simple string. Assume it is a tuple or list
             # Return the singular, or plural, version as requested.
-            return label[1] if plural else label[0]
+            return label[plural]
 
     def toString(self, val_t, context='current', addLabel=True, 
-                 useThisFormat=None, NONE_string=None, 
+                 useThisFormat=None, NONE_string=None,
                  localize=True):
         """Format the value as a string.
         
@@ -671,8 +659,6 @@ class Formatter(object):
         NONE_string: A string to be used if the value val is None.
         [Optional. If not given, the string given unit_format_dict['NONE']
         will be used.]
-        
-        localize: True to localize the results. False otherwise
         """
         if val_t is None or val_t[0] is None:
             if NONE_string is not None: 
@@ -824,18 +810,18 @@ class Converter(object):
 
     def convertDict(self, obs_dict):
         """Convert an observation dictionary into the target unit system.
-
+        
         The source dictionary must include the key 'usUnits' in order for the
         converter to figure out what unit system it is in.
-
+        
         The output dictionary will contain no information about the unit
         system (that is, it will not contain a 'usUnits' entry). This is
         because the conversion is general: it may not result in a standard
         unit system.
-
+        
         Example: convert a dictionary which is in the metric unit system
         into US units
-
+        
         >>> # Construct a default converter, which will be to US units
         >>> c = Converter()
         >>> # Source dictionary is in metric units
@@ -852,20 +838,20 @@ class Converter(object):
             # the ValueTuple:
             target_dict[obs_type] = self.convert(as_value_tuple(obs_dict, obs_type))[0]
         return target_dict
-
-
+            
+            
     def getTargetUnit(self, obs_type, agg_type=None):
         """Given an observation type and an aggregation type, return the 
         target unit type and group, or (None, None) if they cannot be determined.
-
+        
         obs_type: An observation type ('outTemp', 'rain', etc.)
-
+        
         agg_type: Type of aggregation ('mintime', 'count', etc.)
         [Optional. default is no aggregation)
-
+        
         returns: A 2-way tuple holding the unit type and the unit group
         or (None, None) if they cannot be determined.
-        """
+        """        
         unit_group = _getUnitGroup(obs_type, agg_type)
         if unit_group in self.group_unit_dict:
             unit_type = self.group_unit_dict[unit_group]
@@ -890,13 +876,13 @@ class FixedConverter(object):
     """Dirt simple converter that can only convert to a specified unit."""
     def __init__(self, target_units):
         """Initialize an instance of FixedConverter
-
+        
         target_units: The new, target unit (eg, "degree_C")"""
         self.target_units = target_units
-
+        
     def convert(self, val_t):
         return convert(val_t, self.target_units)
-
+    
 #==============================================================================
 #                      class ValueHelper
 #==============================================================================
@@ -904,39 +890,39 @@ class FixedConverter(object):
 class ValueHelper(object):
     """A helper class that binds a value tuple together with everything needed to do a
     context sensitive formatting
-
+    
     Example:
-
+    
     >>> value_t = (68.01, "degree_F", "group_temperature")
     >>> # Use the default converter and formatter:
     >>> vh = ValueHelper(value_t)
     >>> print vh
     68.0°F
-
+    
     Try explicit unit conversion:
     >>> print vh.degree_C
     20.0°C
-
+    
     Do it again, but using a converter:
     >>> vh = ValueHelper(value_t, converter=Converter(MetricUnits))
     >>> print vh
     20.0°C
-
+    
     Extract just the raw value:
     >>> print "%.1f" % vh.raw
     20.0
     """
     def __init__(self, value_t, context='current', formatter=Formatter(), converter=Converter()):
         """Initialize a ValueHelper.
-
+        
         value_t: A value tuple holding the datum.
-
+        
         context: The time context. Something like 'current', 'day', 'week'.
         [Optional. If not given, context 'current' will be used.]
-
+        
         formatter: An instance of class Formatter.
         [Optional. If not given, then the default Formatter() will be used]
-
+        
         converter: An instance of class Converter.
         [Optional. If not given, then the default Converter() will be used,
         which will convert to US units]
@@ -945,11 +931,11 @@ class ValueHelper(object):
         self.context   = context
         self.formatter = formatter
         self.converter = converter
-
+            
     def toString(self, addLabel=True, useThisFormat=None, NONE_string=None, localize=True):
         """Convert my internally held ValueTuple to a string, using the supplied
         converter and formatter."""
-        # If the type is unknown, then just return an error string:
+        # If the type is unknown, then just return an error string: 
         if isinstance(self.value_t, UnknownType):
             return "?'%s'?" % self.value_t.obs_type 
         # Get the value tuple in the target units:
@@ -957,39 +943,39 @@ class ValueHelper(object):
         # Then do the format conversion:
         s = self.formatter.toString(vtx, self.context, addLabel=addLabel, 
                                     useThisFormat=useThisFormat, NONE_string=NONE_string, 
-                                    localize=localize)
+                                    localize=True)
         return s
 
     def __str__(self):
         """Return as string"""
         return self.toString()
-
+    
     def string(self, NONE_string=None):
         """Return as string with an optional user specified string to be
         used if None"""
         return self.toString(NONE_string=NONE_string)
-
+    
     def format(self, format_string, NONE_string=None):
         """Returns a formatted version of the datum, using a user-supplied
         format."""
         return self.toString(useThisFormat=format_string, NONE_string=NONE_string)
-
+    
     def nolabel(self, format_string, NONE_string=None):
         """Returns a formatted version of the datum, using a user-supplied
         format. No label."""
         return self.toString(addLabel=False, useThisFormat=format_string, NONE_string=NONE_string)
-
+    
     def ordinal_compass(self):
         """Returns an ordinal compass direction (eg, 'NNW')"""
         # Get the raw value tuple, then ask the formatter to look up an
         # appropriate ordinate:
         return self.formatter.to_ordinal_compass(self._raw_value_tuple)
-
+        
     @property
     def formatted(self):
         """Return a formatted version of the datum. No label."""
         return self.toString(addLabel=False)
-
+        
     @property
     def raw(self):
         """Returns the raw value without any formatting."""
@@ -1023,13 +1009,13 @@ class ValueHelper(object):
             except KeyError:
                 raise AttributeError("Illegal conversion from '%s' to '%s'"%(self.value_t[1], target_unit))
         return ValueHelper(self.value_t, self.context, self.formatter, FixedConverter(target_unit))
-
+    
     def exists(self):
         return not isinstance(self.value_t, UnknownType)
-
+    
     def has_data(self):
         return self.exists() and self.value_t[0] is not None
-
+    
 
 #==============================================================================
 #                       class UnitInfoHelper and friends
@@ -1053,7 +1039,7 @@ class FormatHelper(object):
         if obs_type in ['__call__', 'has_key']:
             raise AttributeError
         return get_format_string(self.formatter, self.converter, obs_type)
-
+    
 class LabelHelper(object):
     def __init__(self, formatter, converter):
         self.formatter = formatter
@@ -1063,7 +1049,7 @@ class LabelHelper(object):
         if obs_type in ['__call__', 'has_key']:
             raise AttributeError
         return get_label_string(self.formatter, self.converter, obs_type)
-
+    
 class UnitInfoHelper(object):
     """Helper class used for for the $unit template tag."""
     def __init__(self, formatter, converter):
@@ -1080,7 +1066,7 @@ class UnitInfoHelper(object):
     @property
     def unit_type_dict(self):
         return self.group_unit_dict
-
+    
 class ObsInfoHelper(object):
     """Helper class to implement the $obs template tag."""    
     def __init__(self, skin_dict):
@@ -1104,17 +1090,17 @@ def _getUnitGroup(obs_type, agg_type=None):
             'outTemp', 'mintime'  -->  'group_time'
             'wind',    'avg'      -->  'group_speed'
             'wind',    'vecdir'   -->  'group_direction'
-
+        
         obs_type: An observation type. E.g., 'barometer'.
-
+        
         agg_type: An aggregation type E.g., 'mintime', or 'avg'.
-
+        
         Returns: the unit group or None if it cannot be determined."""
     if agg_type and agg_type in agg_group:
         return agg_group[agg_type]
     else:
         return obs_group_dict.get(obs_type)
-
+    
 def convert(val_t, target_unit_type):
     """ Convert a value or a sequence of values between unit systems
 
@@ -1151,14 +1137,14 @@ def convert(val_t, target_unit_type):
 def convertStd(val_t, target_std_unit_system):
     """Convert a value tuple to an appropriate unit in a target standardized
     unit system
-
+    
     val_t: A value tuple.
-
+    
     target_std_unit_system: A standardized unit system
                             (weewx.US, weewx.METRIC, or weewx.METRICWX)
-
+    
     Returns: A value tuple in the given standardized unit system.
-
+    
     Example:
     >>> value_t = (30.02, 'inHg', 'group_pressure')
     >>> print "(%.2f, %s, %s)" % convertStd(value_t, weewx.METRIC)
@@ -1217,7 +1203,7 @@ def get_label_string(formatter, converter, obs_type, plural=True):
 class GenWithConvert(object):
     """Generator wrapper. Converts the output of the wrapped generator to a
     target unit system.
-
+    
     Example:
     >>> def genfunc():
     ...    for i in range(3):
@@ -1225,25 +1211,18 @@ class GenWithConvert(object):
     ...            'outTemp' : 68.0 + i * 9.0/5.0,
     ...            'usUnits' : weewx.US}
     ...        yield _rec
-    >>> # First, try the raw generator function. Output should be in US
-    >>> for _out in genfunc():
-    ...    print "Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits'])
-    Timestamp: 194758100; Temperature: 68.00; Unit system: 1
-    Timestamp: 194758400; Temperature: 69.80; Unit system: 1
-    Timestamp: 194758700; Temperature: 71.60; Unit system: 1
-    >>> # Now do it again, but with the generator function wrapped by GenWithConvert:
     >>> for _out in GenWithConvert(genfunc(), weewx.METRIC):
     ...    print "Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits'])
     Timestamp: 194758100; Temperature: 20.00; Unit system: 16
     Timestamp: 194758400; Temperature: 21.00; Unit system: 16
     Timestamp: 194758700; Temperature: 22.00; Unit system: 16
     """
-
+    
     def __init__(self, input_generator, target_unit_system=weewx.METRIC):
         """Initialize an instance of GenWithConvert
-
+        
         input_generator: An iterator which will return dictionary records.
-
+        
         target_unit_system: The unit system the output of the generator should
         use, or 'None' if it should leave the output unchanged."""
         self.input_generator = input_generator
