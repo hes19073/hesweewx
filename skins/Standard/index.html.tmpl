@@ -9,7 +9,7 @@
      <meta name='viewport' content='width=device-width' />
      <meta name="robots" content="all" />
      <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim
                  mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
      <meta name="author"           content="Hartmut Schweidler" />
      <meta name="revisit-after"    content="5 minutes" />
@@ -74,7 +74,7 @@
      </tr>
     </table>
     $forecast.label('Zambretti', $forecast.zambretti.code)
-      
+
    #set $summary = $forecast.weather_summary('WU')
    <p>Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
     Wind aus&nbsp;$forecast.label('Weather', $summary.windDir)&nbsp;
@@ -103,10 +103,10 @@
     #set $soauf = $almanac(horizon=-6).sun(use_center=1).rise.raw
     #set $sount = $almanac(horizon=-6).sun(use_center=1).set.raw
     #set $sobil = $current.dateTime.raw
-    #if $soauf < $sobil < $sount 
+    #if $soauf < $sobil < $sount
         <a href="xicons/lastsnap.jpg" alt="Wetter aktuell"><img src="xicons/lastsnap.jpg" width="300" height="180" alt="wetter" /></a>
     #else
-        <a href="pict0049.jpg"><img src="pict0049.jpg" width="300" height="180" alt="wetter" /></a> 
+        <a href="pict0049.jpg"><img src="pict0049.jpg" width="300" height="180" alt="wetter" /></a>
     #end if
   </div>
 </div>
@@ -157,7 +157,7 @@
      <td class="hes1_trendhi"> &#8679;</td>
      <td class="hes1_valhi">$trend.windchill</td>
     #end if
-    </tr>  
+    </tr>
     #if $varExists('forecast')
      <tr>
       <td><span class='hes1_m'>Tagesprognose</span></td>
@@ -234,7 +234,7 @@
     </tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daybarometer.png' class='popup'>$current.barometer</a></td>
-     
+
 <!-- note: these thresholds are for millibar, not inHg -->
 #if $varExists('trend')
 #if $trend.barometer.raw is not None:
@@ -268,7 +268,7 @@
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'>$summary.mslpMax.formatted</span></td>
     </tr>
-#end if 
+#end if
     </table>
      <hr />
     <img src="daybaroklein.png" alt="Luftdruck" />
@@ -327,7 +327,7 @@
         <td class='hes1_valhi'>
          $summary.pop
         </td>
-        <td>    
+        <td>
        #if $summary.qpf.raw > 0
            $summary.qpf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
        #end if
@@ -365,7 +365,7 @@
 #elif $trend.windSpeed.formatted < 0
        <td class='hes_trendlo'>&#8681;</td>
 #end if
-    
+
 #end if
 #end if
 
@@ -493,7 +493,7 @@
   </tr>
   <tr>
    #try
-       #set $windqu = $current.windSpeed.raw + $current.windSpeed.raw
+       #set $windqu = $current.windSpeed.raw * $current.windSpeed.raw
        #set $winddr = 0.55 * $density_altitude * $windqu
     <td class='re_data'>Winddruck</td><td class='re_data'>$("%.2f" % $winddr) N/m²</td>
    #except TypeError
@@ -517,10 +517,10 @@
     <td>Sonne</td><td>$current.sunshinehours.format("%.2f")&nbsp;h</td>
    </tr>
    <tr>
-    <td>Sonenstunden</td><td>$day.sunshineS.sum.hour</td>    
+    <td>Sonenstunden</td><td>$day.sunshineS.sum.hour</td>
    </tr>
    <tr>
-    <td>So-Volt</td><td>$current.referenceVoltage</td>    
+    <td>So-Volt</td><td>$current.referenceVoltage</td>
    </tr>
    <tr>
     <td>Hell</td><td>$current.lighting</td>
@@ -569,7 +569,7 @@
 </div> <!-- ende container -->
 
      #include $Extras.footer
- </div> 
+ </div>
 </body>
 
 </html>

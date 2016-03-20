@@ -61,11 +61,11 @@ def dewpointF(T, R):
 def dewpointC(T, R):
     """Calculate dew point.
     http://en.wikipedia.org/wiki/Dew_point
-    
+
     T: Temperature in Celsius
-    
+
     R: Relative humidity in percent.
-    
+
     Returns: Dewpoint in Celsius
     """
 
@@ -82,14 +82,14 @@ def dewpointC(T, R):
 def windchillF(T_F, V_mph):
     """Calculate wind chill.
     http://www.nws.noaa.gov/om/winter/windchill.shtml
-    
+
     T_F: Temperature in Fahrenheit
-    
+
     V_mph: Wind speed in mph
-    
+
     Returns Wind Chill in Fahrenheit
     """
-    
+
     if T_F is None or V_mph is None:
         return None
 
@@ -102,35 +102,35 @@ def windchillF(T_F, V_mph):
 
 def windchillC(T_C, V_kph):
     """Wind chill, metric version.
-    
+
     T: Temperature in Celsius
-    
+
     V: Wind speed in kph
-    
+
     Returns wind chill in Celsius"""
-    
+
     if T_C is None or V_kph is None:
         return None
-    
+
     T_F = CtoF(T_C)
     V_mph = 0.621371192 * V_kph
-    
+
     WcF = windchillF(T_F, V_mph)
-    
+
     return FtoC(WcF) if WcF is not None else None
-    
+
 def heatindexF(T, R):
     """Calculate heat index.
     http://www.crh.noaa.gov/jkl/?n=heat_index_calculator
-    
+
     T: Temperature in Fahrenheit
-    
+
     R: Relative humidity in percent
-    
+
     Returns heat index in Fahrenheit
-    
+
     Examples:
-    
+
     >>> print heatindexF(75.0, 50.0)
     75.0
     >>> print heatindexF(80.0, 50.0)
@@ -145,7 +145,7 @@ def heatindexF(T, R):
     """
     if T is None or R is None:
         return None
-    
+
     # Formula only valid for temperatures over 80F:
     if T < 80.0 or R  < 40.0:
         return T
@@ -172,7 +172,7 @@ def cooling_degrees(t, base):
 def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     """Calculate the altimeter pressure, given the raw, station pressure in
     inHg and the altitude in feet.
-        
+
     Examples:
     >>> print "%.2f" % altimeter_pressure_US(28.0, 0.0)
     28.00
@@ -262,7 +262,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     Example:
 
     >>> for t in range(0,24):
-    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471) 
+    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471)
     0.00
     0.00
     0.00
@@ -627,9 +627,110 @@ def evapotranspiration_US(tmax_F, tmin_F, sr_avg, ws_mph, z_ft, lat, ts=None):
     evt = evapotranspiration_Metric(tmax_C, tmin_C, sr_avg, ws_mps, z_m, lat, ts)
     return evt / MM_PER_INCH if evt is not None else None
 
+def density_Metric(dp_C, t_C, p_mbar):
+    """Calculate the Air density in in kg per m3
+
+    dp_C - dewpoint in degree Celsius
+
+    t_C - temperature in degree Celsius
+
+    p_mbar - pressure in hPa or mbar
+    """
+
+    if dp_C is None or t_C is None or p_mbar is None:
+        return None
+
+    dp = dp_C
+    T = CtoK(t_C)
+    p = (0.99999683 + dp *(-0.90826951E-2 + dp * (0.78736169E-4 + dp * (-0.61117958E-6 + dp * (0.43884187E-8 + dp * (-0.29883885E-10 + dp * (0.21874425E-12 + dp * (-0.17892321E-14 + dp * (0.11112018E-16 + dp * (-0.30994571E-19))))))))))
+    Pv = 100 * 6.1078/(p**8)
+    Pd = p_mbar * 100 - Pv
+    density = round((Pd/(287.05 * T)) + (Pv/(461.495 * T)),3)
+
+    return density
+
+def density_US(dp_F, t_F, p_inHg):
+    """Calculate the Air Density in kg per m3
+
+    dp_F - dewpoint in degree Fahrenheit
+
+    t_F - temperature in degree Fahrenheit
+
+    p_inHg - pressure in inHg
+
+    calculation aisdensity_Metric(dp_C, t_C, p_mbar)
+    """
+
+    if dp_F is None or t_F is None or p_inHg is None:
+        return None
+
+    t_C = FtoC(t_F)
+    dp_C = FtoC(dp_F)
+    p_mbar = p_inHg / INHG_PER_MBAR
+    aden_C = density_Metric(dp_C, t_C, p_mbar)
+
+    return aden_C if aden_C is not None else None
+
+
+def winddruck_Metric(dp_C, t_C, p_mbar, vms):
+    """Calculate the windDruck in N per m2
+
+    dp_C - dewpoint in degree Celsius
+
+    t_C - temperature in degree Celsius
+
+    p_mbar - pressure in hPa or mbar
+
+    vms - windSpeed in m per second
+
+    wd = cp * airdensity / 2 * vms2
+    wd - winddruck
+    cp - Druckbeiwert (dimensionslos) = 1
+    """
+
+    if dp_C is None or t_C is None or p_mbar is None or vms is None:
+        return None
+
+    dp = dp_C
+    T = CtoK(t_C)
+    p = (0.99999683 + dp *(-0.90826951E-2 + dp * (0.78736169E-4 + dp * (-0.61117958E-6 + dp * (0.43884187E-8 + dp * (-0.29883885E-10 + dp * (0.21874425E-12 + dp * (-0.17892321E-14 + dp * (0.11112018E-16 + dp * (-0.30994571E-19))))))))))
+    Pv = 100 * 6.1078/(p**8)
+    Pd = p_mbar * 100 - Pv
+    density = round((Pd/(287.05 * T)) + (Pv/(461.495 * T)),3)
+    wsms2 = vms * vms
+    winddruck = density / 2 * wsms2
+
+    return winddruck
+
+
+def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
+    """Calculate the Winddruck in N per m2
+
+    dp_F - dewpoint in degree Fahrenheit
+
+    t_F - temperature in degree Fahrenheit
+
+    p_inHg - pressure in inHg
+
+    ws_mph - windSpeed in mile per hour
+
+    """
+    if dp_F is None or t_F is None or p_inHg is None:
+        return None
+    if ws_mph is None or ws_mph < 0:
+        return None
+
+    t_C = FtoC(t_F)
+    dp_C = FtoC(dp_F)
+    p_mbar = p_inHg / INHG_PER_MBAR
+    vms = ws_mph * METER_PER_MILE / 3600.0
+
+    wdru_C = winddruck_Metric(dp_C, t_C, p_mbar, vms)
+    return wdru_C if wdru_C is not None else None
+
 
 if __name__ == "__main__":
-    
+
     import doctest
 
     if not doctest.testmod().failed:

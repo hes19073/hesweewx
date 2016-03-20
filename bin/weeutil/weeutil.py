@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
@@ -13,7 +14,6 @@ import datetime
 import math
 import os
 import shutil
-import sys
 import syslog
 import time
 import traceback
@@ -668,6 +668,48 @@ def archiveRainYearSpan(time_ts, sory_mon, grace=1):
     return TimeSpan(int(time.mktime((_year, sory_mon, 1, 0, 0, 0, 0, 0, -1))),
                              int(time.mktime((_year + 1, sory_mon, 1, 0, 0, 0, 0, 0, -1))))
 
+def genHourSpans(start_ts, stop_ts):
+    """Generator function that generates start/stop of hours in an inclusive range.
+
+    Example:
+
+    >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> start_ts = 1204796460
+    >>> stop_ts  = 1204818360
+
+    >>> print timestamp_to_string(start_ts)
+    2008-03-06 01:41:00 PST (1204796460)
+    >>> print timestamp_to_string(stop_ts)
+    2008-03-06 07:46:00 PST (1204818360)
+
+    >>> for span in genHourSpans(start_ts, stop_ts):
+    ...   print span
+    [2008-03-06 01:00:00 PST (1204794000) -> 2008-03-06 02:00:00 PST (1204797600)]
+    [2008-03-06 02:00:00 PST (1204797600) -> 2008-03-06 03:00:00 PST (1204801200)]
+    [2008-03-06 03:00:00 PST (1204801200) -> 2008-03-06 04:00:00 PST (1204804800)]
+    [2008-03-06 04:00:00 PST (1204804800) -> 2008-03-06 05:00:00 PST (1204808400)]
+    [2008-03-06 05:00:00 PST (1204808400) -> 2008-03-06 06:00:00 PST (1204812000)]
+    [2008-03-06 06:00:00 PST (1204812000) -> 2008-03-06 07:00:00 PST (1204815600)]
+    [2008-03-06 07:00:00 PST (1204815600) -> 2008-03-06 08:00:00 PST (1204819200)]
+
+    start_ts: A time stamp somewhere in the first day.
+
+    stop_ts: A time stamp somewhere in the last day.
+
+    yields: Instance of TimeSpan, where the start is the time stamp
+    of the start of the day, the stop is the time stamp of the start
+    of the next day.
+
+    """
+    _stop_dt = datetime.datetime.fromtimestamp(stop_ts)
+    _start_hour = int(start_ts / 3600)
+    _stop_hour = int(stop_ts / 3600)
+    if (_stop_dt.minute, _stop_dt.second) == (0, 0):
+        _stop_hour -= 1
+
+    for _hour in range(_start_hour, _stop_hour+1):
+        yield TimeSpan(_hour*3600, (_hour+1)*3600)
+
 def genDaySpans(start_ts, stop_ts):
     """Generator function that generates start/stop of days in an inclusive range.
     
@@ -1089,7 +1131,7 @@ def to_int(x):
     >>> print to_int(None)
     None
     """
-    if isinstance(x, str) and x.lower() == 'none':
+    if isinstance(x, basestring) and x.lower() == 'none':
         x = None
     return int(x) if x is not None else None
 
@@ -1104,9 +1146,26 @@ def to_float(x):
     >>> print to_float(None)
     None
     """
-    if isinstance(x, str) and x.lower() == 'none':
+    if isinstance(x, basestring) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
+
+def to_unicode(string, encoding='utf8'):
+    """Convert to Unicode, unless string is None
+    
+    Example:
+    >>> print to_unicode("degree sign from UTF8: \xc2\xb0")
+    degree sign from UTF8: °
+    >>> print to_unicode(u"degree sign from Unicode: \u00b0")
+    degree sign from Unicode: °
+    >>> print to_unicode(None)
+    None
+    """
+    try:
+        return unicode(string, encoding) if string is not None else None
+    except TypeError:
+        # The string is already in Unicode. Just return it.
+        return string
 
 def min_with_none(x_seq):
     """Find the minimum in a (possibly empty) sequence, ignoring Nones"""
@@ -1216,7 +1275,36 @@ class ListOfDicts(dict):
     def extend(self, new_dict):
         self.dict_list.append(new_dict)
 
+# Supply an implementation of os.path.relpath, but it was not introduced
+# until Python v2.5
+try:
+    os.path.relpath
+    # We can use the Python library version.
+    relpath = os.path.relpath
+except AttributeError:
+    # No Python library version.
+    # Substitute a version from James Gardner's BareNecessities
+    # https://jimmyg.org/work/code/barenecessities/index.html
+    import posixpath
+    from posixpath import curdir, sep, pardir, join
+    
+    def relpath(path, start=curdir):
+        """Return a relative version of a path"""
+        if not path:
+            raise ValueError("no path specified")
+        start_list = posixpath.abspath(start).split(sep)
+        path_list = posixpath.abspath(path).split(sep)
+        # Work out how much of the filepath is shared by start and path.
+        i = len(posixpath.commonprefix([start_list, path_list]))
+        rel_list = [pardir] * (len(start_list)-i) + path_list[i:]
+        if not rel_list:
+            return curdir
+        return join(*rel_list)
+
 if __name__ == '__main__':
+    import sys
+    reload(sys)
+    sys.setdefaultencoding("UTF-8")  # @UndefinedVariable
     import doctest
 
     if not doctest.testmod().failed:

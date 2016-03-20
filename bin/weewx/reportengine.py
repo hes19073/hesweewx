@@ -325,7 +325,6 @@ class CopyGenerator(ReportGenerator):
                 # ftp'd to the server:
                 shutil.copy(_file, dest_dir)
                 ncopy += 1
-        
+
         if log_success:
             syslog.syslog(syslog.LOG_INFO, "reportengine: copied %d files to %s" % (ncopy, html_dest_dir))
-
