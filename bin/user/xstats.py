@@ -68,53 +68,10 @@ class ExtendedStatistics(SearchList):
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter)
 
-        # Now use a similar process to get statistics for the last 30 days.
-        year14_day_stats = TimespanBinder(TimeSpan(1388530804, 1419980404),
-                                          db_lookup,
-                                          context='year14_day',
-                                          formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
 
-        year13_day_stats = TimespanBinder(TimeSpan(1356994806,  1388530799),
-                                          db_lookup,
-                                          context='year13_day',
-                                          formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
-        # Get ts for day of last rain from archive_day_rain
-        # Value returned is ts for midnight on the day the rain occurred
-        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_rain WHERE sum > 0")
-        lastrain_ts = _row[0]
-        # Now if we found a ts then use it to limit our search on the archive
-        # so we can find the last archive record during which it rained. Wrap
-        # in a try statement just in case
-        if lastrain_ts is not None:
-            try:
-                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE rain > 0 AND dateTime > ? AND dateTime <= ?", (lastrain_ts, lastrain_ts + 86400))
-                lastrain_ts = _row[0]
-            except:
-                lastrain_ts = None
-        # Wrap our ts in a ValueHelper
-        lastrain_vt = (lastrain_ts, 'unix_epoch', 'group_time')
-        lastrain_vh = ValueHelper(lastrain_vt, formatter=self.generator.formatter, converter=self.generator.converter)
-
-	# next idea stolen with thanks from weewx station.py
-        # note this is delta time from 'now' not the last weewx db time
-        delta_time = time.time() - lastrain_ts if lastrain_ts else None
-
-        # Wrap our ts in a ValueHelper
-        delta_time_vt = (delta_time, 'second', 'group_deltatime')
-        delta_time_vh = ValueHelper(delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
-        
-
-        
         return [{'alltime': all_stats,
                  'seven_day': seven_day_stats,
-                 'thirty_day': thirty_day_stats,
-                 'lastrain_day': lastrain_vh,
-                 'lastrain_delta_time': delta_time_vh,
-                 'year14_day': year14_day_stats,
-                 'year13_day': year13_day_stats}]
+                 'thirty_day': thirty_day_stats}]
 
 
 # For backwards compatibility:

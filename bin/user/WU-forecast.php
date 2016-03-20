@@ -58,7 +58,7 @@ $Version = "WU-forecast.php (ML) Version 3.02 - 01-Nov-2014";
 //
 // Settings ---------------------------------------------------------------
 //REQUIRED: a WU API KEY.. sign up at http://www.wunderground.com/weather/api/
-$WUAPIkey = '71eae8c9193378cb'; // use this only for standalone / non-template use
+$WUAPIkey = 'testtest'; // use this only for standalone / non-template use
 // NOTE: if using the Saratoga template, add to Settings.php a line with:
 //    $SITE['WUAPIkey'] = 'your-api-key-here';
 // and that will enable the script to operate correctly in your template

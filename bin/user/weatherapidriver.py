@@ -31,7 +31,9 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
         """Initialize the WeatherAPIStation
 
         NAMED ARGUMENTS:
-
+        weewx.conf 
+        Station : WeatherAPI
+        API_key : OWM_API
         loop_interval: The time (in seconds) between emitting LOOP packets. [Optional. Default is 2.5]
 
         openweathermap_url: the OpenWeatherMapAPI URL like 'http://api.openweathermap.org/data/2.5/weather?q=Otterlo,nl&units=imperial'
@@ -39,7 +41,6 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
         self.loop_interval = float(stn_dict.get('loop_interval', 5))
 
         # e.g.'http://api.openweathermap.org/data/2.5/weather?q=Otterlo,nl&units=imperial'
-        #  http://api.openweathermap.org/data/2.5/weather?q=KleinRogahn.de&units=metric&appid=727a7ae5d06e77d4bc43795b12f5e6c0
         self.openweathermap_url = ''.join(stn_dict.get('openweathermap_url'))
         syslog.syslog(syslog.LOG_INFO, "WeatherAPIStation: openweathermap_url=%s" % self.openweathermap_url)
 
@@ -48,9 +49,6 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
 
         while True:
-
-            # http://api.openweathermap.org/data/2.5/find?q=Otterlo&units=imperial
-
             try:
                 json_data = self.read_from_url(self.openweathermap_url)
                 self.the_time = time.time()
@@ -147,7 +145,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
     #         "speed": 5.7,
     #         "deg": 200
     #     },
-    #     "rain": {
+    #     "rain": { ## Achtung kein durchgehendes Argument 
     #     "1h": 47.27
     # }, "clouds": {
     #     "all": 90
@@ -168,18 +166,17 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
             #pressure, units, group = c.convert(p_m)
 
             packet['barometer'] = main['pressure']
-            #packet['pressure'] = pressure
             packet['outHumidity'] = main['humidity']
             wind = rsp_dict['wind']
             # p_m = (wind['speed'], 'meter_per_second', 'group_speed')
             # speed, units, group = c.convert(p_m)
 
             packet['windSpeed'] = wind['speed']
-            # packet['windGust'] = wind['temp']
+            # packet['windGust'] = wind['speed']
             packet['windDir'] = wind['deg']
-            # packet['windGust'] = main['temp']
+            # packet['windGust'] = Wind['deg']
 
-            # packet['rainRate'] = rsp_dict['rain']['3h']
+            # packet['rainRate'] = rsp_dict['rain']['1h'] Element nicht permanent FIXME 
 
             packet['windchill'] = weewx.wxformulas.windchillF(packet['outTemp'], packet['windSpeed'])
             packet['dewpoint']  = weewx.wxformulas.dewpointF(packet['outTemp'], packet['outHumidity'])
@@ -203,6 +200,3 @@ if __name__ == "__main__":
     station = WeatherAPIStation(openweathermap_url=['http://api.openweathermap.org/data/2.5/weather?q=Otterlo','nl&units=imperial'], loop_interval=2.0)
     for packet in station.genLoopPackets():
         print weeutil.weeutil.timestamp_to_string(packet['dateTime']), packet
-
-
-
