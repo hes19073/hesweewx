@@ -25,6 +25,7 @@
     <title>$station.location Messwerte</title>
     <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
+
     <script src='js/hesweewx.js'></script>
     <script src="js/RGraph.gauge.js"></script> 
     <script src="js/RGraph.common.core.js"></script>
@@ -59,9 +60,9 @@
          <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" alt="WetterWarn" /></a>
         </div>
         <div id="radar_img">
-         <p>Wetterbild</p>
-          <a href="xicons/lastsnap.jpg" alt="Wetter aktuell"><img src="xicons/lastsnap.jpg" alt="wetter" /></a>
-        </div> 
+         <p>Wetterbild Dach</p>
+          <a href="xicons/wet/snapshot.jpg" alt="Wetter aktuell"><img src="xicons/wet/snapshot.jpg" alt="wetterDach" /></a>
+        </div>
 
         #if $Extras.has_key('radar_img')
         <div id="radar_img">
@@ -142,7 +143,9 @@
                #set $obvis_img = 'xicons/' + $k + '.png'
                <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' />&nbsp;
              #end for
-             $forecast.label('Zambretti', $forecast.zambretti.code)<br /></p>
+             $forecast.label('Zambretti', $forecast.zambretti.code)<br />
+             Die VantagePro2 Aktiv Plus:&nbsp;$current($data_binding='wdsupp_binding', $max_delta=600).vantageForecastRule.raw
+             </p>
              <p>Der Himmel:&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
               Die Tagestemperatur zwischen:&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp;
              und&nbsp;$forecast.label('Weather', $summary.tempMax).<br />
@@ -158,28 +161,28 @@
         <table>
           <tr>
            <td>
-            <canvas id="temout" width="250" height="250">Temp</canvas>
+            <canvas id="temout" width="250" height="250"></canvas>
             </td>
             <td>$trend.outTemp</td>
             <td><img src="daytempdew.png"   alt="temperatures" /></td>
           </tr>
           <tr>
            <td>
-             <canvas id="wihi" width="250" height="250">WiHi</canvas>
+            <canvas id="wihi" width="250" height="250"></canvas>
            </td>
            <td>$trend.windchill<br />$trend.heatindex</td>
            <td><img src="daytempchill.png" alt="heatchill" /></td>
           </tr>
           <tr>
            <td>
-            <canvas id="humout" width="250" height="250">Feuchte</canvas>
+            <canvas id="humout" width="250" height="250"></canvas>
            </td>
            <td>$trend.outHumidity</td>
            <td><img src="dayhumid.png"     alt="humidity" /></td>
           </tr>
           <tr>
            <td>
-            <canvas id="barout" width="250" height="250">Luftdruck</canvas>
+            <canvas id="barout" width="250" height="250"></canvas>
            </td>
            <td>   
             <!-- note: these thresholds are for millibar, not inHg -->
@@ -204,17 +207,18 @@
            <td><img src="daybarometer.png" alt="barometer"/></td>
           </tr>
           <tr>
-           <td> <canvas id="reghes" width="250" height="250">[No canvas support]</canvas></td>   
+           <td> 
+            <canvas id="reghes" width="250" height="250"></canvas>
+           </td>   
            <!-- <td>Regen:&nbsp;$day.rain.sum</td> -->
            <td>&nbsp;</td>
-           <td><!-- <img src="dayrain.png"      alt="rain" /><br/> -->
-               <img src="dayrain1.png"      alt="rain 5min" /></td>
+           <td><img src="dayrain1.png"      alt="rain 5min" /></td>
           </tr>
          #if $day.ET.has_data
             <tr>
              <td>ET Verdunstung</td>
              <td>$current.ET</td>
-             <td><img src="dayETa.png" alt="Verdunstung" /></td>
+             <td><img src="dayET.png" alt="Verdunstung" /></td>
             </tr>
          #end if
           <tr>
@@ -295,15 +299,12 @@
               <td></td>
               <td><img src="daywindvec.png"   alt="Wind Vector" /></td>
           </tr>
-
-         #if $day.extraTemp4.has_data
           <tr>
            <td>
-             <canvas id="temcar" width="250" height="250">Temp Carport</canvas>
+             <canvas id="temcar" width="250" height="250"></canvas>
            </td>
            <td>$trend.extraTemp2&nbsp;</td>
            <td><img src="dayextra2.png"    alt="Carport" /></td></tr>
-         #end if
          #if $day.extraTemp1.has_data 
           <tr>
            <td>
@@ -374,25 +375,32 @@
           <tr>
            <td>
             Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor.format('%.1f') ppm
-            <br>
-            Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor.format('%.1f') ppm
            </td>
            <td>
             &nbsp;
            </td>
            <td><img src="dayAir.png" alt="Air-Quality" /></td>
           </tr> 
+          <tr>
+           <td>
+            Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor.format('%.1f') ppm
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayGas.png" alt="Air-Quality" /></td>
+          </tr>
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
           <tr>
            <td>
-             <canvas id="temin" width="250" height="250">Temp</canvas>
+             <canvas id="temin" width="250" height="250"></canvas>
            </td>
            <td>$trend.inTemp</td>
            <td><img src="dayinside.png"    alt="Inside" /></td>
           </tr>
           <tr>
            <td>
-            <canvas id="humin" width="250" height="250">Feuchte</canvas>
+            <canvas id="humin" width="250" height="250"></canvas>
            </td>
            <td>$trend.inHumidity</td>
            <td><img src="dayinhume.png"    alt="InsideHumid" /></td>
@@ -407,10 +415,17 @@
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Berechnung</td></tr>
           <tr>
            <td>
-            $current.supplyVoltage
+            $current.consBatteryVoltage
            </td>
-           <td>$trend.supplyVoltage</td>
-           <td><img src="dayrx.png"    alt="OWFS-Spannung" /></td>
+           <td>$trend.consBatteryVoltage</td>
+           <td><img src="dayBate.png"    alt="Stations-Spannung" /></td>
+          </tr>
+          <tr>
+           <td>
+            $current.rxCheckPercent
+           </td>
+           <td>$trend.rxCheckPercent</td>
+           <td><img src="dayStat.png"    alt="Stations-Erreichbarkeit" /></td>
           </tr>
           <tr>
            <td>
@@ -433,6 +448,20 @@
            <td>&nbsp;</td>
            <td><img src="daywindB.png"    alt="WindBeaufort" /></td>
           </tr>
+          <tr>
+           <td>
+            $current.airDensity
+           </td>
+           <td>&nbsp;</td>
+           <td><img src="dayDensity.png"    alt="Luftdichte" /></td>
+          </tr>
+          <tr>
+           <td>
+            $current.windDruck
+           </td>
+           <td>&nbsp;</td>
+           <td><img src="dayWindDruck.png"    alt="Winddruck" /></td>
+          </tr>
          </table>
         </div> <!-- End id "plots" -->
       </div> <!-- End id "content" -->
@@ -440,13 +469,13 @@
 
      #include $Extras.footer
 
-#set $tem1 = $current.outTemp.formatted 
-#set $tem3 = $current.extraTemp4.formatted
-#set $hum1 = $current.outHumidity.formatted
-#set $bar1 = $current.barometer.formatted
-#set $tem2 = $current.inTemp.formatted
-#set $hum2 = $current.inHumidity.formatted
-#set $wihi = $current.windchill.formatted
+#set $tem1 = $current.outTemp.raw 
+#set $tem3 = $current.outTemp.raw
+#set $hum1 = $current.outHumidity.raw
+#set $bar1 = $current.barometer.raw
+#set $tem2 = $current.inTemp.raw
+#set $hum2 = $current.inHumidity.raw
+#set $wihi = $current.windchill.raw
 #set $rainhi = $day.rain.sum.raw
 
 <script>

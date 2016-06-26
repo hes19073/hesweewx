@@ -27,14 +27,14 @@
 
 var gauges = (function () {
     'use strict';
-    var strings = LANG.EN,         //Set to your default language. Store all the strings in one object
+    var strings = LANG.DE,         //Set to your default language. Store all the strings in one object
         config = {
             // Script configuration parameters you may want to 'tweak'
             scriptVer         : '2.5.8',
             weatherProgram    : 6,                      //Set 0=Cumulus, 1=Weather Display, 2=VWS, 3=WeatherCat, 4=Meteobridge, 5=WView, 6=WeeWX
             imgPathURL        : '',             //*** Change this to the relative path for your 'Trend' graph images
             oldGauges         : 'gauges.htm',           //*** Change this to the relative path for your 'old' gauges page.
-            realtimeInterval  : 5,                      //*** Download data interval, set to your realtime data update interval in seconds
+            realtimeInterval  : 300,                      //*** Download data interval, set to your realtime data update interval in seconds
             longPoll          : false,                  // if enabled, use long polling and PHP generated data !!only enable if you understand how this is implemented!!
             gaugeMobileScaling: 0.85,                   //scaling factor to apply when displaying the gauges mobile devices, set to 1 to disable (default 0.85)
             graphUpdateTime   : 15,                     //period of pop-up data graph refresh, in minutes (default 15)
@@ -42,15 +42,15 @@ var gauges = (function () {
             pageUpdateLimit   : 20,                     //period after which the page stops automatically updating, in minutes (default 20),
                                                         // - set to 0 (zero) to disable this feature
             pageUpdatePswd    : 'its-me',               //password to over ride the page updates time-out, do not set to blank even if you do not use a password - http://<URL>&pageUpdate=its-me
-            digitalFont       : false,                  //Font control for the gauges & timer
-            digitalForecast   : false,                  //Font control for the status display, set this to false for languages that use accented characters in the forecasts
+            digitalFont       : true,                  //Font control for the gauges & timer
+            digitalForecast   : true,                  //Font control for the status display, set this to false for languages that use accented characters in the forecasts
             showPopupData     : true,                   //Pop-up data displayed
             showPopupGraphs   : true,                   //If pop-up data is displayed, show the graphs?
             mobileShowGraphs  : false,                  //If false, on a mobile/narrow display, always disable the graphs
             showWindVariation : true,                   //Show variation in wind direction over the last 10 minutes on the direction gauge
             showIndoorTempHum : true,                   //Show the indoor temperature/humidity options
             showCloudGauge    : true,                   //Display the Cloud Base gauge
-            showUvGauge       : false,                   //Display the UV Index gauge
+            showUvGauge       : true,                   //Display the UV Index gauge
             showSolarGauge    : true,                   //Display the Solar gauge
             showSunshineLed   : true,                   //Show 'sun shining now' LED on solar gauge
             showRoseGauge     : true,                   //Show the optional Wind Rose gauge
@@ -320,7 +320,7 @@ var gauges = (function () {
                 config.realTimeURL = config.longPoll ? config.realTimeURL_LongPoll : config.realTimeURL_weewx;
                 config.showSunshineLed = true;
                 config.showWindVariation = true;
-                config.showRoseGauge = false;       // FIXME: add wind histogram to weewx SLE
+                config.showRoseGauge = true;       // FIXME: add wind histogram to weewx SLE
                 config.tipImgs = [                                      // config.tipImgs for weewx
                     ['dayinouttemp.png', 'dayinouttemp.png'],           // Temperature: outdoor, indoor
                     // Temperature: dewpnt, apparent, windChill, HeatIndx, humidex

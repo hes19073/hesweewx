@@ -114,6 +114,10 @@
     <td class="ametric_name">Wintersonnenwende:&nbsp;</td>
     <td class="ametric_value">$almanac.next_winter_solstice</td>
   </tr>
+  <tr>
+    <td class="ametric_name">Ostern am:&nbsp;</td>
+    <td class="ametric_value">$Easter.format('%d.%m.%Y')</td>
+  </tr>
  </table>
 </div>
 <br />
@@ -842,6 +846,9 @@
 	    dass sind <b> $("%d Sekunden weniger als Gestern " % -$difference) </b>oder<b> $("%d Minuten und %d Sekunden." % ($dm1, $difhes1))</b></p>
 	    #end if
    <hr />
+<!--   <h2>Die ISS</h2>
+   ##include $Extras.iss
+   <hr /> -->
    <h2>Apogäum, Perigäum, Finsternis, Aphel und Perihel</h2>
    <ul>
     <li>Der Mond</li>

@@ -9,24 +9,6 @@
 ##
 ## the following fields are not directly available from weewx:
 ##
-## ver:10?
-## apptemp - calculated in this template
-## apptempTL
-## apptempTH
-## TapptempTL
-## TapptempTH
-## humidex - calculated in this template
-## forecast - calculated by forecasting module
-## LastRainTipISO
-## Tbeaufort - calculated by this template
-## BearingRangeFrom10 - lowest clockwise bearing in last 10 minutes
-## BearingRangeTo10 - highest clockwise bearing in last 10 minutes
-## CurrentSolarMax - calculated in this template
-## WindRoseData
-## windrun - calculated in this template
-##
-## ver:12
-## cloudbasevalue - calculated in this template in feet
 ## cloudbaseunit - defined in this template as ft
 
 
@@ -210,11 +192,8 @@
 #end if
 
 ## if forecasting is installed, report the Zambretti forecast
-#if $varExists('forecast.zambretti')
-#set $fc = $forecast.label('Zambretti', $forecast.zambretti.code)
-#else
-#set $fc = 'forecast is not available'
-#end if
+
+#set $fc = $latest($data_binding = 'wdsupp_binding').vantageForecastRule.raw
 
 #set $t_trend = $trend(time_delta=3600).outTemp.raw
 #if $t_trend is None
@@ -225,6 +204,7 @@
 #if $p_trend is None
 #set $p_trend = 0
 #end if
+##set $windrosedata = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
 
 {
            "timeUTC":"$timeutc",
@@ -266,7 +246,7 @@
          "apptempTH":"$day.appTemp.max.raw",
         "TapptempTL":"$day.appTemp.mintime",
         "TapptempTH":"$day.appTemp.maxtime",
-           "humidex":"$humidex",
+           "humidex":"$current.humidex.raw",
              "press":"$current.barometer.raw",
             "pressL":"$year.barometer.min.raw",
             "pressH":"$year.barometer.max.raw",
@@ -294,17 +274,17 @@
 "BearingRangeFrom10":"000",
   "BearingRangeTo10":"000",
         "domwinddir":"$day.wind.vecdir.ordinal_compass",
-      "WindRoseData":[],
-           "windrun":"$windrun",
+      "WindRoseData":$windrosedata,
+           "windrun":"$current.windrun.raw",
          "Tbeaufort":"F$beaufort",
                 "UV":"$current.UV",
               "UVTH":"$day.UV.max.raw",
           "SolarRad":"$current.radiation.raw",
            "SolarTM":"$day.radiation.max.raw",
    "CurrentSolarMax":"$solarMax",
-    "cloudbasevalue":"$cloudbase",
+    "cloudbasevalue":"$current.cloudbase.raw",
           "forecast":"$fc",
            "version":"$station.version",
-             "build":" ",
+             "build":"hes",
                "ver":"12"
 }

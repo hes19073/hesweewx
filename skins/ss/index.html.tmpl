@@ -1,19 +1,52 @@
+#errorCatcher Echo
 <!DOCTYPE html>
 <!-- demonstration page for steel series gauges for weewx -->
 <!-- by Matthew Wall, based on work by Mark Crossley      -->
 <!-- 26dec2014                                            -->
-<html>
+#encoding UTF-8
+<html lang="de">
 
 <head>
-  <meta charset="utf-8">
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
   <title>$station.location weather</title>
   <link rel="stylesheet" href="css/gauges-ss.css">
+    <link rel="stylesheet" type="text/css" href="./../hesweewx.css" />
+    <link rel="icon" type="image/png" href="./../favicon.ico" />
+    <script type='text/javascript' src='./../hesweewx.js'></script>
+
 </head>
 
 <body>
+<div id='header'>
+ <div id="masthead">
+  <h1>Wetterstation&nbsp;$station.location</h1>
+  <p>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
+       $station.latitude[2]&nbsp;&brvbar;&nbsp;
+      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
+      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
+      H&ouml;he:&nbsp;$station.altitude</p>
+  <div class="navbar">
+   <ul id="nav">
+    <li><input type="button" value=" Aktuell " onclick="openURL('./../index.html')" /></li>
+    <li><input type="button" value=" OWFS " onclick="openURL('./../index2.html')" /></li>
+    <li><input type="button" value=" Heute/ Tag " onclick="openURL('./../day.html')" /></li>
+    <li><input type="button" value=" Prognose " onclick="openURL('./../forecastT.html')" /></li>
+    <li><input type="button" value=" Statistik " onclick="openURL('./../statistik.html')" /></li>
+   </ul>
+  </div> <!-- End navbar1 -->
+ </div><!-- Ende masthead -->
+</div> <!-- Ende header -->
+
   <div class="content">
-    <h1>$station.location <span id='lang_weather'>weather</span></h1>
-    <p style="text-align: left; text-transform: none;">&nbsp;<span id='lang_latitude'>Latitude</span>&nbsp;$station.latitude[0]&deg;&nbsp;$station.latitude[1]'&nbsp;$station.latitude[2]&nbsp;&nbsp;&nbsp;&nbsp;<span id="lang_longitude">Longitude</span>&nbsp;$station.longitude[0]&deg;&nbsp;$station.longitude[1]'&nbsp;$station.longitude[2]&nbsp;&nbsp;&nbsp;&nbsp;<span id="lang_elevation">Elevation</span>&nbsp;$station.altitude</p>
     <noscript>
       <h2 style="color:red; text-align:center">&gt;&gt;This pages requires JavaScript enabling in your browser.&lt;&lt;<br>&gt;&gt;Please enable scripting it to enjoy this site at its best.&lt;&lt;</h2>
     </noscript>
@@ -190,5 +223,37 @@
   <script src="scripts/RGraph.common.core.min.js"></script>
   <script src="scripts/RGraph.rose.min.js"></script>
 
+<div id='footer'><footer>
+
+<div style="background-color: gold">
+      <p>
+      Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
+       $station.latitude[2]&nbsp;&brvbar;&nbsp;
+      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
+      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
+      H&ouml;he:&nbsp;$station.altitude
+      </p>
+</div>
+  
+<div style="background-color:yellow">
+     weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     weewx  Version:&nbsp; $station.version&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Wetterstation:&nbsp; $station.hardware&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Zusatz: forecast; cmon; owfs und 13 one-wire-Sensoren
+</div>
+  <p>
+   #if $Extras.has_key('station_subtitle')
+       $Extras.station_subtitle<br/>
+   #end if
+  </p>
+<hr />
+<div id="fzei">
+  <div class="lthes">Copyright &copy; 2013 -&nbsp;$year_name&nbsp; by Hartmut Schweidler</div>
+  <div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime</div>
+  <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
+                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a></div>
+</div>
+</footer></div><!-- end id "footer" -->
 </body>
 </html>

@@ -28,7 +28,6 @@
      <link rel='stylesheet' type='text/css' href='hesweewx.css' />
 
      <link rel='icon' type='image/png' href='favicon.ico' />
-     <!-- <script type='text/javascript' src='exfoliation.js'></script> -->
      <script type='text/javascript' src='js/hesweewx.js'></script>
      <script>
        window.onload = function() { applypopups(); }
@@ -118,8 +117,9 @@
         <li><input type="button" value=" Aktuelles Jahr  Tabelle " onclick="openURL('year-table.html')" /></li>
         <li><input type="button" value=" Vorjahreswerte  Tabelle " onclick="openURL('yeara-table.html')" /></li> 
        </lu>
-       <p>&nbsp;</p>
-        <img src="pict0056.jpg" alt="Wetterstation" style="width:300px; height:175px;" />
+
+       <p>Wetter-Cam&nbsp;2</p>
+        <img src="xicons/wet/snapshot.jpg" alt="Wetterstation" style="width:300px; height:175px;" />
    </div>
 </div> <!-- ende Prognose -->
 
@@ -158,7 +158,7 @@
     </tr>
    </table>
   </div>
-</div> <!-- ende Luftfeuchte (2) -->
+</div> <!-- Ende Luftfeuchte (extraHumid1) -->
 #end if
 
 #if $day.extraTemp4.has_data
@@ -218,20 +218,20 @@
     <tr>
      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $day.extraHumid2.max</span></td>
+     <td><span class='hes1_valhi'>$day.extraHumid2.max</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$day.extraHumid2.min</span> </td>
+     <td><span class='hes1_vallo'>$day.extraHumid2.min</span></td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Werte<br />Gestern</td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $yesterday.extraHumid2.max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.extraHumid2.max</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$yesterday.extraHumid2.min</span> </td>
+     <td><span class='hes1_vallo'>$yesterday.extraHumid2.min</span></td>
     </tr>
    </table>
   </div>
-</div> <!-- ende Luftfeuchte (3) -->
+</div> <!-- Ende Luftfeuchte (extraHumid2) -->
 #end if
 
 #if $day.extraTemp7.has_data
@@ -414,45 +414,48 @@
 <!-- ende extra temp3 -->
 
 #if $day.ET.has_data
- <div class="hes">
+  <div class="hes">
   <div class='hesbox'>
-   <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Verdunstung<br />berechnet</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
-        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+   <table class='hes_lufe'>
     <tr>
-        <td class='hes1_bigval' colspan='3'><a href='dayET.png' class='popup'>$current.ET</a></td>
+     <td class='hes1_kopfa'>ET - Evapo-<br />transpiration</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayET.png' class='popup'>$current.ET</a></td>
     #if $trend.ET.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_vallo'>$trend.ET.formatted</td>
+     <td class='hes1_vallo'>$trend.ET</td>
     #else
      <td class="hes1_trendhi"> &#8679;</td>
-     <td class='hes1_valhi'>$trend.ET.formatted</td>
+     <td class='hes1_valhi'>$trend.ET</td>
     #end if
     </tr>
     <tr>
      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-     <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $day.ET.max</span></td>
-     <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$day.ET.min</span></td>
+     <td><span class='hes1_m'>Summe</span></td>
+     <td><span class='hes1_valhi'> $day.ET.sum</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day.ET.max</span> </td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Werte<br />Gestern</td>
-     <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $yesterday.ET.max</span></td>
-     <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$yesterday.ET.min</span></td>
+     <td><span class='hes1_m'>Summe</span></td>
+     <td><span class='hes1_valhi'> $yesterday.ET.sum</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$yesterday.ET.max</span> </td>
     </tr>
    </table>
   </div>
- </div> <!-- ET -->
+</div> <!-- ende ET -->
 #end if
 
 #if $day.lighting.has_data
  <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Helligkeit</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+    <tr><td class='hes1_kopfa'>Helligkeit<br / >berechnet </td><td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daylighting.png' class='popup'>$current.lighting</a></td>
@@ -467,16 +470,16 @@
     <tr>
      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $day.lighting.max</span></td>
+     <td><span class='hes1_valhi'>$day.lighting.max.formatted</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$day.lighting.min</span></td>
+     <td><span class='hes1_vallo'>$day.lighting.min.formatted</span></td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Werte<br />Gestern</td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='hes1_valhi'> $yesterday.lighting.max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.lighting.max.formatted</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='hes1_vallo'>$yesterday.lighting.min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.lighting.min.formatted</span></td>
     </tr>
    </table>
   </div>
@@ -569,7 +572,8 @@
   <div class="hes">
    <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Boden-<br /><a href='daysoilT.png' class='popup'>temperatur</a></td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+    <tr><td class='hes1_kopfa'>Boden-<br /><a href='daysoilT.png' class='popup'>temperatur</a></td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
       <td class='hes1_kopfc' colspan='2'>5 cm über Grund</td><td>$current.extraTemp5</td>
@@ -647,7 +651,8 @@
   <div class="hes">
    <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Boden-<br /><a href='daysoilF.png' class='popup'>feuchtigkeit</a></td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+    <tr><td class='hes1_kopfa'>Boden-<br /><a href='daysoilF.png' class='popup'>feuchtigkeit</a></td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
       <td class='hes1_kopfc' colspan='2'>5 cm im Boden </td><td>$current.soilMoist1</td>
@@ -739,6 +744,10 @@
     <td class="hes1_nam">Winter-<br /> sonnenwende</td>
     <td class="hes1_nam">$almanac.next_winter_solstice</td>
   </tr>
+  <tr>
+    <td class="hes1_nam">Ostern<br /> am</td>
+    <td class="hes1_nam">$Easter.format('%d.%m.%Y')</td>
+  </tr>
 </table>
 </div>
 </div> <!-- ende sonne -->
@@ -784,9 +793,10 @@
     <td class='hes1_mon'>$almanac.next_full_moon</td>
    </tr>
   #end if
+   #set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400,0))
    <tr>
     <td class='hes1_mon'>Alter des Mondes:</td>
-    <td class='hes1_mon'> </td>
+    <td class='hes1_mon'>$moonDays&nbsp;Tage</td>
    </tr>
 </table>
 </div>
@@ -802,10 +812,10 @@
      <td class='hes1_bigval' colspan='2'><a href='dayintemphilo.png' class='popup'>$current.inTemp</a></td>
     #if $trend.inTemp.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_vallo'>$trend.inTemp.formatted&nbsp;K</td>
+     <td class='hes1_vallo'>$trend.inTemp</td>
     #else
      <td class="hes1_trendhi"> &#8679;</td>
-     <td class='hes1_valhi'>$trend.inTemp.formatted&nbsp;K</td>
+     <td class='hes1_valhi'>$trend.inTemp</td>
     #end if
     </tr>
     <tr><td class='hes1_kopfa'>&nbsp;</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
@@ -845,39 +855,19 @@
   <tr><td class='hes1_kopfa' colspan='2'>Berechnete Werte</td></tr>
   <tr>
    <td>Wolkenuntergrenze:&nbsp;</td>
-  #try
-    #set $height = int(($current.outTemp.raw - $current.dewpoint.raw) / 2.5 * 1000) / 3.2808 + $station.altitude.raw
-    <td class="re_data"> $("%.0f" % $height) m (ASL)</td>
-  #except TypeError
-    <td class="re_data"> Sorry kein Wert. </td>
-  #end try  
-    </tr>
+    <td class="re_data"> $current.cloudbase (ASL)</td>
+   </tr>
    <tr>
     <td class="re_data">Luftdichte:</td>
-   #try
-    #set $luft = 287.05 * ($current.outTemp.raw + 273.15)
-    #set $density_altitude = $current.barometer.raw * 100 / $luft
-    <td class="re_data"> $("%.4f" % $density_altitude) kg/m³</td>
-   #except TypeError
-     <td> Sorry kein Wert. </td>
-   #end try 
+    <td class="re_data"> $current.airDensity</td>
    </tr>
    <tr>
-   #try
-   #set $windqu = $current.windSpeed.raw + $current.windSpeed.raw
-   #set $winddr = 0.55 * $density_altitude * $windqu
-    <td class='re_data'>Winddruck</td><td class='re_data'>$("%.2f" % $winddr) N/m²</td>
-   #except TypeError
-     <td></td><td></td>
-   #end try
+    <td class='re_data'>Winddruck</td>
+    <td class='re_data'>$current.windDruck</td>
    </tr>
    <tr>
-   #try
-   #set $windrun = $day.wind.avg.raw * 24
-    <td class='re_data'>Wind Verlauf</td><td class='re_data'>$("%.2f" % $windrun) km</td>
-   #except TypeError
-     <td></td><td></td>
-   #end try
+    <td class='re_data'>Wind Verlauf</td>
+    <td class='re_data'>$current.windrun</td>
    </tr>
    <tr>
     <td>Monat HeatDeg</td><td>$month.heatdeg.sum</td>
@@ -886,23 +876,48 @@
     <td>Monat CoolDeg</td><td>$month.cooldeg.sum</td>
    </tr> 
    <tr>
-    <td>Globalstrahlung Tag</td><td>$day.radiation.sum</td>
+    <td>Signalqualität ISS</td><td>$current.rxCheckPercent</td>
    </tr>
    <tr>
-    <td>Hu-Volt</td><td>$current.supplyVoltage</td>
-   </tr>
-   <tr>
-    <td>He-Volt</td><td>$current.heatingVoltage</td>
-   </tr>
-   <tr>
-    <td>So-Volt</td><td>$current.referenceVoltage</td>
-   </tr>
-   <tr>
-    <td>OWFS</td><td>$current.consBatteryVoltage</td>
+    <td>Volt</td><td>$current.consBatteryVoltage</td>
    </tr>
   </table>
  </div>
 </div> 
+
+#if $latest($data_binding='lightning_binding').distance.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Blitz-Sensor<br />AS3935&nbsp;</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Zeit</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>$latest($data_binding='lightning_binding').distance</td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
+     <td><span class='hes1_m'>am</span></td>
+     <td><span class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</span></td>
+     <td><span class="hes1_m">um</span></td>
+     <td><span class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M:%S")</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td><span class='hes1_m'>Stunde</span></td>
+     <td><span class='hes1_valhi'>$hour($data_binding='lightning_binding').distance.count.format('%.0f')</span></td>
+     <td><span class="hes1_m">Tag</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</span> </td>
+    </tr>
+
+   </table>
+  </div>
+</div> <!-- ende Blitz-Sensor -->
+#end if
 
 </section >
 

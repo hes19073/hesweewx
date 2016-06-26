@@ -9,7 +9,7 @@
      <meta name='viewport' content='width=device-width' />
      <meta name="robots" content="all" />
      <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
                  mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
      <meta name="author"           content="Hartmut Schweidler" />
      <meta name="revisit-after"    content="5 minutes" />
@@ -29,7 +29,6 @@
      <link rel='stylesheet' type='text/css' href='hesweewx.css' />
 
      <link rel='icon' type='image/png' href='favicon.ico' />
-     <!-- <script type='text/javascript' src='exfoliation.js'></script> -->
      <script type='text/javascript' src='js/hesweewx.js'></script>
      <script>
        window.onload = function() { applypopups(); }
@@ -74,7 +73,7 @@
      </tr>
     </table>
     $forecast.label('Zambretti', $forecast.zambretti.code)
-
+      
    #set $summary = $forecast.weather_summary('WU')
    <p>Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
     Wind aus&nbsp;$forecast.label('Weather', $summary.windDir)&nbsp;
@@ -103,10 +102,10 @@
     #set $soauf = $almanac(horizon=-6).sun(use_center=1).rise.raw
     #set $sount = $almanac(horizon=-6).sun(use_center=1).set.raw
     #set $sobil = $current.dateTime.raw
-    #if $soauf < $sobil < $sount
-        <a href="xicons/lastsnap.jpg" alt="Wetter aktuell"><img src="xicons/lastsnap.jpg" width="300" height="180" alt="wetter" /></a>
+    #if $soauf < $sobil < $sount 
+        <a href="xicons/wet/snapshot.jpg" alt="Wetter aktuell"><img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="wetter" /></a>
     #else
-        <a href="pict0049.jpg"><img src="pict0049.jpg" width="300" height="180" alt="wetter" /></a>
+        <a href="pict0049.jpg"><img src="pict0049.jpg" width="300" height="180" alt="wetter" /></a> 
     #end if
   </div>
 </div>
@@ -157,7 +156,7 @@
      <td class="hes1_trendhi"> &#8679;</td>
      <td class="hes1_valhi">$trend.windchill</td>
     #end if
-    </tr>
+    </tr>  
     #if $varExists('forecast')
      <tr>
       <td><span class='hes1_m'>Tagesprognose</span></td>
@@ -234,7 +233,7 @@
     </tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daybarometer.png' class='popup'>$current.barometer</a></td>
-
+     
 <!-- note: these thresholds are for millibar, not inHg -->
 #if $varExists('trend')
 #if $trend.barometer.raw is not None:
@@ -264,11 +263,11 @@
     <tr>
      <td><span class='hes1_m'>Tagesprognose</span></td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='temphi'>$summary.mslpMax.formatted</span></td>
+     <td><span class='temphi'>$summary.barometerMax.formatted</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='templo'>$summary.mslpMax.formatted</span></td>
+     <td><span class='templo'>$summary.barometerMax.formatted</span></td>
     </tr>
-#end if
+#end if 
     </table>
      <hr />
     <img src="daybaroklein.png" alt="Luftdruck" />
@@ -327,7 +326,7 @@
         <td class='hes1_valhi'>
          $summary.pop
         </td>
-        <td>
+        <td>    
        #if $summary.qpf.raw > 0
            $summary.qpf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
        #end if
@@ -365,7 +364,7 @@
 #elif $trend.windSpeed.formatted < 0
        <td class='hes_trendlo'>&#8681;</td>
 #end if
-
+    
 #end if
 #end if
 
@@ -465,13 +464,83 @@
  </div>
 </div> <!-- ende Wind -->
 
-<div class="hes">
- <div class='hesbox'>
-  <h3>Wetterwarnung</h3>
-  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
-  <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+#if $day.UV.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>UV-Index</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+    #if $current.UV.raw <= 2.4
+      <td class='hes1_bigval' colspan='3' style="background-color: limegreen">
+    #else if $current.UV.raw >= 2.5 and $current.UV.raw <= 5.4
+      <td class='hes1_bigval' colspan='3' style="background-color: yellow">
+    #else if $current.UV.raw >= 5.5 and $current.UV.raw <= 7.4
+      <td class='hes1_bigval' colspan='3' style="background-color: orange">
+    #else if $current.UV.raw >= 7.5 and $current.UV.raw <= 10.4
+      <td class='hes1_bigval' colspan='3' style="background-color: red">
+    #else if $current.UV.raw > 10.5
+      <td class='hes1_bigval' colspan='3' style="background-color: violet">
+    #end if
+       <a href='dayuv.png' class='popup'>$current.UV</a></td>
+    #if $trend.UV.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.UV.formatted</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.UV.formatted</td>
+    #end if
+    </tr>
+#if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.uvIndexMax</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'> $summary.uvIndexMin</span></td>
+    </tr>
+#end if
+   </table>
+    <hr />
+    <img src="dayUVklein.png" alt="UV-Index" />
+  </div>
  </div>
-</div> <!-- end counter -->
+#end if
+<!-- ende UV -->
+
+#if $latest($data_binding='lightning_binding').distance.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Blitz-Sensor<br />AS 3935</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Zeit</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>$latest($data_binding='lightning_binding').distance</a></td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M:%S")</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
+     <td><span class='hes1_m'>am</span></td>
+     <td><span class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</span></td>
+     <td><span class="hes1_m">um</span></td>
+     <td><span class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Blitze in <br />der letzten&nbsp;</td>
+     <td><span class='hes1_m'> Stunde</span></td>
+     <td><span class='hes1_valhi'>$hour($data_binding='lightning_binding').distance.count.format('%.0f')</span></td>
+     <td><span class="hes1_m">am Tag</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Blitz-Sensor -->
+#end if
 
 <div class='hes'>
  <div class='hesbox'>
@@ -483,47 +552,28 @@
   </tr>
   <tr>
     <td class="re_data">Luftdichte:</td>
-   #try
-       #set $luft = 287.05 * ($current.outTemp.raw + 273.15)
-       #set $density_altitude = $current.barometer.raw * 100 / $luft
-    <td class="re_data"> $("%.4f" % $density_altitude) kg/m³</td>
-   #except TypeError
-     <td> Sorry kein Wert. </td>
-   #end try
+    <td class="re_data"> $current.airDensity</td>
   </tr>
   <tr>
-   #try
-       #set $windqu = $current.windSpeed.raw * $current.windSpeed.raw
-       #set $winddr = 0.55 * $density_altitude * $windqu
-    <td class='re_data'>Winddruck</td><td class='re_data'>$("%.2f" % $winddr) N/m²</td>
-   #except TypeError
-     <td></td><td></td>
-   #end try
+    <td class='re_data'>Winddruck</td>
+    <td class='re_data'>$current.windDruck</td>
   </tr>
   <tr>
     <td class='re_data'>Wind Verlauf</td>
     <td class='re_data'>$current.windrun</td>
   </tr>
    <tr>
-    <td>Tag HeatDeg</td><td>$day.heatdeg.sum</td>
+    <td>Sonnenstunden</td><td>$day.sunshineS.sum.hour</td>    
    </tr>
    <tr>
-    <td>Tag CoolDeg</td><td>$day.cooldeg.sum</td>
+    <td>Cons-Volt</td><td>$current.consBatteryVoltage</td>    
    </tr>
    <tr>
-     <td>Globalstrahlung</td><td>$day.radiation.sum</td>
-   </tr>
+    <td>Wachstumstage Monat</td>
+    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
    <tr>
-    <td>Sonne</td><td>$current.sunshinehours.format("%.2f")&nbsp;h</td>
-   </tr>
-   <tr>
-    <td>Sonenstunden</td><td>$day.sunshineS.sum.hour</td>
-   </tr>
-   <tr>
-    <td>So-Volt</td><td>$current.referenceVoltage</td>
-   </tr>
-   <tr>
-    <td>Hell</td><td>$current.lighting</td>
+    <td>Wachstumstage Jahr</td>
+    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
    </tr>
    <tr>
     <td class="stats_label">Air-Qualität</td>
@@ -534,16 +584,32 @@
     <td class="stats_data">$latest($data_binding='air_binding').gas_sensor.format('%.1f')&nbsp;ppm</td>
    </tr>
    <tr>
-    <td class="stats_label">Gas Sensor N</td>
-    <td class="stats_data">$latest($data_binding='air_binding').gasN_sensor.format('%.1f')&nbsp;ppm</td>
-   </tr>
-   <tr>
     <td class="stats_label">Grove Light</td>
     <td class="stats_data">$latest($data_binding='air_binding').light_sensor.format('%.1f')</td>
    </tr>
   </table>
  </div>
 </div> <!-- end werte -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Wetterwarnung</h3>
+  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
+  <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+ </div>
+</div> <!-- end counter -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Pollencheck</h3>
+<!-- Start Pollencheck -->
+   <iframe scrolling="no" frameborder="0" style="width:100px;height:170px;border:none;overflow:hidden;"
+    src="http://www.pollencheck.de/pollen.php?r=3&amp;b=000000&amp;bg=i0&amp;fg1=ffffff&amp;fg2=ffffff">
+    <a href="http://www.pollencheck.de">Pollenfluganzeige</a>
+</iframe>
+<!-- Ende Pollencheck -->
+ </div>
+</div> <!-- end counter -->
 
 <div class="hes">
  <div class='hesbox'>
@@ -569,7 +635,7 @@
 </div> <!-- ende container -->
 
      #include $Extras.footer
- </div>
+ </div> 
 </body>
 
 </html>

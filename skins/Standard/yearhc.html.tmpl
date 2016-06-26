@@ -9,7 +9,7 @@
    <meta name='viewport' content='width=device-width' />
    <meta name="robots" content="all" />
    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-   <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim
+   <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
                 mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
    <meta name="author"           content="Hartmut Schweidler" />
    <meta name="revisit-after"    content="65 minutes" />
@@ -34,7 +34,7 @@
        window.onload = function() { applypopups(); }
    </script>
 
-   <script src="js/jquery-1.8.2.min.js"></script>
+   <script src="js/jquery-1.8.2.min.js"></script> 
    <script src="js/highcharts.js"></script>
    <script src="js/highcharts-more.js"></script>
    <script src="js/themes/grid.js"></script>
@@ -48,7 +48,7 @@
 			},
 
 			title: {
-				text: '2014-16 Monat Temperatur Statistik'
+				text: '2013-16 Monat Temperatur Statistik'
 			},
 
 			subtitle: {
@@ -74,12 +74,12 @@
 			plotOptions: {
 				boxplot: {
 					fillColor: 'LightSteelBlue',
-					groupPadding: 0.2,
-					lineWidth: 3,
-					medianWidth: 3,
-					stemWidth: 3,
+					groupPadding: 0.1,
+					lineWidth: 2.5,
+					medianWidth: 2.5,
+					stemWidth: 2.5,
 					whiskerLength: '75%',
-					whiskerWidth: 3
+					whiskerWidth: 2.5 
 				}
 			},
 
@@ -95,19 +95,14 @@
 				footerFormat: '</table>',
 				valueDecimals: 1
 			},
-
-			series: [{ name: '2014', pointPadding: 0.25 },
-                 { name: '2015', pointPadding: 0.25 },
-                     { name: '2016', pointPadding: 0.25 }]
+			
+			series: [{ name: '2013', pointPadding: 0.25 }, 
+                                 { name: '2014', pointPadding: 0.25 },
+                                 { name: '2015', pointPadding: 0.25 },
+                                 { name: '2016', pointPadding: 0.25 }]
 		};
 
-		$.getJSON('Data/Data-2014.json', function(data) { options.series[0].data = data;
-                 $.getJSON('Data/Data-2015.json', function(data) { options.series[1].data = data;
-                             $.getJSON('Data/Data-2016.json', function(data) {options.series[2].data = data;
-                                          var chart = new Highcharts.Chart(options);
-                             });
-                });
-   });
+		$.getJSON('Data/Data-2013.json', function(data) {options.series[0].data = data; $.getJSON('Data/Data-2014.json', function(data) { options.series[1].data = data; $.getJSON('Data/Data-2015.json', function(data) { options.series[2].data = data; $.getJSON('Data/Data-2016.json', function(data) {options.series[3].data = data; var chart = new Highcharts.Chart(options); }); }); }); });
 
 	});
 </script>
@@ -148,23 +143,23 @@
 
 
 			series: [{
-                  				name: '2014'
-			         }, {
-				                 name: '2015'
-			         }, {
-                         name: '2016'
-              }]
+				name: '2014'
+			}, {
+				name: '2015'
+			}, {    
+                                name: '2016'
+                        }]
 		};
 
-				$.getJSON('Data/Rain-2014.json', function(data) {
-				options.series[0].data = data;
-				$.getJSON('Data/Rain-2015.json', function(data) {
-					options.series[1].data = data;
-                $.getJSON('Data/Rain-2016.json', function(data) {
-                          options.series[2].data = data;
+		$.getJSON('Data/Rain-2014.json', function(data) {
+			options.series[0].data = data;
+			$.getJSON('Data/Rain-2015.json', function(data) {
+				options.series[1].data = data;
+				$.getJSON('Data/Rain-2016.json', function(data) {
+					options.series[2].data = data;
                        					var chart = new Highcharts.Chart(options);
-              });
 				});
+			});
 		});
 
 	});
@@ -329,14 +324,14 @@
 			}]
 		};
 
-			$.getJSON('Data/Sun-2014.json', function(data) {
-				options.series[0].data = data;
-				$.getJSON('Data/Sun-2015.json', function(data) {
-					options.series[1].data = data;
-                  $.getJSON('Data/Sun-2016.json', function(data) {
-                        options.series[2].data = data;
-		         			var chart = new Highcharts.Chart(options);
-                                        });
+		$.getJSON('Data/Sun-2014.json', function(data) {
+			options.series[0].data = data;
+			$.getJSON('Data/Sun-2015.json', function(data) {
+				options.series[1].data = data;
+				$.getJSON('Data/Sun-2016.json', function(data) {
+					options.series[2].data = data;
+ 	         			var chart = new Highcharts.Chart(options);
+				});
 			});
 		});
 

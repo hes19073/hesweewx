@@ -32,7 +32,12 @@
  <div id="hes11"> 
     #include $Extras.header
    <div id="stats_group">
-    #include $Extras.current
+    #set global $period1 = $yesterday
+    #set global $period2 = $day
+    #set global $period1Name = "Gestern"
+    #set global $period2Name = "Heute"
+
+    #include $Extras.chart
    </div> <!--End class "stats_group" -->  
 
  <div id="content">        
@@ -85,6 +90,16 @@
                 <td class="allstats_label">Luftdruck</td>
                 <td class="allstats_data"> $alltime.barometer.max <br /> ($alltime.barometer.maxtime) </td>
                 <td class="allstats_datak"> $alltime.barometer.min <br /> ($alltime.barometer.mintime) </td>
+              </tr>
+              <tr>
+                <td class="allstats_label">Luftdichte</td>
+                <td class="allstats_data"> $alltime.airDensity.max <br /> ($alltime.airDensity.maxtime) </td>
+                <td class="allstats_datak"> $alltime.airDensity.min <br /> ($alltime.airDensity.mintime) </td>
+              </tr>
+              <tr>
+                <td class="allstats_label">Winddruck</td>
+                <td class="allstats_data"> $alltime.windDruck.max <br /> ($alltime.windDruck.maxtime) </td>
+                <td class="allstats_datak"> $alltime.windDruck.min <br /> ($alltime.windDruck.mintime) </td>
               </tr>
               <tr>
                 <td class="allstats_label">Wind</td>
@@ -173,8 +188,8 @@
              #if $day.UV.has_data
               <tr>
                 <td class="allstats_label">UV</td>
-                <td class="allstats_data"> $alltime($data_binding='uv_binding').UV.max 
-                                   <br /> ($alltime($data_binding='uv_binding').UV.maxtime) </td><td></td>
+                <td class="allstats_data"> $alltime.UV.max 
+                                   <br /> ($alltime.UV.maxtime) </td><td></td>
               </tr>
              #end if
              #if $day.ET.has_data and $day.ET.sum.raw > 0.0
@@ -185,7 +200,7 @@
              #end if
              #if $day.radiation.has_data
               <tr>
-                <td class="allallstats_label">Globalstrahlung</td>
+                <td class="allstats_label">Globalstrahlung</td>
                 <td class="allstats_data"> $alltime.radiation.max <br /> ($alltime.radiation.maxtime) </td><td></td>
               </tr>
              #end if
