@@ -20,5 +20,12 @@ schema = [
     ('gasO_sensor','INTEGER'),
     ('gasN_sensor','INTEGER'),
     ('gasx_sensor','INTEGER'),
+    ('lightD_sensor','INTEGER'),
+    ('dust_sensor','INTEGER'),
+    ('lightIn_sensor','INTEGER'),
+    ('adc_sensor' 'INTEGER'),
+    ('temp','INTEGER'),
+    ('pressure','INTEGER'),
+    ('altitude','INTEGER'),
     ]
 

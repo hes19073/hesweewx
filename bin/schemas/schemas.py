@@ -90,4 +90,8 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
                         ('sunshinehours',        'REAL'),
                         ('sunshineS',            'REAL'),
                         ('snow',                 'REAL'),
-                        ('snowRate',             'REAL')]
+                        ('snowRate',             'REAL'),
+                        ('wetBulb',              'REAL'),
+                        ('cbIndex',              'REAL'),
+                        ('airDensity',           'REAL'),
+                        ('windDruck',            'REAL')]
