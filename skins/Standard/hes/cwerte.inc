@@ -63,30 +63,6 @@
                   $werte.outHumidity.min&nbsp;$wertum&nbsp; $werte.outHumidity.mintime
                 </td>
               </tr>
-            #if $werte.extraHumid1.has_data
-             <tr>
-                <td class="stats_label">
-                  Luftfeuchte (2) (max)<br />
-                  Luftfeuchte (2) (min)
-                </td>
-                <td class="stats_data">
-                  $werte.extraHumid1.max&nbsp;$wertum&nbsp; $werte.extraHumid1.maxtime<br />
-                  $werte.extraHumid1.min&nbsp;$wertum&nbsp; $werte.extraHumid1.mintime
-                </td>
-              </tr>
-            #end if
-            #if $werte.extraHumid2.has_data
-             <tr>
-                <td class="stats_label">
-                  Luftfeuchte (3) (max)<br />
-                  Luftfeuchte (3) (min)
-                </td>
-                <td class="stats_data">
-                  $werte.extraHumid2.max&nbsp;$wertum&nbsp; $werte.extraHumid2.maxtime<br />
-                  $werte.extraHumid2.min&nbsp;$wertum&nbsp; $werte.extraHumid2.mintime
-                </td>
-              </tr>
-            #end if
               <tr>
                 <td class="stats_label">
                   Hum-Index (max)<br />
@@ -105,6 +81,16 @@
                 <td class="stats_data">
                   $werte.barometer.max&nbsp;$wertum&nbsp; $werte.barometer.maxtime<br />
                   $werte.barometer.min&nbsp;$wertum&nbsp; $werte.barometer.mintime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Luftdichte (max)<br />
+                  Luftdichte (min)
+                </td>
+                <td class="stats_data">
+                  $werte.airDensity.max&nbsp;$wertum&nbsp; $werte.airDensity.maxtime<br />
+                  $werte.airDensity.min&nbsp;$wertum&nbsp; $werte.airDensity.mintime
                 </td>
               </tr>
               <tr>
@@ -255,11 +241,10 @@
               <tr>
                 <td class="stats_label">
                   Helligkeit (max)<br />
-                  Helligkeit (min) 
+                  &nbsp; 
                 </td>
                 <td class="stats_data">
-                  $werte.lighting.max&nbsp;$wertum&nbsp; $werte.lighting.maxtime<br />
-                  $werte.lighting.min&nbsp;$wertum&nbsp; $werte.lighting.mintime
+                  $werte.lighting.max&nbsp;$wertum&nbsp; $werte.lighting.maxtime
                 </td>
               </tr>
             #end if
@@ -271,19 +256,6 @@
                </td>
                 <td class="stats_data">
                   $werte.UV.max&nbsp;$wertum&nbsp; $werte.UV.maxtime<br />
-                </td>
-              </tr>
-             #end if
-
-             #if $werte.ET.has_data and $werte.ET.sum.raw >0.0
-              <tr>
-                <td class="stats_label">
-                  ET berechnet (max)<br />
-                  ET berechnet (min)
-                </td>
-                <td class="stats_data">
-                  $werte.ET.max&nbsp;$wertum&nbsp; $werte.ET.maxtime<br />
-                  $werte.ET.min&nbsp;$wertum&nbsp; $werte.ET.mintime
                 </td>
               </tr>
              #end if

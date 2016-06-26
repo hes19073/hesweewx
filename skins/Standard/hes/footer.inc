@@ -30,10 +30,10 @@
 <hr />
 
 <div class="navbar">
-   <input type="button" value=" Test " onclick="openURL('ss/index.html')" />        
+   <input type="button" value=" SteelGauge  " onclick="openURL('ss/index.html')" />        
    <input type="button" value="   Aktuell   " onclick="openURL('index.html')" />
-   <input type="button" value="  Vorschau   " onclick="openURL('forecast.html')" />
    <input type="button" value="    OWFS     " onclick="openURL('index2.html')" />
+   <input type="button" value="   Prognose  " onclick="openURL('forecastT.html')" />
    <input type="button" value="     Tag     " onclick="openURL('day.html')" />
    <input type="button" value="    Woche    " onclick="openURL('week.html')" />
    <input type="button" value="    Monat    " onclick="openURL('month.html')" />

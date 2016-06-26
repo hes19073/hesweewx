@@ -8,7 +8,7 @@
 #if $varExists('forecast')
 
 ## Which forecast should be displayed?  options are WU or NWS
-#set $forecast_source = 'WU'
+#set $forecast_source = 'WWO'
 
 ## How many forecast periods should be considered?
 #set $num_periods = 120
@@ -22,9 +22,9 @@
 #set $show_dewpoint = 1
 #set $show_humidity = 1
 #set $show_wind = 1
-#set $show_uv = 1
+#set $show_uv = 0
 #set $show_feelslike = 1
-#set $show_barometer = 1
+#set $show_pressure = 1
 #set $show_tides = 0
 #set $show_sun = 1
 #set $show_moon = 1
@@ -83,8 +83,8 @@ function toggle(control, id) {
 #if $show_humidity
         <td class='col-humidity'><img src='xicons/thermometer-blue.png' class='legend-img' alt='H' title='humidity' /><br/><span class='units'>$unit.label.outHumidity</span></td>
 #end if
-#if $show_barometer
-        <td class='col-temp'><img src='xicons/thermometer.png' class='legend-img' alt='T' title='barometer' /><br/><span class='units'>$unit.label.barometer</span></td>
+#if $show_pressure
+        <td class='col-temp'><img src='xicons/thermometer.png' class='legend-img' alt='T' title='pressure' /><br/><span class='units'>$unit.label.pressure</span></td>
 #end if
 #if $show_wind
         <td class='col-wind' style='text-align:center'><img src='xicons/flag.png' class='legend-img' alt='W' title='wind' /><br/><span class='units'>$unit.label.wind</span></td>
@@ -184,8 +184,8 @@ function toggle(control, id) {
 #if $show_humidity
         <td class='col-humidity'>$summary.humidityMax.nolabel('%.0f',' ')<br/>$summary.humidityMin.nolabel('%.0f',' ')</td>
 #end if
-#if $show_barometer
-        <td class='col-temp'><span class='temphi'>$summary.barometerMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.barometerMin.nolabel('%.0f')</span></td>
+#if $show_pressure
+        <td class='col-temp'><span class='temphi'>$summary.pressureMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.pressureMin.nolabel('%.0f')</span></td>
 #end if
 #if $show_wind
         <td class='col-wind'
@@ -316,8 +316,8 @@ function toggle(control, id) {
 #if $show_humidity
         <td class='col-humidity'>$period.humidity.nolabel('%.0f',' ')</td>
 #end if
-#if $show_barometer
-        <td class='col-temp'>$period.barometer.nolabel('%.0f')</td>
+#if $show_pressure
+        <td class='col-temp'>$period.pressure.nolabel('%.0f')</td>
 #end if
 #if $show_wind
         <td class='col-wind'
@@ -419,7 +419,7 @@ function toggle(control, id) {
 #end if
       $forecast_source forecast
 #if $wloc is not None and $wloc != ''
- for $wloc
+    fuer $wloc
 #end if
 #if $wts is not None and $wts != ''
  issued on $wts

@@ -1,21 +1,5 @@
 #encoding UTF-8
 ## hes: current.inc  2015-02-23 18:24:18Z hes $
-##Wet bulb calculations
-##
-#try
-    #set $Tc = $current.outTemp.raw
-    #set $RH = $current.outHumidity.raw
-    #set $P = $current.pressure.raw
-    #set $Tdc = (($Tc - (14.55 + 0.114 * $Tc) * (1 - (0.01 * $RH)) - ((2.5 + 0.007 * $Tc) * (1 - (0.01 * $RH))) ** 3 - (15.9 + 0.117 * $Tc) * (1 - (0.01 * $RH)) ** 14))
-    #set $E = (6.11 * 10 ** (7.5 * $Tdc / (237.7 + $Tdc)))
-    #set $WBc = (((0.00066 * $P) * $Tc) + ((4098 * $E) / ((Tdc + 237.7) ** 2) * $Tdc)) / ((0.00066 * $P) + (4098 * $E) / (($Tdc + 237.7) ** 2))
-    #set $WB = $WBc
-    #set $WB = "%.2f °C" % $WB
-#except
-    #set $WB = '0'
-#end try
-##End Wet bulb calculations
-
 
 <div class="stats">
  <div class="stats_header">
@@ -67,18 +51,6 @@
     <td class="stats_label">Luftfeuchte<br />&nbsp;</td>
     <td class="stats_data">$current.outHumidity</td>
    </tr>
-  #if $day.extraHumid1.has_data
-   <tr>
-    <td class="stats_label">Luftfeuchte 2. Messstelle<br />&nbsp;</td>
-    <td class="stats_data">$current.extraHumid1</td>
-   </tr>
-  #end if
-  #if $day.extraHumid2.has_data
-   <tr>
-    <td class="stats_label">Luftfeuchte 3. Messstelle<br />&nbsp;</td>
-    <td class="stats_data">$current.extraHumid2</td>
-   </tr>
-  #end if
    <tr>
     <td class="stats_label">Luftdruck<br />&nbsp;</td>
     <td class="stats_data">$current.barometer</td>
@@ -88,9 +60,19 @@
     <td class="stats_data">$trend.barometer</td>
    </tr>
    <tr>
+    <td class="stats_label">Luftdichte<br />&nbsp;</td>
+    <td class="stats_data">$current.airDensity</td>
+   </tr>
+   <tr>
     <td class="stats_label">Wind<br />&nbsp;</td>
     <td class="stats_data">$current.windSpeed aus $current.windDir ($current.windDir.ordinal_compass)</td>
    </tr>
+  #if $day.windDruck.has_data
+   <tr>
+    <td class="stats_label">Winddruck<br />&nbsp;</td>
+    <td class="stats_data">$current.windDruck</td>
+   </tr>
+  #end if
    <tr>
     <td class="stats_label">Wind in Beaufort<br />&nbsp;</td>
    #if $current.windSpeed.raw < 2
@@ -141,6 +123,12 @@
     <td class="stats_label">Letzter Niederschlag<br />&nbsp;</td>
     <td class="stats_data">$lastrain_day <br /> $lastrain_delta_time</td>
   </tr>
+  #if $day.ET.has_data and $day.ET.sum.raw > 0.0
+   <tr>
+    <td class="stats_label">ET<br />Evapotranspiration</td>
+    <td class="stats_data">$current.ET</td>
+   </tr>
+  #end if
   <tr><td>1-Wire  OWFS USB</td><td>&nbsp;</td></tr>
   #if $day.extraTemp4.has_data
   <tr>
@@ -200,12 +188,6 @@
    #else if $current.UV.raw > 10.5
     <td class="stats_data" style="background-color: violet">$current.UV</td>
    #end if
-   </tr>
-  #end if
-  #if $day.ET.has_data and $day.ET.sum.raw > 0.0
-   <tr>
-    <td class="stats_label">ET<br />Berechnung in weewx&nbsp;</td>
-    <td class="stats_data">$current.ET</td>
    </tr>
   #end if
   #if $day.radiation.has_data
@@ -307,17 +289,44 @@
      <td class="stats_label">Taupunkt (innen)<br />&nbsp;</td>
      <td class="stats_data">$current.inDewpoint</td>
    </tr>
+   <tr><td>Berechnungen</td><td>Info</td></tr>
+   <tr>
+    <td class="stats_label">Wachtumstage Monat<br />&nbsp;</td>
+    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   <tr>
+    <td class="stats_label">Wachtumstage Jahr<br />&nbsp;</td>
+    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Heiztage im Monat<br />&nbsp;</td>
+    <td>$month.outTemp.max_le((15.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   <tr>
+    <td class="stats_label">Heiztage im Jahr<br />&nbsp;</td>
+    <td>$year.outTemp.max_le((15.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
    <tr>
      <td class="stats_label">Masszahl für den Wärmebedarfs<br /> eine Gebäudes. Basis 18 °C.</td>
-     <td class="stats_data">$day.heatdeg.sum</td>
+     <td>$day.heatdeg.sum</td>
    </tr>
    <tr>
      <td class="stats_label">Masszahl zur Kühlung <br />eines Gebäudes. Basis 18 °C</td>
-     <td class="stats_data">$day.cooldeg.sum</td>
+     <td>$day.cooldeg.sum</td>
    </tr>
    <tr>
     <td class="stats_label">Kühlgrenztemperatur<br />Feuchte Kugel Temperatur</td>
-    <td class="stats_data">$WB</td>
+    <td>$current.wetBulb</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Brandgefahr-<br />Index</td>
+    <td>$current.cbIndex&nbsp;/&nbsp;100</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Stations-<br />spannung</td>
+    <td>$current.consBatteryVoltage</td>
+   </tr>
+   <tr>
+    <td class="stats_label">ISS <br />Signal</td>
+    <td>$current.rxCheckPercent</td>
    </tr>
   </tbody>
  </table>

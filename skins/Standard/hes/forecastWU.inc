@@ -1,165 +1,43 @@
 ## forecast display for weewx - Copyright 2012-2013 Matthew Wall
 ## $Id: forecast_table.inc 1965 2014-01-27 19:26:24Z mwall $
-## version = 0.3
-##
-## Include this file to display forecast data.  This file uses xicons from the
+## Include this file to display forecast data.  This file uses icons from the
 ## forecast icon set.
-##
-## To override the default settings in this file, use the following syntax in
-## skin.conf or weewx.conf:
-##
-## [Extras]
-##     ...
-##     [[forecast_table_settings]]
-##         forecast_source = NWS
-##         num_periods = 40
-##         show_sun = 1
-##         show_moon = 1
-##         show_tides = 1
+
+## version = 0.1.uv
 
 #if $varExists('forecast')
 
-## Which forecast should be displayed?  Options include WU, NWS
-#set $forecast_source = $getVar('Extras.forecast_table_settings.forecast_source', 'WU')
+## Which forecast should be displayed?  options are WU or NWS
+#set $forecast_source = 'WU'
 
 ## How many forecast periods should be considered?
-## Up to 40 for NWS, up to 240 for WU.  More periods take longer to generate.
-#set $num_periods = int($getVar('Extras.forecast_table_settings.num_periods', 40))
+#set $num_periods = 120
 
 ## Which columns should be displayed?
-#set $show_legend = int($getVar('Extras.forecast_table_settings.show_legend', 1))
-#set $show_hourly = int($getVar('Extras.forecast_table_settings.show_hourly', 0))
-#set $show_day = int($getVar('Extras.forecast_table_settings.show_day', 1))
-#set $show_date = int($getVar('Extras.forecast_table_settings.show_date', 1))
-#set $show_outlook = int($getVar('Extras.forecast_table_settings.show_outlook', 1))
-#set $show_temp = int($getVar('Extras.forecast_table_settings.show_temp', 1))
-#set $show_dewpoint = int($getVar('Extras.forecast_table_settings.show_dewpoint', 0))
-#set $show_humidity = int($getVar('Extras.forecast_table_settings.show_humidity', 0))
-#set $show_wind = int($getVar('Extras.forecast_table_settings.show_wind', 1))
-#set $show_tides = int($getVar('Extras.forecast_table_settings.show_tides', 0))
-#set $show_sun = int($getVar('Extras.forecast_table_settings.show_sun', 0))
-#set $show_moon = int($getVar('Extras.forecast_table_settings.show_moon', 0))
-#set $show_pop = int($getVar('Extras.forecast_table_settings.show_pop', 1))
-#set $show_precip = int($getVar('Extras.forecast_table_settings.show_precip', 1))
-#set $show_obvis = int($getVar('Extras.forecast_table_settings.show_obvis', 1))
+#set $show_legend = 1
+#set $show_hourly = 1
+#set $show_date = 1
+#set $show_outlook = 1
+#set $show_temp = 1
+#set $show_dewpoint = 1
+#set $show_humidity = 1
+#set $show_wind = 1
+#set $show_uv = 1
+#set $show_feelslike = 1
+#set $show_barometer = 1
+#set $show_tides = 0
+#set $show_sun = 1
+#set $show_moon = 1
+#set $show_pop = 1
+#set $show_precip = 1
+#set $show_obvis = 1
 
-#set $wloc = ''
+#set $wlog = ''
 #set $wts = ''
 
 ## These are the styles used by the forecast display.  Putting the styles
 ## like this works (in page, not in head), but it is not good practice.
-<style>
-.forecast {
-  clear: both;
-}
-.forecast td {
-  font-size: 80%;
-  text-align: left;
-}
-.forecast table {
-  table-layout: fixed;
-}
-.legend {
-}
-.legend tr {
-  vertical-align: top;
-}
-.summary {
-}
-.summary tr {
-  vertical-align: top;
-}
-.period {
-}
-.disclosure {
-  width: 20px;
-}
-.col-outlook {
-  width: 36px;
-}
-.col-date {
-  width: 64px;
-}
-.col-temp {
-  width: 30px;
-}
-.col-dewpoint {
-  width: 30px;
-}
-.col-humidity {
-  width: 30px;
-}
-.col-wind {
-  width: 60px;
-  height: 32px;
-}
-.col-pop {
-  width: 40px;
-}
-.col-precip {
-}
-.col-obvis {
-}
-.col-tides {
-  width: 80px;
-}
-.col-sun {
-  width: 30px;
-}
-.col-moon {
-  width: 30px;
-}
-.col-moonphase {
-  width: 30px;
-}
-.units {
-  color: #aaaaaa;
-}
-.day {
-  font-size: 120%;
-}
-.hour {
-  font-size: 80%;
-}
-.date {
-  font-size: 80%;
-}
-.temphi {
-  color: #ff4444;
-}
-.templo {
-  color: #4444ff;
-}
-.windgust {
-  color: #aaaaaa;
-}
-.winddir {
-  color: #aaaaaa;
-}
-.winddir-img {
-  width: 32px;
-}
-.outlook-img {
-  width: 32px;
-}
-.legend-img {
-  width: 15px;
-}
-.pop-img {
-  width: 8px;
-}
-.precip-img {
-  width: 32px;
-}
-.obvis-img {
-  width: 32px;
-}
-.sources p {
-  font-size: 8pt;
-  font-style: italic;
-  color: #aaaaaa;
-}
-</style>
+##<style>
 <script type='text/javascript'>
 function toggle(control, id) {
   elem = document.getElementById(id + '.hours');
@@ -178,7 +56,7 @@ function toggle(control, id) {
 <div class='forecast'>
 
 ## Get any tide predictions
-#set $tides = $forecast.xtides(startofday=True)
+##set $tides = $forecast.xtides
 
 #if $show_legend
   <div class='legend'>
@@ -187,7 +65,7 @@ function toggle(control, id) {
 #if $show_hourly
         <td class='disclosure'></td>
 #end if
-#if $show_day or $show_date
+#if $show_date
         <td class='col-date'></td>
 #end if
 #if $show_outlook
@@ -196,14 +74,23 @@ function toggle(control, id) {
 #if $show_temp
         <td class='col-temp'><img src='xicons/thermometer-red.png' class='legend-img' alt='T' title='temperature' /><br/><span class='units'>$unit.label.outTemp</span></td>
 #end if
+#if $show_feelslike
+        <td class='col-temp'><img src='xicons/thermometer-red.png' class='legend-img' alt='T' title='temperature' /><br/><span class='units'>$unit.label.outTemp</span></td>
+#end if
 #if $show_dewpoint
         <td class='col-dewpoint'><img src='xicons/thermometer-dewpoint.png' class='legend-img' alt='D' title='dewpoint' /><br/><span class='units'>$unit.label.dewpoint</span></td>
 #end if
 #if $show_humidity
         <td class='col-humidity'><img src='xicons/thermometer-blue.png' class='legend-img' alt='H' title='humidity' /><br/><span class='units'>$unit.label.outHumidity</span></td>
 #end if
+#if $show_barometer
+        <td class='col-temp'><img src='xicons/thermometer.png' class='legend-img' alt='T' title='barometer' /><br/><span class='units'>$unit.label.barometer</span></td>
+#end if
 #if $show_wind
         <td class='col-wind' style='text-align:center'><img src='xicons/flag.png' class='legend-img' alt='W' title='wind' /><br/><span class='units'>$unit.label.wind</span></td>
+#end if
+#if $show_uv
+        <td class='col-uv' style='text-align:center'><img src='xicons/uv.png' class='legend-img' alt='UV' title='UV' /><br/><span class='units'>&nbsp;</span></td>
 #end if
 #if $show_tides and len($tides) > 0
         <td class='col-tides'><img src='xicons/water.png' class='legend-img' alt='tide' title='tides' /><br/><span class='units'>$unit.label.altitude</span></td>
@@ -232,7 +119,7 @@ function toggle(control, id) {
 #end if ## show_legend
 
 
-## Some forecasts return 16-points of the compass, but the xicons support
+## Some forecasts return 16-points of the compass, but the icons support
 ## only 8-points.  This dictionary maps the 16 points to 8 points.
 #set $wind_dir_dict = {'SSW':'SW','WSW':'SW','NNW':'NW','WNW':'NW','SSE':'SE','ESE':'SE','NNE':'NE','ENE':'NE'}
 
@@ -243,7 +130,7 @@ function toggle(control, id) {
   #set $thisdate = $period.event_ts.format('%Y.%m.%d')
   #set $smryid = $forecast_source + '.' + $thisdate
   #set $hourid = $forecast_source + '.' + $thisdate + '.hours'
-  #set $alm = $forecast.almanac(ts=$period.event_ts.raw+10)
+  #set $alm = $forecast.almanac(ts=$period.event_ts.raw)
   #set $nextday_ts = time.mktime(time.strptime($thisdate + ' 00:00', '%Y.%m.%d %H:%M')) + 24*3600
   #if $alm.hasExtras
     #set $sunrise_ts = $alm.sunrise.raw
@@ -274,15 +161,8 @@ function toggle(control, id) {
 #if $show_hourly
         <td class='disclosure'><img src='xicons/triangle-right.png' onclick="toggle(this, '$smryid')" /></td>
 #end if
-#if $show_day or $show_date
-        <td class='col-date'>
-#if $show_day
-          <span class='day'>$summary.event_ts.format('%a')</span><br/>
-#end if
 #if $show_date
-          <span class='date'>$summary.event_ts.format('%d %b %Y')</span>
-#end if
-        </td>
+        <td class='col-date'><span class='day'>$summary.event_ts.format('%a')</span><br/><span class='date'>$summary.event_ts.format('%d %b %Y')</span></td>
 #end if
 #if $show_outlook
         <td class='col-outlook'>
@@ -295,11 +175,17 @@ function toggle(control, id) {
 #if $show_temp
         <td class='col-temp'><span class='temphi'>$summary.tempMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.tempMin.nolabel('%.0f')</span></td>
 #end if
+#if $show_feelslike
+        <td class='col-temp'><span class='temphi'>$summary.feelslikeMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.feelslikeMin.nolabel('%.0f')</span></td>
+#end if
 #if $show_dewpoint
         <td class='col-dewpoint'>$summary.dewpointMax.nolabel('%.0f')<br/>$summary.dewpointMin.nolabel('%.0f')</td>
 #end if
 #if $show_humidity
         <td class='col-humidity'>$summary.humidityMax.nolabel('%.0f',' ')<br/>$summary.humidityMin.nolabel('%.0f',' ')</td>
+#end if
+#if $show_barometer
+        <td class='col-temp'><span class='temphi'>$summary.barometerMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.barometerMin.nolabel('%.0f')</span></td>
 #end if
 #if $show_wind
         <td class='col-wind'
@@ -320,13 +206,16 @@ function toggle(control, id) {
           <span class='windgust'>$summary.windGust.nolabel('%.0f',' ')</span>$summary.windChar
         </td>
 #end if
+#if $show_uv
+        <td class='col-uv'><span class='temphi'>$summary.uvIndexMax.nolabel('%.0f')</span><br/><span class='templo'>$summary.uvIndexMin.nolabel('%.0f')</span></td>
+#end if
 #if $show_tides and len($tides) > 0
         <td class='col-tides'>
-          <table cellspacing='0' cellpadding='0'>
+          <table cellspacing='0' cellpadding='0' width='100%'>
   #for $tide in $tides
     #if $summary.event_ts.raw <= $tide.event_ts.raw < $summary.event_ts.raw + $summary.duration
             <tr>
-              <td style='font-size:100%'>$tide.event_ts.format('%H:%M')</td><td style='font-size:100%; padding-left:4px; padding-right:10px;'>$tide.hilo</td><td style='font-size:100%; text-align:right;'>$tide.offset.nolabel('%.1f')</td>
+              <td style='font-size:100%'>$tide.event_ts.format('%H:%M')</td><td style='font-size:100%'>$tide.hilo</td><td style='font-size:100%; text-align:right;'>$tide.offset.nolabel('%.1f')</td>
             </tr>
     #end if
   #end for
@@ -400,7 +289,7 @@ function toggle(control, id) {
   #set $hour = $period.event_ts.format('%H:%M')
       <tr>
         <td class='disclosure'></td>
-#if $show_day or $show_date
+#if $show_date
         <td class='col-date'>$hour<br/></td>
 #end if
 #if $show_outlook
@@ -418,11 +307,17 @@ function toggle(control, id) {
 #if $show_temp
         <td class='col-temp'>$period.temp.nolabel('%.0f')</td>
 #end if
+#if $show_feelslike
+        <td class='col-temp'>$period.feelslike.nolabel('%.0f')</td>
+#end if
 #if $show_dewpoint
         <td class='col-dewpoint'>$period.dewpoint.nolabel('%.0f')</td>
 #end if
 #if $show_humidity
         <td class='col-humidity'>$period.humidity.nolabel('%.0f',' ')</td>
+#end if
+#if $show_barometer
+        <td class='col-temp'>$period.barometer.nolabel('%.0f')</td>
 #end if
 #if $show_wind
         <td class='col-wind'
@@ -433,6 +328,9 @@ function toggle(control, id) {
             >
           $period.windSpeed.nolabel('%.0f',' ') <span class='windgust'>$period.windGust.nolabel('%.0f',' ')</span>$period.windChar<br/>
         </td>
+#end if
+#if $show_uv
+        <td class='col-temp'>$period.uvIndex.nolabel('%.0f')</td>
 #end if
 #if $show_tides and len($tides) > 0
         <td class='col-tides'>
@@ -456,10 +354,10 @@ function toggle(control, id) {
 #if $show_moon
   #if $alm.hasExtras
         <td class='col-moon'>
-  #if $period.event_ts.raw <= $moonrise_ts < $period.event_ts.raw + $period.duration and $moonrise_ts < $nextday_ts
+  #if $period.event_ts.raw <= $moonrise_ts < $period.event_ts.raw + $period.duration
           $alm.moon.rise
   #end if
-  #if $period.event_ts.raw <= $moonset_ts < $period.event_ts.raw + $period.duration and $moonset_ts < $nextday_ts
+  #if $period.event_ts.raw <= $moonset_ts < $period.event_ts.raw + $period.duration
           $alm.moon.set
   #end if
         </td>

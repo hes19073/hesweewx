@@ -8,10 +8,10 @@
 #if $varExists('forecast')
 
 ## Which forecast should be displayed?  options are WU or NWS
-#set $forecast_source = 'WU'
+#set $forecast_source = 'OWM'
 
 ## How many forecast periods should be considered?
-#set $num_periods = 120
+#set $num_periods = 40
 
 ## Which columns should be displayed?
 #set $show_legend = 1
@@ -19,11 +19,11 @@
 #set $show_date = 1
 #set $show_outlook = 1
 #set $show_temp = 1
-#set $show_dewpoint = 1
+#set $show_dewpoint = 0
 #set $show_humidity = 1
 #set $show_wind = 1
-#set $show_uv = 1
-#set $show_feelslike = 1
+#set $show_uv = 0
+#set $show_feelslike = 0
 #set $show_barometer = 1
 #set $show_tides = 0
 #set $show_sun = 1

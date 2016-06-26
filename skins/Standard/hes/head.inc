@@ -102,14 +102,13 @@
       $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
       H&ouml;he:&nbsp;$station.altitude</p>
   <h2>Aktuelle Messwerte am&nbsp;$current.dateTime&nbsp;Uhr</h2>
-
 <div class='hesmo'>
  <ul>
   <li>Brandgefahr</li>
   <li style="background-color: $cbifarb" >$cbi&nbsp;/&nbsp;100&nbsp;</li>
   <li style="background-color: $cbifarb" >$cbitext</li>
  </ul>
-</div> <!-- ende Mond -->
+</div> <!-- ende Brandgefahr -->
 
 <div class='hesso'>
   <ul>
@@ -117,16 +116,17 @@
    <li style=" $hcwfarb">&nbsp;$current.outTemp</li>
    <li style=" $hcwfarb">$heatColorWord</li>
   </ul>
-</div> <!-- ende sonne  -->
-
+</div> <!-- ende Temp Sonne  -->
+ 
 <div class="navbar">
  <ul id="nav">
   <li><input type="button" value=" Aktuell " onclick="openURL('index.html')" /></li>
   <li><input type="button" value=" OWFS " onclick="openURL('index2.html')" /></li>
+  <!-- <li><input type="button" value=" WH-3080 " onclick="openURL('inWX3080.html')" /></li> -->
   <li><input type="button" value=" Heute/ Tag " onclick="openURL('day.html')" /></li>
-  <li><input type="button" value="  Prognose  " onclick="openURL('forecast.html')" />
+  <li><input type="button" value="  Prognose  " onclick="openURL('forecastT.html')" />
    <ul>
-    <li><input type="button" value=" Prognose-weewx " onclick="openURL('forecast.html')" /></li>
+    <li><input type="button" value=" Prognose-weewx " onclick="openURL('forecastT.html')" /></li>
     <li><input type="button" value="  WU-Prognose   " onclick="openURL('forecastkr.html')" /></li>
     <li><input type="button" value="  IMECKLEN20    " onclick="openURL('http://www.wunderground.com/cgi-bin/findweather/hdfForecast?query=53.606%2C11.341&amp;sp=IMECKLEN20')" /></li>
    </ul>
@@ -144,10 +144,11 @@
     <li><input type="button" value=" Die Woche " onclick="openURL('week.html')" /></li>
     <li><input type="button" value=" Der Monat " onclick="openURL('month.html')" /></li>
     <li><input type="button" value=" Das Jahr_ " onclick="openURL('year.html')" /></li>
-    <li><input type="button" value=" Rekorde__ " onclick="openURL('alltime.html')" /></li>
+    <li><input type="button" value=" _Rekorde__ " onclick="openURL('alltime.html')" /></li>
     <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
     <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
     <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
+    <li><input type="button" value=" Sonnentage " onclick="openURL('sola.html')" /></li>
     <li><input type="button" value=" Tabellen >> " onclick="openURL('week-table.html')" />
      <ul>
       <li><input type="button" value=" Die Woche " onclick="openURL('week-table.html')" /></li>
@@ -174,6 +175,7 @@
      </ul>
     </li>
     <li><input type="button" value=" Kalenderjahr " onclick="openURL('year-table.html')" /></li>
+    <li><input type="button" value=" Kalenderjahre " onclick="openURL('yearhc.html')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" Wetternetzwerk " onclick="openURL('index.html')" />
@@ -185,6 +187,7 @@
     <li><input type="button" value=" OWM " onclick="openURL('http://openweathermap.org/city/2888316')" /></li>
     <li><input type="button" value=" wetter.com " onclick="openURL('http://www.wetter.com/wetter_aktuell/wetternetzwerk/station/12853/dashboard/')" /></li>
     <li><input type="button" value=" weathercloud " onclick="openURL('http://app.weathercloud.net/d0868076886')" /></li>
+    <li><input type="button" value=" AWEKAS " onclick="openURL('http://www.awekas.at/de/instrument.php?id=11042')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" WEEWX  " onclick="openURL('http://www.weewx.com')" />
@@ -195,11 +198,13 @@
     <li><input type="button" value=" Daten/Files " onclick="openURL('https://github.com/weewx/weewx')" /></li>
     <li><input type="button" value=" Nutzerforum " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-user')" /></li>
     <li><input type="button" value=" Entwicklung " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-development')" /></li>
+    <li><input type="button" value=" GitHub Hes  " onclick="openURL('https://github.com/hes19073/hesweewx.git')" /></li>
    </ul>
   </li>
   <li><input type="button" value="  RSS  " onclick="openURL('RSS/weewx_rss.xml')" /></li>
   <li><input type="button" value=" Ansicht " onclick="openURL('mobile.html')" />
    <ul>
+    <li><input type="button" value=" SteelGauge " onclick="openURL('ss/index.html')" /></li>
     <li><input type="button" value=" Mobilphone " onclick="openURL('mobile.html')" /></li>
     <li><input type="button" value=" Smartphome " onclick="openURL('smartphone/index.html')" /></li>
    </ul>
@@ -218,7 +223,7 @@
  #end for
     <option selected>- Monat -</option>
     </select>
-
+ 
  &#8656;&nbsp;NOAA-Daten-Auswahl:&nbsp;&#8658;
    <select NAME=noaaselect onchange="openNoaaFile(value)">
    #for $yr in $SummaryByYear
