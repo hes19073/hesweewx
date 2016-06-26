@@ -332,7 +332,9 @@ def modify_config(config_dict, stn_info, logger, debug=False):
                     logger.log("Using %s for %s" % (stn_info[p], p), level=2)
                 config_dict['Station'][p] = stn_info[p]
         # Update units display with any stn_info overrides
-        if stn_info.get('units') is not None:
+        if (stn_info.get('units') is not None and
+            'StdReport' in config_dict and
+            'StandardReport' in config_dict['StdReport']):
             if stn_info.get('units') in ['metric', 'metricwx']:
                 if debug:
                     logger.log("Using Metric units for display", level=2)
@@ -865,10 +867,9 @@ def reorder(name_list, ref_list):
     for name in name_list:
         if name not in ref_list:
             result.append(name)
-            
     # Finally, add these, so they are at the very end
     for name in ref_list:
-        if name in ['FTP', 'RSYNC']:
+        if name in name_list and name in ['FTP', 'RSYNC']:
             result.append(name)
             
     # Make sure I have the same number I started with
@@ -1236,6 +1237,7 @@ def mkdir_p(path):
             pass
         else:
             raise
+
 def get_extension_installer(extension_installer_dir):
     """Get the installer in the given extension installer subdirectory"""
     old_path = sys.path

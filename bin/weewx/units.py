@@ -10,7 +10,7 @@
 import locale
 import time
 import syslog
-
+import locale
 import weewx
 import weeutil.weeutil
 from weeutil.weeutil import ListOfDicts
@@ -128,6 +128,9 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "leafWet1"           : "group_count",
                               "leafWet2"           : "group_count",
                               "cbIndex"            : "group_count",
+                              "forecastIcon"       : "group_count",
+                              "currentIcon"        : "group_count",
+                              "vantageForecastIcon" : "group_count",
                               "UV"                 : "group_uv",
                               "consBatteryVoltage" : "group_volt",
                               "heatingVoltage"     : "group_volt",
@@ -135,8 +138,7 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "supplyVoltage"      : "group_volt",
                               "cloudbase"          : "group_altitude",
                               "windrun"            : "group_distance",
-                              "windDruck"          : "group_druck2",
-                              "airDensity"         : "group_druck3",
+                              "distance"           : "group_distance",
                               "lighting"           : "group_lux",
                               "sunshineS"          : "group_elapsed",
                               "beaufort"           : "group_anzahl",
@@ -144,6 +146,15 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "gas"                : "group_anzahl",
                               "ele"                : "group_anzahl",
                               "was"                : "group_anzahl",
+                              "airDensity"         : "group_druck3",
+                              "windDruck"          : "group_druck2",
+                              "air_sensor"         : "group_ppm",
+                              "gas_sensor"         : "group_ppm",
+                              "hcho_sensor"        : "group_ppm",
+                              "gasC_sensor"        : "group_ppm",
+                              "gasO_sensor"        : "group_ppm",
+                              "gasN_sensor"        : "group_ppm",
+                              "gasx_sensor"        : "group_ppm",
                               "mem_total"          : "group_data",
                               "mem_free"           : "group_data",
                               "mem_used"           : "group_data",
@@ -201,8 +212,9 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_volume"      : "gallon",
                        "group_data"        : "byte",
                        "group_distance"    : "mile",
-                       "group_druck3"      : "kg_per_meter_qubit",
-                       "group_druck2"      : "n_per_meter_squared",
+                       "group_ppm"         : "ppm",
+                       "group_druck2"      : "N_per_meter_squared",
+                       "group_druck3"      : "kg_per_meter_qubic",
                        "group_length"      : "inch"})
 
 # This dictionary maps unit groups to a standard unit type in the 
@@ -234,8 +246,9 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_volume"      : "litre",
                            "group_data"        : "byte",
                            "group_distance"    : "km",
-                           "group_druck3"      : "kg_per_meter_qubit",
-                           "group_druck2"      : "n_per_meter_squared",
+                           "group_ppm"         : "ppm",
+                           "group_druck2"      : "N_per_meter_squared",
+                           "group_druck3"      : "kg_per_meter_qubic",
                            "group_length"      : "cm"})
 
 # This dictionary maps unit groups to a standard unit type in the 
@@ -392,10 +405,11 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "watt"               : "%.1f",
                             "watt_hour"          : "%.1f",
                             "anzahl"             : "%.0f",
+                            "ppm"                : "%.1f",
                             "watt_per_meter_squared" : "%.0f",
                             "lume_per_meter_squared" : "%.0f",
-                            "kg_per_meter_qubit"     : "%.4f",
-                            "n_per_meter_squared"    : "%.3f",
+                            "N_per_meter_squared"    : "%.3f",
+                            "kg_per_meter_qubic"     : "%.3f",
                             "NONE"              : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
@@ -444,10 +458,11 @@ default_unit_label_dict = { "amp"               : " amp",
                             "watt_hour"         : " Wh",
                             "anzahl"            : "   ",
                             "kilobyte"          : " KB",
+                            "ppm"               : " ppm", 
                             "watt_per_meter_squared" : " W/m\xc2\xb2",
                             "lume_per_meter_squared" : " lm/m\xc2\xb2",
-                            "kg_per_meter_qubit"     : " kg/m\xc2\xb3",
-                            "n_per_meter_squared"    : " N/m\xc2\xb2",
+                            "N_per_meter_squared"    : " N/m\xc2\xb2",
+                            "kg_per_meter_qubic"     : " kg/m\xc2\xb3",
                             "NONE"              : "" }
 
 # Default strftime formatting to be used in the absence of a skin
@@ -526,6 +541,18 @@ class Formatter(object):
     20.0°C
     >>> print f.toString((83.2, "degree_F", "group_temperature"))
     83.2°F
+    >>> # Try the Spanish locale, which will use comma decimal separators.
+    >>> # For this to work, the Spanish locale must have been installed.
+    >>> # You can do this with the command:
+    >>> #     sudo locale-gen es_ES.UTF-8 && sudo update-locale
+    >>> x = locale.setlocale(locale.LC_NUMERIC, 'es_ES.utf-8')
+    >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=True)
+    83,2°F
+    >>> # Try it again, but overriding the localization:
+    >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=False)
+    83.2°F
+    >>> # Set locale back to default
+    >>> x = locale.setlocale(locale.LC_NUMERIC, '')
     >>> print f.toString((123456789,  "unix_epoch", "group_time"))
     29-Nov-1973 13:33
     >>> print f.to_ordinal_compass((5.0, "degree_compass", "group_direction"))
@@ -632,15 +659,15 @@ class Formatter(object):
             return ''
 
         # Is the label a simple string? If so, return it
-        if isinstance(label, str):
+        if isinstance(label, basestring):
             return label
         else:
             # It is not a simple string. Assume it is a tuple or list
             # Return the singular, or plural, version as requested.
-            return label[plural]
+            return label[1] if plural else label[0]
 
     def toString(self, val_t, context='current', addLabel=True, 
-                 useThisFormat=None, NONE_string=None,
+                 useThisFormat=None, NONE_string=None, 
                  localize=True):
         """Format the value as a string.
         
@@ -659,6 +686,8 @@ class Formatter(object):
         NONE_string: A string to be used if the value val is None.
         [Optional. If not given, the string given unit_format_dict['NONE']
         will be used.]
+        
+        localize: True to localize the results. False otherwise
         """
         if val_t is None or val_t[0] is None:
             if NONE_string is not None: 
@@ -943,9 +972,9 @@ class ValueHelper(object):
         # Then do the format conversion:
         s = self.formatter.toString(vtx, self.context, addLabel=addLabel, 
                                     useThisFormat=useThisFormat, NONE_string=NONE_string, 
-                                    localize=True)
+                                    localize=localize)
         return s
-
+        
     def __str__(self):
         """Return as string"""
         return self.toString()
@@ -1211,6 +1240,13 @@ class GenWithConvert(object):
     ...            'outTemp' : 68.0 + i * 9.0/5.0,
     ...            'usUnits' : weewx.US}
     ...        yield _rec
+    >>> # First, try the raw generator function. Output should be in US
+    >>> for _out in genfunc():
+    ...    print "Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits'])
+    Timestamp: 194758100; Temperature: 68.00; Unit system: 1
+    Timestamp: 194758400; Temperature: 69.80; Unit system: 1
+    Timestamp: 194758700; Temperature: 71.60; Unit system: 1
+    >>> # Now do it again, but with the generator function wrapped by GenWithConvert:
     >>> for _out in GenWithConvert(genfunc(), weewx.METRIC):
     ...    print "Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits'])
     Timestamp: 194758100; Temperature: 20.00; Unit system: 16

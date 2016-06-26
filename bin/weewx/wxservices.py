@@ -45,10 +45,12 @@ class StdWXCalculate(weewx.engine.StdService):
         'humidex',
         'appTemp',
         'beaufort',
-        'ET',
+        #'ET',
         'windrun',
         'windDruck',
         'density',
+        'wetBulb',
+        'cbIndex',
         ]
 
     def __init__(self, engine, config_dict):
@@ -93,7 +95,6 @@ class StdWXCalculate(weewx.engine.StdService):
         self.max_delta_12h = int(svc_dict.get('max_delta_12h', 1800))
 
         # find out which calculations should be performed
-        # we recognize only the names in our dispatch list; others are ignored
         self.calculations = dict()
         # look in the 'Calculations' stanza. if no 'Calculations' stanza, then
         # look directly in the service stanza.
@@ -101,7 +102,7 @@ class StdWXCalculate(weewx.engine.StdService):
         # we recognize only the names in our dispatch list; others are ignored
         for v in self._dispatch_list:
             x = where_to_look.get(v, 'prefer_hardware')
-            if x in ('hardware', 'software', 'prefer_hardware'):
+            if x.lower() in ('hardware', 'software', 'prefer_hardware', 'none'):
                 self.calculations[v] = x
 
         # determine which algorithms to use for the calculations
@@ -122,9 +123,9 @@ class StdWXCalculate(weewx.engine.StdService):
         self.rain_events = []
 
         # report about which values will be calculated...
-        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following values will be calculated: %s" % ','.join(["%s=%s" % (k, self.calculations[k]) for k in self.calculations]))
+        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following values will be calculated: %s" % ', '.join(["%s=%s" % (k, self.calculations[k]) for k in self.calculations]))
         # ...and which algorithms will be used.
-        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following algorithms will be used for calculations: %s" % ','.join(["%s=%s" % (k, self.algorithms[k]) for k in self.algorithms]))
+        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following algorithms will be used for calculations: %s" % ', '.join(["%s=%s" % (k, self.algorithms[k]) for k in self.algorithms]))
 
         # we will process both loop and archive events
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
@@ -229,13 +230,17 @@ class StdWXCalculate(weewx.engine.StdService):
     def calc_rainRate(self, data, data_type):
         # if this is a loop packet then cull and add to the queue
         if data_type == 'loop':
-            events = []
-            for e in self.rain_events:
-                if e[0] > data['dateTime'] - self.rain_period:
-                    events.append((e[0], e[1]))
+            # punt any old events from the event list...
+            if (self.rain_events and
+                self.rain_events[0][0] <= data['dateTime'] - self.rain_period):
+                events = []
+                for e in self.rain_events:
+                    if e[0] > data['dateTime'] - self.rain_period:
+                        events.append((e[0], e[1]))
+                self.rain_events = events
+            # ...then add new rain event if there is one
             if 'rain' in data and data['rain']:
-                events.append((data['dateTime'], data['rain']))
-            self.rain_events = events
+                self.rain_events.append((data['dateTime'], data['rain']))
         # for both loop and archive, add up the rain...
         rainsum = 0
         for e in self.rain_events:
@@ -348,17 +353,31 @@ class StdWXCalculate(weewx.engine.StdService):
         except weedb.DatabaseError:
             pass
 
+
     def calc_density(self, data, data_type):
-        if 'dewpoint' in data and 'outTemp' in data:
+        if 'dewpoint' in data and 'outTemp' in data and 'pressure' in data:
             data['airDensity'] = weewx.wxformulas.density_US(data['dewpoint'], data['outTemp'], data['pressure'])
         else:
             data['airDensity'] = None
 
     def calc_windDruck(self, data, data_type):
-        if 'dewpoint' in data and 'outTemp' in data and 'windSpeed' in data:
+        if 'dewpoint' in data and 'outTemp' in data and 'windSpeed' in data and 'pressure' in data:
              data['windDruck'] = weewx.wxformulas.winddruck_US(data['dewpoint'], data['outTemp'], data['pressure'], data['windSpeed'])
         else:
              data['windDruck'] = None
+
+    def calc_wetBulb(self, data, data_type):
+        if 'outTemp' in data and 'outHumidity' in data and 'pressure' in data:
+             data['wetBulb'] = weewx.wxformulas.wetbulb_Metric(data['outTemp'], data['outHumidity'], data['pressure'])
+        else:
+             data['wetBulb'] = None
+
+    def calc_cbIndex(self, data, data_type):
+        if 'outTemp' in data and 'outHumidity' in data:
+             data['cbIndex'] = weewx.wxformulas.cbindex_Metric(data['outTemp'], data['outHumidity'])
+        else:
+             data['cbIndex'] = None
+
 
     def _get_archive_interval(self, data):
         if 'interval' in data and self.archive_interval != data['interval'] * 60:

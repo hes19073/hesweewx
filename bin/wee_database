@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
@@ -15,14 +15,10 @@ import time
 import user.extensions      #@UnusedImport
 import weecfg
 import weedb
-import weeutil.weeutil
 import weewx.manager
 import weewx.units
-import weecfg
-import weewx
 
 from weeutil.weeutil import TimeSpan
-from weewx.manager import get_database_dict_from_config
 
 description = """Configure the weewx databases. Most of these functions are
 handled automatically by weewx, but they may be useful as a utility in special

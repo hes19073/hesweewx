@@ -68,7 +68,7 @@ class ExtendedStatistics(SearchList):
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter)
 
-
+        
         return [{'alltime': all_stats,
                  'seven_day': seven_day_stats,
                  'thirty_day': thirty_day_stats}]

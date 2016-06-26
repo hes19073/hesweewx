@@ -10,7 +10,7 @@ import math
 import time
 import weewx.uwxutils
 
-INHG_PER_MBAR = 0.0295333727
+INHG_PER_MBAR = 0.0295299830714
 METER_PER_FOOT = 0.3048
 METER_PER_MILE = 1609.34
 MM_PER_INCH = 25.4
@@ -145,7 +145,7 @@ def heatindexF(T, R):
     """
     if T is None or R is None:
         return None
-
+    
     # Formula only valid for temperatures over 80F:
     if T < 80.0 or R  < 40.0:
         return T
@@ -172,7 +172,7 @@ def cooling_degrees(t, base):
 def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     """Calculate the altimeter pressure, given the raw, station pressure in
     inHg and the altitude in feet.
-
+        
     Examples:
     >>> print "%.2f" % altimeter_pressure_US(28.0, 0.0)
     28.00
@@ -262,7 +262,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     Example:
 
     >>> for t in range(0,24):
-    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471)
+    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471) 
     0.00
     0.00
     0.00
@@ -597,7 +597,10 @@ def evapotranspiration_Metric(tmax_C, tmin_C, sr_avg, ws_mps, z_m, lat, ts=None)
     # step 13: convert latitude to radians
     phi = lat * math.pi / 180.0
     # step 14: sunset hour angle
-    w = math.acos( - math.tan(phi) * math.tan(sd))
+    x = -math.tan(phi) * math.tan(sd)
+    if not -1 <= x <= 1: # no et when beyond the reach of the sun
+        return 0
+    w = math.acos(x)
     # step 15: extraterrestrial radiation
     gsc = 0.082
     ra = 24.0 * 60.0 / math.pi * gsc * dr * (w * math.sin(phi) * math.sin(sd) + math.cos(phi) * math.cos(sd) * math.sin(w))
@@ -626,6 +629,7 @@ def evapotranspiration_US(tmax_F, tmin_F, sr_avg, ws_mph, z_ft, lat, ts=None):
     z_m = z_ft * METER_PER_FOOT
     evt = evapotranspiration_Metric(tmax_C, tmin_C, sr_avg, ws_mps, z_m, lat, ts)
     return evt / MM_PER_INCH if evt is not None else None
+
 
 def density_Metric(dp_C, t_C, p_mbar):
     """Calculate the Air density in in kg per m3
@@ -707,17 +711,12 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     """Calculate the Winddruck in N per m2
 
     dp_F - dewpoint in degree Fahrenheit
-
     t_F - temperature in degree Fahrenheit
-
     p_inHg - pressure in inHg
-
     ws_mph - windSpeed in mile per hour
 
     """
     if dp_F is None or t_F is None or p_inHg is None:
-        return None
-    if ws_mph is None or ws_mph < 0:
         return None
 
     t_C = FtoC(t_F)
@@ -729,8 +728,36 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     return wdru_C if wdru_C is not None else None
 
 
-if __name__ == "__main__":
+def wetbulb_Metric(t_C, RH, PP):
+    #  Wet bulb calculations == Kuehlgrenztemperatur, Feuchtekugeltemperatur
+    #  t_C = outTemp
+    #  RH = outHumidity
+    #  PP = pressure
 
+    if t_C is None or RH is None or PP is None:
+         return None
+
+    Tdc = ((t_C - (14.55 + 0.114 * t_C) * (1 - (0.01 * RH)) - ((2.5 + 0.007 * t_C) * (1 - (0.01 * RH))) ** 3 - (15.9 + 0.117 * t_C) * (1 - (0.01 * RH)) ** 14))
+    E = (6.11 * 10 ** (7.5 * Tdc / (237.7 + Tdc)))
+    WBc = (((0.00066 * PP) * t_C) + ((4098 * E) / ((Tdc + 237.7) ** 2) * Tdc)) / ((0.00066 * PP) + (4098 * E) / ((Tdc + 237.7) ** 2))
+    return WBc if WBc is not None else None
+
+
+def cbindex_Metric(t_C, RH):
+    # Chandler Burning Index calculations
+    #  t_C = outTemp 
+    #  RH = outHumidity
+
+    if t_C is None or RH is None:
+         return None
+
+    cdIn = (((110 - 1.373 * RH) - 0.54 * (10.20 - t_C)) * (124 * 10**(-0.0142 * RH)))/60
+    cbIndex = round(cdIn, 1)
+    return cbIndex if cbIndex is not None else None
+
+
+if __name__ == "__main__":
+    
     import doctest
 
     if not doctest.testmod().failed:
