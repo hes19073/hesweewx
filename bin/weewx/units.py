@@ -10,10 +10,33 @@
 import locale
 import time
 import syslog
-import locale
+
 import weewx
 import weeutil.weeutil
 from weeutil.weeutil import ListOfDicts
+
+# Handy conversion constants and functions:
+INHG_PER_MBAR  = 0.0295299875
+MM_PER_INCH    = 25.4
+CM_PER_INCH    = MM_PER_INCH / 10.0
+METER_PER_MILE = 1609.34
+METER_PER_FOOT = METER_PER_MILE / 5280.0
+MILE_PER_KM    = 1000.0 / METER_PER_MILE
+
+def CtoK(x):
+    return x + 273.15
+
+def CtoF(x):
+    return x * 1.8 + 32.0
+
+def FtoC(x):
+    return (x - 32.0) * 5.0 / 9.0
+
+def mps_to_mph(x):
+    return x * 3600.0 / METER_PER_MILE
+
+def kph_to_mph(x):
+    return x * 1000.0 / METER_PER_MILE
 
 class UnknownType(object):
     """Indicates that the observation type is unknown."""
@@ -43,6 +66,10 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "soilMoist2"         : "group_moisture",
                               "soilMoist3"         : "group_moisture",
                               "soilMoist4"         : "group_moisture",
+                              "soilMoist01"        : "group_moisture",
+                              "soilMoist02"        : "group_moisture",
+                              "soilMoist03"        : "group_moisture",
+                              "soilMoist04"        : "group_moisture",
                               "extraHumid1"        : "group_percent",
                               "extraHumid2"        : "group_percent",
                               "extraHumid3"        : "group_percent",
@@ -64,14 +91,14 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "hourRain"           : "group_rain",
                               "monthRain"          : "group_rain",
                               "rain"               : "group_rain",
-                              "snow"               : "group_rain",
+                              "snow"               : "group_snow",
                               "rain24"             : "group_rain",
                               "totalRain"          : "group_rain",
                               "stormRain"          : "group_rain",
                               "yearRain"           : "group_rain",
                               "hailRate"           : "group_rainrate",
                               "rainRate"           : "group_rainrate",
-                              "snowRate"           : "group_rainrate",
+                              "snowRate"           : "group_snowrate",
                               "wind"               : "group_speed",
                               "windGust"           : "group_speed",
                               "windSpeed"          : "group_speed",
@@ -84,7 +111,6 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "humidex"            : "group_temperature",
                               "dewpoint"           : "group_temperature",
                               "inDewpoint"         : "group_temperature",
-                              "feelsLike"          : "group_temperature",
                               "extraTemp1"         : "group_temperature",
                               "extraTemp2"         : "group_temperature",
                               "extraTemp3"         : "group_temperature",
@@ -122,6 +148,10 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "soilTemp3"          : "group_temperature",
                               "soilTemp4"          : "group_temperature",
                               "soilTemp5"          : "group_temperature",
+                              "soilTemp01"         : "group_temperature",
+                              "soilTemp02"         : "group_temperature",
+                              "soilTemp03"         : "group_temperature",
+                              "soilTemp04"         : "group_temperature",
                               "windchill"          : "group_temperature",
                               "wetBulb"            : "group_temperature",
                               "dateTime"           : "group_time",
@@ -136,11 +166,22 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "heatingVoltage"     : "group_volt",
                               "referenceVoltage"   : "group_volt",
                               "supplyVoltage"      : "group_volt",
+                              "cpu_volt"           : "group_volt",
+                              "usb_volt"           : "group_volt",
+                              "core_volt"          : "group_volt",
+                              "cpu_ampere"         : "group_amp",
+                              "usb_ampere"         : "group_amp",
+                              "core_ampere"        : "group_amp",
+                              "powerR"             : "group_power",
+                              "powerG"             : "group_power",
+                              "energyR"            : "group_energy",
+                              "energyG"            : "group_energy",
                               "cloudbase"          : "group_altitude",
                               "windrun"            : "group_distance",
                               "distance"           : "group_distance",
                               "lighting"           : "group_lux",
                               "sunshineS"          : "group_elapsed",
+                              "sunshinehours"      : "group_elapsed",
                               "beaufort"           : "group_anzahl",
                               "lightning"          : "group_anzahl",
                               "gas"                : "group_anzahl",
@@ -198,6 +239,8 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_lux"         : "lume_per_meter_squared",
                        "group_rain"        : "inch",
                        "group_rainrate"    : "inch_per_hour",
+                       "group_snow"        : "inch",
+                       "group_snowrate"    : "inch_per_hour",
                        "group_speed"       : "mile_per_hour",
                        "group_speed2"      : "mile_per_hour2",
                        "group_temperature" : "degree_F",
@@ -232,6 +275,8 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_lux"         : "lume_per_meter_squared",
                            "group_rain"        : "cm",
                            "group_rainrate"    : "cm_per_hour",
+                           "group_snow"        : "cm",
+                           "group_snowrate"    : "cm_per_hour",
                            "group_speed"       : "km_per_hour",
                            "group_speed2"      : "km_per_hour2",
                            "group_temperature" : "degree_C",
@@ -263,10 +308,10 @@ MetricWXUnits['group_speed2']   = "meter_per_second2"
 
 # Conversion functions to go from one unit type to another.
 conversionDict = {
-      'inHg'             : {'mbar'             : lambda x : x * 33.86, 
-                            'hPa'              : lambda x : x * 33.86,
+      'inHg'             : {'mbar'             : lambda x : x / INHG_PER_MBAR, 
+                            'hPa'              : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 25.4},
-      'degree_F'         : {'degree_C'         : lambda x : (x-32.0) * (5.0/9.0)},
+      'degree_F'         : {'degree_C'         : FtoC},
       'degree_F_day'     : {'degree_C_day'     : lambda x : x * (5.0/9.0)},
       'mile_per_hour'    : {'km_per_hour'      : lambda x : x * 1.609344,
                             'knot'             : lambda x : x * 0.868976242,
@@ -282,24 +327,24 @@ conversionDict = {
                             'meter_per_second2': lambda x : x * 0.514444444},
       'inch_per_hour'    : {'cm_per_hour'      : lambda x : x * 2.54,
                             'mm_per_hour'      : lambda x : x * 25.4},
-      'inch'             : {'cm'               : lambda x : x * 2.54,
-                            'mm'               : lambda x : x * 25.4},
-      'foot'             : {'meter'            : lambda x : x * 0.3048},
-      'mmHg'             : {'inHg'             : lambda x : x / 25.4,
+      'inch'             : {'cm'               : lambda x : x * CM_PER_INCH,
+                            'mm'               : lambda x : x * MM_PER_INCH},
+      'foot'             : {'meter'            : lambda x : x * METER_PER_FOOT},
+      'mmHg'             : {'inHg'             : lambda x : x / MM_PER_INCH,
                             'mbar'             : lambda x : x / 0.75006168,
                             'hPa'              : lambda x : x / 0.75006168},
-      'mbar'             : {'inHg'             : lambda x : x / 33.86,
+      'mbar'             : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 0.75006168,
                             'hPa'              : lambda x : x * 1.0},
-      'hPa'              : {'inHg'             : lambda x : x / 33.86,
+      'hPa'              : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 0.75006168,
                             'mbar'             : lambda x : x * 1.0},
-      'degree_C'         : {'degree_F'         : lambda x : x * (9.0/5.0) + 32.0},
+      'degree_C'         : {'degree_F'         : CtoF},
       'degree_C_day'     : {'degree_F_day'     : lambda x : x * (9.0/5.0)},
-      'km_per_hour'      : {'mile_per_hour'    : lambda x : x * 0.621371192,
+      'km_per_hour'      : {'mile_per_hour'    : kph_to_mph,
                             'knot'             : lambda x : x * 0.539956803,
                             'meter_per_second' : lambda x : x * 0.277777778},
-      'meter_per_second' : {'mile_per_hour'    : lambda x : x * 2.23693629,
+      'meter_per_second' : {'mile_per_hour'    : mps_to_mph,
                             'knot'             : lambda x : x * 1.94384449,
                             'km_per_hour'      : lambda x : x * 3.6},
       'meter_per_second2': {'mile_per_hour2'   : lambda x : x * 2.23693629,
@@ -309,11 +354,11 @@ conversionDict = {
                             'mm_per_hour'      : lambda x : x * 10.0},
       'mm_per_hour'      : {'inch_per_hour'    : lambda x : x * .0393700787,
                             'cm_per_hour'      : lambda x : x * 0.10},
-      'cm'               : {'inch'             : lambda x : x * 0.393700787,
+      'cm'               : {'inch'             : lambda x : x / CM_PER_INCH,
                             'mm'               : lambda x : x * 10.0},
-      'mm'               : {'inch'             : lambda x : x * .0393700787,
+      'mm'               : {'inch'             : lambda x : x / MM_PER_INCH,
                             'cm'               : lambda x : x * 0.10},
-      'meter'            : {'foot'             : lambda x : x * 3.2808399 },
+      'meter'            : {'foot'             : lambda x : x / METER_PER_FOOT},
       'dublin_jd'        : {'unix_epoch'       : lambda x : (x-25567.5) * 86400.0},
       'unix_epoch'       : {'dublin_jd'        : lambda x : x/86400.0 + 25567.5},
       'second'           : {'hour'             : lambda x : x/3600.0,
@@ -366,8 +411,8 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "bit"                : "%.0f",
                             "byte"               : "%.0f",
                             "centibar"           : "%.0f",
-                            "cm"                 : "%.2f",
-                            "cm_per_hour"        : "%.2f",
+                            "cm"                 : "%.1f",
+                            "cm_per_hour"        : "%.1f",
                             "cubic_foot"         : "%.1f",
                             "day"                : "%.1f",
                             "degree_C"           : "%.1f",
@@ -413,7 +458,7 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "NONE"              : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
-default_unit_label_dict = { "amp"               : " amp",
+default_unit_label_dict = { "amp"               : " A",
                             "bit"               : " b",
                             "byte"              : " B",
                             "centibar"          : " cb",
@@ -538,19 +583,19 @@ class Formatter(object):
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> f = Formatter()
     >>> print f.toString((20.0, "degree_C", "group_temperature"))
-    20.0째C
+    20.0캜
     >>> print f.toString((83.2, "degree_F", "group_temperature"))
-    83.2째F
+    83.2캟
     >>> # Try the Spanish locale, which will use comma decimal separators.
     >>> # For this to work, the Spanish locale must have been installed.
     >>> # You can do this with the command:
     >>> #     sudo locale-gen es_ES.UTF-8 && sudo update-locale
     >>> x = locale.setlocale(locale.LC_NUMERIC, 'es_ES.utf-8')
     >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=True)
-    83,2째F
+    83,2캟
     >>> # Try it again, but overriding the localization:
     >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=False)
-    83.2째F
+    83.2캟
     >>> # Set locale back to default
     >>> x = locale.setlocale(locale.LC_NUMERIC, '')
     >>> print f.toString((123456789,  "unix_epoch", "group_time"))
@@ -926,16 +971,16 @@ class ValueHelper(object):
     >>> # Use the default converter and formatter:
     >>> vh = ValueHelper(value_t)
     >>> print vh
-    68.0째F
+    68.0캟
     
     Try explicit unit conversion:
     >>> print vh.degree_C
-    20.0째C
+    20.0캜
     
     Do it again, but using a converter:
     >>> vh = ValueHelper(value_t, converter=Converter(MetricUnits))
     >>> print vh
-    20.0째C
+    20.0캜
     
     Extract just the raw value:
     >>> print "%.1f" % vh.raw

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com> and
 #                            Matthew Wall
@@ -28,7 +28,7 @@ usage = """wee_extension --help
 
 Install, list, and uninstall extensions to weewx.
 
-Commands:
+Actions:
 
 --list:      Show installed extensions.
 --install:   Install the specified extension.

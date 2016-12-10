@@ -527,7 +527,7 @@ except Exception:
         except Exception:
             json = None
 
-VERSION = "3.1.3.hes"
+VERSION = "3.2.1.hes"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'forecast: %s: %s' % 
@@ -822,27 +822,26 @@ precip_types = [
     'hail']
 
 directions_label_dict = {
-    'N':   'N ',
-    'NNE': 'NNE ',
-    'NE':  'NE ',
-    'ENE': 'ENE ',
-    'E':   'E ',
-    'ESE': 'ESE ',
-    'SE':  'SE ',
-    'SSE': 'SSE ',
-    'S':   'S ',
-    'SSW': 'SSW ',
-    'SW':  'SW ',
-    'WSW': 'WSW ',
-    'W':   'W ',
-    'WNW': 'WNW ',
-    'NW':  'NW ',
-    'NNW': 'NNW '}
+    'N':   'N',
+    'NNE': 'NNE',
+    'NE':  'NE',
+    'ENE': 'ENE',
+    'E':   'E',
+    'ESE': 'ESE',
+    'SE':  'SE',
+    'SSE': 'SSE',
+    'S':   'S',
+    'SSW': 'SSW',
+    'SW':  'SW',
+    'WSW': 'WSW',
+    'W':   'W',
+    'WNW': 'WNW',
+    'NW':  'NW',
+    'NNW': 'NNW'}
 
 tide_label_dict = {
     'H': 'High Tide',
-    'L': 'Low Tide',
-    }
+    'L': 'Low Tide'}
 
 weather_label_dict = {
     'temp'      : 'Temperature',
@@ -900,18 +899,18 @@ weather_label_dict = {
     'K'  : 'Smoke',
     'BD' : 'Blowing Dust',
     'AF' : 'Volcanic Ash',
-    'M'  : 'Mist',              # WU extension
-    'FF' : 'Freezing Fog',      # WU extension
-    'DST': 'Dust',              # WU extension
-    'SND': 'Sand',              # WU extension
-    'SP' : 'Spray',             # WU extension
-    'DW' : 'Dust Whirls',       # WU extension
-    'SS' : 'Sand Storm',        # WU extension
-    'LDS': 'Low Drifting Snow', # WU extension
-    'LDD': 'Low Drifting Dust', # WU extension
-    'LDN': 'Low Drifting Sand', # WU extension
-    'BN' : 'Blowing Sand',      # WU extension
-    'SF' : 'Shallow Fog',       # WU extension
+    'M'  : 'Mist',              # WU
+    'FF' : 'Freezing Fog',      # WU
+    'DST': 'Dust',              # WU
+    'SND': 'Sand',              # WU
+    'SP' : 'Spray',             # WU
+    'DW' : 'Dust Whirls',       # WU
+    'SS' : 'Sand Storm',        # WU
+    'LDS': 'Low Drifting Snow', # WU
+    'LDD': 'Low Drifting Dust', # WU
+    'LDN': 'Low Drifting Sand', # WU
+    'BN' : 'Blowing Sand',      # WU
+    'SF' : 'Shallow Fog',       # WU
     # codes for wind character
     'LT': 'Light',
     'GN': 'Gentle',
@@ -935,7 +934,7 @@ weather_label_dict = {
     'SI': 'Snow/Sleet Mix',    # aeris
     'WM': 'Wintry Mix',        # aeris
 #    'S' : 'Snow,               # aeris
-#    'SW': 'Snow Showers',      # aeris 
+#    'SW': 'Snow Showers',      # aeris
     'T' : 'Thunderstorms',     # aeris
     'UP': 'Unknown Precipitation', # aeris
     'VA': 'Volcanic Ash',      # aeris
@@ -1135,6 +1134,49 @@ class Forecast(StdService):
         elif 292.5 < v <= 337.5:
             return 'NW'
         elif 337.5 < v <= 360:
+            return 'N'
+        return None
+
+    @staticmethod
+    def deg2dir2(value):
+        # map a decimal degree to a compass direction
+        try:
+            v = float(value)
+        except ValueError, TypeError:
+            return None
+        if 0 <= v <= 11.25:
+            return 'N'
+        elif 11.25 < v <= 33.75:
+            return 'NNE'
+        elif 33.75 < v <= 56.25:
+            return 'NE'
+        elif 56.25 < v <= 78.75:
+            return 'ENE'
+        elif 78.75 < v <= 101.25:
+            return 'E'
+        elif 101.25 < v <= 123.75:
+            return 'ESE'
+        elif 123.75 < v <= 146.25:
+            return 'SE'
+        elif 146.25 < v <= 168.75:
+            return 'SSE'
+        elif 168.75 < v <= 191.25:
+            return 'S'
+        elif 191.25 < v <= 213.75:
+            return 'SSW'
+        elif 213.75 < v <= 236.25:
+            return 'SW'
+        elif 236.25 < v <= 258.75:
+            return 'WSW'
+        elif 258.75 < v <= 281.25:
+            return 'W'
+        elif 281.25 < v <= 303.75:
+            return 'WNW'
+        elif 303.75 < v <= 326.25:
+            return 'NW'
+        elif 326.25 < v <= 348.75:
+            return 'NNW'
+        elif 348.75 < v <= 360:
             return 'N'
         return None
 
@@ -2390,7 +2432,6 @@ class WUForecast(Forecast):
         'Extensive': 'EC',
     }
 
-
     # mapping from wu fctcode to a precipitation,chance tuple
     fct2precip_dict = {
         '10': ('rainshwrs', 'C'),
@@ -3247,8 +3288,8 @@ class AerisForecast(Forecast):
 class WWOForecast(Forecast):
 
     KEY = 'WWO'
-    #DEFAULT_URL = 'http://api.worldweatheronline.com/free/v2/weather.ashx'
-    DEFAULT_URL = 'http://api.worldweatheronline.com/premium/v1/weather.ashx'
+    DEFAULT_URL = 'http://api.worldweatheronline.com/free/v2/weather.ashx'
+    #DEFAULT_URL = 'http://api.worldweatheronline.com/premium/v1/weather.ashx'
 
     def __init__(self, engine, config_dict):
         super(WWOForecast, self).__init__(engine, config_dict,
@@ -3983,7 +4024,7 @@ class ForecastVariables(SearchList):
         return VERSION
 
     def label(self, module, txt):
-        if module == 'NWS':  # for backward compatibility
+        if module == 'WU':  # for backward compatibility
             module = 'Weather'
         return self.labels.get(module, {}).get(txt, txt)
 

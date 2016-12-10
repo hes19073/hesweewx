@@ -1,4 +1,4 @@
-# $Id: cmon.py 1377 2015-10-27 22:32:30Z mwall $
+# $Id: cmon.py 1547 2016-08-30 00:00:54Z mwall $
 # Copyright 2013 Matthew Wall
 """weewx module that records cpu, memory, disk, and network usage.
 
@@ -114,6 +114,7 @@ then load it using this configuration:
 
 from __future__ import with_statement
 import os
+import math
 import platform
 import re
 import syslog
@@ -126,7 +127,7 @@ from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
 DRIVER_NAME = "ComputerMonitor"
-DRIVER_VERSION = "0.13"
+DRIVER_VERSION = "0.14"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -161,15 +162,22 @@ schema = [
     ('cpu_temp2', 'REAL'), # degree C
     ('cpu_temp3', 'REAL'), # degree C
     ('cpu_temp4', 'REAL'), # degree C
+    ('cpu_volt', 'REAL'),
+    ('cpu_ampere', 'REAL'),
+    ('cpu_kern1', 'REAL'),
+    ('cpu_kern2', 'REAL'),
+    ('usb_volt', 'REAL'),
+    ('usb_ampere', 'REAL'),
 
 # measure rpi attributes (not all platforms support this)
-#    ('core_temp','REAL'), # degree C
-#    ('core_volt', 'REAL'),
-#    ('core_sdram_c', 'REAL'),
-#    ('core_sdram_i', 'REAL'),
-#    ('core_sdram_p', 'REAL'),
-#    ('arm_mem', 'REAL'),
-#    ('gpu_mem', 'REAL'),
+    ('core_temp','REAL'), # degree C
+    ('core_volt', 'REAL'),
+    ('core_ampere', 'REAL'),
+    ('core_sdram_c', 'REAL'),
+    ('core_sdram_i', 'REAL'),
+    ('core_sdram_p', 'REAL'),
+    ('arm_mem', 'REAL'),
+    ('gpu_mem', 'REAL'),
 
 # the default interface on most linux systems is eth0
     ('net_eth0_rbytes', 'INTEGER'),
@@ -191,14 +199,14 @@ schema = [
 #    ('net_eth1_tdrop', 'INTEGER'),
 
 # some systems have a wireless interface as wlan0
-    ('net_wlan0_rbytes', 'INTEGER'),
-    ('net_wlan0_rpackets', 'INTEGER'),
-    ('net_wlan0_rerrs', 'INTEGER'),
-    ('net_wlan0_rdrop', 'INTEGER'),
-    ('net_wlan0_tbytes', 'INTEGER'),
-    ('net_wlan0_tpackets', 'INTEGER'),
-    ('net_wlan0_terrs', 'INTEGER'),
-    ('net_wlan0_tdrop', 'INTEGER'),
+#    ('net_wlan0_rbytes', 'INTEGER'),
+#    ('net_wlan0_rpackets', 'INTEGER'),
+#    ('net_wlan0_rerrs', 'INTEGER'),
+#    ('net_wlan0_rdrop', 'INTEGER'),
+#    ('net_wlan0_tbytes', 'INTEGER'),
+#    ('net_wlan0_tpackets', 'INTEGER'),
+#    ('net_wlan0_terrs', 'INTEGER'),
+#    ('net_wlan0_tdrop', 'INTEGER'),
 
 # if the computer is an openvpn server, track the tunnel traffic
 #    ('net_tun0_rbytes', 'INTEGER'),
@@ -225,7 +233,12 @@ schema = [
     ('ups_charge', 'REAL'),  # percent
     ('ups_voltage', 'REAL'), # volt
     ('ups_time', 'REAL'),    # seconds
+    ('powerR', 'REAL'),      # Watt Prozessor
+    ('powerG', 'REAL'),      # Watt Gesamt
+    ('energyR', 'REAL'),      # Watt/ h Prozessor
+    ('energyG', 'REAL'),      # Watt/ h Gesamt
     ]
+
 
 # this exension will scan for all mounted file system.  these are the
 # filesystems we ignore.
@@ -347,6 +360,45 @@ class Collector(object):
             logerr('rpi_info failed: %s' % e)
         return record
 
+"""   Test Banania Pi test
+    _BPI_VGENCMD = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input'
+    _BPI_VOLT = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/voltage_now'
+    _BPI_AMPE = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/current_now'
+    _BPI_VCGENCMD = '/opt/vc/bin/vcgencmd'
+    _BPI_VOLT = re.compile('([^:]+):\s+volt=([\d.]+)')
+    _BPI_MEM = re.compile('([^=]+)=([\d]+)')
+
+    @staticmethod
+    def _get_bpi_info():
+        # get banania pi measurements
+        record = dict()
+        try:
+            cmd = '%s measure_temp' % Collector._BPI_VGENCMD
+            p = Popen(cmd, shell=True, stdout=PIPE)
+            o = p.communicate()[0]
+            record['core_temp'] = float(o.replace("'C\n",'').partition('=')[2])
+            cmd = '%s measure_volts' % Collector._BPI_VOLT
+            p = Popen(cmd, shell=True, stdout=PIPE)
+            o = p.communicate()[0]
+            record['cpu_volt'] = float(o.replace("'C\n",'').partition('=')[2])
+
+            cmd = '%s measure_ampe' % Collector._BPI_AMPE
+            p = Popen(cmd, shell=True, stdout=PIPE)
+            o = p.communicate()[0]
+            record['cpu_ampere'] = float(o.replace("'C\n",'').partition('=')[2])
+
+            
+            cmd = '%s measure_mem' % Collector._BPI_VCGENCMD
+            p = Popen(cmd, shell=True, stdout=PIPE)
+            o = p.communicate()[0]
+            for line in o.split('\n'):
+                m = Collector._RPI_MEM.search(line)
+                if m:
+                    record[m.group(1) + '_mem'] = float(m.group(2))
+        except (ValueError, IOError, KeyError), e:
+            logerr('bpi_info failed: %s' % e)
+        return record
+"""
 
 # this should work on any linux running kernel 2.2 or later
 class LinuxCollector(Collector):
@@ -355,9 +407,13 @@ class LinuxCollector(Collector):
 
         # provide info about the system on which we are running
         loginf('sysinfo: %s' % ' '.join(os.uname()))
-        cpuinfo = self._readproc_dict('/proc/cpuinfo')
-        for key in cpuinfo:
-            loginf('cpuinfo: %s: %s' % (key, cpuinfo[key]))
+        fn = '/proc/cpuinfo'
+        try:
+            cpuinfo = self._readproc_dict(fn)
+            for key in cpuinfo:
+                loginf('cpuinfo: %s: %s' % (key, cpuinfo[key]))
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
 
         self.ignored_mounts = ignored_mounts
         self.last_cpu = dict()
@@ -368,7 +424,7 @@ class LinuxCollector(Collector):
         """read single line proc file, return the string"""
         info = ''
         with open(filename) as fp:
-            info = fp.read()
+            info = fp.readline().strip()
         return info
 
     @staticmethod
@@ -411,84 +467,179 @@ class LinuxCollector(Collector):
         record = super(LinuxCollector, self).get_data(now)
 
         # read memory status
-        meminfo = self._readproc_dict('/proc/meminfo')
-        record['mem_total'] = int(meminfo['MemTotal'].split()[0]) # kB
-        record['mem_free'] = int(meminfo['MemFree'].split()[0]) # kB
-        record['mem_used'] = record['mem_total'] - record['mem_free']
-        record['swap_total'] = int(meminfo['SwapTotal'].split()[0]) # kB
-        record['swap_free'] = int(meminfo['SwapFree'].split()[0]) # kB
-        record['swap_used'] = record['swap_total'] - record['swap_free']
+        fn = '/proc/meminfo'
+        try:
+            meminfo = self._readproc_dict(fn)
+            if meminfo:
+                record['mem_total'] = int(meminfo['MemTotal'].split()[0]) # kB
+                record['mem_free'] = int(meminfo['MemFree'].split()[0]) # kB
+                record['mem_used'] = record['mem_total'] - record['mem_free']
+                record['swap_total'] = int(meminfo['SwapTotal'].split()[0]) # kB
+                record['swap_free'] = int(meminfo['SwapFree'].split()[0]) # kB
+                record['swap_used'] = record['swap_total'] - record['swap_free']
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
 
         # get cpu usage
-        cpuinfo = self._readproc_lines('/proc/stat')
-        values = cpuinfo['cpu'].split()[0:7]
-        for i,key in enumerate(self._CPU_KEYS):
-            if self.last_cpu.has_key(key):
-                record['cpu_'+key] = int(values[i]) - self.last_cpu[key]
-            self.last_cpu[key] = int(values[i])
+        fn = '/proc/stat'
+        try:
+            cpuinfo = self._readproc_lines(fn)
+            if cpuinfo:
+                values = cpuinfo['cpu'].split()[0:7]
+                for i,key in enumerate(self._CPU_KEYS):
+                    if self.last_cpu.has_key(key):
+                        record['cpu_'+key] = int(values[i]) - self.last_cpu[key]
+                    self.last_cpu[key] = int(values[i])
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
 
         # get network usage
-        netinfo = self._readproc_dict('/proc/net/dev')
-        for iface in netinfo:
-            values = netinfo[iface].split()
-            for i, key in enumerate(self._NET_KEYS):
-                if not self.last_net.has_key(iface):
-                    self.last_net[iface] = {}
-                if self.last_net[iface].has_key(key):
-                    record['net_'+iface+'_'+key] = int(values[i]) - self.last_net[iface][key]
-                    if record['net_'+iface+'_'+key] < 0:
-                        maxcnt = 0x100000000 # 32-bit counter
-                        if record['net_'+iface+'_'+key] + maxcnt < 0:
-                            maxcnt = 0x10000000000000000 # 64-bit counter
-                        record['net_'+iface+'_'+key] += maxcnt
-                self.last_net[iface][key] = int(values[i])
+        fn = '/proc/net/dev'
+        try:
+            netinfo = self._readproc_dict(fn)
+            if netinfo:
+                for iface in netinfo:
+                    values = netinfo[iface].split()
+                    for i, key in enumerate(self._NET_KEYS):
+                        if not self.last_net.has_key(iface):
+                            self.last_net[iface] = {}
+                        if self.last_net[iface].has_key(key):
+                            record['net_'+iface+'_'+key] = int(values[i]) - self.last_net[iface][key]
+                            if record['net_'+iface+'_'+key] < 0:
+                                maxcnt = 0x100000000 # 32-bit counter
+                                if record['net_'+iface+'_'+key] + maxcnt < 0:
+                                    maxcnt = 0x10000000000000000 # 64-bit counter
+                                record['net_'+iface+'_'+key] += maxcnt
+                        self.last_net[iface][key] = int(values[i])
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
 
 #        uptimestr = _readproc_line('/proc/uptime')
 #        (uptime,idletime) = uptimestr.split()
 
         # get load and process information
-        loadstr = self._readproc_line('/proc/loadavg')
-        (load1,load5,load15,nproc) = loadstr.split()[0:4]
-        record['load1'] = float(load1)
-        record['load5'] = float(load5)
-        record['load15'] = float(load15)
-
-        (num_proc,tot_proc) = nproc.split('/')
-        record['proc_active'] = int(num_proc)
-        record['proc_total'] = int(tot_proc)
+        fn = '/proc/loadavg'
+        try:
+            loadstr = self._readproc_line(fn)
+            if loadstr:
+                (load1,load5,load15,nproc) = loadstr.split()[0:4]
+                record['load1'] = float(load1)
+                record['load5'] = float(load5)
+                record['load15'] = float(load15)
+                (num_proc,tot_proc) = nproc.split('/')
+                record['proc_active'] = int(num_proc)
+                record['proc_total'] = int(tot_proc)
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
 
         # read cpu temperature
         tdir = '/sys/class/hwmon/hwmon0/device'
         # rpi keeps cpu temperature in a different location
         tfile = '/sys/class/thermal/thermal_zone0/temp'
         if os.path.exists(tdir):
-            for f in os.listdir(tdir):
-                if f.endswith('_input'):
-                    s = self._readproc_line(os.path.join(tdir,f))
-                    if len(s):
-                        n = f.replace('_input','')
-                        tC = int(s) / 1000 # degree C
-                        tF = 32.0 + tC * 9.0 / 5.0
-                        record['cpu_' + n] = tC
+            try:
+                for f in os.listdir(tdir):
+                    if f.endswith('_input'):
+                        s = self._readproc_line(os.path.join(tdir,f))
+                        if s and len(s):
+                            n = f.replace('_input','')
+                            tC = int(s) / 1000. # degree C
+                            tF = 32.0 + tC * 9.0 / 5.0
+                            record['cpu_' + n] = tC
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (tdir, e))
         elif os.path.exists(tfile):
-            s = self._readproc_line(tfile)
-            tC = int(s) / 1000 # degree C
-            record['cpu_temp'] = tC
+            try:
+                s = self._readproc_line(tfile)
+                tC = int(s) / 1000. # degree C
+                record['cpu_temp'] = tC
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (tfile, e))
+
+
+        # read cpu Banania Pi Temp Volt Ampere Kern1 Kern2
+        c1_dir = '/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq'
+        c2_dir = '/sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq'
+        t_bpi = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input'
+        v_bpi = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/voltage_now'
+        a_bpi = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/current_now'
+        v1_bpi = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/usb/voltage_now'
+        a1_bpi = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/usb/current_now'
+
+        if os.path.exists(c1_dir):
+            try:
+                s = self._readproc_line(c1_dir)
+                t_kern1 = float(s) / 1000. # takt cpu 0 kHz
+                record['cpu_kern1'] = t_kern1
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (c1_dir, e))
+        if os.path.exists(c2_dir):
+            try:
+                s = self._readproc_line(c2_dir)
+                t_kern2 = float(s) / 1000. # takt cpu 2 kHz
+                record['cpu_kern2'] = t_kern2
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (c2_dir, e))
+        if os.path.exists(t_bpi):
+            try:
+                s = self._readproc_line(t_bpi)
+                tC = float(s) / 1000. # degree C
+                record['cpu_temp'] = tC
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (t_bpi, e))
+        if os.path.exists(v_bpi):
+            try:
+                s = self._readproc_line(v_bpi)
+                tVolt = float(s) / 1000000. # Volt / 1.000.000
+                record['cpu_volt'] = tVolt
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (v_bpi, e))
+        if os.path.exists(a_bpi):
+            try:
+                s = self._readproc_line(a_bpi)
+                tAmpere = float(s) / 1000. # mA / 1.000 
+                record['cpu_ampere'] = tAmpere
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (a_bpi, e))
+        if os.path.exists(v1_bpi):
+            try:
+                s = self._readproc_line(v1_bpi)
+                t_Volt = float(s) / 1000000. # Volt / 1.000.00
+                record['usb_volt'] = t_Volt
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (v1_bpi, e))
+        if os.path.exists(a1_bpi):
+            try:
+                s = self._readproc_line(a1_bpi)
+                t_Ampere = float(s) / 1000. # mA / 1.000
+                record['usb_ampere'] = t_Ampere
+            except Exception, e:
+                logdbg("read failed for %s: %s" % (a1_bpi, e))
+
+        record['powerR'] = tVolt * tAmpere / 1000.0
+        record['powerG'] = t_Volt * t_Ampere / 1000.0
+        record['energyR'] = tVolt * tAmpere / 1000.0 * 12
+        record['energyG'] = t_Volt * t_Ampere / 1000.0 * 12
 
         # get stats on mounted filesystems
+        fn = '/proc/mounts'
         disks = []
-        mntlines = self._readproc_lines('/proc/mounts')
-        for mnt in mntlines:
-            mntpt = mntlines[mnt].split()[0]
-            ignore = False
-            if mnt.find(':') >= 0:
-                ignore = True
-            for m in self.ignored_mounts:
-                if mntpt.startswith(m):
-                    ignore = True
-                    break
-            if not ignore:
-                disks.append(mntpt)
+        try:
+            mntlines = self._readproc_lines(fn)
+            if mntlines:
+                for mnt in mntlines:
+                    mntpt = mntlines[mnt].split()[0]
+                    ignore = False
+                    if mnt.find(':') >= 0:
+                        ignore = True
+                    for m in self.ignored_mounts:
+                        if mntpt.startswith(m):
+                            ignore = True
+                            break
+                    if not ignore:
+                        disks.append(mntpt)
+        except Exception, e:
+            logdbg("read failed for %s: %s" % (fn, e))
         for disk in disks:
             label = disk.replace('/', '_')
             if label == '_':

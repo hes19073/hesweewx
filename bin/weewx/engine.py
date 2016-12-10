@@ -25,6 +25,7 @@ import daemon
 import weedb
 import weewx.accum
 import weewx.manager
+import weewx.qc
 import weewx.station
 import weewx.reportengine
 import weeutil.weeutil
@@ -86,7 +87,7 @@ class StdEngine(object):
         # Find the driver name for this type of hardware
         driver = config_dict[stationType]['driver']
         
-        syslog.syslog(syslog.LOG_INFO, "engine: Loading station type %s (%s)" % 
+        syslog.syslog(syslog.LOG_INFO, "engine: Loading station type %s (%s)" %
                       (stationType, driver))
 
         # Import the driver:
@@ -313,7 +314,7 @@ class StdConvert(StdService):
         """Do unit conversions for a LOOP packet"""
         # No need to do anything if the packet is already in the target
         # unit system
-        if event.packet['usUnits'] == self.target_unit: 
+        if event.packet['usUnits'] == self.target_unit:
             return
         # Perform the conversion
         converted_packet = self.converter.convertDict(event.packet)
@@ -326,7 +327,7 @@ class StdConvert(StdService):
         """Do unit conversions for an archive record."""
         # No need to do anything if the record is already in the target
         # unit system
-        if event.record['usUnits'] == self.target_unit: 
+        if event.record['usUnits'] == self.target_unit:
             return
         # Perform the conversion
         converted_record = self.converter.convertDict(event.record)
@@ -394,61 +395,31 @@ class StdCalibrate(StdService):
 #==============================================================================
 
 class StdQC(StdService):
-    """Performs quality check on incoming data."""
+    """Service that performs quality check on incoming data.
 
+    A StdService wrapper for a QC object so it may be called as a service. This 
+    also allows the weewx.qc.QC class to be used elsewhere without the 
+    overheads of running it as a weewx service.
+    """
+    
     def __init__(self, engine, config_dict):
         super(StdQC, self).__init__(engine, config_dict)
 
-        # If the 'StdQC' or 'MinMax' sections do not exist in the configuration
-        # dictionary, then an exception will get thrown and nothing will be
-        # done.
-        try:
-            mm_dict = config_dict['StdQC']['MinMax']
-        except KeyError:
-            syslog.syslog(syslog.LOG_NOTICE, "engine: No QC information in config file.")
-            return
-
-        self.min_max_dict = {}
-
-        target_unit_name = config_dict['StdConvert']['target_unit']
-        target_unit = weewx.units.unit_constants[target_unit_name.upper()]
-        converter = weewx.units.StdUnitConverters[target_unit]
-
-        for obs_type in mm_dict.scalars:
-            minval = float(mm_dict[obs_type][0])
-            maxval = float(mm_dict[obs_type][1])
-            if len(mm_dict[obs_type]) == 3:
-                group = weewx.units._getUnitGroup(obs_type)
-                vt = (minval, mm_dict[obs_type][2], group)
-                minval = converter.convert(vt)[0]
-                vt = (maxval, mm_dict[obs_type][2], group)
-                maxval = converter.convert(vt)[0]
-            self.min_max_dict[obs_type] = (minval, maxval)
+        # Get a QC object to apply the QC checks to our data
+        self.qc = weewx.qc.QC(config_dict)
         
         self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         
     def new_loop_packet(self, event):
-        """Apply quality check to the data in a LOOP packet"""
-        for obs_type in self.min_max_dict:
-            if obs_type in event.packet and event.packet[obs_type] is not None:
-                if not self.min_max_dict[obs_type][0] <= event.packet[obs_type] <= self.min_max_dict[obs_type][1]:
-                    syslog.syslog(syslog.LOG_NOTICE, "engine: %s LOOP value '%s' %s outside limits (%s, %s)" % 
-                                  (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), 
-                                   obs_type, event.packet[obs_type], 
-                                   self.min_max_dict[obs_type][0], self.min_max_dict[obs_type][1]))
-                    event.packet[obs_type] = None
+        """Apply quality check to the data in a loop packet"""
+        
+        self.qc.apply_qc(event.packet, 'LOOP')
 
     def new_archive_record(self, event):
-        """Apply quality check to the data in an archive packet"""
-        for obs_type in self.min_max_dict:
-            if obs_type in event.record and event.record[obs_type] is not None:
-                if not self.min_max_dict[obs_type][0] <= event.record[obs_type] <= self.min_max_dict[obs_type][1]:
-                    syslog.syslog(syslog.LOG_NOTICE, "engine: %s Archive value '%s' %s outside limits (%s, %s)" % 
-                                  (weeutil.weeutil.timestamp_to_string(event.record['dateTime']),
-                                   obs_type, event.record[obs_type], 
-                                   self.min_max_dict[obs_type][0], self.min_max_dict[obs_type][1]))
-                    event.record[obs_type] = None
+        """Apply quality check to the data in an archive record"""
+        
+        self.qc.apply_qc(event.record, 'Archive')
 
 #==============================================================================
 #                    Class StdArchive
@@ -499,12 +470,15 @@ class StdArchive(StdService):
         except NotImplementedError:
             self.archive_interval = software_interval
             ival_msg = "(specified in weewx configuration)"
-        syslog.syslog(syslog.LOG_INFO, "engine: Using archive interval of %d seconds %s" % 
+        syslog.syslog(syslog.LOG_INFO, "engine: Using archive interval of %d seconds %s" %
                       (self.archive_interval, ival_msg))
 
         if self.archive_delay <= 0:
             raise weewx.ViolatedPrecondition("Archive delay (%.1f) must be greater than zero." % 
                                              (self.archive_delay,))
+        if self.archive_delay >= self.archive_interval / 2:
+            syslog.syslog(syslog.LOG_WARNING, "engine: Archive delay (%d) is unusually long" % 
+                          (self.archive_delay,))
 
         syslog.syslog(syslog.LOG_DEBUG, "engine: Use LOOP data in hi/low calculations: %d" % 
                       (self.loop_hilo,))
@@ -611,7 +585,7 @@ class StdArchive(StdService):
         syslog.syslog(syslog.LOG_INFO, "engine: Using binding '%s' to database '%s'" % (self.data_binding, dbmanager.database_name))
         
         # Back fill the daily summaries.
-        _nrecs, _ndays = dbmanager.backfill_day_summary()  # @UnusedVariable
+        _nrecs, _ndays = dbmanager.backfill_day_summary() # @UnusedVariable
 
     def _catchup(self, generator):
         """Pull any unarchived records off the console and archive them.
@@ -686,7 +660,7 @@ class StdTimeSynch(StdService):
             self.last_synch_ts = now_ts
             try:
                 console_time = self.engine.console.getTime()
-                if console_time is None: 
+                if console_time is None:
                     return
                 # getTime can take a long time to run, so we use the current
                 # system time
@@ -726,7 +700,7 @@ class StdPrint(StdService):
     @staticmethod 
     def sort(rec):
         return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=str.lower)])
-        
+            
 
 #==============================================================================
 #                    Class StdReport
@@ -740,9 +714,15 @@ class StdReport(StdService):
         self.max_wait = int(config_dict['StdReport'].get('max_wait', 60))
         self.thread = None
         self.launch_time = None
+        self.record = None
         
+        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         self.bind(weewx.POST_LOOP, self.launch_report_thread)
         
+    def new_archive_record(self, event):
+        """Cache the archive record to pass to the report thread."""
+        self.record = event.record
+    
     def launch_report_thread(self, event):  # @UnusedVariable
         """Called after the packet LOOP. Processes any new data."""
         # Do not launch the reporting thread if an old one is still alive.
@@ -754,6 +734,7 @@ class StdReport(StdService):
         try:
             self.thread = weewx.reportengine.StdReportEngine(self.config_dict,
                                                              self.engine.stn_info,
+                                                             self.record,
                                                              first_run=not self.launch_time)
             self.thread.start()
             self.launch_time = time.time()

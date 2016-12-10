@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com> and
 #                            Matthew Wall
@@ -27,14 +27,19 @@ from weeutil.weeutil import TimeSpan, timestamp_to_string
 from weewx.manager import DaySummaryManager
 
 VERSION = weewx.__version__
-WEE_DEBUG_VERSION = '0.5'
+WEE_DEBUG_VERSION = '0.6'
 
 # keys/setting names to obfuscate in weewx.conf, key value will be obfuscated if
 # the key starts any element in the list. Can add additional string elements to 
 # list if required
-KEYS_TO_OBFUSCATE = ["apiKey", "api_key", "app_key", "archive_security_key", 
-                     "id", "key", "oauth_token", "password", "raw_security_key",
-                     "server_url", "station", "token", "user"]
+OBFUSCATE_MAP = {
+    "obfuscate": [
+        "apiKey", "api_key", "app_key", "archive_security_key", "id", "key",
+        "oauth_token", "password", "raw_security_key", "token", "user",
+        "server_url", "station"],
+    "do_not_obfuscate": [
+        "station_type"]
+    }
 
 # weewx archive field to use as the basis of counting number of archive records
 # Can be any field but dateTime is preferred as it should be in every weewx 
@@ -44,18 +49,23 @@ COUNT_FIELD = 'dateTime'
 # Redirect the import of setup (needed to get extension info)
 sys.modules['setup'] = weecfg.extension
 
-description = """Generate a standard suite of system/weewx information to aid
-in remote debugging. The wee_debug output consists of two parts, the first part
-containing a snapshot of relevant system/weewx information and the second part
-a parsed and obfuscated copy of weewx.conf. This output can be redirected to
-file and posted when seeking assistance via forums or email."""
-
 usage = """wee_debug --help
        wee_debug --info
             [--output|--output DEBUG_PATH]
             [--verbosity=0|1|2]
        wee_debug --version
-"""
+
+Description:
+
+Generate a standard suite of system/weewx information to aid
+in remote debugging. The wee_debug output consists of two parts, the first part
+containing a snapshot of relevant system/weewx information and the second part
+a parsed and obfuscated copy of weewx.conf. This output can be redirected to
+file and posted when seeking assistance via forums or email.
+
+Actions:
+
+--info           Generate a debug report."""
 
 epilog = """wee_debug will attempt to obfuscate obvious personal/private
 information in weewx.conf such as user names, passwords and API keys; however,
@@ -68,8 +78,7 @@ def main():
     syslog.openlog('wee_debug', syslog.LOG_PID|syslog.LOG_CONS)
 
     # Create a command line parser:
-    parser = optparse.OptionParser(description = description,
-                                   usage = usage,
+    parser = optparse.OptionParser(usage = usage,
                                    epilog = epilog)
 
     # Add the various options:
@@ -276,7 +285,10 @@ def generateDebugConf(config_dict):
     """ Generate a parsed and obfuscated weewx.conf and write to sys.stdout """
 
     # obfuscate config_dict
-    _obs_config_dict = obfuscateKey(config_dict, KEYS_TO_OBFUSCATE)
+    _obs_config_dict = obfuscateKey(config_dict,
+                                    OBFUSCATE_MAP['obfuscate'],
+                                    OBFUSCATE_MAP['do_not_obfuscate'])
+
     # put obfuscated config_dict into weewx.conf form
     _obs_config_dict.write(sys.stdout)
 
@@ -302,7 +314,7 @@ def generateLinuxSysInfo(verbosity):
         print "  5 minute load average:  %s" % load5
         print "  15 minute load average: %s" % load15
 
-def obfuscateKey(src_dict, key_list):
+def obfuscateKey(src_dict, obfuscate_list, retain_list):
     """ Obfuscate any dictionary items whose key is contained in passed list.
         Uses recursion to obfuscate any nested keys.
     """
@@ -313,13 +325,14 @@ def obfuscateKey(src_dict, key_list):
     for k, v in src_dict.items():
         # if its a dict then recurse
         if isinstance(v, dict):
-            _dict[k] = obfuscateKey(v, key_list)
+            _dict[k] = obfuscateKey(v, obfuscate_list, retain_list)
         # must be a value so obfuscate if in our list or leave it if its not
         else:
-            if any(k.startswith(key) for key in key_list):
-                _dict[k] = "XXX obfuscated by wee_debug XXX"
-            else:
-                _dict[k] = v
+            if (any(k.startswith(key) for key in obfuscate_list)
+                and not k in retain_list):
+                 _dict[k] = "XXX obfuscated by wee_debug XXX"
+             else:
+                 _dict[k] = v
     return _dict
 
 def get_binding(config_dict):
@@ -400,3 +413,4 @@ def formatListCols(the_list, cols):
 
 if __name__=="__main__" :
     main()
+

@@ -4,15 +4,10 @@
 
 """This search list extension offers extra tags:
 
-  'alltime':    All time statistics.
+  'lastrain_day': dd.mm.YYYY HH:MM
+  'lastrain_delta_time': now - lastrain_day in s
 
-  'seven_day':  Statistics for the last seven days. 
-
-  'thirty_day': Statistics for the last thirty days.
-
-You can then use tags such as $alltime.outTemp.max for the all-time max
-temperature, or $seven_day.rain.sum for the total rainfall in the last seven
-days, or $thirty_day.wind.max for maximum wind speed in the past thirty days.
+  Der letzte Regen am dd.mm.YYYY HH:MM das war vor xx Tagen, xx Stunden, xx Minuten
 """
 import datetime
 import time

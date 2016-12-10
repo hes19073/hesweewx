@@ -5,22 +5,11 @@
 #
 """Extended stats based on the xsearch example
 
-   This search list extension offers extra tags:
-
-   'alltime':    All time statistics.
-
-   'seven_day':  Statistics for the last seven days.
-
-   'thirty_day': Statistics for the last thirty days.
-
-You can then use tags such as $alltime.outTemp.max for the all-time max
-temperature, or $seven_day.rain.sum for the total rainfall in the last seven
-days, or $thirty_day.wind.max for maximum wind speed in the past thirty days.
-
-regentage
+              regentage
 """
 import datetime
 import time
+import calendar
 import os
 import sys
 import syslog
@@ -94,32 +83,32 @@ class MyXRainNo(SearchList):
         Returns:
           month_con_dry_days:        Length of longest run of consecutive dry
                                      days in current month
-          month_con_dry_days_time:   Start dateTime of longest run of 
+          month_con_dry_days_time:   End dateTime of longest run of 
                                      consecutive dry days in current month
           month_con_wet_days:        Length of longest run of consecutive wet 
                                      days in current month
-          month_con_wet_days_time:   Start dateTime of longest run of 
+          month_con_wet_days_time:   End dateTime of longest run of 
                                      consecutive wet days in current month
           year_con_dry_days:         Length of longest run of consecutive dry 
                                      days in current year
-          year_con_dry_days_time:    Start dateTime of longest run of 
+          year_con_dry_days_time:    End dateTime of longest run of 
                                      consecutive dry days in current year
           year_con_wet_days:         Length of longest run of consecutive wet 
                                      days in current year
-          year_con_wet_days_time:    Start dateTime of longest run of 
+          year_con_wet_days_time:    End dateTime of longest run of 
                                      consecutive wet days in current year
           alltime_con_dry_days:      Length of alltime longest run of 
                                      consecutive dry days
-          alltime_con_dry_days_time: Start dateTime of alltime longest run of 
+          alltime_con_dry_days_time: End dateTime of alltime longest run of 
                                      consecutive dry days
           alltime_con_wet_days:      Length of alltime longest run of 
                                      consecutive wet days
-          alltime_con_wet_days_time: Start dateTime of alltime longest run of
+          alltime_con_wet_days_time: End dateTime of alltime longest run of
                                      consecutive wet days
 
         """
 
-        t1= time.time()
+        t1 = time.time()
 
         ##
         ## Get units for use later with ValueHelpers
@@ -182,10 +171,12 @@ class MyXRainNo(SearchList):
             (_temp, _month_dry_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _month_dry_time_ts = _time_vector[_position] + (_month_dry_run - 1) * 86400
+            _month_dryS_time_ts = _month_dry_time_ts - (86400 * _month_dry_run)
         else:
             # If we did not find a run then set our results accordingly
             _month_dry_run = 0
             _month_dry_time_ts = None
+            _month_dryS_time_ts = None
         
         # Get our run of month rainy days
         _interim = []   # List to hold details of any runs we might find
@@ -203,10 +194,12 @@ class MyXRainNo(SearchList):
             (_temp, _month_wet_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _month_wet_time_ts = _time_vector[_position] + (_month_wet_run - 1) * 86400
+            _month_wetS_time_ts = _month_wet_time_ts - (86400 * _month_wet_run)
         else:
             # If we did not find a run then set our results accordingly
             _month_wet_run = 0
             _month_wet_time_ts = None
+            _month_wetS_time_ts = None
 
         # Get our year stats vectors
         _rain_vector = []
@@ -232,10 +225,12 @@ class MyXRainNo(SearchList):
             (_temp, _year_dry_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _year_dry_time_ts = _time_vector[_position] + (_year_dry_run - 1) * 86400
+            _year_dryS_time_ts = _year_dry_time_ts - (86400 * _year_dry_run)
         else:
             # If we did not find a run then set our results accordingly
             _year_dry_run = 0
             _year_dry_time_ts = None
+            _year_dryS_time_ts = None
 
         # Get our run of year rainy days
         _interim = []   # List to hold details of any runs we might find
@@ -253,10 +248,12 @@ class MyXRainNo(SearchList):
             (_temp, _year_wet_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _year_wet_time_ts = _time_vector[_position] + (_year_wet_run - 1) * 86400
+            _year_wetS_time_ts = _year_wet_time_ts - (86400 * _year_wet_run)
         else:
             # If we did not find a run then set our results accordingly
             _year_wet_run = 0
             _year_wet_time_ts = None
+            _year_wetS_time_ts = None
 
         # Get our alltime stats vectors
         _rain_vector = []
@@ -282,10 +279,12 @@ class MyXRainNo(SearchList):
             (_temp, _alltime_dry_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _alltime_dry_time_ts = _time_vector[_position] + (_alltime_dry_run - 1) * 86400
+            _alltime_dryS_time_ts = _alltime_dry_time_ts - (86400 * _alltime_dry_run)
         else:
             # If we did not find a run then set our results accordingly
             _alltime_dry_run = 0
             _alltime_dry_time_ts = None
+            _alltime_dryS_time_ts = None
 
         # Get our run of alltime rainy days
         _interim = []   # List to hold details of any runs we might find
@@ -303,10 +302,12 @@ class MyXRainNo(SearchList):
             (_temp, _alltime_wet_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _alltime_wet_time_ts = _time_vector[_position] + (_alltime_wet_run - 1) * 86400
+            _alltime_wetS_time_ts = _alltime_wet_time_ts - (86400 * _alltime_wet_run)
         else:
             # If we did not find a run then set our results accordingly
             _alltime_wet_run = 0
             _alltime_wet_time_ts = None
+            _alltime_wetS_time_ts = None
         
         # Make our timestamps ValueHelpers to give more flexibility in how we can format them in our reports
         _month_dry_time_vt = (_month_dry_time_ts, dateTime_type, dateTime_group)
@@ -321,6 +322,20 @@ class MyXRainNo(SearchList):
         _alltime_dry_time_vh = ValueHelper(_alltime_dry_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
         _alltime_wet_time_vt = (_alltime_wet_time_ts, dateTime_type, dateTime_group)
         _alltime_wet_time_vh = ValueHelper(_alltime_wet_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        # Start Time for dry and wet
+        _month_dryS_time_vt = (_month_dryS_time_ts, 'unix_epoch', 'group_time')
+        _month_dryS_time_vh = ValueHelper(_month_dryS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _year_dryS_time_vt = (_year_dryS_time_ts, 'unix_epoch', 'group_time')
+        _year_dryS_time_vh = ValueHelper(_year_dryS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _alltime_dryS_time_vt = (_alltime_dryS_time_ts, 'unix_epoch', 'group_time')
+        _alltime_dryS_time_vh = ValueHelper(_alltime_dryS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+
+        _month_wetS_time_vt = (_month_wetS_time_ts, 'unix_epoch', 'group_time')
+        _month_wetS_time_vh = ValueHelper(_month_wetS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _year_wetS_time_vt = (_year_wetS_time_ts, 'unix_epoch', 'group_time')
+        _year_wetS_time_vh = ValueHelper(_year_wetS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _alltime_wetS_time_vt = (_alltime_wetS_time_ts, 'unix_epoch', 'group_time')
+        _alltime_wetS_time_vh = ValueHelper(_alltime_wetS_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
         
         # Create a small dictionary with the tag names (keys) we want to use
         search_list_extension = {'month_con_dry_days': _month_dry_run,
@@ -335,8 +350,14 @@ class MyXRainNo(SearchList):
                                  'year_con_wet_days_time': _year_wet_time_vh,
                                  'alltime_con_wet_days': _alltime_wet_run,
                                  'alltime_con_wet_days_time': _alltime_wet_time_vh,
-                                 'month_rainy_days': _month_rainy_days}
-        t2= time.time()
+                                 'month_rainy_days': _month_rainy_days,
+                                 'month_con_dryS_days_time' : _month_dryS_time_vh,
+                                 'year_con_dryS_days_time' : _year_dryS_time_vh,
+                                 'alltime_con_dryS_days_time' : _alltime_dryS_time_vh,
+                                 'month_con_wetS_days_time' : _month_wetS_time_vh,
+                                 'year_con_wetS_days_time' : _year_wetS_time_vh,
+                                 'alltime_con_wetS_days_time' : _alltime_wetS_time_vh}
+        t2 = time.time()
         logdbg("MyXRainNo SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]

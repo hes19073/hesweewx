@@ -15,8 +15,8 @@ import weewx
 from weecfg import Logger
 
 # The default station information:
-stn_info_defaults = {'station_type' : 'Simulator',
-                     'driver'       : 'weewx.drivers.simulator'}
+stn_info_defaults = {'station_type': 'Simulator',
+                     'driver': 'weewx.drivers.simulator'}
 
 class ConfigEngine(object):
     
