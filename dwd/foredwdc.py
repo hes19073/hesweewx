@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+#*********************************************************************
+# Connect DWD FTP Server and download Forecast Teil 2
 # Autor : Hartmut Schweidler
-# Date : 11.12.2016
+# Date  : 04.12.2016
+#*********************************************************************
+# Server : ftp-outgoing2.dwd.de
+# User :
+# PW:
+# Interpreter : python 2.7
 #*********************************************************************
 
 import textwrap

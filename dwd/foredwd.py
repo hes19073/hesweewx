@@ -19,12 +19,13 @@ import codecs
 import time
 
 stdout_encoding = sys.stdout.encoding or sys.getfilesystemencoding
+
 #*********************************************************************
 # FTP Server Parameter
 #*********************************************************************
-ftpserver = 'ftp-outgoing2.dwd.de'
-ftpuser = 'gdsXXXXX'
-ftppw =  'myPass'
+ftpserver = 'ftp-outgoing2.dwd.de'    # Server
+ftpuser = 'gdsXXXXX'                  # user
+ftppw =  'myPass'                     # password
 
 # for Mecklenburg-Vorpommern VHDL[50, 51, 52, 53, 54]_DWPH_ddhh34_thml
 
@@ -36,8 +37,8 @@ tag4 = 'VHDL54_DWPH_'
 
 tagdat = time.strftime("%d")
 tagstu = time.strftime("%H")
-tagstu = '%0.2d' % (int(tagstu) - 1)
-tagstu = str(tagstu)
+tagstu = '%0.2d' % (int(tagstu) - 1)    # DWD in UTC Time
+tagstu = str(tagstu)                    # Anpassung bei Sommerzeit '-2'
 
 # test
 #tagdat = "04"
@@ -50,7 +51,7 @@ t3 = tag3 + tagdat + tagstu + "34_html"
 t4 = tag4 + tagdat + tagstu + "34_html"
 
 ftppath_local = "/home/dwd/filelist/"
-ftppath = 'gds/specials/forecasts/text' # Warnmeldungen - VHDL50_DWPH  WARNLAGE POM
+ftppath = 'gds/specials/forecasts/text'       # Warnmeldungen - VHDL50_DWPH  Forecast MVP
 
 ftp = ftplib.FTP(ftpserver, ftpuser, ftppw)
 ftp.cwd(ftppath)                             #changing to forecasts
