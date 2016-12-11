@@ -1,0 +1,1012 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## astro.html.tmpl index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+    <title>$station.location Astro</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+  </head>
+
+<body>
+  
+<div id="hes11"> 
+
+ #include $Extras.header
+
+ <div id="stats_group">
+  <div class="stats">
+   <div class='stats_header'>Sonne</div>
+   <table>
+   <tr><td class="ametric_title">Sonne</td>
+      <td><img src='xicons/p/Sun.png' class='legend-img' alt='S' /></td></tr>
+   <tr>
+      <td class="ametric_name">Start astronomische D&auml;mmerung:&nbsp;</td>
+   #if $almanac(horizon=-18).sun(use_center=1).rise.raw is not None
+      <td class="ametric_value">$almanac(horizon=-18).sun(use_center=1).rise</td>
+   #else
+      <td class="ametric_value">Keine</td>
+   #end if
+   </tr>
+   <tr>
+    <td class="ametric_name">Start nautische D&auml;mmerung:&nbsp;</td>
+    <td class="ametric_value">$almanac(horizon=-12).sun(use_center=1).rise</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Start b&uuml;rgerliche D&auml;mmerung:&nbsp;<br />Beginn der blauen Stunde:&nbsp;</td>
+    <td class="ametric_value">$almanac(horizon=-6).sun(use_center=1).rise</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Ende der blauen Stunde:&nbsp;<br />Sonnenaufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.sun.rise</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Transit:&nbsp;<br />&nbsp;</td>
+    <td class="ametric_value">$almanac.sun.transit</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Sonnenuntergang:&nbsp;<br />Beginn der blauen Stunde:&nbsp;</td>
+    <td class="ametric_value">$almanac.sun.set</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Ende der blauen Stunde:&nbsp; <br />Ende b&uuml;rgerliche D&auml;mmerung:&nbsp;</td>
+    <td class="ametric_value">$almanac(horizon=-6).sun(use_center=1).set</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Ende nautische D&auml;mmerung:&nbsp;</td>
+    <td class="ametric_value">$almanac(horizon=-12).sun(use_center=1).set</td>
+   </tr>
+   <tr>
+    <td class="ametric_name">Ende astronomische D&auml;mmerung:&nbsp;</td>
+   #if $almanac(horizon=-18).sun(use_center=1).set.raw is not None
+    <td class="ametric_value">$almanac(horizon=-18).sun(use_center=1).set</td>
+   #else
+    <td class="ametric_value">Keine</td>
+   #end if
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.sun.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.sun.alt)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Right ascension:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.sun.ra)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Declination:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.sun.dec)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Frühlingspunkt:&nbsp;</td>
+    <td class="ametric_value">$almanac.next_vernal_equinox</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Sommersonnenwende:&nbsp;</td>
+    <td class="ametric_value">$almanac.next_summer_solstice</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Herbst Tagundnachtgleiche:&nbsp;</td>
+    <td class="ametric_value">$almanac.next_autumnal_equinox</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Wintersonnenwende:&nbsp;</td>
+    <td class="ametric_value">$almanac.next_winter_solstice</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Ostern am:&nbsp;</td>
+    <td class="ametric_value">$Easter.format('%d.%m.%Y')</td>
+  </tr>
+ </table>
+</div>
+<br />
+   <div class="stats">
+    <div class='stats_header'>Mond</div>
+    <table>
+     <tr><td class="ametric_title">Mond</td>
+      <!-- <td><img src='xicons/p/Moon.png' class='legend-img' alt='M' title='Mond' /></td> -->
+      <td><a href="http://www.fourmilab.ch/cgi-bin/Earth?imgsize=100&opt=-l&lat=53.685963&ns=North&lon=11.341487&ew=EAST&alt=34299&img=MoonTopo.evif">
+           <img src="http://www.fourmilab.ch/cgi-bin/Earth?img=MoonTopo.evif&imgsize=100&dynimg=y&opt=-l&lat=53.685963&ns=NORTH&lon=11.341487&ew=EAST&alt=35785&tle=&date=0&utc=&jd=" width="100" height="100" alt='M' title='Mond' />
+          </a></td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Aufgang:&nbsp;</td>
+     <td class="ametric_value">$almanac.moon.rise</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Transit:</td>
+     <td class="ametric_value">$almanac.moon.transit</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Untergang:&nbsp;</td>
+     <td class="ametric_value">$almanac.moon.set</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Azimuth:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.moon.az)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Altitude:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.moon.alt)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Right ascension:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.moon.ra)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Declination:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.moon.dec)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Mondphase:</td>
+     <td class="ametric_value">$almanac.moon_phase<br/>Vollmond bei:&nbsp;$almanac.moon_fullness%</td>
+    </tr>
+#if $almanac.next_new_moon.raw < $almanac.next_full_moon.raw
+    <tr>
+     <td class="ametric_name">Neumond</td>
+     <td class="ametric_value">$almanac.next_new_moon</td>
+   </tr>
+#else
+   <tr>
+    <td class="ametric_name">Vollmond</td>
+    <td class="ametric_value">$almanac.next_full_moon</td>
+   </tr>
+#end if
+#if $almanac.next_new_moon.raw < $almanac.next_full_moon.raw
+   <tr>
+    <td class="ametric_name">Vollmond</td>
+    <td class="ametric_value">$almanac.next_full_moon</td>
+   </tr>
+#else
+    <tr>
+     <td class="ametric_name">Neumond</td>
+     <td class="ametric_value">$almanac.next_new_moon</td>
+   </tr>
+#end if
+</table>
+</div>
+<br />
+
+   <div class="stats">
+    <div class='stats_header'>Planeten</div>
+<table>
+ <tr>
+  <td>
+  <table>
+    <tr><td colspan="2"><img src='xicons/p/Mercury.png' class='legend-img' alt='M' title='Merkur' /></td></tr>
+    <tr><td class="ametric_title">Merkur</td><td class="ametric_sym">&#x263F;</td></tr>
+    <tr>
+     <td class="ametric_name">Aufgang:&nbsp;</td>
+     <td class="ametric_value">$almanac.mercury.rise</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Transit:&nbsp;</td>
+     <td class="ametric_value">$almanac.mercury.transit</td>
+    </tr>
+    <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.mercury.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimut:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.mercury.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Latiude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.mercury.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+  <tr><td colspan="2"><img src='xicons/p/Venus.png' class='legend-img' alt='V' title='Venus' /></td></tr>
+    <tr><td class="ametric_title">Venus</td><td class="ametric_sym">&#x2640;</td></tr>
+    <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.venus.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.venus.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.venus.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.venus.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.venus.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td colspan="2"><img src='xicons/p/Mars.png' class='legend-img' alt='M' title='Mars' /></td></tr>
+   <tr><td class="ametric_title">Mars</td><td class="ametric_sym">&#x2642;</td></tr>
+   <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.mars.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.mars.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.mars.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.mars.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.mars.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+  <tr><td colspan="2"> <img src='xicons/p/Jupiter.png' class='legend-img' alt='J' title='Jupiter' /></td></tr>
+  <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym">&#x2643;</td></tr>
+  <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.jupiter.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.jupiter.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.jupiter.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.jupiter.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.jupiter.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+  <tr><td colspan="2"><img src='xicons/p/Saturn.png' class='legend-img' alt='S' title='Saturn' /></td></tr>
+  <tr><td class="ametric_title">Saturn</td><td class="ametric_sym">&#x2644;</td></tr>
+  <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.saturn.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.saturn.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.saturn.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.saturn.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.saturn.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+  <tr><td colspan="2"><img src='xicons/p/Uranus.png' class='legend-img' alt='U' title='Uranus' /></td></tr>
+  <tr><td class="ametric_title">Uranus</td><td class="ametric_sym">&#x2645;</td></tr>
+  <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.uranus.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.uranus.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.uranus.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.uranus.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.uranus.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td colspan="2"><img src='xicons/p/Neptune.png' class='legend-img' alt='N' title='Neptun' /></td></tr>
+   <tr><td class="ametric_title">Neptun</td><td class="ametric_sym">&#x2646;</td></tr>
+  <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.neptune.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.neptune.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.neptune.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.neptune.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.neptune.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+  <tr><td colspan="2"><img src='xicons/p/Pluto.png' class='legend-img' alt='P' title='Pluto' /></td></tr>
+  <tr><td class="ametric_title">Pluto</td><td class="ametric_sym">&#x2647;</td></tr>
+  <tr>
+    <td class="ametric_name">Aufgang:&nbsp;</td>
+    <td class="ametric_value">$almanac.pluto.rise</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.pluto.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Untergang:&nbsp;</td>
+    <td class="ametric_value">$almanac.pluto.set</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.pluto.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.pluto.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+</table>
+</div>
+<br />
+<div class="stats">
+    <div class='stats_header'>Monde der Planeten</div>
+<table>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Mars</td><td class="ametric_sym1">Phobos</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Phobos.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Phobos.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Phobos.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Mars</td><td class="ametric_sym1">Deimos</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Deimos.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Deimos.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Deimos.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym1">IO</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Io.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Io.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Io.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym1">Europa</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Europa.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Europa.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Europa.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym1">Ganymede</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Ganymede.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Ganymede.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Ganymede.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym1">Callisto</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Callisto.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Callisto.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Callisto.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Mimas</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Mimas.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Mimas.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Mimas.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Enceladus</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Enceladus.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Enceladus.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Enceladus.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Tethys</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Tethys.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Tethys.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Tethys.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Dione</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Dione.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Dione.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Dione.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Rhea</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Rhea.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Rhea.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Rhea.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Titan</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Titan.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Titan.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Titan.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Iapetus</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Iapetus.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Iapetus.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Iapetus.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym1">Hyperion</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Hyperion.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Hyperion.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Hyperion.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym1">Miranda</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Miranda.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Miranda.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Miranda.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym1">Umbriel</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Umbriel.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Umbriel.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Umbriel.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym1">Ariel</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Ariel.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Ariel.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Ariel.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+<table>
+   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym1">Titania</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Titania.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Titania.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Titania.alt)</td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table>
+   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym1">Oberon</td></tr>
+  <tr>
+    <td class="ametric_name">Transit:&nbsp;</td>
+    <td class="ametric_value">$almanac.Oberon.transit</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Azimuth:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Oberon.az)</td>
+  </tr>
+  <tr>
+    <td class="ametric_name">Altitude:&nbsp;</td>
+    <td class="ametric_value">$("%.1f&deg;" % $almanac.Oberon.alt)</td>
+  </tr>
+</table>
+</td>
+<td>
+&nbsp;
+</td>
+</tr>
+</table>
+<br />
+<div class="stats">
+    <div class='stats_header'>Sterne</div>
+<table>
+ <tr>
+  <td>
+   <table>
+    <tr><td class="ametric_title">Altair</td><td class="ametric_sym1"></td></tr>
+    <tr>
+     <td class="ametric_name">Transit:&nbsp;</td>
+     <td class="ametric_value">$almanac.Altair.transit</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Azimuth:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.az)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Altitude:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.alt)</td>
+    </tr>
+   </table>
+   </td>
+   <td>
+    <table>
+     <tr><td class="ametric_title">Regulus</td><td class="ametric_sym1"></td></tr>
+     <tr>
+       <td class="ametric_name">Transit:&nbsp;</td>
+       <td class="ametric_value">$almanac.Regulus.transit</td>
+     </tr>
+     <tr>
+       <td class="ametric_name">Azimuth:&nbsp;</td>
+       <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.az)</td>
+     </tr>
+     <tr>
+       <td class="ametric_name">Altitude:&nbsp;</td>
+       <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.alt)</td>
+     </tr>
+    </table>
+  </td>
+ </tr>
+</table>
+
+</div>
+    <hr />
+    </div>
+   </div> <!-- End class "stats" -->
+  </div>  <!-- End class "stats_group" -->
+
+  <div id='content'>
+  
+   <div id="about">
+    <div class="header">Astronomie</div>
+     <h1>Die Erde</h1>
+     <p><a href="http://www.fourmilab.ch/cgi-bin/Earth?imgsize=320&opt=-l&lat=53.605963&ns=North&lon=11.341487&ew=West&alt=10000&img=learth.evif">
+        <img src="http://www.fourmilab.ch/cgi-bin/Earth?img=learth.evif&imgsize=160&dynimg=y&opt=-l&lat=53.605963&ns=NORTH&lon=11.341487&ew=EAST&alt=35785&tle=&date=0&utc=&jd=" width="320" height="320" alt="Erde" />
+        </a>
+     </p>
+     <h2>Daten von  Sonne, Mond und Planeten </h2>
+      <br /> Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
+             Der aktuelle Wochentag ist der <b>&nbsp;$current.dateTime.format("%A")&nbsp;.</b>
+	    #set $now = $current.dateTime.raw
+	    #set $yeste = $now - 24*3600
+	    #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
+	    #set $yeste_daylight = $almanac($almanac_time=$yeste).sun.set.raw - $almanac($almanac_time=$yeste).sun.rise.raw
+	    #set $difference = $today_daylight - $yeste_daylight
+	    #set $seconds = $almanac.sun.set.raw - $almanac.sun.rise.raw
+	    #set $hours = $seconds //3600
+	    #set $seconds %= 3600
+	    #set $minutes = $seconds//60
+	    #set $seconds %= 60
+
+            #set $difhes = $difference
+            #set $dh = $difhes //3600
+            #set $difhes %= 3600
+            #set $dm = $difhes //60
+            #set $difhes %= 60
+
+            #set $difhes1 = -$difference
+            #set $dh1 = $difhes1 //3600
+            #set $difhes1 %= 3600
+            #set $dm1 = $difhes1 //60
+            #set $difhes1 %= 60
+	    <p>Die maximale Sonnenscheindauer beträgt&nbsp;<b>$("Heute %d Stunden, %d Minuten und %d Sekunden" % ($hours, $minutes, $seconds))</b>,<br/>
+	    #if $difference > 0
+	    dass sind <b> $("%d Sekunden mehr als Gestern " % $difference) </b>oder<b> $("%d Minuten und %d Sekunden." % ($dm, $difhes))</b></p>
+            #else
+	    dass sind <b> $("%d Sekunden weniger als Gestern " % -$difference) </b>oder<b> $("%d Minuten und %d Sekunden." % ($dm1, $difhes1))</b></p>
+	    #end if
+   <hr />
+<!--   <h2>Die ISS</h2>
+   ##include $Extras.iss
+   <hr /> -->
+   <h2>Apogäum, Perigäum, Finsternis, Aphel und Perihel</h2>
+   <ul>
+    <li>Der Mond</li>
+    <li>Das nächste Apogäum am<b>&nbsp;$next_apogee_ts&nbsp;</b>Uhr mit eine Enfernung <b>$next_apogee_dist_km </b></li>
+    <li> (Die Erdferne oder das Apogäum bezeichnet den größten Abstand zur Erde.) </li>
+    <li>&nbsp;</li>
+    <li>Das nächste Perigäum am<b>&nbsp; $next_perigee_ts&nbsp;</b>Uhr mit einer Entfernung <b>$next_perigee_dist_km </b></li>
+    <li> (Die Erdnähe oder das Perigäum bezeichnet den geringsten Abstand zur Erde.)</li>
+    <li>&nbsp;</li>
+    <li>Finsternis</li>
+    <li>Die nächste Sonnenfinsternis (<b>&nbsp;$next_solar_eclipse_type&nbsp;</b>) am&nbsp;<b>$next_solar_eclipse&nbsp;Uhr.</b></li>
+    <li>Die nächste Mondfinsternis (<b>&nbsp;$next_lunar_eclipse_type&nbsp;</b>) am&nbsp;<b>$next_lunar_eclipse&nbsp;Uhr.</b></li>
+    <li>&nbsp;</li>
+    <li>Die größte Entfernung (Aphel) zwischen Erde und Sonne am&nbsp;<b>$next_aphelion&nbsp;Uhr.</b></li>
+    <li> Das Aphel der sonnenfernste Punkt einer Umlaufbahn um die Sonne. </li>
+    <li>&nbsp;</li>
+    <li>Die kürzeste Entfernung (Perihel) zwischen Erde und Sonne am&nbsp;<b>$next_perihelion&nbsp;Uhr.</b></li>
+    <li>Das Perihel ist der sonnennächste Punkt.</li> 
+    <li>&nbsp;</li>
+   </ul>
+   <hr />
+<h2>Sternenbilder&nbsp;&nbsp;&frasl;&nbsp;&nbsp;Tierkreis</h2>
+<table style="border:1">
+ <tr>
+     <td class="ametric_sname">Widder</td>      <!-- 21.03. - 20.04. -->
+     <td class="ametric_sname">Stier</td>       <!-- 21.04. - 20.05. -->
+     <td class="ametric_sname">Zwilling</td>    <!-- 21.05. - 21.06. -->
+     <td class="ametric_sname">Krebs</td>       <!-- 22.06. - 22.07. -->
+     <td class="ametric_sname">L&ouml;we</td>   <!-- 23.07. - 22.08. -->
+     <td class="ametric_sname">Jungfrau</td>    <!-- 23.08. - 23.09. -->
+     <td class="ametric_sname">Waage</td>       <!-- 24.09. - 23.10. -->
+     <td class="ametric_sname">Skorpion</td>    <!-- 24.10. - 22.11. -->
+     <td class="ametric_sname">Sch&uuml;tze</td><!-- 23.11. - 21.12. --> 
+     <td class="ametric_sname">Steinbock</td>   <!-- 22.12. - 20.01. -->
+     <td class="ametric_sname">Wassermann</td>  <!-- 21.01. - 18.02. -->
+     <td class="ametric_sname">Fische</td>      <!-- 19.02. - 20.03. -->
+ </tr>
+ <tr>
+     <td class="ametric_sym">&#x2648;</td>
+     <td class="ametric_sym">&#x2649;</td>
+     <td class="ametric_sym">&#x264A;</td>
+     <td class="ametric_sym">&#x264B;</td>
+     <td class="ametric_sym">&#x264C;</td>
+     <td class="ametric_sym">&#x264D;</td>
+     <td class="ametric_sym">&#x264E;</td>
+     <td class="ametric_sym">&#x264F;</td>
+     <td class="ametric_sym">&#x2650;</td>
+     <td class="ametric_sym">&#x2651;</td>
+     <td class="ametric_sym">&#x2652;</td>
+     <td class="ametric_sym">&#x2653;</td>
+ </tr>
+ <tr>
+     #set $stag = $current.dateTime.format("%j")
+     #set $stag = int($stag)
+     
+     #if $stag > 79 and $stag < 111
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 110 and $stag < 142
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 141 and $stag < 173
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 172 and $stag < 204
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 203 and $stag < 236
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 235 and $stag < 267
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 266 and $stag < 297
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 296 and $stag < 327
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 326 and $stag < 356
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 355 or $stag < 21
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if 
+     #if $stag > 20 and $stag < 51
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+     #if $stag > 50 and $stag < 80
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
+     #else
+      <td></td>
+     #end if
+   </tr>
+</table>
+
+ <hr />
+<h2>Tag und Nacht Weltkarte</h2>
+   <p>&nbsp;</p>
+     <a href="daylight.php"><img src="daylight.php" /></a>
+   <p>&nbsp;</p>
+   <hr />
+<h2>Sternenhimmel</h2>
+   <p>&nbsp;</p>
+    <div style="padding:0px; width:600px; font-family:sans-serif,Arial,Helvetica; font-size:10pt; text-align:center">
+    <div><img src="http://ws.astroviewer.net/skymap?type=png&amp;size=440&amp;colorset=0&amp;lang=de&amp;lon=11.34&amp;lat=53.68&amp;city=Schwerin&amp;timezone=CET&amp;deco=15&amp;id=4d6174"
+                 width="600" height="600" alt="aktueller Sternenhimmel &uuml;ber Schwerin" title="aktueller Sternenhimmel &uuml;ber Klein Rogahn" style="border:none" />
+    </div>
+    <div>Sternenkarte von <a href="http://www.astroviewer.de/">AstroViewer</a><sup>&reg;</sup></div>
+    <div><a href="http://www.astroviewer.de/sternenhimmel-code.php">HTML-Code</a> f&uuml;r diese Sternenkarte</div>
+   </div>
+<hr />
+<h2>Der Mond</h2>
+   <p>&nbsp;</p>
+<!--- Ein Service von www.Der-Mond.org
+Erfahren Sie auf Der-Mond.org alles wissenswertes über unseren Erdtrabanten! Vom Basiswissen über Ephemeridenberechnung, aktuelle Mondphasen und sogar einer interaktiven Mondkarte ist für jeden etwas dabei! -->
+<!-- Diesen Link nicht entfernen! -->
+<a href="http://www.der-mond.org/mond-aktuell/mond-aktuell-fuer-ihre-homepage/" target=_blank>
+<img border=0 width="800" src="http://feature.sternenwelt.net/luna_kalender.php?version=3&txue=Mond+aktuell&zefu=1&txph=1&txmoph=1&txmophti=1&txmost=0&txmostau=0&txze=1&zezo=1&zeso=1&schgr=9&faan=1&scro=255&scgr=255&scbl=255&hiro=0&higr=0&hibl=0&soep=0&txsost=0&txsostau=0&geolagr=11&geolami=20&geolase=48&geola=O&geobrgr=53&geobrmi=36&geobrse=36&geobr=N&lang=de&kalender_zeitraum=0&jahr=2015&monat=4">
+<!--- Hinweis nicht enfernen -->
+<br>
+Ein Service von www.Der-Mond.org</a>
+  <hr />  
+<h2>Die ISS by www.heavens-above.com</h2>
+<a href="http://www.heavens-above.com/" target=_blank>
+<img border=0 width="800" src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=600&height=300&mode=M&satid=25544" />
+<br>Siehe www.heavens-above.com </a>
+  <!-- hes19073 && .zJ -->
+  </div> <!-- End about   -->
+ </div>  <!-- End content -->
+
+    
+ #include $Extras.footer
+
+</body>
+</html>

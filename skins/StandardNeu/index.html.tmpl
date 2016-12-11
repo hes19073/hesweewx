@@ -1,0 +1,673 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
+                 mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 minutes" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location Aktuelles Wetter</title>
+
+     <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script type='text/javascript' src='js/hesweewx.js'></script>
+ </head>
+
+<body>
+ <div id='hes11'>
+#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
+
+
+#include $Extras.header
+#include $Extras.cwarn
+#if $varExists('forecast')
+   #set $summary = $forecast.weather_summary('WU')
+#end if
+#set $dd = $forecast.label('Weather', $summary.windDir)
+#set $wind_text = $windT_dir_dict.get($dd)
+
+<div id='hescontainer'><section>
+ <div id='popupanchor' style='float:left'></div>
+
+<div class='hes'>
+  <div class='hesbox'>
+#if $varExists('forecast')
+   <table class="hes_prog">
+    <tr>
+      <td class='hes1_wol'>
+      #if $summary.clouds is not None
+          #set $simg = 'xicons/' + $summary.clouds + '.png'
+           <a href='forecastT.html'>
+           <img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
+      #end if
+      </td>
+      <td class='hes1_wol'>
+      #for $k in $summary.precip
+          #set $precip_img = 'xicons/' + $k + '.png'
+          <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+      #end for
+      </td>
+      <td class='hes1_wol'>
+      #for $k in $summary.obvis
+          #set $obvis_img = 'xicons/' + $k + '.png'
+          <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+      #end for
+      </td>
+     </tr>
+    </table>
+    Zambretti:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.code)<br />
+    Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
+   <hr />
+   #set $summary = $forecast.weather_summary('WU')
+   <p>Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).<br />
+    Wind aus&nbsp;<b>$wind_text&nbsp;</b>mit einer <br />Geschwindigkeit von&nbsp;$forecast.label('Weather', $summary.windSpeed).<br />
+    Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp;und&nbsp;
+        $forecast.label('Weather', $summary.tempMax).&nbsp;
+    Die Luftfeuchtigkeit bei ca.&nbsp;$forecast.label('Weather',$summary.humidity).&nbsp;</p>
+#end if
+
+    <hr />
+    Die VantagePro2 meint: $latest($data_binding='wdsupp_binding').vantageForecastRule.raw
+  </div>
+</div> <!-- ende Prognose -->
+
+<div class="hes">
+  <div class='hesbox'>
+    <h3>Wetter Kamera</h3>
+        <a href="xicons/wet/snapshot.jpg"><img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
+  </div>
+</div>
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayouttemphilo.png' class='popup'>$current.outTemp</a></td>
+ #if $trend.outTemp.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class="hes1_vallo">$trend.outTemp</td>
+ #else
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class="hes1_valhi">$trend.outTemp</td>
+ #end if
+    </tr>
+ #if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.tempMax</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'> $summary.tempMin</span></td>
+    </tr>
+ #end if
+   </table>
+    <hr />
+    <img src="daytempklein.png" alt="Temperatur" />
+ </div>
+</div> <!-- end Temperatur -->
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+#if $current.outTemp.raw < 10
+    <tr><td class='hes1_kopfa'>Windchill</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
+    <tr><td class='hes1_bigval' colspan='3'><a href='daytempchill.png' class='popup'>$current.windchill</a></td>
+    #if $trend.windchill.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class="hes1_vallo">$trend.windchill</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class="hes1_valhi">$trend.windchill</td>
+    #end if
+    </tr>  
+    #if $varExists('forecast')
+     <tr>
+      <td><span class='hes1_m'>Tagesprognose</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.feelslikeMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.feelslikeMin</span></td>
+     </tr>
+    #end if
+#else
+    <tr><td class='hes1_kopfa'>Hitzeindex</td><td class='hes1_kopf' colspan='2'>Aktuell</td><td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr><td class='hes1_bigval' colspan='3'><a href='daytempheat.png' class='popup'>$current.heatindex</a></td>
+    #if $trend.heatindex.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class="hes1_vallo">$trend.heatindex</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class="hes1_valhi">$trend.heatindex</td>
+    #end if
+    </tr>
+    #if $varExists('forecast')
+     <tr>
+      <td><span class='hes1_m'>Tagesprognose</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$summary.feelslikeMax</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$summary.feelslikeMin</span></td>
+     </tr>
+    #end if
+#end if
+  </table>
+    <hr />
+#if $current.outTemp.raw < 10
+   <img src="daychillklein.png" alt="Windchill" />
+#else
+   <img src="dayheatklein.png" alt="HitzeIndex" />
+#end if
+ </div>
+</div> <!-- end Windchill  Hitzeindex -->
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Taupunkt</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='daytempdew.png' class='popup'>$current.dewpoint</a></td>
+    #if $trend.dewpoint.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.dewpoint</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.dewpoint</td>
+    #end if
+    </tr>
+#if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.dewpointMax</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'> $summary.dewpointMin</span></td>
+    </tr>
+#end if
+   </table>
+    <hr />
+    <img src="daydewklein.png" alt="Taupunkt" />
+  </div>
+</div> <!-- ende Taupunkt -->
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_ludru'>
+    <tr>
+     <td class='hes1_kopfa'>Luftdruck</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='daybarometer.png' class='popup'>$current.barometer</a></td>
+     
+<!-- note: these thresholds are for millibar, not inHg -->
+#if $varExists('trend')
+#if $trend.barometer.raw is not None:
+#if $trend.barometer.raw > 6
+       <td class='hes1_trendhi'>&#8679;&#8679;&#8679;</td>
+       <td class='hes1_valhi'>$trend.barometer</td>
+#elif $trend.barometer.raw > 3
+       <td class='hes1_trendhi'>&#8679;&#8679;</td>
+       <td class='hes1_valhi'>$trend.barometer</td>
+#elif $trend.barometer.raw > 0.5
+       <td class='hes1_trendhi'>&#8679;</td>
+       <td class='hes1_valhi'>$trend.barometer</td>
+#elif $trend.barometer.raw < -6
+       <td class='hes1_trendlo'>&#8681;&#8681;&#8681;</td>
+       <td class='hes1_vallo'>$trend.barometer</td>
+#elif $trend.barometer.raw < -3
+       <td class='hes1_trendlo'>&#8681;&#8681;</td>
+       <td class='hes1_vallo'>$trend.barometer</td>
+#elif $trend.barometer.raw < 0.5
+       <td class='hes1_trendlo'>&#8681;</td>
+       <td class='hes1_vallo'>$trend.barometer</td>
+#end if
+#end if
+#end if
+     </tr>
+#if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.barometerMax.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$summary.barometerMax.formatted</span></td>
+    </tr>
+#end if 
+    </table>
+     <hr />
+    <img src="daybaroklein.png" alt="Luftdruck" />
+ </div>
+</div> <!-- luftdruck ende -->
+
+<div class="hes">
+ <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Luftfeuchte</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayhumid.png' class='popup'>$current.outHumidity</a></td>
+    #if $trend.outHumidity.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.outHumidity</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.outHumidity</td>
+    #end if
+    </tr>
+#if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.humidityMax</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'> $summary.humidityMin</span></td>
+    </tr>
+#end if
+   </table>
+    <hr />
+    <img src="dayhumidklein.png" alt="Luftfeuchte" />
+  </div>
+</div> <!-- ende Luftfeuchte -->
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_reg'>
+   <tr><td class='hes1_kopfa'>Niederschlag</td>
+       <td class='hes1_kopf' colspan='2'>Aktuell</td>
+       <td class='hes1_kopf' colspan="2">Heute</td>
+   </tr>
+   <tr>
+     <td class='hes1_bigval' colspan='3' ><a href='dayrain.png' class='popup'>$current.rain</a></td>
+     <td></td>
+     <td>$day.rain.sum</td>
+   </tr>
+#if $varExists('forecast')
+   <tr>
+     <td colspan='2'><span class='hes1_m'>Niederschlagswahrscheinlichkeit</span></td>
+     #if $summary.pop.raw > 0
+        <td class='hes1_valhi'>
+         $summary.pop
+        </td>
+        <td>    
+         #if $summary.qpf.raw > 0
+             $summary.qpf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
+         #end if
+       </td>
+       <td></td>
+    #else
+       <td colspan='3'>&nbsp;</td>
+    #end if
+   </tr>
+#end if
+  </table>
+  <hr />
+  <img src="dayrainklein.png" alt="Regen" />
+ </div>
+</div> <!-- ende Niederschlag -->
+
+#if $day.snow.sum.raw > 0
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_reg'>
+   <tr><td class='hes1_kopfa'>Schnee</td>
+       <td class='hes1_kopf' colspan='2'>Aktuell</td>
+       <td class='hes1_kopf' colspan="2">Heute</td>
+   </tr>
+   <tr>
+     <td class='hes1_bigval' colspan='3' >
+      <a href='daysnow.png' class='popup'>$hour.snow.max</a>
+     </td>
+     <td></td>
+     <td>$day.snow.max</td>
+   </tr>
+   #if $varExists('forecast')
+   <tr>
+     <td colspan='2'>
+      <span class='hes1_m'>Schneewahrscheinlichkeit</span>
+     </td>
+       #if $summary.qsf.raw > 0
+        <td class='hes1_valhi'>
+         $summary.qsf.nolabel('%.2f',' ') 
+        </td>
+        <td></td>
+       <td>
+           #if $summary.qsf.raw > 0
+              $summary.qsf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/snowflake.png' alt='schnee'/>
+           #end if
+       </td>
+       #else
+       <td colspan='3'>&nbsp;</td>
+       #end if
+   </tr>
+   #end if
+  </table>
+  <hr />
+  <img src="daysnowklein.png" alt="Schnee" />
+ </div>
+</div> <!-- ende Schnee -->
+#end if
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_win'>
+   <tr><td class='hes1_kopfa' colspan='3'>Windgeschwindigkeit</td>
+     <td class='hes1_kopf'>Prognose</td>
+   </tr>
+   <tr>
+     <td class='hes1_bigval' colspan='2'><a href='daywind.png' class='popup'>$current.windSpeed</a> </td>
+
+#if $varExists('trend')
+    #if $trend.windSpeed.raw is not None:
+        #if $trend.windSpeed.formatted > 0
+           <td class='hes1_trendhi'>&#8679;</td>
+    #elif $trend.windSpeed.formatted < 0
+           <td class='hes_trendlo'>&#8681;</td>
+    #end if
+#end if
+#end if
+
+#if $varExists('forecast')
+     <td class='hes1_winro' rowspan='2'
+   #if $summary.windDirs is not None
+         style='width:44px; height:44px; vertical-align:middle; text-align:center; background: url()
+     #for $d in $summary.windDirs
+       #set $winddir_img = 'xicons/' + $d + '.png'
+               ,url($winddir_img)
+     #end for
+               ; background-repeat:no-repeat; background-position:center; background-size:44px;'
+   #end if
+         >
+   #if $summary.windSpeedMin == $summary.windSpeedMax or $summary.windSpeedMin.raw == $summary.windSpeedMax.raw
+          $summary.windSpeedMin.nolabel('%.0f',' ')
+   #else
+          $summary.windSpeedMin.nolabel('%.0f',' ')-$summary.windSpeedMax.nolabel('%.0f',' ')
+   #end if
+          <br/>
+          $summary.windGust.nolabel('%.0f',' ')
+     </td>
+#end if
+   </tr>
+   <tr>
+      #if $current.windSpeed.raw < 0.8
+         <td class="hes1_winbo" style="background-color: #ffffff;">0<br />Windstille</td>
+      #else if $current.windSpeed.raw > 0.8 and $current.windSpeed.raw < 5.5
+         <td class="hes1_winbo" style="background-color: #d4d4fa;">1<br />leiser Zug</td>
+      #else if $current.windSpeed.raw > 5.4 and $current.windSpeed.raw < 12
+         <td class="hes1_winbo" style="background-color: #bcbcfa;">2<br />leichte Brise</td>
+      #else if $current.windSpeed.raw > 11.9 and $current.windSpeed.raw < 19.5
+         <td class="hes1_winbo" style="background-color: #a4a4f8;">3<br />schwache Brise</td>
+      #else if $current.windSpeed.raw > 19.4 and $current.windSpeed.raw < 28.5
+         <td class="hes1_winbo" style="background-color: #8d8df6;">4<br />mäßige Brise</td>
+      #else if $current.windSpeed.raw > 28.4 and $current.windSpeed.raw < 38.6
+         <td class="hes1_winbo" style="background-color: #7575f2;">5<br />frische Brise</td>
+      #else if $current.windSpeed.raw > 38.5 and $current.windSpeed.raw < 49.8
+         <td class="hes1_winbo" style="background-color: #6363f0;">6<br />starker Wind</td>
+      #else if $current.windSpeed.raw > 49.7 and $current.windSpeed.raw < 61.7
+         <td class="hes1_winbo" style="background-color: #5252ed;">7<br />steifer Wind</td>
+      #else if $current.windSpeed.raw > 61.6 and $current.windSpeed.raw < 74.6
+         <td class="hes1_winbo" style="background-color: #4646eb;">8<br />stürmischer Wind</td>
+      #else if $current.windSpeed.raw > 74.5 and $current.windSpeed.raw < 87.9
+         <td class="hes1_winbo" style="background-color: #3838e8; color: #ffffff;">9<br />Sturm</td>
+      #else if $current.windSpeed.raw > 87.9 and $current.windSpeed.raw < 102.3
+         <td class="hes1_winbo" style="background-color: #2929e5; color: #ffffff;">10<br />schwerer Sturm</td>
+      #else if $current.windSpeed.raw > 102.3 and $current.windSpeed.raw < 117.5
+         <td class="hes1_winbo" style="background-color: #1616e3; color: #ffffff;">11<br />orkanartiger Sturm</td>
+      #else if $current.windSpeed.raw > 117.4 and $current.windSpeed.raw < 132.9
+         <td class="hes1_winbo" style="background-color: #000000; color: #ffffff;">12<br />Orkan</td>
+      #else if $current.windSpeed.raw > 132.8 and $current.windSpeed.raw < 149.1
+         <td class="hes1_winbo" style="background-color: #000000; color: #ffffff;">13</td>
+      #else if $current.windSpeed.raw > 149 and $current.windSpeed.raw < 166.1
+         <td class="hes1_winbo" style="background-color: #000000; color: #ffffff;">14</td>
+      #else if $current.windSpeed.raw > 166.0 and $current.windSpeed.raw < 183.3
+         <td class="hes1_winbo" style="background-color: #000000; color: #ffffff;">15</td>
+      #else if $current.windSpeed.raw > 183.2 and $current.windSpeed.raw < 201.6
+         <td class="hes1_winbo" style="background-color: #000000; color: #ffffff;">16</td>
+      #end if
+
+       <td style='font-size:100%;padding-left:8px;'>
+       <a href='daywinddir.png' class='popup'>$current.windDir.ordinal_compass<br />
+      <span style='font-size:100%'>$current.windDir</span></a>
+       </td>
+       <td class='hes1_wind' style='padding-left:8px; font-size:240%;'>
+       <a href='daywindvec.png' class='popup'>
+#if $current.windDir.raw is None:
+      -
+#else
+#if $current.windDir.raw < 22.5
+       &#8593;
+#elif $current.windDir.raw < 67.5
+       &#8599;
+#elif $current.windDir.raw < 112.5
+       &#8594;
+#elif $current.windDir.raw < 157.5
+       &#8600;
+#elif $current.windDir.raw < 202.5
+       &#8595;
+#elif $current.windDir.raw < 247.5
+       &#8601;
+#elif $current.windDir.raw < 292.5
+       &#8592;
+#elif $current.windDir.raw < 337.5
+       &#8598;
+#else
+       &#8593;
+#end if
+#end if
+      </a>
+     </td>
+    </tr>
+  </table>
+    <hr />
+    <img src="daywindklein.png" alt="Wind" />
+ </div>
+</div> <!-- ende Wind -->
+
+#if $day.UV.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>UV-Index</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+    #if $current.UV.raw <= 2.4
+      <td class='hes1_bigval' colspan='3' style="background-color: limegreen">
+    #else if $current.UV.raw >= 2.5 and $current.UV.raw <= 5.4
+      <td class='hes1_bigval' colspan='3' style="background-color: yellow">
+    #else if $current.UV.raw >= 5.5 and $current.UV.raw <= 7.4
+      <td class='hes1_bigval' colspan='3' style="background-color: orange">
+    #else if $current.UV.raw >= 7.5 and $current.UV.raw <= 10.4
+      <td class='hes1_bigval' colspan='3' style="background-color: red">
+    #else if $current.UV.raw > 10.5
+      <td class='hes1_bigval' colspan='3' style="background-color: violet">
+    #end if
+       <a href='dayuv.png' class='popup'>$current.UV</a></td>
+    #if $trend.UV.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.UV.formatted</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.UV.formatted</td>
+    #end if
+    </tr>
+#if $varExists('forecast')
+    <tr>
+     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$summary.uvIndexMax</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'> $summary.uvIndexMin</span></td>
+    </tr>
+#end if
+   </table>
+    <hr />
+    <img src="dayUVklein.png" alt="UV-Index" />
+  </div>
+ </div>
+#end if
+<!-- ende UV -->
+
+
+#if $latest($data_binding='lightning_binding').distance.raw >= 1.5
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Blitz<br />AS3935</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Zeit</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>$latest($data_binding='lightning_binding').distance</a></td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M:%S")</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
+     <td><span class='hes1_m'>am</span></td>
+     <td><span class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</span></td>
+     <td><span class="hes1_m">um</span></td>
+     <td><span class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Blitze in <br />der letzten&nbsp;</td>
+     <td><span class='hes1_m'> Stunde</span></td>
+     <td><span class='hes1_valhi'>$hour($data_binding='lightning_binding').distance.count.format('%.0f')</span></td>
+     <td><span class="hes1_m">am Tag</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Blitz-Sensor -->
+#end if
+
+<div class='hes'>
+ <div class='hesbox'>
+ <table class='hes1'>
+  <tr><td class='hes1_kopfa' colspan='2'>Berechnete Werte</td></tr>
+  <tr>
+   <td>Wolkenuntergrenze:&nbsp;</td>
+    <td class="re_data"> $current.cloudbase (ASL)</td>
+  </tr>
+  <tr>
+    <td class="re_data">Luftdichte:</td>
+    <td class="re_data"> $current.airDensity</td>
+  </tr>
+  <tr>
+    <td class='re_data'>Winddruck</td>
+    <td class='re_data'>$current.windDruck</td>
+  </tr>
+  <tr>
+    <td class='re_data'>Wind Verlauf</td>
+    <td class='re_data'>$current.windrun</td>
+  </tr>
+   <tr>
+    <td>Sonnenstunden</td><td>$day.sunshineS.sum.hour</td>    
+   </tr>
+   <tr>
+    <td>Cons-Volt</td><td>$current.consBatteryVoltage</td>    
+   </tr>
+   <tr>
+    <td>Wachstumstage Monat</td>
+    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   <tr>
+    <td>Wachstumstage Jahr</td>
+    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Air-Qualität</td>
+    <td class="stats_data">$latest($data_binding='air_binding').air_sensor</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Gas Sensor M9</td>
+    <td class="stats_data">$latest($data_binding='air_binding').gas_sensor</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Grove Light</td>
+    <td class="stats_data">$latest($data_binding='air_binding').light_sensor.format('%.1f')</td>
+   </tr>
+  </table>
+ </div>
+</div> <!-- end werte -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Pollencheck</h3>
+<!-- Start Pollencheck -->
+   <iframe style="width:100px;height:170px;border:none;overflow:hidden;"
+    src="http://www.pollencheck.de/pollen.php?r=3&amp;b=000000&amp;bg=i0&amp;fg1=ffffff&amp;fg2=ffffff">
+    <a href="http://www.pollencheck.de">Pollenfluganzeige</a>
+</iframe>
+<!-- Ende Pollencheck -->
+ </div>
+</div> <!-- end Pollenchek -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Wetterwarnung</h3>
+  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
+  <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+ </div>
+</div> <!-- end dwd.de wetter -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr>
+     <td class='hes1_kopfa'>1-wire Sensoren owfs</td>
+   </tr>
+   <tr>
+     <td><a href='index2.html'>weiter</a></td>
+   </tr>
+  </table>
+ </div>
+</div> <!-- end owfs -->
+
+<div class="hes">
+ <div class='hesbox'>
+    <a href="http://info.flagcounter.com/Qo1g"><img src="http://s11.flagcounter.com/count/Qo1g/bg_FFFFFF/txt_000000/border_CCCCCC/columns_3/maxflags_12/viewers_0/labels_0/pageviews_0/flags_0/" alt="Flag Counter"></a>
+ </div>
+</div> <!-- end counter -->
+
+
+</section >
+
+</div> <!-- ende container -->
+
+     #include $Extras.footer
+
+
+  </div> 
+
+ </body>
+
+</html>

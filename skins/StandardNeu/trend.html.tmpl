@@ -1,0 +1,153 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## trend.html.tmpl  2015-03-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Trend Kalender</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/weereport.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    #include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="header">Trend Kalender</div>
+     <table id="report">
+      <tr>
+       <td class="stats_label">Jetzt</td>
+       <td class="stats_data">$current.outTemp</td>
+       <td class="stats_data">$current.windSpeed</td>
+       <td class="stats_data">$current.windGust</td>
+       <td class="stats_data">$current.windDir</td>
+       <td class="stats_data">$current.outHumidity</td>
+       <td class="stats_data">$current.barometer</td>
+       <td class="stats_data">$current.rain</td>
+       <td class="stats_data">$current.radiation</td>
+       <td class="stats_data">$current.sunshineS</td>
+      </tr>
+      <tr>
+       <td>Stunden</td>
+       <td>Temperatur</td>
+       <td>Wind</td>
+       <td>Wind</td>
+       <td>Wind</td>
+       <td>Luft-</td>
+       <td>Luft-</td>
+       <td>Nieder-</td>
+       <td>Solar</td>
+       <td>Sonnen</td>
+      </tr>
+      <tr>
+       <td>zuvor</td>
+       <td>&nbsp;</td>
+       <td>geschwindigkeit</td>
+       <td>böen</td>
+       <td>richtung</td>
+       <td>feuchte</td>
+       <td>druck</td>
+       <td>schlag</td>
+       <td>leistung</td>
+       <td>stunden</td>
+      </tr>
+      #for $zeit in range(24)
+      <tr>
+       <td class="stats_label">$zeit</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).outTemp.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windSpeed.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windGust.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windDir.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).outHumidity.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).barometer.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).rain.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).radiation.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).sunshineS.avg</td>
+      </tr>
+     #end for
+      <tr>
+       <td class="stats_label">Gestern</td>
+       <td class="stats_data">$yesterday.outTemp.max</td>
+       <td class="stats_data">$yesterday.windSpeed.max</td>
+       <td class="stats_data">$yesterday.windGust.max</td>
+       <td class="stats_data">$yesterday.windDir.avg</td>
+       <td class="stats_data">$yesterday.outHumidity.max</td>
+       <td class="stats_data">$yesterday.barometer.max</td>
+       <td class="stats_data">$yesterday.rain.sum</td>
+       <td class="stats_data">$yesterday.radiation.max</td>
+       <td class="stats_data">$yesterday.sunshinehours.sum</td>
+      </tr>
+
+      </table>
+      <hr /><h4>Regen</h4>
+    <table>
+     <tr>
+      <td>&nbsp;</td><td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td><td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+     </tr>
+     <tr>
+      <td>$current.dateTime.format('%Y')</td>
+  #for $month in $year.months
+    #if $month.rain.sum.raw is not None:
+      #if $month.rain.sum.raw < 10
+          <td class="tab_datab" style="background-color: #84ebff;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 15
+          <td class="tab_datab" style="background-color: #57ddff;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 25
+          <td class="tab_datab" style="background-color: #23c5ff;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 40
+          <td class="tab_datab" style="background-color: #009eff;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 80
+          <td class="tab_datab" style="background-color: #0077f7;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 160
+          <td class="tab_datab" style="background-color: #0050a9 color: #ffffff;">$month.rain.sum.formatted</td>
+      #elif $month.rain.sum.raw < 300
+          <td class="tab_datab" style="background-color: #001c5b color: #ffffff;">$month.rain.sum.formatted</td>
+      #else
+          <td class="tab_datab" style="background-color: #0000ff color: #ffffff;">$month.rain.sum.formatted</td>
+      #end if
+    #else
+          <td class="tab_datab" style="background-color: #ffffff;">-</td>
+    #end if
+  #end for
+  </tr> 
+    </table>
+    <p>StormRain:$latest($data_binding='wdsupp_binding').stormRain<br />
+       StormStart:$latest($data_binding='wdsupp_binding').stormStart.format('%d.%m.%Y')<br />
+       $latest($data_binding='wdsupp_binding').vantageForecastIcon </p>
+       <p> month con dry days:$month_con_dry_days<br />
+           month con days time:$month_con_dry_days_time</p>
+
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+<!-- </div> -->
+
+  #include $Extras.footer
+
+</div>
+</body>
+
+</html>

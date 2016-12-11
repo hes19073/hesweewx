@@ -1,0 +1,127 @@
+#errorCatcher Echo
+##    $Revision: 731 $
+##    $Author: tkeffer $
+##    $Date: 2012-11-03 12:11:50 -0700 (Sat, 03 Nov 2012) $
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>$station.location Jährliche Zusammenstellung</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+   <div id="container">
+
+    #include $Extras.header
+
+      <div id="stats_group">
+
+        #set global $werte = $year
+        #set global $wertename = 'Kalenderjahr'
+        #set global $wertum = ' am'
+        #include $Extras.cwerte
+
+        <p>&nbsp;</p>
+
+        <div class="stats">
+          <div class="stats_header">
+            Regen im Jahr seit (1. $station.rain_year_str Start)
+          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td class="stats_label">
+                  Regen Total<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rain.sum
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label"> 
+                  Regenintensität (max)<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rainRate.max &nbsp;&nbsp; am &nbsp;&nbsp; $rainyear.rainRate.maxtime
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!-- End class "stats" -->
+
+      </div> <!-- End class "stats_group" -->
+
+      <div id="content">
+        
+        <div class="header">
+          <h3>J&auml;hrliche Statistik und Diagramme  <a href="year-table.html">/ Tabelle</a></h3>
+        </div>
+        <div id="plots">
+          <img src="yeartempdew.png" alt="temperature" />
+          <img src="yearhilow.png" alt="Yearly high/low" />
+          <img src="yeartempchill.png" alt="hitzechill" />
+          <img src="yearhumid.png" alt="humidity" />
+          <img src="yearbarometer.png" alt="barometer"/>
+          <img src="yearrain.png" alt="rain" />
+          <img src="yearsnow.png" alt="schnee" />
+          <img src="yearET.png" alt="ET berechnet" />
+          <img src="yearwind.png" alt="wind" />
+          <img src="yearwinddir.png" alt="Hi Wind" />
+          <img src="yearwindvec.png" alt="Wind Vector" />
+          <img src="yearinside.png" alt="Inside" />
+          <img src="yearinhume.png" alt="Insidehumid" />
+          #if $year.extraTemp4.has_data
+          <img src="yearextra2.png" alt="Carport" />
+          #end if
+          #if $year.lighting.has_data
+          <img src="yearlighting.png" alt="Helligkeit" />
+          #end if
+          #if $year.radiation.has_data
+          <img src="yearradiation.png" alt="Radiation" />
+          #end if
+          #if $year.UV.has_data
+          <img src="yearuv.png" alt="UV-Index" />
+          #end if
+          #if $year.rxCheckPercent.has_data
+          <img src="yearBate.png" alt="year rx percent"/>
+          #end if
+          #if $year.extraTemp1.has_data
+          <img src="yearextra1.png" alt="Teich Temperatur" />
+          #end if
+          #if $year.extraTemp2.has_data
+          <img src="yearTeichB.png" alt="bade Temperatur" />
+          #end if
+          #if $year.extraTemp6.has_data
+          <img src="yearTeichG.png" alt="Goldfisch Temperatur" />
+          #end if
+
+          #if $year.soilTemp1.has_data
+          <img src="yearTempB.png" alt="Bodentemperatur" />
+          <img src="yearsoilT.png" alt="Boden Luft" />
+          #end if
+          #if $year.soilMoist1.has_data
+          <img src="yearsoilF.png" alt="Bodenfeuchtigkeit" />
+          #end if
+          #if $year.cloudbase.has_data
+          <img src="yearcloudbase.png" alt="Wolkenunterkante" />
+          #end if
+          #if $year.windrund.has_data
+          <img src="yearwindrun.png" alt="Windrun" />
+          #end if
+          #if $year.beaufort.has_data
+          <img src="yearwindB.png" alt="Wind in Beaufort" />
+          #end if
+        </div>
+      </div> <!-- End id "content" -->
+
+    </div> <!-- End id "container" -->
+
+  #include $Extras.footer
+
+</body>
+</html>

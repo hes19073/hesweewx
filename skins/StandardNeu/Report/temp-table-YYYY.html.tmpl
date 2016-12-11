@@ -1,0 +1,168 @@
+## jahres monatssicht for weewx - Copyright 2015- Hartmut
+## KR-YYYY-MM-table.html.tmpl  2015-04-26 12:01:24Z hes $
+#errorCatcher Echo
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>$station.location wöchentliche Wetterdaten</title>
+    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="weereport.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='hesweewx.js'></script>
+    
+  </head>
+
+<body>
+    
+##include $Extras.header
+
+<!-- <div id="contentwe"> -->
+ <div class="mittetab">
+  <h3>Der Monat&nbsp;&nbsp;mit den Maximal-, Minimal- und Durchschnittswerten</h3>
+  <table border="2" width="100%">
+    <tr>
+     <td></td>
+     <td colspan='3'>Januar</td>
+     <td colspan='3'>Februar</td>
+     <td colspan='3'>März</td>
+     <td colspan='3'>April</td>
+     <td colspan='3'>Mai</td>
+     <td colspan='3'>Juni</td>
+     <td colspan='3'>Juli</td>
+     <td colspan='3'>August</td>
+     <td colspan='3'>September</td>
+     <td colspan='3'>Oktober</td>
+     <td colspan='3'>November</td>
+     <td colspan='3'>Dezember</td>
+    </tr>
+    <tr>
+    <td></td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+    <td>max</td><td>min</td><td>&Oslash;</td>
+   </tr>
+  </table>
+
+#for $month in $month.years()
+
+ <table>
+   <tr>
+    <td>
+   <table id='report'>
+  #for $day in $month.days
+    <tr>
+     <td>$day.dateTime.format("%d.%m.%Y")</td>
+    #if $day.outTemp.max.raw is None:
+        <td class='hest0'>-</td>
+    #else
+       #if $day.outTemp.max.raw < -15
+           <td class="hest1">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > -15 and $day.outTemp.max.raw < -11
+           <td class="hest2">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > -10 and $day.outTemp.max.raw < 1
+           <td class="hest3">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 0 and $day.outTemp.max.raw < 6
+           <td class="hest4">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 5 and $day.outTemp.max.raw < 11
+           <td class="hest5">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 10 and $day.outTemp.max.raw < 16
+           <td class="hest6">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 15 and $day.outTemp.max.raw < 21
+           <td class="hest7">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 20 and $day.outTemp.max.raw < 26
+           <td class="hest8">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 25 and $day.outTemp.max.raw < 31
+           <td class="hest9">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else if $day.outTemp.max.raw > 30 and $day.outTemp.max.raw < 36
+           <td class="hest10">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #else
+           <td class="hest11">$day.outTemp.max.formatted<br /><small>$day.outTemp.maxtime</small></td>
+       #end if
+    #end if             
+    #if $day.outTemp.min.raw is None:
+           <td class="hest0">-</td>
+    #else
+       #if $day.outTemp.min.raw < -15
+           <td class="hest1">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > -15 and $day.outTemp.min.raw < -11
+           <td class="hest2">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > -10 and $day.outTemp.min.raw < -6
+           <td class="hest3">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > -5 and $day.outTemp.min.raw < 1
+           <td class="hest4">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 0 and $day.outTemp.min.raw < 6
+           <td class="hest5">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 5 and $day.outTemp.min.raw < 11
+           <td class="hest6">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 10 and $day.outTemp.min.raw < 16
+           <td class="hest7">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 15 and $day.outTemp.min.raw < 21
+           <td class="hest8">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 20 and $day.outTemp.min.raw < 26
+           <td class="hest9">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else if $day.outTemp.min.raw > 25 and $day.outTemp.min.raw < 36
+           <td class="hest10">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #else 
+           <td class="hest11">$day.outTemp.min.formatted<br /><small>$day.outTemp.mintime</small></td>
+       #end if
+    #end if
+    #if $day.outTemp.avg.raw is None:
+           <td class="hest0">-</td>
+    #else
+       #if $day.outTemp.avg.raw < -15
+           <td class="hest1">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > -15 and $day.outTemp.avg.raw < -11
+           <td class="hest2">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > -10 and $day.outTemp.avg.raw < -6
+           <td class="hest3">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > -5 and $day.outTemp.avg.raw < 1
+           <td class="hest4">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 0 and $day.outTemp.avg.raw < 6
+           <td class="hest5">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 5 and $day.outTemp.avg.raw < 11
+           <td class="hest6">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 10 and $day.outTemp.avg.raw < 16
+           <td class="hest7">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 15 and $day.outTemp.avg.raw < 21
+           <td class="hest8">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 20 and $day.outTemp.avg.raw < 26
+           <td class="hest9">$day.outTemp.avg.formatted<br /></td>
+       #else if $day.outTemp.avg.raw > 25 and $day.outTemp.avg.raw < 36
+           <td class="hest10">$day.outTemp.avg.formatted<br /></td>
+       #else
+           <td class="hest11">$day.outTemp.avg.formatted<br /></td>
+       #end if
+    #end if
+   </tr> 
+
+
+   #end for 
+
+  </table> <!-- ende Monat -->  
+  
+#end for
+  </td>
+ </tr>
+ </table>
+
+
+   </div> <!-- ende mittetab -->
+
+ </div>  <!-- ende hes_data -->
+
+    ##include $Extras.footer
+
+</body>
+</html>
+
