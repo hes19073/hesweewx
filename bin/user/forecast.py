@@ -1,4 +1,4 @@
-# $Id: forecast.py 1467 2016-03-14 15:36:18Z mwall $
+# $Id: forecast.py 1579 2016-11-24 16:47:19Z mwall $
 # Copyright 2013 Matthew Wall
 """weewx module that provides forecasts
 
@@ -676,7 +676,7 @@ def mkdir_p(path):
    zcode      used only by zambretti forecast
 
    database   nws                  wu-daily         wu-hourly        owm
-   ---------- -------------------- ---------------- ---------------- -----------
+   ---------- -------------------- ---------------- ---------------- ----------
 
    hour       3HRLY | 6HRLY        date.hour        FCTTIME.hour     3
    tempMin    MIN/MAX | MAX/MIN    low.fahrenheit                    temp_min
@@ -1683,6 +1683,10 @@ def ZambrettiCode(pressure, month, wind, trend,
 #
 # -----------------------------------------------------------------------------
 
+# FIXME: update docs about how to find the foid and lid
+# FIXME: new forecast api has this format:
+# https://forecast-v3.weather.gov/products/PFM/LWX/1
+
 # The default URL contains the bare minimum to request a point forecast, less
 # the forecast office identifier.
 NWS_DEFAULT_PFM_URL = 'http://forecast.weather.gov/product.php?site=NWS&product=PFM&format=txt'
@@ -2295,7 +2299,6 @@ class WUForecast(Forecast):
                     WU_KEY, cnt, e)
                 msgs.append(msg)
                 logerr(msg)
-
         return records, msgs
 
     @staticmethod
@@ -3438,7 +3441,7 @@ class WWOForecast(Forecast):
                     # feelslike
                     r['feelslike'] = WWOForecast.str2float(p, 'FeelsLikeF')
                     r['heatIndex'] = WWOForecast.str2float(p, 'HeatIndexF')
-                    r['humidity'] = WWOForecast.str2int(p, 'humidity')
+                    r['humidity'] = WWOForecast.str2float(p, 'humidity')
                     r['qpf'] = WWOForecast.str2float(p, 'precipMM') / 25.4
                     # pressure
                     r['pressure'] = WWOForecast.str2float(p, 'pressure') * 0.0295299830714
@@ -4003,7 +4006,9 @@ class ForecastVariables(SearchList):
         """create a value with units from the specified string"""
         v = None
         try:
-            if value_str is None or value_str in ['A', 'W', 'Y']:
+            if value_str is None:
+                pass
+            elif value_str in ['A', 'W', 'Y']:
                 logdbg("ignoring value for %s: '%s' (%s:%s)" %
                        (label, value_str, fid, context))
             elif group == 'group_time':

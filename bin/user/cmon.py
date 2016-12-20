@@ -1,4 +1,4 @@
-# $Id: cmon.py 1547 2016-08-30 00:00:54Z mwall $
+# $Id: cmon.py 1577 2016-11-22 22:58:30Z mwall $
 # Copyright 2013 Matthew Wall
 """weewx module that records cpu, memory, disk, and network usage.
 
@@ -110,7 +110,9 @@ then load it using this configuration:
 
 # FIXME: make these methods platform-independent instead of linux-specific
 # FIXME: deal with MB/GB in memory sizes
-# FIXME: save the counts or save the differences?  for now the differences
+# FIXME: save the total counts instead of the deltas
+# FIXME: refactor ups and rpi specialties
+
 
 from __future__ import with_statement
 import os
@@ -127,7 +129,7 @@ from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
 DRIVER_NAME = "ComputerMonitor"
-DRIVER_VERSION = "0.14"
+DRIVER_VERSION = "0.15"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -250,8 +252,7 @@ IGNORED_MOUNTS = [
     '/afs',
     '/mit',
     '/run',
-    '/var/lib/nfs',
-    ]
+    '/var/lib/nfs']
 
 
 def logmsg(level, msg):
@@ -280,6 +281,21 @@ def get_collector(hardware=[], ignored_mounts=IGNORED_MOUNTS):
 
 
 class Collector(object):
+
+    _CPU_KEYS = ['user','nice','system','idle','iowait','irq','softirq']
+
+    # bytes received
+    # packets received
+    # packets dropped
+    # fifo buffer errors
+    # packet framing errors
+    # compressed packets
+    # multicast frames
+    _NET_KEYS = [
+        'rbytes','rpackets','rerrs','rdrop','rfifo','rframe','rcomp','rmulti',
+        'tbytes','tpackets','terrs','tdrop','tfifo','tframe','tcomp','tmulti'
+        ]
+
     def __init__(self, hardware):
         self.hardware = hardware
 
@@ -341,7 +357,7 @@ class Collector(object):
             cmd = '%s measure_temp' % Collector._RPI_VCGENCMD
             p = Popen(cmd, shell=True, stdout=PIPE)
             o = p.communicate()[0]
-            record['core_temp'] = float(o.replace("'C\n",'').partition('=')[2])
+            record['core_temp'] = float(o.replace("'C\n", '').partition('=')[2])
             cmd = '%s measure_volts' % Collector._RPI_VCGENCMD
             p = Popen(cmd, shell=True, stdout=PIPE)
             o = p.communicate()[0]
@@ -449,20 +465,6 @@ class LinuxCollector(Collector):
                     info[n.strip()] = v.strip()
         return info
 
-    _CPU_KEYS = ['user','nice','system','idle','iowait','irq','softirq']
-
-    # bytes received
-    # packets received
-    # packets dropped
-    # fifo buffer errors
-    # packet framing errors
-    # compressed packets
-    # multicast frames
-    _NET_KEYS = [
-        'rbytes','rpackets','rerrs','rdrop','rfifo','rframe','rcomp','rmulti',
-        'tbytes','tpackets','terrs','tdrop','tfifo','tframe','tcomp','tmulti'
-        ]
-
     def get_data(self, now=None):
         record = super(LinuxCollector, self).get_data(now)
 
@@ -486,10 +488,10 @@ class LinuxCollector(Collector):
             cpuinfo = self._readproc_lines(fn)
             if cpuinfo:
                 values = cpuinfo['cpu'].split()[0:7]
-                for i,key in enumerate(self._CPU_KEYS):
-                    if self.last_cpu.has_key(key):
-                        record['cpu_'+key] = int(values[i]) - self.last_cpu[key]
-                    self.last_cpu[key] = int(values[i])
+                for i, k in enumerate(self._CPU_KEYS):
+                    if k in self.last_cpu:
+                        record['cpu_' + k] = int(values[i]) - self.last_cpu[k]
+                    self.last_cpu[k] = int(values[i])
         except Exception, e:
             logdbg("read failed for %s: %s" % (fn, e))
 
@@ -500,17 +502,18 @@ class LinuxCollector(Collector):
             if netinfo:
                 for iface in netinfo:
                     values = netinfo[iface].split()
-                    for i, key in enumerate(self._NET_KEYS):
-                        if not self.last_net.has_key(iface):
+                    for i, k in enumerate(self._NET_KEYS):
+                        if iface not in self.last_net:
                             self.last_net[iface] = {}
-                        if self.last_net[iface].has_key(key):
-                            record['net_'+iface+'_'+key] = int(values[i]) - self.last_net[iface][key]
-                            if record['net_'+iface+'_'+key] < 0:
+                        if k in self.last_net[iface]:
+                            x = int(values[i]) - self.last_net[iface][k]
+                            if x < 0:
                                 maxcnt = 0x100000000 # 32-bit counter
-                                if record['net_'+iface+'_'+key] + maxcnt < 0:
+                                if x + maxcnt < 0:
                                     maxcnt = 0x10000000000000000 # 64-bit counter
-                                record['net_'+iface+'_'+key] += maxcnt
-                        self.last_net[iface][key] = int(values[i])
+                                x += maxcnt
+                            record['net_' + iface + '_' + k] = x
+                        self.last_net[iface][k] = int(values[i])
         except Exception, e:
             logdbg("read failed for %s: %s" % (fn, e))
 
@@ -522,11 +525,11 @@ class LinuxCollector(Collector):
         try:
             loadstr = self._readproc_line(fn)
             if loadstr:
-                (load1,load5,load15,nproc) = loadstr.split()[0:4]
+                (load1, load5, load15, nproc) = loadstr.split()[0:4]
                 record['load1'] = float(load1)
                 record['load5'] = float(load5)
                 record['load15'] = float(load15)
-                (num_proc,tot_proc) = nproc.split('/')
+                (num_proc, tot_proc) = nproc.split('/')
                 record['proc_active'] = int(num_proc)
                 record['proc_total'] = int(tot_proc)
         except Exception, e:
@@ -540,19 +543,18 @@ class LinuxCollector(Collector):
             try:
                 for f in os.listdir(tdir):
                     if f.endswith('_input'):
-                        s = self._readproc_line(os.path.join(tdir,f))
+                        s = self._readproc_line(os.path.join(tdir, f))
                         if s and len(s):
                             n = f.replace('_input','')
                             tC = int(s) / 1000. # degree C
                             tF = 32.0 + tC * 9.0 / 5.0
-                            record['cpu_' + n] = tC
             except Exception, e:
                 logdbg("read failed for %s: %s" % (tdir, e))
         elif os.path.exists(tfile):
             try:
                 s = self._readproc_line(tfile)
-                tC = int(s) / 1000. # degree C
-                record['cpu_temp'] = tC
+                t_C = int(s) / 1000 # degree C
+                record['cpu_temp'] = t_C
             except Exception, e:
                 logdbg("read failed for %s: %s" % (tfile, e))
 
@@ -655,6 +657,93 @@ class LinuxCollector(Collector):
         return record
 
 
+class MacOSXCollector(Collector):
+    def __init__(self, hardware, ignored_mounts):
+        super(MacOSXCollector, self).__init__(hardware)
+
+        # provide info about the system on which we are running
+        loginf('sysinfo: %s' % ' '.join(os.uname()))
+        self.ignored_mounts = ignored_mounts
+        self.last_cpu = dict()
+        self.last_net = dict()
+
+    def get_data(self, now=None):
+        import psutil
+
+        record = super(MacOSXCollector, self).get_data(now)
+
+        # read memory status
+        info = psutil.virtual_memory()
+        record['mem_total'] = info.total
+        record['mem_free'] = info.free
+        record['mem_used'] = info.used
+        record['mem_available'] = info.available
+        record['mem_active'] = info.active
+        record['mem_inactive'] = info.inactive
+        record['mem_wired'] = info.wired
+        info = psutil.swap_memory()
+        record['swap_total'] = info.total
+        record['swap_free'] = info.free
+        record['swap_used'] = info.used
+        record['swap_sin'] = info.sin
+        record['swap_sout'] = info.sout
+
+        # get cpu usage
+        ncpu = psutil.cpu_count()
+        record['cpu_count'] = ncpu
+        info = psutil.cpu_times()
+        for k in list(set(self._CPU_KEYS) & set(dir(info))):
+            v = getattr(info, k, None)
+            if k in self.last_cpu:
+                if v is not None and self.last_cpu[k] is not None:
+                    record['cpu_' + k] = v - self.last_cpu[k]
+                else:
+                    record['cpu_' + k] = None
+            self.last_cpu[k] = v
+
+        # get network usage
+        info = psutil.net_io_counters(pernic=True)
+        for iface in info:
+            for k in list(set(self._NET_KEYS) & set(dir(info[iface]))):
+                if iface not in self.last_net:
+                    self.last_net[iface] = {}
+                v = getattr(info[iface], k, None)
+                if k in self.last_net[iface]:
+                    x = None
+                    if v is not None and self.last_net[iface][k] is not None:
+                        x = v - self.last_net[iface][k]
+                        if x < 0:
+                            maxcnt = 0x100000000 # 32-bit counter
+                            if x + maxcnt < 0:
+                                maxcnt = 0x10000000000000000 # 64-bit counter
+                            x += maxcnt
+                    record['net_' + iface + '_' + k] = x
+                self.last_net[iface][k] = v
+
+        # uptime
+        # FIXME: implement uptime/idletime
+
+        # get load and process information
+        # FIXME: implement load
+
+        # read cpu temperature
+        # FIXME: implement cpu temperature
+
+        # get stats on mounted filesystems
+        info = psutil.disk_partitions()
+        for d in info:
+            label = d.mountpoint.replace('/', '_')
+            if label == '_':
+                label = '_root'
+            du = psutil.disk_usage(d.mountpoint)
+            record['disk' + label + '_free'] = du.free / 1024 # kB
+            record['disk' + label + '_total'] = du.total / 1024 # kB
+            record['disk' + label + '_used'] = du.used / 1024 # kB
+            # FIXME: add io counters per disk
+
+        return record
+
+
 def loader(config_dict, engine):
     return ComputerMonitorDriver(**config_dict['ComputerMonitor'])
 
@@ -745,7 +834,7 @@ class ComputerMonitor(StdService):
         try:
             # sqlite databases need some help to stay small
             self.dbm.getSql('vacuum')
-        except Exception, e:
+        except Exception:
             pass
 
     def get_data(self, now_ts, last_ts):
@@ -760,7 +849,7 @@ class ComputerMonitor(StdService):
 # cd /home/weewx
 # PYTHONPATH=bin python bin/user/cmon.py
 #
-if __name__=="__main__":
+if __name__ == "__main__":
     usage = """%prog [options] [--help] [--debug]"""
 
     def main():
