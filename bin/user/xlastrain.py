@@ -64,3 +64,32 @@ class MyXLastrain(SearchList):
                  'lastrain_delta_time': delta_time_vh}]
 
 
+class MyXLastsnow(SearchList):
+
+    def __init__(self, generator):
+        SearchList.__init__(self, generator)
+
+    def get_extension_list(self, timespan, db_lookup):
+
+        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_snow WHERE sum > 0")
+        lastsnow_ts = _row[0]
+
+        if lastsnow_ts is not None:
+            try:
+                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE snow > 0 AND dateTime > ? AND dateTime <=?", (lastsnow_ts, lastsnow_ts + 86400))
+                lastsnow_ts = _row[0]
+            except:
+                lastsnow_ts = None
+        # Wrap our ts in a ValueHelper
+        lastsnow_vt = (lastsnow_ts, 'unix_epoch', 'group_time')
+        lastsnow_vh = ValueHelper(lastsnow_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+
+        delta_time = time.time() - lastsnow_ts if lastsnow_ts else None
+
+        # Wrap our ts in a ValueHelper
+        delta_time_vt = (delta_time, 'second', 'group_deltatime')
+        delta_time_vh = ValueHelper(delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+
+
+        return [{'lastsnow_day': lastsnow_vh,
+                 'lastsnow_delta_time': delta_time_vh}]

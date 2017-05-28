@@ -44,7 +44,8 @@ class ExtendedStatistics(SearchList):
                                    db_lookup,
                                    context='alltime',
                                    formatter=self.generator.formatter,
-                                   converter=self.generator.converter)
+                                   converter=self.generator.converter,
+                                   skin_dict=self.generator.skin_dict)
         
         # Now create a TimespanBinder for the last seven days. This one we
         # will have to calculate. First, calculate the time at midnight, seven
@@ -57,7 +58,8 @@ class ExtendedStatistics(SearchList):
                                          db_lookup,
                                          context='seven_day',
                                          formatter=self.generator.formatter,
-                                         converter=self.generator.converter)
+                                         converter=self.generator.converter,
+                                         skin_dict=self.generator.skin_dict)
 
         # Now use a similar process to get statistics for the last 30 days.
         days_dt = datetime.date.fromtimestamp(timespan.stop) - datetime.timedelta(days=30)
@@ -66,8 +68,8 @@ class ExtendedStatistics(SearchList):
                                           db_lookup,
                                           context='thirty_day',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
         
         return [{'alltime': all_stats,
                  'seven_day': seven_day_stats,

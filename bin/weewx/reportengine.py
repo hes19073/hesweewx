@@ -325,7 +325,7 @@ class FtpGenerator(ReportGenerator):
         except (socket.timeout, socket.gaierror, ftplib.all_errors, IOError), e:
             (cl, unused_ob, unused_tr) = sys.exc_info()
             syslog.syslog(syslog.LOG_ERR, "ftpgenerator: "
-                          "Caught exception %s: %s." % (cl, e))
+                          "Caught exception %s: %s" % (cl, e))
             weeutil.weeutil.log_traceback("        ****  ")
             return
 
@@ -366,15 +366,15 @@ class RsyncGenerator(ReportGenerator):
                 log_success=to_bool(self.skin_dict.get('log_success', True)))
         except Exception:
             syslog.syslog(syslog.LOG_DEBUG,
-                          "rsyncgnerator: rsync upload not requested. Skipped.")
+                          "rsyncgenerator: rsync upload not requested. Skipped.")
             return
 
         try:
             rsync_data.run()
         except IOError, e:
             (cl, unused_ob, unused_tr) = sys.exc_info()
-            syslog.syslog(syslog.LOG_ERR, "rsyncrogenerator: "
-                          "Caught exception %s: %s." % (cl, e))
+            syslog.syslog(syslog.LOG_ERR, "rsyncgenerator: "
+                          "Caught exception %s: %s" % (cl, e))
 
 
 # =============================================================================

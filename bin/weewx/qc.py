@@ -64,4 +64,3 @@ class QC(object):
                                    self.min_max_dict[obs_type][0], self.min_max_dict[obs_type][1]))
                     data_dict[obs_type] = None
 
-

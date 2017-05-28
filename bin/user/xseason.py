@@ -56,8 +56,8 @@ class MyXSeason(SearchList):
                                           db_lookup,
                                           context='spring',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
 
 
 
@@ -75,8 +75,8 @@ class MyXSeason(SearchList):
                                           db_lookup,
                                           context='summer',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
 
         anoo = ano
 
@@ -92,8 +92,8 @@ class MyXSeason(SearchList):
                                           db_lookup,
                                           context='autumm',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
 
         anoi = ano
 
@@ -109,8 +109,8 @@ class MyXSeason(SearchList):
                                           db_lookup,
                                           context='winter',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
-
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
         anocs = ano
 
         if today < datetime.date(ano, 11, 1):
@@ -125,7 +125,8 @@ class MyXSeason(SearchList):
                                           db_lookup,
                                           context='coldsum',
                                           formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
+                                          converter=self.generator.converter,
+                                          skin_dict=self.generator.skin_dict)
 
         return [{'winter' : winter,
                  'spring' : spring,

@@ -7,6 +7,7 @@
 """Various weather related formulas and utilities."""
 
 import math
+import syslog
 import time
 import ephem
 import weewx.uwxutils
@@ -245,6 +246,7 @@ def calculate_rain(newtotal, oldtotal):
         if newtotal >= oldtotal:
             delta = newtotal - oldtotal
         else:
+            syslog.syslog(syslog.LOG_INFO, "wxformulas: rain counter reset detected: new=%s old=%s" % (newtotal, oldtotal))
             delta = None
     else:
         delta = None
@@ -862,11 +864,15 @@ def density_Metric(dp_C, t_C, p_mbar):
         return None
 
     dp = dp_C
-    T = CtoK(t_C)
-    p = (0.99999683 + dp *(-0.90826951E-2 + dp * (0.78736169E-4 + dp * (-0.61117958E-6 + dp * (0.43884187E-8 + dp * (-0.29883885E-10 + dp * (0.21874425E-12 + dp * (-0.17892321E-14 + dp * (0.11112018E-16 + dp * (-0.30994571E-19))))))))))
-    Pv = 100 * 6.1078/(p**8)
+    Tk = (t_C) + 273.15
+    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 + 
+        dp * (-0.61117958E-6 + dp * (0.43884187E-8 + 
+        dp * (-0.29883885E-10 + dp * (0.21874425E-12 + 
+        dp * (-0.17892321E-14 + dp * (0.11112018E-16 + 
+        dp * (-0.30994571E-19))))))))))
+    Pv = 100 * 6.1078 / (p**8)
     Pd = p_mbar * 100 - Pv
-    density = round((Pd/(287.05 * T)) + (Pv/(461.495 * T)),3)
+    density = round((Pd / (287.05 * Tk)) + (Pv / (461.495 * Tk)), 3)
 
     return density
 
@@ -879,7 +885,7 @@ def density_US(dp_F, t_F, p_inHg):
 
     p_inHg - pressure in inHg
 
-    calculation aisdensity_Metric(dp_C, t_C, p_mbar)
+    calculation airdensity_Metric(dp_C, t_C, p_mbar)
     """
 
     if dp_F is None or t_F is None or p_inHg is None:
@@ -913,13 +919,48 @@ def winddruck_Metric(dp_C, t_C, p_mbar, vms):
         return None
 
     dp = dp_C
-    T = CtoK(t_C)
-    p = (0.99999683 + dp *(-0.90826951E-2 + dp * (0.78736169E-4 + dp * (-0.61117958E-6 + dp * (0.43884187E-8 + dp * (-0.29883885E-10 + dp * (0.21874425E-12 + dp * (-0.17892321E-14 + dp * (0.11112018E-16 + dp * (-0.30994571E-19))))))))))
-    Pv = 100 * 6.1078/(p**8)
+    Tk = t_C + 273.15
+
+    if vms < 1:
+        vms = 0.2
+    elif vms < 6:
+        vms = 1.5
+    elif vms < 12:
+        vms = 3.3
+    elif vms < 20:
+        vms = 5.4
+    elif vms < 29:
+        vms = 7.9
+    elif vms < 39:
+        vms = 10.7
+    elif vms < 50:
+        vms = 13.8
+    elif vms < 62:
+        vms = 17.1
+    elif vms < 75:
+        vms = 20.7
+    elif vms < 89:
+        vms = 24.7
+    elif vms < 103:
+        vms = 28.5
+    elif vms < 117:
+        vms = 32.7
+    elif vms >= 117:
+        vms = vms * 0.277777778
+
+    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 + 
+        dp * (-0.61117958E-6 + dp * (0.43884187E-8 + 
+        dp * (-0.29883885E-10 + dp * (0.21874425E-12 + 
+        dp * (-0.17892321E-14 + dp * (0.11112018E-16 + 
+        dp * (-0.30994571E-19))))))))))
+
+    Pv = 100 * 6.1078 / (p**8)
     Pd = p_mbar * 100 - Pv
-    density = round((Pd/(287.05 * T)) + (Pv/(461.495 * T)),3)
+    densi = round((Pd / (287.05 * Tk)) + (Pv / (461.495 * Tk)), 3)
+
     wsms2 = vms * vms
-    winddruck = density / 2 * wsms2
+
+    winddruck = densi / 2 * wsms2
 
     return winddruck
 
@@ -942,6 +983,7 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     vms = ws_mph * METER_PER_MILE / 3600.0
 
     wdru_C = winddruck_Metric(dp_C, t_C, p_mbar, vms)
+
     return wdru_C if wdru_C is not None else None
 
 
@@ -960,6 +1002,22 @@ def wetbulb_Metric(t_C, RH, PP):
     return WBc if WBc is not None else None
 
 
+def wetbulb_US(t_F, RH, p_inHg):
+    #  Wet bulb calculations == Kuehlgrenztemperatur, Feuchtekugeltemperatur
+    #  t_F = temperatur degree F
+    #  RH = outHumidity
+    #  p_inHg = pressure in inHg
+
+    if t_F is None or RH is None or p_inHg is None:
+         return None
+
+    t_C = FtoC(t_F)
+    p_mbar = p_inHg / INHG_PER_MBAR
+    wb_C = wetbulb_Metric(t_C, RH, p_mbar)
+
+    return CtoF(wb_C) if wb_C is not None else None
+
+
 def cbindex_Metric(t_C, RH):
     # Chandler Burning Index calculations
     #  t_C = outTemp 
@@ -968,9 +1026,24 @@ def cbindex_Metric(t_C, RH):
     if t_C is None or RH is None:
          return None
 
-    cdIn = (((110 - 1.373 * RH) - 0.54 * (10.20 - t_C)) * (124 * 10**(-0.0142 * RH)))/60
+    cdIn = ((((110 - 1.373 * RH) - 0.54 * (10.20 - t_C)) * (124 * 10**(-0.0142 * RH)))/60.1)
     cbIndex = round(cdIn, 1)
+
     return cbIndex if cbIndex is not None else None
+
+def cbindex_US(t_F, RH):
+    # Chandler Burning Index calculations
+    #  t_F = temperatur degree F 
+    #  RH = outHumidity
+
+    if t_F is None or RH is None:
+         return None
+
+    t_C = FtoC(t_F)
+    cbI_x = cbindex_Metric(t_C, RH)
+
+    return cbI_x if cbI_x is not None else None
+
 
 def sunhes(rahes, tihes):
     # sunshine nach radiation und dateTime
@@ -988,8 +1061,6 @@ def sunhes(rahes, tihes):
     s.compute(loc)
     gS = s.alt
 
-        # Step 2 - Calculate predicted solar radiation level as pR and record
-
     pR = 1373 * sin(gS) * 0.4
 
     if rahes is not None and gS > 0.104719755 and rahes > pR:
@@ -999,6 +1070,50 @@ def sunhes(rahes, tihes):
 
     return sunshineS
 
+def absF_C(t_C, RH):
+
+    # t_C is outTemp in C
+    # RH is outHumidity in %
+    # RG = 8314.3 J/(kmol * K)
+    # mw = 18.016 kg/ kmol
+    # return AF absolute Feuchte in Wasserdampf pro m3 Luft
+
+    if t_C is None or RH is None:
+        return None
+
+    if t_C >= 0.0:
+        a = 7.5
+        b = 237.3
+    else:
+        a = 7.6
+        b = 240.7
+
+        # bei Temp unter Null und ueber Eis,    a = 9.5  b = 265.5
+        # bei Temp unter Null und ueber Wasser, a = 7.6 and b = 240.7
+
+    mw = 18.016
+    RG = 8314.3
+
+    sdd_1 = (a * t_C)/(b + t_C)
+    sdd = 6.1078 * pow(10, sdd_1)
+    dd = RH/100 * sdd
+    dd1 = dd / 6.1078
+    AF = 100000 * mw/RG * dd / (t_C + 273.15)
+
+    return AF
+
+def absF_F(t_F, RH):
+    # absolut Humidity
+    #  t_F = temperatur degree F
+    #  RH = outHumidity
+
+    if t_F is None or RH is None:
+         return None
+
+    t_C = FtoC(t_F)
+    absF_x = absF_C(t_C, RH)
+
+    return absF_x if absF_x is not None else None
 
 
 if __name__ == "__main__":

@@ -41,14 +41,6 @@ weewxwd_schema = [
     ('appTemp',      'REAL'),
     ('outTempDay',   'REAL'),
     ('outTempNight', 'REAL'),
-    ('sunshinehours', 'REAL'),
-    ('sunshineS',    'REAL'),
-    ('snow',         'REAL'),
-    ('snowRate',     'REAL'),
-    ('windDruck',    'REAL'),
-    ('airDensity',   'REAL'),
-    ('wetBulb',      'REAL'),
-    ('cbIndex',      'REAL'),
     ]
 
 # Define schema for supp table
@@ -72,5 +64,8 @@ wdsupp_schema = [
     ('stormRain',           'REAL'),
     ('stormStart',          'INTEGER'),
     ('maxSolarRad',         'REAL'),
+    ('visibility_km',       'REAL'),
+    ('pop',                 'REAL'),
+    ('vantageForecastNumber', 'REAL'),
     ]
 

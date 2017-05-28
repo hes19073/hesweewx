@@ -14,7 +14,7 @@ import weewx.engine
 import weewx.wxformulas
 import weeutil.weeutil
 
-from weewx.units import CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
+from weewx.units import FtoC, CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
 
 class StdWXCalculate(weewx.engine.StdService):
     """Wrapper class for WXCalculate.
@@ -72,19 +72,20 @@ class WXCalculate(object):
         'dewpoint',
         'inDewpoint',
         'rainRate',
+        'snowRate',
         'maxSolarRad',
         'cloudbase',
         'humidex',
         'appTemp',
         'beaufort',
         #'ET',
-        'windrun',
+        #'windrun',
         'windDruck',
         'density',
         'wetBulb',
         'cbIndex',
         'sunshineS',
-        'snow',
+        'absolutF',
         ]
 
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
@@ -94,6 +95,7 @@ class WXCalculate(object):
             data_binding = wx_binding
             ignore_zero_wind = True
             rain_period = 900           # for rain rate
+            snow_period = 900           # for snow rate
             et_period = 3600            # for evapotranspiration
             wind_height = 2.0           # for evapotranspiration
             atc = 0.8                   # for solar radiation RS
@@ -121,6 +123,8 @@ class WXCalculate(object):
         self.binding = svc_dict.get('data_binding', 'wx_binding')
         # window of time to measure rain rate, in seconds
         self.rain_period = int(svc_dict.get('rain_period', 900))
+        # window of time to measure snow rate, in seconds
+        self.snow_period = int(svc_dict.get('snow_period', 900))
         # window of time for evapotranspiration calculation, in seconds
         self.et_period = int(svc_dict.get('et_period', 3600))
         # does zero wind mean no wind direction
@@ -169,6 +173,8 @@ class WXCalculate(object):
         self.ts_12h_ago = None
         self.rain_events = []
         self.archive_rain_events = []
+        self.snow_events = []
+        self.archive_snow_events = []
 
         # report about which values will be calculated...
         syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following values will be calculated: %s" %
@@ -299,6 +305,47 @@ class WXCalculate(object):
                 rainsum += e[1]
         # ...then divide by the period and scale to an hour
         data['rainRate'] = 3600 * rainsum / self.rain_period
+
+    # snowRate is simply the amount of snow in a period scaled to quantity/hr.
+    # use a sliding window for the time period and the total snowfall in that
+    # period for the amount of snow.  the window size is controlled by the
+    # snow_period parameter.
+    def calc_snowRate(self, data, data_type):
+        # if this is a loop packet then cull and add to the queue
+        if data_type == 'loop':
+            # punt any old events from the loop event list...
+            if (self.snow_events and self.snow_events[0][0] <= data['dateTime'] - self.snow_period):
+                events = []
+                for e in self.snow_events:
+                    if e[0] > data['dateTime'] - self.snow_period:
+                        events.append((e[0], e[1]))
+                self.snow_events = events
+            # ...then add new snow event if there is one
+            if 'snow' in data and data['snow']:
+                self.snow_events.append((data['dateTime'], data['snow']))
+        elif data_type == 'archive':
+            # punt any old events from the archive event list...
+            if (self.archive_snow_events and self.archive_snow_events[0][0] <= data['dateTime'] - self.snow_period):
+                events = []
+                for e in self.archive_snow_events:
+                    if e[0] > data['dateTime'] - self.snow_period:
+                        events.append((e[0], e[1]))
+                self.archive_snow_events = events
+            # ...then add new snow event if there is one
+            if 'snow' in data and data['snow']:
+                self.archive_snow_events.append((data['dateTime'], data['snow']))
+        # for both loop and archive, add up the snow...
+        snowsum = 0
+        if len(self.snow_events) != 0:
+            # we have loop snow events so add them up
+            for e in self.snow_events:
+                snowsum += e[1]
+        elif data_type == 'archive':
+            # no loop snow events but do we have any archive snow events
+            for e in self.archive_snow_events:
+                snowsum += e[1]
+        # ...then divide by the period and scale to an hour
+        data['snowRate'] = 3600 * snowsum / self.snow_period
 
     def calc_maxSolarRad(self, data, data_type):  # @UnusedVariable
         algo = self.algorithms.get('maxSolarRad', 'RS')
@@ -434,13 +481,13 @@ class WXCalculate(object):
 
     def calc_wetBulb(self, data, data_type):
         if 'outTemp' in data and 'outHumidity' in data and 'pressure' in data:
-             data['wetBulb'] = weewx.wxformulas.wetbulb_Metric(data['outTemp'], data['outHumidity'], data['pressure'])
+             data['wetBulb'] = weewx.wxformulas.wetbulb_US(data['outTemp'], data['outHumidity'], data['pressure'])
         else:
              data['wetBulb'] = None
 
     def calc_cbIndex(self, data, data_type):
         if 'outTemp' in data and 'outHumidity' in data:
-             data['cbIndex'] = weewx.wxformulas.cbindex_Metric(data['outTemp'], data['outHumidity'])
+             data['cbIndex'] = weewx.wxformulas.cbindex_US(data['outTemp'], data['outHumidity'])
         else:
              data['cbIndex'] = None
 
@@ -450,18 +497,11 @@ class WXCalculate(object):
         else:
              data['sunshineS'] = None
 
-    def calc_snow(self, data, data_type):
-        if (not os.path.isfile('/home/weewx/snow')):
-             data['snow'] = 0.0
+    def calc_absolutF(self, data, data_type):
+        if 'outTemp' in data and 'outHumidity' in data:
+             data['absolutF'] = weewx.wxformulas.absF_F(data['outTemp'], data['outHumidity'])
         else:
-             da_snow = open('/home/weewx/snow', 'r')
-             for ze_snow in da_snow:
-                 h_snow, he_snow = ze_snow.strip('()\n ').split(":")
-                 h_snow = h_snow.strip("\' ")
-                 he_snow = he_snow.strip()
-             da_snow.close()
-
-             data['snow'] = float(he_snow)
+             data['absolutF'] = None
 
     def _get_archive_interval(self, data):
         if 'interval' in data and data['interval']:

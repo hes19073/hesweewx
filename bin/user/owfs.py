@@ -170,7 +170,7 @@ from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
 DRIVER_NAME = 'OWFS'
-DRIVER_VERSION = "0.18"
+DRIVER_VERSION = "0.19"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'owfs: %s' % msg)
@@ -509,8 +509,9 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
                         func = SENSOR_TYPES[st]
                         p[s] = func(s, self.sensor_map[s],
                                     last_data, p['dateTime'])
-                    except ow.exError, e:
-                        logerr("Failed to get sensor data: %s" % e)
+                    except (ow.exError, ValueError), e:
+                        logerr("Failed to get sensor data for %s (%s): %s" %
+                               (s, st, e))
                 else:
                     logerr("unknown sensor type '%s' for %s" % (st, s))
             self.last_data.update(last_data)
@@ -590,8 +591,9 @@ class OWFSService(weewx.engine.StdService):
                 try:
                     p[s] = func(s, self.sensor_map[s],
                                 last_data, packet['dateTime'])
-                except ow.exError, e:
-                    logerr("Failed to get onewire data: %s" % e)
+                except (ow.exError, ValueError), e:
+                    logerr("Failed to get onewire data for %s (%s): %s" %
+                           (s, st, e))
             else:
                 logerr("unknown sensor type '%s' for %s" % (st, s))
         self.last_data.update(last_data)

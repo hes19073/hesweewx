@@ -20,7 +20,7 @@ from weeutil.weeutil import TimeSpan
 from datetime import date
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
 
-class MyXYearYear(SearchList):
+class xMyYear(SearchList):
     
     def __init__(self, generator):
         SearchList.__init__(self, generator)
@@ -51,8 +51,8 @@ class MyXYearYear(SearchList):
                                      db_lookup,
                                      context='year1',
                                      formatter=self.generator.formatter,
-                                     converter=self.generator.converter)
-
+                                     converter=self.generator.converter,
+                                     skin_dict=self.generator.skin_dict)
 
 
         anoyy = ano - 2
@@ -67,7 +67,8 @@ class MyXYearYear(SearchList):
                                      db_lookup,
                                      context='year2',
                                      formatter=self.generator.formatter,
-                                     converter=self.generator.converter)
+                                     converter=self.generator.converter,
+                                     skin_dict=self.generator.skin_dict)
 
         return [{'year1' : year1_stats,
                  'year2' : year2_stats}]
