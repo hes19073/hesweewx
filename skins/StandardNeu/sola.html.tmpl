@@ -75,8 +75,7 @@
      <hr />
 
 <h2>Sonne</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
-<p>Sonnenschein wird über eine Solarzelle ermittelt.<br />
-Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
+<p>Sonnenschein wird über eine Solarzelle ermittelt.</p>
 <p>&nbsp;</p>
 
 <div id="Report">
@@ -97,6 +96,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 <hr />
 
 <h3>Sonnentage nach Monaten in den Jahren</h3>
+<p>Wenn die maximale Strahlung größer als 120 W/m² war.</p>
 <table>
     <tr>
      <td>Jahr&nbsp;</td>
@@ -120,6 +120,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 #end for
 </table>
 <h3>Sonne nach Monaten in den Jahren</h3>
+<p>Nach Berechnung durch weewx</p>
 <table>
     <tr>
      <td>Jahr&nbsp;</td>
@@ -135,29 +136,6 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
             <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
-          #else
-            <td style="background-color: #FFFFFF;">-</td>
-          #end if
-      #end for
-    </tr>
-#end for
-</table>
-<h3>Sonne2 nach Monaten in den Jahren</h3>
-<table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
-
-#for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-      #for $month in $year.months
-          #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshinehours.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
           #else
             <td style="background-color: #FFFFFF;">-</td>
           #end if

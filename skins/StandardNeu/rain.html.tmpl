@@ -88,10 +88,12 @@
       </tr>
      </table>
   #end if
-  #if $day.snow.sum.raw > 0
+  #if $day.snowTotal.max.raw > 0
      <hr />
-     <h3>Aktuell liegen ca. $current.snow&nbsp;Schnee.</h3>
+     <h3>Aktuell liegen ca. $current.snowTotal Schnee.</h3>
+     
   #end if
+  
 
   #if $day.rain.sum.raw > 0
     <hr />
@@ -413,7 +415,7 @@ Niederschlägen ab 0,2 mm.</p>
                    },
 
                    title: {
-                           text: '2013-16 Monatliche Regenmengen'
+                           text: '2013-17 Monatliche Regenmengen'
                         },
 
                    legend: {
@@ -447,6 +449,8 @@ Niederschlägen ab 0,2 mm.</p>
                              name: '2015'
                         }, {
                              name: '2016'
+                        }, { 
+                             name: '2017'
                         }]
                 };
 
@@ -458,7 +462,10 @@ Niederschlägen ab 0,2 mm.</p>
                                         options.series[2].data = data;
                                         $.getJSON('Data/Rain-2016.json', function(data) {
                                                 options.series[3].data = data;
-                                                var chart = new Highcharts.Chart(options);
+                                                $.getJSON('Data/Rain-2017.json', function(data) {
+                                                        options.series[4].data = data;
+                                                        var chart = new Highcharts.Chart(options);
+                                                });
                                         });
                                 });
                         });

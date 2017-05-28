@@ -107,15 +107,25 @@
           #if $year.soilMoist1.has_data
           <img src="yearsoilF.png" alt="Bodenfeuchtigkeit" />
           #end if
+         <hr />
           #if $year.cloudbase.has_data
           <img src="yearcloudbase.png" alt="Wolkenunterkante" />
           #end if
-          #if $year.windrund.has_data
+          #if $year.windrun.has_data
           <img src="yearwindrun.png" alt="Windrun" />
           #end if
           #if $year.beaufort.has_data
           <img src="yearwindB.png" alt="Wind in Beaufort" />
           #end if
+          #if $year.airDensity.has_data
+          <img src="yearDensity.png" alt="Density" />
+          #end if
+          #if $year.windDruck.has_data
+          <img src="yearWindDruck.png" alt="WindDruck" />
+          #end if
+          <hr />
+          <img src="yearPM10.png" alt="Luft 10ppm" />
+          <img src="yearPM25.png" alt="Luft 2.5ppm" />
         </div>
       </div> <!-- End id "content" -->
 

@@ -48,7 +48,8 @@
   <div id="about">
    <div class="header">Übersichten seit dem 31.10.2013 (Beginn dieser Wetteraufzeichnungen) </div>
     <p>Es werden die Messergebnisse der Wetterstation WX-2013 und von 13 one-wire Sensoren erfasst und gespeichert.</p>
-    <p>Die WX-2013 wurde am 20.06.2016 durch eine Vantage Pro2 Aktiv Plus, 6163EU ersetzt.</p>
+    <p>Die WX-2013 wurde am 20.06.2016 durch eine Vantage Pro2 Aktiv Plus, 6163EU ersetzt. <br />
+       Seit dem 04.02.2017 werden auch die Bodenfeuchte, die Bodentemperatur und die Blattfeuchte mit einer Davis Sensorstation 6345 OVCS erfasst.</p>
     <table>
      <caption class="caption">Koordinaten der Wetterstation</caption>
       <tr>
@@ -107,8 +108,8 @@
    <td style="background-color: #FF8C5F;">Tage mit &gt;= 3 mm</td>
    <td style="background-color: #FFAC4B;">Tage mit &gt;= 5 mm</td>
    <td style="background-color: #33FF33;">Tage mit &gt;= 10 mm</td>
-   <td style="background-color: #23FF9E;">Tage mit &gt;= 30 mm</td>
-   <td style="background-color: #4B84FF;">Tage mit &gt;= 50 mm</td>
+   <td style="background-color: #23FF9E;">Tage mit &gt;= 20 mm</td>
+   <td style="background-color: #4B84FF;">Tage mit &gt;= 30 mm</td>
   </tr>
 #for $year in $alltime.years
     <tr>
@@ -118,8 +119,8 @@
       <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.3, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #33FF33;">$year.rain.sum_ge((1.0, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #23FF9E;">$year.rain.sum_ge((3.0, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #4B84FF;">$year.rain.sum_ge((5.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #23FF9E;">$year.rain.sum_ge((2.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.rain.sum_ge((3.0, "cm", "group_rain")).format("%.0f")</td>
    </tr>
 #end for
 </table>

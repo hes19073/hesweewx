@@ -106,7 +106,7 @@
               </tr>
               <tr>
                 <td class="allstats_label">Niederschlag</td>
-                <td class="allstats_data">$alltime.rain.maxsum<br /> ($alltime.rain.maxtime)</td>
+                <td class="allstats_data">$alltime.rain.max<br /> ($alltime.rain.maxtime)</td>
                 <!-- <td></td>-->
               </tr>
               <tr>
@@ -207,7 +207,47 @@
                 <td class="allstats_data"> $alltime.radiation.max <br /> ($alltime.radiation.maxtime) </td><td></td>
               </tr>
              #end if
-              <tr><td class="allstats_label">Boden</td>
+              <tr><td class="allstats_label">1-Wire OWFS Boden</td>
+                  <td class="allstats_data">Max</td>
+                  <td class="allstats_datak">Min</td>
+              </tr>
+             #if $day.soilTempO1.has_data
+              <tr>
+                <td class="allstats_label">Bodentemperatur in 5 cm Tiefe</td>
+                <td class="allstats_data"> $alltime.soilTempO1.max <br /> ($alltime.soilTempO1.maxtime) </td>
+                <td class="allstats_datak"> $alltime.soilTempO1.min <br /> ($alltime.soilTempO1.mintime) </td>
+              </tr>
+             #end if
+             #if $day.soilTempO2.has_data
+              <tr>
+                <td class="allstats_label">Bodentemperatur in 10 cm Tiefe</td>
+                <td class="allstats_data"> $alltime.soilTempO2.max <br /> ($alltime.soilTempO2.maxtime) </td>
+                <td class="allstats_datak"> $alltime.soilTempO2.min <br /> ($alltime.soilTempO2.mintime) </td>
+              </tr>
+             #end if
+             #if $day.soilTempO3.has_data
+              <tr>
+                <td class="allstats_label">Bodentemperatur in 20 cm Tiefe</td>
+                <td class="allstats_data"> $alltime.soilTempO3.max <br /> ($alltime.soilTempO3.maxtime) </td>
+                <td class="allstats_datak"> $alltime.soilTempO3.min <br /> ($alltime.soilTempO3.mintime) </td>
+              </tr>
+             #end if
+             #if $day.soilTempO4.has_data
+              <tr>
+                <td class="allstats_label">Bodentemperatur in 50 cm Tiefe</td>
+                <td class="allstats_data"> $alltime.soilTempO4.max <br /> ($alltime.soilTempO4.maxtime) </td>
+                <td class="allstats_datak"> $alltime.soilTempO4.min <br /> ($alltime.soilTempO4.mintime) </td>
+              </tr>
+             #end if
+             #if $day.soilTempO5.has_data
+              <tr>
+                <td class="allstats_label">Bodentemperatur in 100 cm Tiefe</td>
+                <td class="allstats_data"> $alltime.soilTempO5.max <br /> ($alltime.soilTempO5.maxtime) </td>
+                <td class="allstats_datak"> $alltime.soilTempO5.min <br /> ($alltime.soilTempO5.mintime) </td>
+              </tr>
+             #end if
+            #if $day.soilTemp1.has_data
+              <tr><td class="allstats_label">Davis Boden</td>
                   <td class="allstats_data">Max</td>
                   <td class="allstats_datak">Min</td>
               </tr>
@@ -239,43 +279,36 @@
                 <td class="allstats_datak"> $alltime.soilTemp4.min <br /> ($alltime.soilTemp4.mintime) </td>
               </tr>
              #end if
-             #if $day.soilTemp5.has_data
-              <tr>
-                <td class="allstats_label">Bodentemperatur in 100 cm Tiefe</td>
-                <td class="allstats_data"> $alltime.soilTemp5.max <br /> ($alltime.soilTemp5.maxtime) </td>
-                <td class="allstats_datak"> $alltime.soilTemp5.min <br /> ($alltime.soilTemp5.mintime) </td>
-              </tr>
-             #end if
 
              #if $day.soilMoist1.has_data
               <tr>
-                <td class="allstats_label">Bodenfeuchte 1</td>
+                <td class="allstats_label">Bodenfeuchte in 5 cm Tiefe</td>
                 <td class="allstats_data"> $alltime.soilMoist1.max <br /> ($alltime.soilMoist1.maxtime) </td>
                 <td class="allstats_datak"> $alltime.soilMoist1.min <br /> ($alltime.soilMoist1.mintime) </td>
               </tr>
              #end if
              #if $day.soilMoist2.has_data
               <tr>
-                <td class="allstats_label">Bodenfeuchte 2</td>
+                <td class="allstats_label">Bodenfeuchte in 10 cm Tiefe</td>
                 <td class="allstats_data"> $alltime.soilMoist2.max <br /> ($alltime.soilMoist2.maxtime) </td>
                 <td class="allstats_datak"> $alltime.soilMoist2.min <br /> ($alltime.soilMoist2.mintime) </td>
               </tr>
              #end if
              #if $day.soilMoist3.has_data
               <tr>
-                <td class="allstats_label">Bodenfeuchte 3</td>
+                <td class="allstats_label">Bodenfeuchte in 20 cm Tiefe</td>
                 <td class="allstats_data"> $alltime.soilMoist3.max <br /> ($alltime.soilMoist3.maxtime) </td>
                 <td class="allstats_datak"> $alltime.soilMoist3.min <br /> ($alltime.soilMoist3.mintime) </td>
               </tr>
              #end if
              #if $day.soilMoist4.has_data
               <tr>
-                <td class="allstats_label">Bodenfeuchte 4</td>
+                <td class="allstats_label">Bodenfeuchte in 50 cm Tiefe</td>
                 <td class="allstats_data"> $alltime.soilMoist4.max <br /> ($alltime.soilMoist4.maxtime) </td>
                 <td class="allstats_datak"> $alltime.soilMoist4.min <br /> ($alltime.soilMoist4.mintime) </td>
               </tr>
              #end if
-
+          #end if
         <!-- Innen -->
               <tr><td class="allstats_label">B&uuml;ro</td>
                   <td class="allstats_data">Max</td>

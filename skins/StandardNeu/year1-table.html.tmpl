@@ -29,7 +29,8 @@
 
   <div id="contentwe">
     <div class="mittetab">
-      <h3>Dieses Vorjahr Maximal-, Minimalwerte und Durchschnittswerte</h3>
+      <h2>Das Vorjahr </h2>
+      <h3> Maximal-, Minimalwerte und Durchschnittswerte</h3>
 
      <table id='report'>
         <tr>
@@ -721,331 +722,331 @@
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp1.avg.raw is not None:
-   <td class="hest0">$month.soilTemp1.avg.formatted</td>
+  #if $month.soilTempO1.avg.raw is not None:
+   <td class="hest0">$month.soilTempO1.avg.formatted</td>
   #else
    <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp1.max.raw is not None:
-   #if $month.soilTemp1.max.raw < -51
-    <td class="hest1">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > -50 and $month.soilTemp1.max.raw < -15
-    <td class="hest2">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > -15 and $month.soilTemp1.max.raw < -11
-    <td class="hest3">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > -10 and $month.soilTemp1.max.raw < 1
-    <td class="hest4">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 0 and $month.soilTemp1.max.raw < 6
-    <td class="hest5">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 5 and $month.soilTemp1.max.raw < 11
-    <td class="hest6">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 10 and $month.soilTemp1.max.raw < 16
-    <td class="hest7">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 15 and $month.soilTemp1.max.raw < 21
-    <td class="hest8">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 20 and $month.soilTemp1.max.raw < 26
-    <td class="hest9">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 25 and $month.soilTemp1.max.raw < 31
-    <td class="hest10">$month.soilTemp1.max.formatted</td>
-   #else if $month.soilTemp1.max.raw > 30 and $month.soilTemp1.max.raw < 36
-    <td class="hest11">$month.soilTemp1.max.formatted</td>
+  #if $month.soilTempO1.max.raw is not None:
+   #if $month.soilTempO1.max.raw < -51
+    <td class="hest1">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > -50 and $month.soilTempO1.max.raw < -15
+    <td class="hest2">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > -15 and $month.soilTempO1.max.raw < -11
+    <td class="hest3">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > -10 and $month.soilTempO1.max.raw < 1
+    <td class="hest4">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 0 and $month.soilTempO1.max.raw < 6
+    <td class="hest5">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 5 and $month.soilTempO1.max.raw < 11
+    <td class="hest6">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 10 and $month.soilTempO1.max.raw < 16
+    <td class="hest7">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 15 and $month.soilTempO1.max.raw < 21
+    <td class="hest8">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 20 and $month.soilTempO1.max.raw < 26
+    <td class="hest9">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 25 and $month.soilTempO1.max.raw < 31
+    <td class="hest10">$month.soilTempO1.max.formatted</td>
+   #else if $month.soilTempO1.max.raw > 30 and $month.soilTempO1.max.raw < 36
+    <td class="hest11">$month.soilTempO1.max.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp1.max.formatted</td>
+    <td class="hest12">$month.soilTempO1.max.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp1.min.raw is not None:
-   #if $month.soilTemp1.min.raw < -51
-    <td class="hest1">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > -50 and $month.soilTemp1.min.raw < -15
-    <td class="hest2">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > -15 and $month.soilTemp1.min.raw < -11
-    <td class="hest3">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > -10 and $month.soilTemp1.min.raw < -6
-    <td class="hest4">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > -5 and $month.soilTemp1.min.raw < 1
-    <td class="hest5">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 0 and $month.soilTemp1.min.raw < 6
-    <td class="hest6">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 5 and $month.soilTemp1.min.raw < 11
-    <td class="hest7">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 10 and $month.soilTemp1.min.raw < 16
-    <td class="hest8">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 15 and $month.soilTemp1.min.raw < 21
-    <td class="hest9">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 20 and $month.soilTemp1.min.raw < 26
-    <td class="hest10">$month.soilTemp1.min.formatted</td>
-   #else if $month.soilTemp1.min.raw > 25 and $month.soilTemp1.min.raw < 36
-    <td class="hest11">$month.soilTemp1.min.formatted</td>
+  #if $month.soilTempO1.min.raw is not None:
+   #if $month.soilTempO1.min.raw < -51
+    <td class="hest1">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > -50 and $month.soilTempO1.min.raw < -15
+    <td class="hest2">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > -15 and $month.soilTempO1.min.raw < -11
+    <td class="hest3">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > -10 and $month.soilTempO1.min.raw < -6
+    <td class="hest4">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > -5 and $month.soilTempO1.min.raw < 1
+    <td class="hest5">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 0 and $month.soilTempO1.min.raw < 6
+    <td class="hest6">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 5 and $month.soilTempO1.min.raw < 11
+    <td class="hest7">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 10 and $month.soilTempO1.min.raw < 16
+    <td class="hest8">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 15 and $month.soilTempO1.min.raw < 21
+    <td class="hest9">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 20 and $month.soilTempO1.min.raw < 26
+    <td class="hest10">$month.soilTempO1.min.formatted</td>
+   #else if $month.soilTempO1.min.raw > 25 and $month.soilTempO1.min.raw < 36
+    <td class="hest11">$month.soilTempO1.min.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp1.min.formatted</td>
+    <td class="hest12">$month.soilTempO1.min.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp2.avg.raw is not None:
-   <td class="hest0">$month.soilTemp2.avg.formatted</td>
+  #if $month.soilTempO2.avg.raw is not None:
+   <td class="hest0">$month.soilTempO2.avg.formatted</td>
   #else
    <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp2.max.raw is not None:
-   #if $month.soilTemp2.max.raw < -51
-    <td class="hest1">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > -50 and $month.soilTemp2.max.raw < -15
-    <td class="hest2">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > -15 and $month.soilTemp2.max.raw < -11
-    <td class="hest3">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > -10 and $month.soilTemp2.max.raw < 1
-    <td class="hest4">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 0 and $month.soilTemp2.max.raw < 6
-    <td class="hest5">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 5 and $month.soilTemp2.max.raw < 11
-    <td class="hest6">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 10 and $month.soilTemp2.max.raw < 16
-    <td class="hest7">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 15 and $month.soilTemp2.max.raw < 21
-    <td class="hest8">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 20 and $month.soilTemp2.max.raw < 26
-    <td class="hest9">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 25 and $month.soilTemp2.max.raw < 31
-    <td class="hest10">$month.soilTemp2.max.formatted</td>
-   #else if $month.soilTemp2.max.raw > 30 and $month.soilTemp2.max.raw < 36
-    <td class="hest11">$month.soilTemp2.max.formatted</td>
+  #if $month.soilTempO2.max.raw is not None:
+   #if $month.soilTempO2.max.raw < -51
+    <td class="hest1">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > -50 and $month.soilTempO2.max.raw < -15
+    <td class="hest2">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > -15 and $month.soilTempO2.max.raw < -11
+    <td class="hest3">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > -10 and $month.soilTempO2.max.raw < 1
+    <td class="hest4">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 0 and $month.soilTempO2.max.raw < 6
+    <td class="hest5">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 5 and $month.soilTempO2.max.raw < 11
+    <td class="hest6">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 10 and $month.soilTempO2.max.raw < 16
+    <td class="hest7">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 15 and $month.soilTempO2.max.raw < 21
+    <td class="hest8">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 20 and $month.soilTempO2.max.raw < 26
+    <td class="hest9">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 25 and $month.soilTempO2.max.raw < 31
+    <td class="hest10">$month.soilTempO2.max.formatted</td>
+   #else if $month.soilTempO2.max.raw > 30 and $month.soilTempO2.max.raw < 36
+    <td class="hest11">$month.soilTempO2.max.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp2.max.formatted</td>
+    <td class="hest12">$month.soilTempO2.max.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp2.min.raw is not None:
-   #if $month.soilTemp2.min.raw < -51
-    <td class="hest1">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > -50 and $month.soilTemp2.min.raw < -15
-    <td class="hest2">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > -15 and $month.soilTemp2.min.raw < -11
-    <td class="hest3">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > -10 and $month.soilTemp2.min.raw < -6
-    <td class="hest4">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > -5 and $month.soilTemp2.min.raw < 1
-    <td class="hest5">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 0 and $month.soilTemp2.min.raw < 6
-    <td class="hest6">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 5 and $month.soilTemp2.min.raw < 11
-    <td class="hest7">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 10 and $month.soilTemp2.min.raw < 16
-    <td class="hest8">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 15 and $month.soilTemp2.min.raw < 21
-    <td class="hest9">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 20 and $month.soilTemp2.min.raw < 26
-    <td class="hest10">$month.soilTemp2.min.formatted</td>
-   #else if $month.soilTemp2.min.raw > 25 and $month.soilTemp2.min.raw < 36
-    <td class="hest11">$month.soilTemp2.min.formatted</td>
+  #if $month.soilTempO2.min.raw is not None:
+   #if $month.soilTempO2.min.raw < -51
+    <td class="hest1">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > -50 and $month.soilTempO2.min.raw < -15
+    <td class="hest2">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > -15 and $month.soilTempO2.min.raw < -11
+    <td class="hest3">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > -10 and $month.soilTempO2.min.raw < -6
+    <td class="hest4">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > -5 and $month.soilTempO2.min.raw < 1
+    <td class="hest5">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 0 and $month.soilTempO2.min.raw < 6
+    <td class="hest6">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 5 and $month.soilTempO2.min.raw < 11
+    <td class="hest7">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 10 and $month.soilTempO2.min.raw < 16
+    <td class="hest8">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 15 and $month.soilTempO2.min.raw < 21
+    <td class="hest9">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 20 and $month.soilTempO2.min.raw < 26
+    <td class="hest10">$month.soilTempO2.min.formatted</td>
+   #else if $month.soilTempO2.min.raw > 25 and $month.soilTempO2.min.raw < 36
+    <td class="hest11">$month.soilTempO2.min.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp2.min.formatted</td>
+    <td class="hest12">$month.soilTempO2.min.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp3.avg.raw is not None:
-   <td class="hest0">$month.soilTemp3.avg.formatted</td>
+  #if $month.soilTempO3.avg.raw is not None:
+   <td class="hest0">$month.soilTempO3.avg.formatted</td>
   #else
    <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp3.max.raw is not None:
-   #if $month.soilTemp3.max.raw < -51
-    <td class="hest1">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > -50 and $month.soilTemp3.max.raw < -15
-    <td class="hest2">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > -15 and $month.soilTemp3.max.raw < -11
-    <td class="hest3">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > -10 and $month.soilTemp3.max.raw < 1
-    <td class="hest4">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 0 and $month.soilTemp3.max.raw < 6
-    <td class="hest5">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 5 and $month.soilTemp3.max.raw < 11
-    <td class="hest6">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 10 and $month.soilTemp3.max.raw < 16
-    <td class="hest7">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 15 and $month.soilTemp3.max.raw < 21
-    <td class="hest8">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 20 and $month.soilTemp3.max.raw < 26
-    <td class="hest9">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 25 and $month.soilTemp3.max.raw < 31
-    <td class="hest10">$month.soilTemp3.max.formatted</td>
-   #else if $month.soilTemp3.max.raw > 30 and $month.soilTemp3.max.raw < 36
-    <td class="hest11">$month.soilTemp3.max.formatted</td>
+  #if $month.soilTempO3.max.raw is not None:
+   #if $month.soilTempO3.max.raw < -51
+    <td class="hest1">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > -50 and $month.soilTempO3.max.raw < -15
+    <td class="hest2">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > -15 and $month.soilTempO3.max.raw < -11
+    <td class="hest3">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > -10 and $month.soilTempO3.max.raw < 1
+    <td class="hest4">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 0 and $month.soilTempO3.max.raw < 6
+    <td class="hest5">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 5 and $month.soilTempO3.max.raw < 11
+    <td class="hest6">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 10 and $month.soilTempO3.max.raw < 16
+    <td class="hest7">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 15 and $month.soilTempO3.max.raw < 21
+    <td class="hest8">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 20 and $month.soilTempO3.max.raw < 26
+    <td class="hest9">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 25 and $month.soilTempO3.max.raw < 31
+    <td class="hest10">$month.soilTempO3.max.formatted</td>
+   #else if $month.soilTempO3.max.raw > 30 and $month.soilTempO3.max.raw < 36
+    <td class="hest11">$month.soilTempO3.max.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp3.max.formatted</td>
+    <td class="hest12">$month.soilTempO3.max.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp3.min.raw is not None:
-   #if $month.soilTemp3.min.raw < -51
-    <td class="hest1">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > -50 and $month.soilTemp3.min.raw < -15
-    <td class="hest2">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > -15 and $month.soilTemp3.min.raw < -11
-    <td class="hest3">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > -10 and $month.soilTemp3.min.raw < -6
-    <td class="hest4">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > -5 and $month.soilTemp3.min.raw < 1
-    <td class="hest5">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 0 and $month.soilTemp3.min.raw < 6
-    <td class="hest6">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 5 and $month.soilTemp3.min.raw < 11
-    <td class="hest7">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 10 and $month.soilTemp3.min.raw < 16
-    <td class="hest8">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 15 and $month.soilTemp3.min.raw < 21
-    <td class="hest9">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 20 and $month.soilTemp3.min.raw < 26
-    <td class="hest10">$month.soilTemp3.min.formatted</td>
-   #else if $month.soilTemp3.min.raw > 25 and $month.soilTemp3.min.raw < 36
-    <td class="hest11">$month.soilTemp3.min.formatted</td>
+  #if $month.soilTempO3.min.raw is not None:
+   #if $month.soilTempO3.min.raw < -51
+    <td class="hest1">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > -50 and $month.soilTempO3.min.raw < -15
+    <td class="hest2">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > -15 and $month.soilTempO3.min.raw < -11
+    <td class="hest3">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > -10 and $month.soilTempO3.min.raw < -6
+    <td class="hest4">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > -5 and $month.soilTempO3.min.raw < 1
+    <td class="hest5">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 0 and $month.soilTempO3.min.raw < 6
+    <td class="hest6">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 5 and $month.soilTempO3.min.raw < 11
+    <td class="hest7">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 10 and $month.soilTempO3.min.raw < 16
+    <td class="hest8">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 15 and $month.soilTempO3.min.raw < 21
+    <td class="hest9">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 20 and $month.soilTempO3.min.raw < 26
+    <td class="hest10">$month.soilTempO3.min.formatted</td>
+   #else if $month.soilTempO3.min.raw > 25 and $month.soilTempO3.min.raw < 36
+    <td class="hest11">$month.soilTempO3.min.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp3.min.formatted</td>
+    <td class="hest12">$month.soilTempO3.min.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp4.avg.raw is not None:
-   <td class="hest0">$month.soilTemp4.avg.formatted</td>
+  #if $month.soilTempO4.avg.raw is not None:
+   <td class="hest0">$month.soilTempO4.avg.formatted</td>
   #else
    <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp4.max.raw is not None:
-   #if $month.soilTemp4.max.raw < -51
-    <td class="hest1">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > -50 and $month.soilTemp4.max.raw < -15
-    <td class="hest2">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > -15 and $month.soilTemp4.max.raw < -11
-    <td class="hest3">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > -10 and $month.soilTemp4.max.raw < 1
-    <td class="hest4">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 0 and $month.soilTemp4.max.raw < 6
-    <td class="hest5">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 5 and $month.soilTemp4.max.raw < 11
-    <td class="hest6">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 10 and $month.soilTemp4.max.raw < 16
-    <td class="hest7">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 15 and $month.soilTemp4.max.raw < 21
-    <td class="hest8">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 20 and $month.soilTemp4.max.raw < 26
-    <td class="hest9">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 25 and $month.soilTemp4.max.raw < 31
-    <td class="hest10">$month.soilTemp4.max.formatted</td>
-   #else if $month.soilTemp4.max.raw > 30 and $month.soilTemp4.max.raw < 36
-    <td class="hest11">$month.soilTemp4.max.formatted</td>
+  #if $month.soilTempO4.max.raw is not None:
+   #if $month.soilTempO4.max.raw < -51
+    <td class="hest1">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > -50 and $month.soilTempO4.max.raw < -15
+    <td class="hest2">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > -15 and $month.soilTempO4.max.raw < -11
+    <td class="hest3">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > -10 and $month.soilTempO4.max.raw < 1
+    <td class="hest4">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 0 and $month.soilTempO4.max.raw < 6
+    <td class="hest5">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 5 and $month.soilTempO4.max.raw < 11
+    <td class="hest6">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 10 and $month.soilTempO4.max.raw < 16
+    <td class="hest7">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 15 and $month.soilTempO4.max.raw < 21
+    <td class="hest8">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 20 and $month.soilTempO4.max.raw < 26
+    <td class="hest9">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 25 and $month.soilTempO4.max.raw < 31
+    <td class="hest10">$month.soilTempO4.max.formatted</td>
+   #else if $month.soilTempO4.max.raw > 30 and $month.soilTempO4.max.raw < 36
+    <td class="hest11">$month.soilTempO4.max.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp4.max.formatted</td>
+    <td class="hest12">$month.soilTempO4.max.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp4.min.raw is not None:
-   #if $month.soilTemp4.min.raw < -51
-    <td class="hest1">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > -50 and $month.soilTemp4.min.raw < -15
-    <td class="hest2">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > -15 and $month.soilTemp4.min.raw < -11
-    <td class="hest3">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > -10 and $month.soilTemp4.min.raw < -6
-    <td class="hest4">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > -5 and $month.soilTemp4.min.raw < 1
-    <td class="hest5">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 0 and $month.soilTemp4.min.raw < 6
-    <td class="hest6">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 5 and $month.soilTemp4.min.raw < 11
-    <td class="hest7">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 10 and $month.soilTemp4.min.raw < 16
-    <td class="hest8">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 15 and $month.soilTemp4.min.raw < 21
-    <td class="hest9">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 20 and $month.soilTemp4.min.raw < 26
-    <td class="hest10">$month.soilTemp4.min.formatted</td>
-   #else if $month.soilTemp4.min.raw > 25 and $month.soilTemp4.min.raw < 36
-    <td class="hest11">$month.soilTemp4.min.formatted</td>
+  #if $month.soilTempO4.min.raw is not None:
+   #if $month.soilTempO4.min.raw < -51
+    <td class="hest1">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > -50 and $month.soilTempO4.min.raw < -15
+    <td class="hest2">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > -15 and $month.soilTempO4.min.raw < -11
+    <td class="hest3">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > -10 and $month.soilTempO4.min.raw < -6
+    <td class="hest4">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > -5 and $month.soilTempO4.min.raw < 1
+    <td class="hest5">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 0 and $month.soilTempO4.min.raw < 6
+    <td class="hest6">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 5 and $month.soilTempO4.min.raw < 11
+    <td class="hest7">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 10 and $month.soilTempO4.min.raw < 16
+    <td class="hest8">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 15 and $month.soilTempO4.min.raw < 21
+    <td class="hest9">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 20 and $month.soilTempO4.min.raw < 26
+    <td class="hest10">$month.soilTempO4.min.formatted</td>
+   #else if $month.soilTempO4.min.raw > 25 and $month.soilTempO4.min.raw < 36
+    <td class="hest11">$month.soilTempO4.min.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp4.min.formatted</td>
+    <td class="hest12">$month.soilTempO4.min.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp5.avg.raw is not None:
-   <td class="hest0">$month.soilTemp5.avg.formatted</td>
+  #if $month.soilTempO5.avg.raw is not None:
+   <td class="hest0">$month.soilTempO5.avg.formatted</td>
   #else
    <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp5.max.raw is not None:
-   #if $month.soilTemp5.max.raw < -51
-    <td class="hest1">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > -50 and $month.soilTemp5.max.raw < -15
-    <td class="hest2">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > -15 and $month.soilTemp5.max.raw < -11
-    <td class="hest3">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > -10 and $month.soilTemp5.max.raw < 1
-    <td class="hest4">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 0 and $month.soilTemp5.max.raw < 6
-    <td class="hest5">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 5 and $month.soilTemp5.max.raw < 11
-    <td class="hest6">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 10 and $month.soilTemp5.max.raw < 16
-    <td class="hest7">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 15 and $month.soilTemp5.max.raw < 21
-    <td class="hest8">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 20 and $month.soilTemp5.max.raw < 26
-    <td class="hest9">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 25 and $month.soilTemp5.max.raw < 31
-    <td class="hest10">$month.soilTemp5.max.formatted</td>
-   #else if $month.soilTemp5.max.raw > 30 and $month.soilTemp5.max.raw < 36
-    <td class="hest11">$month.soilTemp5.max.formatted</td>
+  #if $month.soilTempO5.max.raw is not None:
+   #if $month.soilTempO5.max.raw < -51
+    <td class="hest1">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > -50 and $month.soilTempO5.max.raw < -15
+    <td class="hest2">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > -15 and $month.soilTempO5.max.raw < -11
+    <td class="hest3">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > -10 and $month.soilTempO5.max.raw < 1
+    <td class="hest4">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 0 and $month.soilTempO5.max.raw < 6
+    <td class="hest5">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 5 and $month.soilTempO5.max.raw < 11
+    <td class="hest6">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 10 and $month.soilTempO5.max.raw < 16
+    <td class="hest7">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 15 and $month.soilTempO5.max.raw < 21
+    <td class="hest8">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 20 and $month.soilTempO5.max.raw < 26
+    <td class="hest9">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 25 and $month.soilTempO5.max.raw < 31
+    <td class="hest10">$month.soilTempO5.max.formatted</td>
+   #else if $month.soilTempO5.max.raw > 30 and $month.soilTempO5.max.raw < 36
+    <td class="hest11">$month.soilTempO5.max.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp5.max.formatted</td>
+    <td class="hest12">$month.soilTempO5.max.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>
   #end if
 
-  #if $month.soilTemp5.min.raw is not None:
-   #if $month.soilTemp5.min.raw < -51
-    <td class="hest1">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > -50 and $month.soilTemp5.min.raw < -15
-    <td class="hest2">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > -15 and $month.soilTemp5.min.raw < -11
-    <td class="hest3">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > -10 and $month.soilTemp5.min.raw < -6
-    <td class="hest4">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > -5 and $month.soilTemp5.min.raw < 1
-    <td class="hest5">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 0 and $month.soilTemp5.min.raw < 6
-    <td class="hest6">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 5 and $month.soilTemp5.min.raw < 11
-    <td class="hest7">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 10 and $month.soilTemp5.min.raw < 16
-    <td class="hest8">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 15 and $month.soilTemp5.min.raw < 21
-    <td class="hest9">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 20 and $month.soilTemp5.min.raw < 26
-    <td class="hest10">$month.soilTemp5.min.formatted</td>
-   #else if $month.soilTemp5.min.raw > 25 and $month.soilTemp5.min.raw < 36
-    <td class="hest11">$month.soilTemp5.min.formatted</td>
+  #if $month.soilTempO5.min.raw is not None:
+   #if $month.soilTempO5.min.raw < -51
+    <td class="hest1">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > -50 and $month.soilTempO5.min.raw < -15
+    <td class="hest2">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > -15 and $month.soilTempO5.min.raw < -11
+    <td class="hest3">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > -10 and $month.soilTempO5.min.raw < -6
+    <td class="hest4">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > -5 and $month.soilTempO5.min.raw < 1
+    <td class="hest5">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 0 and $month.soilTempO5.min.raw < 6
+    <td class="hest6">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 5 and $month.soilTempO5.min.raw < 11
+    <td class="hest7">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 10 and $month.soilTempO5.min.raw < 16
+    <td class="hest8">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 15 and $month.soilTempO5.min.raw < 21
+    <td class="hest9">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 20 and $month.soilTempO5.min.raw < 26
+    <td class="hest10">$month.soilTempO5.min.formatted</td>
+   #else if $month.soilTempO5.min.raw > 25 and $month.soilTempO5.min.raw < 36
+    <td class="hest11">$month.soilTempO5.min.formatted</td>
    #else
-    <td class="hest12">$month.soilTemp5.min.formatted</td>
+    <td class="hest12">$month.soilTempO5.min.formatted</td>
    #end if
   #else
     <td class="hest0">-</td>

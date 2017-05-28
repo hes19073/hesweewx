@@ -819,7 +819,7 @@
      </p>
      <h2>Daten von  Sonne, Mond und Planeten </h2>
       <br /> Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
-             Der aktuelle Wochentag ist der <b>&nbsp;$current.dateTime.format("%A")&nbsp;.</b>
+             Der aktuelle Wochentag ist der<b>&nbsp;$current.dateTime.format("%A")&nbsp;.</b>
 	    #set $now = $current.dateTime.raw
 	    #set $yeste = $now - 24*3600
 	    #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
