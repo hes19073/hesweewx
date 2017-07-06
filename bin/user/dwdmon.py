@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # $Id: dwdmon.py 1651 2017-04-17 12:10:37Z hes $
+# Quelle weewx      forecast.py
 # Copyright 2017 Hartmut Schweidler
 
 import calendar
