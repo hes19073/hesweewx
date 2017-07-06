@@ -23,8 +23,8 @@ stdout_encoding = sys.stdout.encoding or sys.getfilesystemencoding
 # FTP Server Parameter
 #*********************************************************************
 ftpserver = 'ftp-outgoing2.dwd.de'    # Server
-ftpuser = 'gds22308'
-ftppw =  'LRhDjtBa'
+ftpuser = 'gdsXXXXX'
+ftppw =  '1234567'
 
 # for Mecklenburg-Vorpommern VHDL30_DWPH_ddhhmm_thml
 # aktuell um 04:30 06:30 10:30 15:30 17:30 20:30
@@ -42,7 +42,7 @@ if lt_dst == 1:
 else:
     tagstu = '%0.2d' % (int(tagstu) - 1)
 
-#tagstu = '%0.2d' % (int(tagstu) - 2)    # DWD in UTC Time
+#tagstu = '%0.2d' % (int(tagstu) - 2)   # DWD in UTC Time
 tagstu = str(tagstu)                    # Anpassung bei Sommerzeit '-2'
 
 # test
