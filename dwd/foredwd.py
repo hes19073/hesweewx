@@ -24,8 +24,8 @@ stdout_encoding = sys.stdout.encoding or sys.getfilesystemencoding
 # FTP Server Parameter
 #*********************************************************************
 ftpserver = 'ftp-outgoing2.dwd.de'
-ftpuser = 'gds22308'
-ftppw =  'LRhDjtBa'
+ftpuser = 'gdsXXXX'
+ftppw =  '12345678'
 
 tag0 = 'VHDL50_DWPH_'
 tag1 = 'VHDL51_DWPH_'
@@ -46,17 +46,15 @@ else:
 #tagstu = '%0.2d' % (int(tagstu) - 2)
 # sommerzeit -2 Winter -1
 tagstu = str(tagstu)
-#tagdat = "04"
-#tagstu = "09"
+#tagdat = "04" testeintrag
+#tagstu = "09" testeintrag
 t0 = tag0 + tagdat + tagstu + "34_html"
 t1 = tag1 + tagdat + tagstu + "34_html"
 t2 = tag2 + tagdat + tagstu + "34_html"
 t3 = tag3 + tagdat + tagstu + "34_html"
 t4 = tag4 + tagdat + tagstu + "34_html"
 
-
 print t0
-print
 
 #ftppath_local = "/home/weewx/dwd/"
 ftppath_local = "/home/dwd/filelist/"
@@ -73,7 +71,7 @@ _tag1 = "wetter1.txt"
 _tag2 = "wetter2.txt"
 _tag3 = "wetter3.txt"
 _tag4 = "wetter4.txt"
-#_tagw = wetterw.txt"
+
 file = open(ftppath_local + _tag0, 'wd')
 ftp.retrbinary('RETR '+t0, file.write)
 
