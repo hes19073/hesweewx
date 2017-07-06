@@ -10,6 +10,9 @@
 # User :   gdXXXXXX
 # PW :     xjxjxjxj
 # Interpreter : python 2.7
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# by cron 
+#            11 * * * /home/dwd/foredwdp.py 1>/dev/null 2>&1
 #*********************************************************************
 # imported libraries
 import ftplib                           # ftp connect
