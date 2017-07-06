@@ -10,6 +10,10 @@
 # User :   gdXXXXXX
 # PW :     xjxjxjxj
 # Interpreter : python 2.7
+# ++++++++++++++++++++++++++++++++++++++
+# by cron
+# 32 4,6,10,15,17,20 * * * /home/dwd/foredwdw.py 1>/dev/null 2>&1
+# 33 4,6,10,15,17,20 * * * /home/dwd/foredwdwc.py 1>/dev/null 2>1&
 #*********************************************************************
 # imported libraries
 import ftplib                           # ftp connect
