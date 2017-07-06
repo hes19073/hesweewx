@@ -23,8 +23,8 @@ stdout_encoding = sys.stdout.encoding or sys.getfilesystemencoding
 # FTP Server Parameter
 #*********************************************************************
 ftpserver = 'ftp-outgoing2.dwd.de'    # Server
-ftpuser = 'gds22308'
-ftppw =  'LRhDjtBa'
+ftpuser = 'gdsXXXX'
+ftppw =  '12345678'
 
 # for Mecklenburg-Vorpommern pollen s_b31fg.xml
 # aktuell um 09:00 UTC
