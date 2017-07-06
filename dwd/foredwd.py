@@ -10,6 +10,10 @@
 # User : 
 # PW: 
 # Interpreter : python 2.7
+# ++++++++++++++++++++++++++++++++++++
+# by cron
+# 36 7-23 * * * /home/weewx/dwd/foredwd.py 1>/dev/null 2>&1
+# 36 2,4,6 * * * /home/weewx/dwd/foredwd.py 1>/dev/null 2>&1
 #*********************************************************************
 # imported libraries
 import fnmatch                          # match names
