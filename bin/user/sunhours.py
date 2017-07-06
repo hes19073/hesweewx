@@ -24,8 +24,8 @@ class sunHoursClass(StdService):
         # Step 1 - Calculate Sun Elevation Angle as gS in radians
 
         loc = ephem.Observer()
-        loc.lon = '11.341407'
-        loc.lat = '53.605963'
+        loc.lon = '11.341407'  # lon from station
+        loc.lat = '53.605963'  # lat from station
         loc.pressure = 0
         loc.date = datetime.utcfromtimestamp(event.record.get('dateTime'))
         s = ephem.Sun()
@@ -35,11 +35,7 @@ class sunHoursClass(StdService):
         # Step 2 - Calculate predicted solar radiation level as pR and record
        
         pR = 1373 * sin(gS) * 0.4
-        if pR > 0:
-            event.record['predRadiation'] = pR
-        else:
-            event.record['predRadiation'] = 0.0
-
+ 
         # Step - 3 Calculate if any sunshine hours and record
 
         radiation = event.record.get('radiation')
