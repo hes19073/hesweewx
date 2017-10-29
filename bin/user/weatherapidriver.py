@@ -31,9 +31,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
         """Initialize the WeatherAPIStation
 
         NAMED ARGUMENTS:
-        weewx.conf 
-        Station : WeatherAPI
-        API_key : OWM_API
+
         loop_interval: The time (in seconds) between emitting LOOP packets. [Optional. Default is 2.5]
 
         openweathermap_url: the OpenWeatherMapAPI URL like 'http://api.openweathermap.org/data/2.5/weather?q=Otterlo,nl&units=imperial'
@@ -49,6 +47,9 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
 
         while True:
+
+            # http://api.openweathermap.org/data/2.5/find?q=Otterlo&units=imperial
+
             try:
                 json_data = self.read_from_url(self.openweathermap_url)
                 self.the_time = time.time()
@@ -166,6 +167,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
             #pressure, units, group = c.convert(p_m)
 
             packet['barometer'] = main['pressure']
+            #packet['pressure'] = pressure
             packet['outHumidity'] = main['humidity']
             wind = rsp_dict['wind']
             # p_m = (wind['speed'], 'meter_per_second', 'group_speed')
@@ -200,3 +202,6 @@ if __name__ == "__main__":
     station = WeatherAPIStation(openweathermap_url=['http://api.openweathermap.org/data/2.5/weather?q=Otterlo','nl&units=imperial'], loop_interval=2.0)
     for packet in station.genLoopPackets():
         print weeutil.weeutil.timestamp_to_string(packet['dateTime']), packet
+
+
+

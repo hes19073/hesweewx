@@ -3916,7 +3916,7 @@ def _get_min(key, a, b):
                 x = float(s)
             if b.get(key, None) is None or x < b[key]:
                 return x
-    except Exception, e:
+    except (ValueError, TypeError), e:
         logdbg("_get_min: %s" % e)
     return b.get(key, None)
 

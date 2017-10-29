@@ -382,7 +382,7 @@ class Accum(dict):
         
     def extract_count(self, record, obs_type):
         record[obs_type] = self[obs_type].count
-  
+        
 
     #
     # Miscellaneous, utility functions

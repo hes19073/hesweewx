@@ -5,6 +5,11 @@
 #
 """Extended stats based on the xsearch example
 
+This search list extension offers extra tags:
+
+  'Easter':    this year or next year.
+
+  'day00':  hollyday. 
 
 Jahr -1 = Vorjahr = year1, das Jahr vor dem Vorjahr = year2
 """
@@ -18,6 +23,7 @@ from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 from datetime import date
+from datetime import timedelta
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
 
 class xMyYear(SearchList):
@@ -80,19 +86,11 @@ class xMyEaster(SearchList):
 
     def get_extension_list(self, timespan, db_lookup):
         """ Returns various tags.
-       
-        Parameters:
-          timespan: An instance of weeutil.weeutil.TimeSpan. This will
-                    hold the start and stop times of the domain of
-                    valid times.
-            
-          db_lookup: This is a function that, given a data binding
-                     as its only parameter, will return a database manager
-                     object.
-        Returns:
+          Returns:
           Easter:         A ValueHelper containing the date of the next Easter
                           Sunday. The time represented is midnight at the start
                           of Easter Sunday.
+          day00:          Feiertag Deutschland M-V 
         """
         #
         # Easter. Calculate date for Easter Sunday this year
@@ -112,8 +110,72 @@ class xMyEaster(SearchList):
             Easter_ts = time.mktime(Easter_dt.timetuple())
             return Easter_ts
 
+        def calcEasterD(years):
+
+            g = years % 19
+            e = 0
+            century = years / 100
+            h = (century - century / 4 - (8 * century + 13) / 25 + 19 * g + 15) % 30
+            i = h - (h / 28) * (1 - (h / 28) * (29 / (h + 1)) * ((21 - g) / 11))
+            j = (years + years / 4 + i + 2 - century + century / 4) % 7
+            p = i - j + e
+            _days = 1 + (p + 27 + (p + 6) / 40) % 31
+            _months = 3 + (p + 26) / 30
+            Easter_dt = datetime.datetime(year=years, month=_months, day=_days)
+            return Easter_dt
+
+
         _years = date.today().year
         Easter_ts = calcEaster(_years)
+        Easter_dt = calcEasterD(_years)
+
+        today = datetime.date.today()
+
+        if today == datetime.date(_years, 1, 1):
+            # feste Feiertage:
+            #day01 = datetime.date(self.year, 1, 1)
+            #self.holiday_list.append([newyear, u'Neujahr'])
+            day00 = u'Neujahr'
+        elif today == datetime.date(_years, 5, 1):
+            day00 = u'1. Mai'
+        elif today == datetime.date(_years, 10, 3):
+            day00 = u'Tag der deutschen Einheit'
+        elif today == datetime.date(_years, 10, 31):
+            day00 = u'Reformationstag'
+        elif today == datetime.date(_years, 11, 11):
+            day00 = u'Heute um 11:11 Uhr'
+        elif today == datetime.date(_years, 12, 24):
+            day00 = u'Weihnachtstag'
+        elif today == datetime.date(_years, 12, 25):
+            day00 = u'Erster Weihnachtsfeiertag'
+        elif today == datetime.date(_years, 12, 26):
+            day00 = u'Zweiter Weihnachtsfeiertag'
+        elif today == datetime.date(_years, 12, 31):
+            day00 = u'Silvester'
+            #bewegliche Feiertage:
+        elif today == (Easter_dt - datetime.timedelta(days=52)):
+            day00 =  u'Weiberfastnacht'
+        elif today == (Easter_dt - datetime.timedelta(days=48)):
+            day00 =  u'Rosenmontag'
+        elif today == (Easter_dt - datetime.timedelta(days=47)):
+            day00 =  u'Fastnachts'
+        elif today == (Easter_dt - datetime.timedelta(days=46)):
+            day00 =  u'Aschermittwoch'
+        elif today == (Easter_dt - datetime.timedelta(days=2)):
+            day00 =  u'Karfreitag'
+        elif today == Easter_dt:
+            day00 = u'Ostersonntag'
+        elif today == (Easter_dt + datetime.timedelta(days=1)):
+            day00 = u'Ostermontag'
+        elif today == (Easter_dt + datetime.timedelta(days=39)):
+            day00 = u'Christi Himmelfahrt'
+        elif today == (Easter_dt + datetime.timedelta(days=49)):
+            day00 = u'Pfingstsonntag'
+        elif today == (Easter_dt + datetime.timedelta(days=50)):
+            day00 = u'Pfingstmontag'
+        else:
+            day00 = u' '
+
         # Check to see if we have past this calculated date
         # If so we want next years date so increment year and recalculate
         if date.fromtimestamp(Easter_ts) < date.today():
@@ -124,7 +186,9 @@ class xMyEaster(SearchList):
                                 converter=self.generator.converter)
 
         # Create a small dictionary with the tag names (keys) we want to use
-        search_list_extension = {'Easter'        : Easter_vh,}
-
+        search_list_extension = {'Easter' : Easter_vh,
+                                 'day00': day00,
+                                }
 
         return [search_list_extension]
+

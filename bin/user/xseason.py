@@ -13,7 +13,7 @@ You can then use tags such as $alltime.outTemp.max for the all-time max
 temperature, or $seven_day.rain.sum for the total rainfall in the last seven
 days, or $thirty_day.wind.max for maximum wind speed in the past thirty days.
 
-Fruehling = spring, Sommer = summer, Herbst = autumm, Winter = winter kaltesumme = coldsum
+Fruehling = spring, Sommer = summer, Herbst = autumm, Winter = winter
 """
 import datetime
 import time
@@ -111,25 +111,8 @@ class MyXSeason(SearchList):
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter,
                                           skin_dict=self.generator.skin_dict)
-        anocs = ano
-
-        if today < datetime.date(ano, 11, 1):
-            anocs = ano - 1
-
-        coldsum_start = datetime.date(anocs, 11, 1)
-        coldsum_end = datetime.date(anocs+1, 3, 31)
-        coldsum_start_ts = time.mktime(coldsum_start.timetuple())
-        coldsum_end_ts = time.mktime(coldsum_end.timetuple())
-
-        coldsum = TimespanBinder(TimeSpan(coldsum_start_ts, coldsum_end_ts),
-                                          db_lookup,
-                                          context='coldsum',
-                                          formatter=self.generator.formatter,
-                                          converter=self.generator.converter,
-                                          skin_dict=self.generator.skin_dict)
 
         return [{'winter' : winter,
                  'spring' : spring,
                  'summer' : summer,
-                 'autumm' : autumm,
-                 'coldsum': coldsum}]
+                 'autumm' : autumm}]

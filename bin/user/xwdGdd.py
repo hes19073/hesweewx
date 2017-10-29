@@ -133,7 +133,7 @@ class wdGdDays(SearchList):
 
         interDict = {'start' : _mn_first_of_month_ts,
                      'stop'  : _mn_stop_ts-1}
-        _row = db_lookup().getSql("SELECT SUM(max), SUM(min), COUNT(*) FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (_mn_first_of_month_ts, _mn_stop_ts-1))
+        _row = db_lookup().getSql("SELECT SUM(max), SUM(min), COUNT(*) FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ?", (_mn_first_of_month_ts, _mn_stop_ts-1))
         try:
             _t_max_sum = _row[0]
             _t_min_sum = _row[1]
@@ -149,20 +149,28 @@ class wdGdDays(SearchList):
                 _month_gdd = 0.0
         except:
             _month_gdd = None
+
+
         interDict = {'start' : _mn_first_of_year_ts,
                      'stop'  : _mn_stop_ts-1}
-        _row = db_lookup().getSql("SELECT SUM(max), SUM(min), COUNT(*) FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (_mn_first_of_year_ts, _mn_stop_ts-1))
+
+        _row = db_lookup().getSql("SELECT SUM(max), SUM(min), COUNT(*) FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ?", (_mn_first_of_year_ts, _mn_stop_ts-1))
+
         try:
             _t_max_sum = _row[0]
             _t_min_sum = _row[1]
             _count = _row[2]
             _year_gdd = (_t_max_sum + _t_min_sum)/2 - weewx.units.convert(self.gdd_base_vt, outTemp_type)[0] * _count
-            if outTemp_type == self.temp_group:  # so our input is in the same units as our output
-                _year_gdd = round(_year_gdd, 1)
-            elif self.temp_group == 'degree_C':     # input if deg F and but want output in deg C
-                _year_gdd = round(_year_gdd * 1.8, 1)
-            else:   # input if deg C and but want output in deg F
-                _year_gdd = round(_year_gdd * 5 / 9, 1)
+            #_year_gdd = (_t_max_sum + _t_min_sum)/2 - 10.0 * _count
+            #if outTemp_type == self.temp_group:  # so our input is in the same units as our output
+            _year_gdd = round(_year_gdd, 1)
+
+            #loginf("wdGdDays Month,Year: %s: %s" % (_month_gdd, _year_gdd))
+
+            #elif self.temp_group == 'degree_C':     # input if deg F and but want output in deg C
+            #    _year_gdd = round(_year_gdd * 1.8, 1)
+            #else:   # input if deg C and but want output in deg F
+            #    _year_gdd = round(_year_gdd * 5 / 9, 1)
             if _year_gdd < 0.0:
                 _year_gdd = 0.0
         except:
@@ -170,7 +178,7 @@ class wdGdDays(SearchList):
         
         # Create a small dictionary with the tag names (keys) we want to use
         search_list_extension = {'month_gdd': _month_gdd,
-                                 'year_gdd': _year_gdd
+                                 'year_gdd': _year_gdd,
                                 }
                                  
         t2 = time.time()

@@ -12,10 +12,10 @@ import string
 import subprocess
 import syslog
 import threading
-import dateutil.tz
 import datetime
 import time
 import xml.etree.ElementTree as etree
+import xml.etree.cElementTree
 
 import weewx
 import weedb
@@ -410,10 +410,10 @@ class DWDPollen(Forecast):
         self._bind()
 
     def get_forecast(self, event):
-        """Generate a zambretti forecast using data from 09:00.  If the
-        current time is before 09:00, use the data from the previous day."""
+        """Generate a zambretti forecast using data from 11:00 (39600 12=43200s).  If the
+        current time is before 11:00, use the data from the previous day."""
         now = event.record['dateTime']
-        ts = weeutil.weeutil.startOfDay(now) + 43210
+        ts = weeutil.weeutil.startOfDay(now) + 40200
         if now < ts:
             ts -= 86400
         if self.last_event_ts == ts:
@@ -423,13 +423,17 @@ class DWDPollen(Forecast):
 
         filename = '/home/dwd/filelist/pollen0.xml'
 
-        self.tz = dateutil.tz.gettz('Europe/Berlin')
+        #self.tz = dateutil.tz.gettz('Europe/Berlin')
 
-        fxp = etree.parse(filename, etree.XMLParser(encoding='ISO-8859-1'))
-        root = fxp.getroot()
+        #fxp = etree.parse(filename, etree.XMLParser(encoding='ISO-8859-1'))
+        #root = fxp.getroot()
 
-        date = root.attrib['last_update'].split()[0].split('-')
-        day0 = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), 12, 0, 0, 0, tzinfo=self.tz)
+        #date = root.attrib['last_update'].split()[0].split('-')
+        #day0 = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), 12, 0, 0, 0, tzinfo=self.tz)
+
+        fxp_parser = etree.XMLParser(encoding='ISO-8859-1')
+        root = etree.parse(filename, parser=fxp_parser).getroot()
+        #fxp = xml.etree.cElementTree.fromstring(filename)
 
         self.last_event_ts = ts
 

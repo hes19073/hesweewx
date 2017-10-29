@@ -256,7 +256,7 @@ import weewx.drivers
 import weewx.wxformulas
 
 DRIVER_NAME = 'WS23xx'
-DRIVER_VERSION = '0.24'
+DRIVER_VERSION = '0.26rc1'
 
 
 def loader(config_dict, _):
@@ -613,7 +613,7 @@ def data_to_packet(data, ts, last_rain=None):
         packet['windSpeed'] = ws
         if packet['windSpeed'] is not None:
             packet['windSpeed'] *= 3.6 # weewx wants km/h
-        packet['windDir'] = wd if packet['windSpeed'] else None
+        packet['windDir'] = wd
     else:
         loginf('invalid wind reading: speed=%s dir=%s overflow=%s invalid=%s' %
                (ws, wd, wso, wsv))
@@ -1004,14 +1004,14 @@ class Ws2300(object):
     #
     # Initialise ourselves.
     #
-    def __init__(self,serial_port):
+    def __init__(self, serial_port):
         self.log_buffer = []
         self.log_nest = 0
         self.serial_port = serial_port
     #
     # Write data to the device.
     #
-    def write_byte(self,data):
+    def write_byte(self, data):
         if self.log_mode != 'w':
             if self.log_mode != 'e':
                 self.log(' ')
@@ -1026,10 +1026,11 @@ class Ws2300(object):
             self.log_mode = 'r'
             self.log(':')
         result = self.serial_port.read_byte(timeout)
-        if result == None:
+        if not result:
             self.log("--")
         else:
             self.log("%02x" % ord(result))
+        time.sleep(0.01) # reduce chance of data spike by avoiding contention
         return result
     #
     # Remove all pending incoming characters.
@@ -2067,6 +2068,11 @@ class WS23xxConfEditor(weewx.drivers.AbstractConfEditor):
         print "example /dev/ttyUSB0 or /dev/ttyS0."
         port = self._prompt('port', '/dev/ttyUSB0')
         return {'port': port}
+
+    def modify_config(self, config_dict):
+        print """
+Setting record_generation to software."""
+        config_dict['StdArchive']['record_generation'] = 'software'
 
 
 # define a main entry point for basic testing of the station without weewx

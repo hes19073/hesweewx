@@ -220,7 +220,7 @@ import weewx.drivers
 import weewx.wxformulas
 
 DRIVER_NAME = 'FineOffsetUSB'
-DRIVER_VERSION = '1.8'
+DRIVER_VERSION = '1.9'
 
 def loader(config_dict, engine):
     return FineOffsetUSB(**config_dict[DRIVER_NAME])
@@ -585,7 +585,6 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
 # map between the pywws keys and the weewx keys
 # 'weewx-key' : ( 'pywws-key', multiplier )
 # rain is total measure so must split into per-period and calculate rate
-# station has no separate windgustdir so use wind_dir
 keymap = {
     'inHumidity'  : ('hum_in',       1.0),
     'inTemp'      : ('temp_in',      1.0), # station is C
@@ -595,7 +594,6 @@ keymap = {
     'windSpeed'   : ('wind_ave',     3.6), # station is m/s, weewx wants km/h
     'windGust'    : ('wind_gust',    3.6), # station is m/s, weewx wants km/h
     'windDir'     : ('wind_dir',    22.5), # station is 0-15, weewx wants deg
-    'windGustDir' : ('wind_dir',    22.5), # station is 0-15, weewx wants deg
     'rain'        : ('rain',         0.1), # station is mm, weewx wants cm
     'radiation'   : ('illuminance',  0.01075), # lux, weewx wants W/m^2
     'UV'          : ('uv',           1.0),
@@ -1001,25 +999,29 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
             while True:
                 try:
                     self.openPort()
-                    self._get_arcint()
+                    self._arcint = self._get_arcint()
                     break
                 except weewx.WeeWxIOError:
                     self.closePort()
                     power_cycle_station(self.pc_hub, self.pc_port)
         else:
-            self._get_arcint()
+            self._arcint = self._get_arcint()
         return self._arcint
 
     def _get_arcint(self):
+        ival = None
         for i in range(self.max_tries):
             try:
-                self._arcint = self.get_fixed_block(['read_period'])
-                return
+                ival = self.get_fixed_block(['read_period'])
+                break
             except usb.USBError, e:
                 logcrt("get archive interval failed attempt %d of %d: %s"
                        % (i+1, self.max_tries, e))
         else:
             raise weewx.WeeWxIOError("Unable to read archive interval after %d tries" % self.max_tries)
+        if ival is None:
+            raise weewx.WeeWxIOError("Cannot determine archive interval")
+        return ival
 
     def openPort(self):
         if self.devh is not None:

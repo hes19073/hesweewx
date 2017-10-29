@@ -6,7 +6,9 @@
 
   'lastrain_day': dd.mm.YYYY HH:MM
   'lastrain_delta_time': now - lastrain_day in s
-
+   lastsnow_day
+   lastfrost_day
+   lasteis_day
   Der letzte Regen am dd.mm.YYYY HH:MM das war vor xx Tagen, xx Stunden, xx Minuten
 """
 import datetime
@@ -80,16 +82,38 @@ class MyXLastsnow(SearchList):
                 lastsnow_ts = _row[0]
             except:
                 lastsnow_ts = None
+
+        # Schneedecke
+        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_snowTotal WHERE sum > 0")
+        lastsnowT_ts = _row[0]
+
+        if lastsnowT_ts is not None:
+            try:
+                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE snowTotal > 0 AND dateTime > ? AND dateTime <=?", (lastsnow_ts, lastsnow_ts + 86400))
+                lastsnowT_ts = _row[0]
+            except:
+                lastsnowT_ts = None
+
         # Wrap our ts in a ValueHelper
         lastsnow_vt = (lastsnow_ts, 'unix_epoch', 'group_time')
         lastsnow_vh = ValueHelper(lastsnow_vt, formatter=self.generator.formatter, converter=self.generator.converter)
 
         delta_time = time.time() - lastsnow_ts if lastsnow_ts else None
-
         # Wrap our ts in a ValueHelper
         delta_time_vt = (delta_time, 'second', 'group_deltatime')
         delta_time_vh = ValueHelper(delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
 
+        # schneedecke
+        lastsnowT_vt = (lastsnowT_ts, 'unix_epoch', 'group_time')
+        lastsnowT_vh = ValueHelper(lastsnowT_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+
+        deltaT_time = time.time() - lastsnowT_ts if lastsnowT_ts else None
+        # Wrap our ts in a ValueHelper
+        deltaT_time_vt = (deltaT_time, 'second', 'group_deltatime')
+        deltaT_time_vh = ValueHelper(deltaT_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+
 
         return [{'lastsnow_day': lastsnow_vh,
-                 'lastsnow_delta_time': delta_time_vh}]
+                 'lastsnow_delta_time': delta_time_vh,
+                 'lastsnowT_day': lastsnowT_vh,
+                 'lastsnowT_delta_time': deltaT_time_vh}]

@@ -239,6 +239,16 @@ schema = [
     ('powerG', 'REAL'),      # Watt Gesamt
     ('energyR', 'REAL'),      # Watt/ h Prozessor
     ('energyG', 'REAL'),      # Watt/ h Gesamt
+    #('rxCheckPercent', 'REAL'),
+    #('windBatteryStatus', 'REAL'),
+    #('rainBatteryStatus', 'REAL'),
+    #('outTempBatteryStatus', 'REAL'),
+    #('inTempBatteryStatus', 'REAL'),
+    #('txBatteryStatus', 'REAL'),
+    #('consBatteryVoltage', 'REAL'),
+    #('heatingVoltage',       'REAL'),
+    #('supplyVoltage',        'REAL'),
+    #('referenceVoltage',     'REAL'),
     ]
 
 
@@ -252,7 +262,8 @@ IGNORED_MOUNTS = [
     '/afs',
     '/mit',
     '/run',
-    '/var/lib/nfs']
+    '/var/lib/nfs',
+    ]
 
 
 def logmsg(level, msg):
@@ -618,10 +629,11 @@ class LinuxCollector(Collector):
             except Exception, e:
                 logdbg("read failed for %s: %s" % (a1_bpi, e))
 
-        record['powerR'] = tVolt * tAmpere / 1000.0
-        record['powerG'] = t_Volt * t_Ampere / 1000.0
-        record['energyR'] = tVolt * tAmpere / 1000.0 * 12
-        record['energyG'] = t_Volt * t_Ampere / 1000.0 * 12
+        if os.path.exists(a1_bpi):
+            record['powerR'] = tVolt * tAmpere / 1000.0
+            record['powerG'] = t_Volt * t_Ampere / 1000.0
+            record['energyR'] = tVolt * tAmpere / 1000.0 * 12
+            record['energyG'] = t_Volt * t_Ampere / 1000.0 * 12
 
         # get stats on mounted filesystems
         fn = '/proc/mounts'
@@ -834,7 +846,7 @@ class ComputerMonitor(StdService):
         try:
             # sqlite databases need some help to stay small
             self.dbm.getSql('vacuum')
-        except Exception:
+        except Exception, e:
             pass
 
     def get_data(self, now_ts, last_ts):
@@ -849,7 +861,7 @@ class ComputerMonitor(StdService):
 # cd /home/weewx
 # PYTHONPATH=bin python bin/user/cmon.py
 #
-if __name__ == "__main__":
+if __name__=="__main__":
     usage = """%prog [options] [--help] [--debug]"""
 
     def main():

@@ -363,9 +363,9 @@ def humhes(key, path, last_data, ts):
     tem = get_float('%s%s' % (path, '/temperature'))
     vdd = get_float('%s%s' % (path, '/VDD'))
     vdo = get_float('%s%s' % (path, '/VAD'))
-    vad = (5 / vdd) * vdo
-    SrH = (vad - 0.847847) / (29.404604 / 1000)
-    dhu = SrH / (1.0305 + (0.000044 * tem) - (0.0000011 * tem * tem))
+    vda = (5.0 / vdd) * vdo
+    SrH = (vda - 0.847847) / (29.404604 / 1000)
+    dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) - (0.0000011 * tem * tem))
     if dhu > 100:
        d = 99
     else:
@@ -374,42 +374,17 @@ def humhes(key, path, last_data, ts):
     
 def lighes(key, path, last_data, ts):
     vdd = get_float('%s%s' % (path, '/VDD'))
-    vad1 = get_float('%s%s' % (path, '/VAD'))
-    vad = (5 / vdd) * vad1
-    if vad < 0:
+    vao = get_float('%s%s' % (path, '/VAD'))
+    vad = (5 / vdd) * vao
+    d = (vdd - vad) * 700
+    if d < 0:
         d = 0
-    else:
-        vad = vad
-        d = (vdd - vad) * 700
-    return d
-
-def lighe1(key, path, last_data, ts):
-    li1 = get_float('%s%s' % (path, '/vis'))
-    vdd = get_float('%s%s' % (path, '/VDD'))
-    vad1 = get_float('%s%s' % (path, '/VAD'))
-    vad = (5 / vdd) * vad1
-    
-    hel = (vdd - vad) * 4500        
-
-    if hel <= 20:
-       d = 0
-    else:
-       d = hel
 
     return d
-
 
 def owvolt(key, path, last_data, ts):
     vdd = get_float('%s%s' % (path, '/VDD'))
     d = vdd
-    return d
-
-def radhes(key, path, last_data, ts):
-    li1 = get_float('%s%s' % (path, '/vis'))
-    #vdd = get_float('%s%s' % (path, '/VDD'))
-    #vad1 = get_float('%s%s' % (path, '/VAD'))
-    #vad = (5 / vdd) * vad1
-    d = 4200 * li1
     return d
 
 def heshum(key, path, last_data, ts):
@@ -438,8 +413,6 @@ SENSOR_TYPES = {
     'humhes': humhes,
     'heshum': heshum,
     'lighes': lighes,
-    'lighe1': lighe1,
-    'radhes': radhes,
     'owvolt': owvolt,
     }
 
@@ -509,9 +482,8 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
                         func = SENSOR_TYPES[st]
                         p[s] = func(s, self.sensor_map[s],
                                     last_data, p['dateTime'])
-                    except (ow.exError, ValueError), e:
-                        logerr("Failed to get sensor data for %s (%s): %s" %
-                               (s, st, e))
+                    except ow.exError, e:
+                        logerr("Failed to get sensor data: %s" % e)
                 else:
                     logerr("unknown sensor type '%s' for %s" % (st, s))
             self.last_data.update(last_data)
@@ -591,9 +563,8 @@ class OWFSService(weewx.engine.StdService):
                 try:
                     p[s] = func(s, self.sensor_map[s],
                                 last_data, packet['dateTime'])
-                except (ow.exError, ValueError), e:
-                    logerr("Failed to get onewire data for %s (%s): %s" %
-                           (s, st, e))
+                except ow.exError, e:
+                    logerr("Failed to get onewire data: %s" % e)
             else:
                 logerr("unknown sensor type '%s' for %s" % (st, s))
         self.last_data.update(last_data)

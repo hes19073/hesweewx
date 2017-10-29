@@ -25,11 +25,11 @@ def loader(config_dict, engine):
     start_ts = resume_ts = None
     if 'start' in config_dict[DRIVER_NAME]:
         # A start has been specified. Extract the time stamp.
-        start_tt = time.strptime(config_dict[DRIVER_NAME]['start'], "%Y-%m-%d %H:%M")
+        start_tt = time.strptime(config_dict[DRIVER_NAME]['start'], "%Y-%m-%dT%H:%M")        
         start_ts = time.mktime(start_tt)
         # If the 'resume' keyword is present and True, then get the last
         # archive record out of the database and resume with that.
-        if weeutil.weeutil.to_bool(config_dict[DRIVER_NAME].get('resume', True)):
+        if weeutil.weeutil.to_bool(config_dict[DRIVER_NAME].get('resume', False)):
             import weewx.manager
             try:
                 # Resume with the last time in the database. If there is no such
@@ -264,8 +264,9 @@ class SimulatorConfEditor(weewx.drivers.AbstractConfEditor):
     # Generator.  Emit LOOP packets as fast as possible (useful for testing).
     #mode = generator
 
-    # The start time. If not specified, the default is to use the present time.
-    #start = 2011-01-01 00:00
+    # The start time. Format is YYYY-mm-ddTHH:MM. If not specified, the default 
+    # is to use the present time.
+    #start = 2011-01-01T00:00
 
     # The driver to use:
     driver = weewx.drivers.simulator

@@ -127,14 +127,17 @@ class MyXRainNo(SearchList):
         ##
         # Get time obj for midnight
         _mn_t = datetime.time(0)
+
         # Get date obj for now
         _today_d = datetime.datetime.today()
+
         # Get midnight 1st of the month as a datetime object and then get it as a
         # timestamp
         first_of_month_dt = get_first_day(_today_d)
         _mn_first_of_month_dt = datetime.datetime.combine(first_of_month_dt, _mn_t)
         _mn_first_of_month_ts = time.mktime(_mn_first_of_month_dt.timetuple())
         _month_ts = TimeSpan(_mn_first_of_month_ts, timespan.stop)
+
         # Get midnight 1st of the year as a datetime object and then get it as a
         # timestamp
         _first_of_year_dt = get_first_day(_today_d, 0, 1-_today_d.month)
@@ -145,6 +148,7 @@ class MyXRainNo(SearchList):
         # Get vectors of our month stats
         _rain_vector = []
         _time_vector = []
+
         # Step through each day in our month timespan and get our daily rain 
         # total and timestamp. This is a day_archive version of the archive 
         # getSqlVectors method.

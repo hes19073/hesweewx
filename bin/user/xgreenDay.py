@@ -27,7 +27,7 @@ from weeutil.weeutil import TimeSpan, genDaySpans, startOfDay
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
 from datetime import date
 
-#green_VERSION = '0.0.3'
+#green_VERSION = '0.0.4'
 
 def logmsg(level, msg):
     syslog.syslog(level, 'xGreenDay: %s' % msg)
@@ -66,6 +66,8 @@ class xGreenDay(SearchList):
           GreenLaTe:   Growing greenLandDay, Numeric value only, not a ValueTuple.
           Green_day:   Get the datetime for the Days to date this year where
                         greenLaTe > 200 as datetime.
+          coolTemp:    Kaeltesumme day.outTemp.avg < 0 Nov bis Mar
+          warmTemp:    Waermesumme day.outTemp.avg > 20 jun aug
         """
 
         t1 = time.time()
@@ -78,6 +80,8 @@ class xGreenDay(SearchList):
         mae_ano = datetime.date(ano, 3, 1)
         maee_ano = datetime.date(ano, 3, 31)
         nov_ano = datetime.date(ano-1, 11, 1)
+        maie_ano = datetime.date(ano, 5, 31)
+        auge_ano = datetime.date(ano, 8, 31)
         jan_ano_ts = time.mktime(jan_ano.timetuple())
         feb_ano_ts = time.mktime(feb_ano.timetuple())
         jane_ano_ts = feb_ano_ts - 86400
@@ -85,13 +89,19 @@ class xGreenDay(SearchList):
         febe_ano_ts = mae_ano_ts - 86400
         maee_ano_ts = time.mktime(maee_ano.timetuple())
         nov_ano_ts = time.mktime(nov_ano.timetuple())
+        maie_ano_ts = time.mktime(maie_ano.timetuple())
+        jun_ano_ts = maie_ano_ts + 86400
+        auge_ano_ts = time.mktime(auge_ano.timetuple())
 
         _tavg = []
         _cooS = []
+        _warmS = []
         tavgS = 0.0
         tavg0 = 0.0
+        warmS = 0.0
         cooSG = 0.0
         _glt_ts = None
+
         try:
             for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jane_ano_ts):
                 _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
@@ -131,7 +141,7 @@ class xGreenDay(SearchList):
                         _glt_ts = glt_ts
 
 
-            for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts,  timespan.stop):
+            for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts, maie_ano_ts):
                 _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
                 if _row is None or _row[1] is None or _row[2] is None:
                     continue
@@ -161,6 +171,19 @@ class xGreenDay(SearchList):
             cooSG = sum(i for i in _cooS if i < 0)
             cooSG = abs(cooSG)
 
+            for tspan in weeutil.weeutil.genDaySpans(jun_ano_ts, auge_ano_ts):
+                _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+                if _row is None or _row[1] is None or _row[2] is None:
+                    continue
+
+                aa1 = _row[1]                # _row['max']
+                aa2 = _row[2]                # _row['min']
+
+                _warmS.append(aa1 / aa2)
+
+            warmS = sum(i for i in _warmS if i > 20.0)
+
+
         except weedb.DatabaseError:
             pass
 
@@ -171,6 +194,7 @@ class xGreenDay(SearchList):
         search_list_extension = {'greenLaTe': tavgS,
                                  'green_day': glt_vh,
                                  'coolTemp': cooSG,
+                                 'warmTemp': warmS,
                                 }
 
         t2 = time.time()
