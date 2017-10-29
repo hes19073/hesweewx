@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # $Id: dwdmon.py 1651 2017-04-17 12:10:37Z hes $
-# Quelle weewx      forecast.py
 # Copyright 2017 Hartmut Schweidler
 
 import calendar
@@ -398,9 +397,7 @@ class Forecast(StdService):
 Z_KEY = 'Pollen'
             
 class DWDPollen(Forecast):
-    """get Pollen from DWD as xml-data
-       get s_b31fg.xml Pollenmeldung Mecklenburg-Vorpommern by DWD MVP
-       get s_b31.fg.xml by crontab """
+    """calculate zambretti code"""
   
     def __init__(self, engine, config_dict):
         super(DWDPollen, self).__init__(engine, config_dict, Z_KEY,
@@ -413,14 +410,8 @@ class DWDPollen(Forecast):
         self._bind()
 
     def get_forecast(self, event):
-<<<<<<< HEAD
         """Generate a zambretti forecast using data from 11:00 (39600 12=43200s).  If the
         current time is before 11:00, use the data from the previous day."""
-=======
-        """Generate a dwdpollen forecast using data from 11:00 by DWD.  If the
-        current time is before 11:00, use the data from the previous day."""
-        
->>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
         now = event.record['dateTime']
         ts = weeutil.weeutil.startOfDay(now) + 40200
         if now < ts:
@@ -432,7 +423,6 @@ class DWDPollen(Forecast):
 
         filename = '/home/dwd/filelist/pollen0.xml'
 
-<<<<<<< HEAD
         #self.tz = dateutil.tz.gettz('Europe/Berlin')
 
         #fxp = etree.parse(filename, etree.XMLParser(encoding='ISO-8859-1'))
@@ -445,11 +435,6 @@ class DWDPollen(Forecast):
         root = etree.parse(filename, parser=fxp_parser).getroot()
         #fxp = xml.etree.cElementTree.fromstring(filename)
 
-=======
-        fxp = etree.parse(filename, etree.XMLParser(encoding='ISO-8859-1'))
-        root = fxp.getroot()
-
->>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
         self.last_event_ts = ts
 
         for reg in root.findall('region'):
@@ -482,16 +467,12 @@ class DWDPollen(Forecast):
                 record['beifuss_m'] = reg.find("Beifuss/tomorrow").text
                 record['ambrosia_h'] = reg.find("Ambrosia/today").text
                 record['ambrosia_m'] = reg.find("Ambrosia/tomorrow").text
-                #if reg.find("Hasel/dayafter_to"):
-                #    record['hasel_n'] = reg.find("Hasel/dayafter_to").text
-                #    record['erle_n'] = reg.find("Erle/dayafter_to").text
-                #    record['esche_n'] = reg.find("Esche/dayafter_to").text
-                #    record['birke_n'] = reg.find("Birke/dayafter_to").text
-                #    record['graeser_n'] = reg.find("Graeser/dayafter_to").text
-                #    record['roggen_n'] = reg.find("Roggen/dayafter_to").text
-                #    record['beifuss_n'] = reg.find("Beifuss/dayafter_to").text
-                #    record['ambrosia_n'] = reg.find("Ambrosia/dayafter_to").text
 
             loginf('%s: generated 1 forecast record' % Z_KEY)
-
+            #return record
         return [record]
+
+#                r['event_ts'] = AerisForecast.str2int(p, 'timestamp')
+
+
+

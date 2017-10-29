@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# xcolor.py 1396 2017-10-21 05:08:45Z hes $
+# Copyright 2017 Hartmut Schweidler
+
 
 from weewx.cheetahgenerator import SearchList
 import weeutil.weeutil
