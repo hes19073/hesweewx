@@ -47,11 +47,7 @@ class xGreenDay(SearchList):
         SearchList.__init__(self, generator)
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns green Day dateTime and green Day Temp Sum.
-
-           For day in year get green_temp > 200
-           If the day.outTemp.avg > 0.0 degree C and the Sum of day.outTemp.avg
-           is more than 200 get the Datetime.
+        """Returns greenDay dateTime and greenDayTempSum.
 
         Parameters:
           timespan: An instance of weeutil.weeutil.TimeSpan. This will
@@ -61,13 +57,32 @@ class xGreenDay(SearchList):
           db_lookup: This is a function that, given a data binding
                      as its only parameter, will return a database manager
                      object.
-
         Returns:
-          GreenLaTe:   Growing greenLandDay, Numeric value only, not a ValueTuple.
+          GreenLaTe:   Gruenlandtemperatursumme from Jan to May this year
+                       if day.outTemp.avg > 0.0 degree C
+                       in month jan get day.outTemp.avg value * 0.5  => greenLandDay
+                       in month feb get day.outTemp.avg value * 0.75 => greenLandDay
+                       from mae to may get day.outTemp.avg value * 1 => greenLandDay
+                                                                    sum ------------  
+                       get sum of greenLandDay and if the sum more then 200
+                       get the Datetime for Gruenlandtemperatursumme Tag.
+                       greenLandDay, Numeric value only, not a ValueTuple.
           Green_day:   Get the datetime for the Days to date this year where
                         greenLaTe > 200 as datetime.
+<<<<<<< HEAD
           coolTemp:    Kaeltesumme day.outTemp.avg < 0 Nov bis Mar
           warmTemp:    Waermesumme day.outTemp.avg > 20 jun aug
+=======
+          coolTemp:    Kaeltesumme for Nov year before to Mae this year
+                       if day.outTemp.avg < 0.0     get sum
+                       sum   < 100  sehr milder Winter
+                         100 - 200  normaler Winter
+                         200 - 300  mäßig strenger Winter
+                         300 - 400  strenger Winter
+                         > 400      sehr strenger Winter
+          warmTemp:    Waermesumme for Jun to Aug this year
+                       if day.outTemp.avg > 20.0    get sum
+>>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
         """
 
         t1 = time.time()
@@ -79,6 +94,8 @@ class xGreenDay(SearchList):
         feb_ano = datetime.date(ano, 2, 1)
         mae_ano = datetime.date(ano, 3, 1)
         maee_ano = datetime.date(ano, 3, 31)
+        maye_ano = datetime.date(ano, 5, 31)
+        auge_ano = datetime.date(ano, 8, 31)
         nov_ano = datetime.date(ano-1, 11, 1)
         maie_ano = datetime.date(ano, 5, 31)
         auge_ano = datetime.date(ano, 8, 31)
@@ -88,6 +105,9 @@ class xGreenDay(SearchList):
         mae_ano_ts = time.mktime(mae_ano.timetuple())
         febe_ano_ts = mae_ano_ts - 86400
         maee_ano_ts = time.mktime(maee_ano.timetuple())
+        maye_ano_ts = time.mktime(maye_ano.timetuple())
+        auge_ano_ts = time.mktime(auge_ano.timetuple()) 
+        jun_ano_ts = maye_ano_ts + 86400
         nov_ano_ts = time.mktime(nov_ano.timetuple())
         maie_ano_ts = time.mktime(maie_ano.timetuple())
         jun_ano_ts = maie_ano_ts + 86400
@@ -95,13 +115,22 @@ class xGreenDay(SearchList):
 
         _tavg = []
         _cooS = []
+<<<<<<< HEAD
         _warmS = []
+=======
+        _warM = []
+>>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
         tavgS = 0.0
         tavg0 = 0.0
         warmS = 0.0
         cooSG = 0.0
+        warmS = 0.0
         _glt_ts = None
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
         try:
             for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jane_ano_ts):
                 _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
@@ -111,9 +140,9 @@ class xGreenDay(SearchList):
                 glt_ts = _row[0]             # _row['dateTime']
                 aa1 = _row[1]                # _row['max'] neu wsum
                 aa2 = _row[2]                # _row['min']     sumtime for day.outTemp.avg
-                #_tavg.append((aa1 + aa2) / 2)
+        
                 _tavg.append(aa1 / aa2)
-                #tavg0 = (aa1 + aa2) / 2
+        
                 tavg0 = aa1 / aa2
                 if tavg0 > 0.0:
                     tavg0 = tavg0 * 0.5
@@ -130,9 +159,9 @@ class xGreenDay(SearchList):
                 glt_ts = _row[0]             # _row['dateTime']
                 aa1 = _row[1]                # _row['max']
                 aa2 = _row[2]                # _row['min']
-                #_tavg.append((aa1 + aa2) / 2)
+        
                 _tavg.append(aa1 / aa2)
-                #tavg0 = (aa1 + aa2) / 2
+        
                 tavg0 = aa1 / aa2
                 if tavg0 > 0.0:
                     tavg0 = tavg0 * 0.75
@@ -141,7 +170,11 @@ class xGreenDay(SearchList):
                         _glt_ts = glt_ts
 
 
+<<<<<<< HEAD
             for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts, maie_ano_ts):
+=======
+            for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts,  maye_ano_ts):
+>>>>>>> dc7bbef349c434d559a954c1c03b9183965a870e
                 _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
                 if _row is None or _row[1] is None or _row[2] is None:
                     continue
@@ -149,9 +182,9 @@ class xGreenDay(SearchList):
                 glt_ts = _row[0]             # _row['dateTime']
                 aa1 = _row[1]                # _row['max']
                 aa2 = _row[2]                # _row['min']
-                #_tavg.append((aa1 + aa2) / 2)
+                
                 _tavg.append(aa1 / aa2)
-                #tavg0 = (aa1 + aa2) / 2
+                
                 tavg0 = aa1 / aa2
                 if tavg0 > 0.0:
                     tavgS = tavgS + tavg0
@@ -165,11 +198,23 @@ class xGreenDay(SearchList):
 
                 aa1 = _row[1]                # _row['max']
                 aa2 = _row[2]                # _row['min']
-                #_cooS.append((aa1 + aa2) / 2)
+                
                 _cooS.append(aa1 / aa2)
 
             cooSG = sum(i for i in _cooS if i < 0)
             cooSG = abs(cooSG)
+            
+            for tspan in weeutil.weeutil.genDaySpans(jun_ano_ts,  auge_ano_ts):
+                _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+                if _row is None or _row[1] is None or _row[2] is None:
+                    continue
+
+                aa1 = _row[1]                # _row['max']
+                aa2 = _row[2]                # _row['min']
+                
+                _warM.append(aa1 / aa2)
+
+            warmS = sum(i for i in _warM if i > 20.0)
 
             for tspan in weeutil.weeutil.genDaySpans(jun_ano_ts, auge_ano_ts):
                 _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))

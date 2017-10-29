@@ -10,6 +10,10 @@
 # User :   gdXXXXXX
 # PW :     xjxjxjxj
 # Interpreter : python 2.7
+# ++++++++++++++++++++++++++++++++++++++
+# by cron
+# 32 4,6,10,15,17,20 * * * /home/dwd/foredwdw.py 1>/dev/null 2>&1
+# 33 4,6,10,15,17,20 * * * /home/dwd/foredwdwc.py 1>/dev/null 2>1&
 #*********************************************************************
 # imported libraries
 import ftplib                           # ftp connect
@@ -23,8 +27,8 @@ stdout_encoding = sys.stdout.encoding or sys.getfilesystemencoding
 # FTP Server Parameter
 #*********************************************************************
 ftpserver = 'ftp-outgoing2.dwd.de'    # Server
-ftpuser = 'gds22308'
-ftppw =  'LRhDjtBa'
+ftpuser = 'gdsXXXXX'
+ftppw =  '1234567'
 
 # for Mecklenburg-Vorpommern VHDL30_DWPH_ddhhmm_thml
 # aktuell um 04:30 06:30 10:30 15:30 17:30 20:30
@@ -42,7 +46,7 @@ if lt_dst == 1:
 else:
     tagstu = '%0.2d' % (int(tagstu) - 1)
 
-#tagstu = '%0.2d' % (int(tagstu) - 2)    # DWD in UTC Time
+#tagstu = '%0.2d' % (int(tagstu) - 2)   # DWD in UTC Time
 tagstu = str(tagstu)                    # Anpassung bei Sommerzeit '-2'
 
 # test
