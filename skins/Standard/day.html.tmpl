@@ -23,7 +23,7 @@
      </script>
 
     <title>$station.location Messwerte</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
 
     <script src='js/hesweewx.js'></script>
@@ -35,6 +35,26 @@
   </head>
 
 <body>
+ <button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
 
    <div id='hes11'>
 
@@ -45,6 +65,7 @@
 
     #include $Extras.current
 
+    #set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
     #set global $period1 = $yesterday
     #set global $period2 = $day
     #set global $period1Name = "Gestern"
@@ -54,38 +75,48 @@
 
         <p>&nbsp;</p>
 
-        <div id="radar_img">
+        <div id="radar_img1">
           <p>Wetterwarnung DWD</p>
            <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
-         <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" alt="WetterWarn" /></a>
+           <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" alt="WetterWarn" /></a>
         </div>
-        <div id="radar_img">
+        <div id="radar_img2">
          <p>Wetterbild Dach</p>
-          <a href="xicons/wet/snapshot.jpg" alt="Wetter aktuell"><img src="xicons/wet/snapshot.jpg" alt="wetterDach" /></a>
+          <a href="xicons/wet/snapshot.jpg">
+          <img src="xicons/wet/snapshot.jpg" alt="wetterDach" /></a>
         </div>
 
         #if $Extras.has_key('radar_img')
-        <div id="radar_img">
-              <a  href="$Extras.radar_url"><img src="$Extras.radar_img" alt="Radar" /></a>
-          <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>
+        <div id="radar_img3">
+              <a  href="$Extras.radar_url"> 
+              <img src="$Extras.radar_img" alt="Radar" /></a>
+              <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>
         </div>
         #end if
         <p>&nbsp;</p>
         #if $Extras.has_key('radar_local_img')
          <div id="radar_local_img">
-          <a  href='$Extras.radar_local_img'><img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
+          <a  href='$Extras.radar_local_img'>
+          <img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
           <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>     
          </div>
         #end if
          <div id="radar_blitz">
-           <a href="http://www.wetterpool.de" title="Quelle der Blitzkarte: Wetterpool.de"><img src="http://www.wetterpool.de/export/homepagewetter.php?content=blitzkarte_269x338" title="Blitzkarte für Deutschland, letzte 2 Stunden" alt="Blitzkarte für Deutschland, letzte 2 Stunden" /></a>
+           <a href="http://www.lightningmaps.org/realtime?lang=de" title="Quelle der Blitzkarte">
+           <img src="http://images.blitzortung.org/Images/image_b_de.png" title="Blitzkarte für Deutschland" alt="Blitzkarte Deutschland" /></a>
          </div> <!--End Blitzkarte -->
          <div id="radar_wetter">
-           <a href="http://www.meteopool.org" title="Quelle des Niederschlagsradar: meteopool.org"><img src="http://www.meteopool.org/export/homepagewetter.php?content=wetterradar_270x338" title="Niederschlagsradar(Wetterradar) für Deutschland" alt="Niederschlagsradar(Wetterradar) für Deutschland" /></a>
+           <a href="http://niederschlagsradar.de/" title="Quelle des Niederschlagsradar">
+           <img src="http://niederschlagsradar.de/image.ashx?type=loop3stunde&jaar=-2&regio=homepage&tijdid=201511212239&time=&bliksem=0" title="Niederschlagsradar Deutschland" alt="Niederschlagsradar(Wetterradar) Deutschland" /></a>
          </div> <!-- End Wetterradar -->
-
-
-
+         <div id="radar_iso">
+           <a href="http://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html#buehneTop" title="Bodenluftdruck / Fronten / Wetter">
+           <img src="http://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png" alt="bild" />
+           </a>
+        </div>
+        <div>
+           #include $Extras.about
+       </div>
     </div> <!--End class "stats_group" -->
       <div id="content">
         <div id="about">
@@ -95,67 +126,41 @@
         </div> <!-- End id "about" -->
 
         <div id="hes">  <!-- align="center"> -->
-      <br /> Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
-            #set $now = $current.dateTime.raw
-            #set $yeste = $now - 24*3600
-            #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
-            #set $yeste_daylight = $almanac($almanac_time=$yeste).sun.set.raw - $almanac($almanac_time=$yeste).sun.rise.raw
-            #set $difference = $today_daylight - $yeste_daylight
-            #set $seconds = $almanac.sun.set.raw - $almanac.sun.rise.raw
-            #set $hours = $seconds //3600
-            #set $seconds %= 3600
-            #set $minutes = $seconds//60
-            #set $seconds %= 60
+      Heute ist&nbsp;<b>$current.dateTime.format("%A")</b>, es ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
+      #if len($day00) > 3
+          und es ist <b>$day00</b>
+      #end if
+      #set $now = $current.dateTime.raw
+      #set $yeste = $now - 24*3600
+      #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
+      #set $yeste_daylight = $almanac($almanac_time=$yeste).sun.set.raw - $almanac($almanac_time=$yeste).sun.rise.raw
+      #set $difference = $today_daylight - $yeste_daylight
+      #set $seconds = $almanac.sun.set.raw - $almanac.sun.rise.raw
+      #set $hours = $seconds //3600
+      #set $seconds %= 3600
+      #set $minutes = $seconds//60
+      #set $seconds %= 60
    
-            #set $difhes = $difference
-            #set $dh = $difhes //3600
-            #set $difhes %= 3600
-            #set $dm = $difhes //60
-            #set $difhes %= 60
+      #set $difhes = $difference
+      #set $dh = $difhes //3600
+      #set $difhes %= 3600
+      #set $dm = $difhes //60
+      #set $difhes %= 60
             
-            #set $difhes1 = -$difference
-            #set $dh1 = $difhes1 //3600
-            #set $difhes1 %= 3600
-            #set $dm1 = $difhes1 //60
-            #set $difhes1 %= 60
-               <p>Die maximale Sonnenscheindauer beträgt&nbsp;<b>$("Heute %d Stunden, %d Minuten und %d Sekunden" % ($hours, $minutes, $seconds))</b>,<br/>
-            #if $difference > 0
-                 dass sind <b> $("%d Sekunden mehr als Gestern " % $difference) </b>oder<b> $("%d Minuten und %d Sekunden." % ($dm, $difhes))</b></p>
-            #else
-                 dass sind <b> $("%d Sekunden weniger als Gestern " % -$difference) </b>oder<b> $("%d Minuten und %d Sekunden." % ($dm1, $difhes1))</b></p>
-            #end if
-         <hr />
-
-           <p>Prognose&nbsp;&nbsp;  
-           
-            #if $varExists('forecast')
-             #set $summary = $forecast.weather_summary($Extras.forecast_service)
-             #if $summary.clouds is not None
-              #set $simg = 'xicons/' + $summary.clouds + '.png'
-              <a href='forecast.html'><img src='$simg' alt='$summary.clouds'
-               title='$forecast.label('Weather', $summary.clouds)' /></a>&nbsp;
-             #end if
-             #for $k in $summary.precip
-               #set $precip_img = 'xicons/' + $k + '.png'
-               <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' />&nbsp;
-             #end for
-             #for $k in $summary.obvis
-               #set $obvis_img = 'xicons/' + $k + '.png'
-               <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' />&nbsp;
-             #end for
-             $forecast.label('Zambretti', $forecast.zambretti.code)<br />
-             Die VantagePro2 Aktiv Plus:&nbsp;$current($data_binding='wdsupp_binding', $max_delta=600).vantageForecastRule.raw
-             </p>
-             <p>Der Himmel:&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
-              Die Tagestemperatur zwischen:&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp;
-             und&nbsp;$forecast.label('Weather', $summary.tempMax).<br />
-              Die Luftfeuchtigkeit liegt bei:&nbsp;$forecast.label('Weather', $summary.humidity). Der
-              Wind aus:&nbsp;$forecast.label('Weather', $summary.windDir)
-             &nbsp;mit einer Geschwindigkeit von&nbsp;$forecast.label('Weather', $summary.windSpeed). Die
-              Niederschlagswahrscheinlichkeit bei:&nbsp;$forecast.label('Weather', $summary.pop)<br />
-              Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)</p>             
-            #end if 
-        </div> 
+      #set $difhes1 = -$difference
+      #set $dh1 = $difhes1 //3600
+      #set $difhes1 %= 3600
+      #set $dm1 = $difhes1 //60
+      #set $difhes1 %= 60
+    <p>Die astronomische oder maximale Sonnenscheindauer beträgt Heute&nbsp;<b>$("%d Stunden, %d Minuten und %d Sekunden" % ($hours, $minutes, $seconds))</b>,<br/>
+      #if $difference > 0
+          dass sind <b> $("%d Sekunden " % $difference)</b> mehr als Gestern oder<b> $("%d Minuten und %d Sekunden," % ($dm, $difhes))</b></p>
+      #else
+          dass sind <b> $("%d Sekunden " % -$difference)</b> weniger als Gestern oder<b> $("%d Minuten und %d Sekunden," % ($dm1, $difhes1))</b></p>
+      #end if
+       #include "sommer.inc"
+     <!-- $daylightmax Maximales Tageslicht Aktuell $daylightday -->
+     </div>
        <hr />
        <div id="plots">
         <table>
@@ -164,14 +169,28 @@
             <canvas id="temout" width="250" height="250"></canvas>
             </td>
             <td>$trend.outTemp</td>
-            <td><img src="daytempdew.png"   alt="temperatures" /></td>
+            <td><img src="daytemp.png"   alt="temperatures" /></td>
           </tr>
           <tr>
            <td>
-            <canvas id="wihi" width="250" height="250"></canvas>
+            <canvas id="dewpo" width="250" height="250"></canvas>
            </td>
-           <td>$trend.windchill<br />$trend.heatindex</td>
-           <td><img src="daytempchill.png" alt="heatchill" /></td>
+           <td>$trend.dewpoint<br />  </td>
+           <td><img src="daydewpoint.png" alt="dewpoint" /></td>
+          </tr>
+          <tr>
+           <td>
+            <canvas id="wici" width="250" height="250"></canvas>
+           </td>
+           <td>$trend.windchill<br />  </td>
+           <td><img src="daytempchill.png" alt="windchill" /></td>
+          </tr>
+          <tr>
+           <td>
+            <canvas id="hiin" width="250" height="250"></canvas>
+           </td>
+           <td>$trend.heatindex<br />  </td>
+           <td><img src="daytempheat.png" alt="heatindex" /></td>
           </tr>
           <tr>
            <td>
@@ -180,6 +199,14 @@
            <td>$trend.outHumidity</td>
            <td><img src="dayhumid.png"     alt="humidity" /></td>
           </tr>
+         #if $day.absolutF.has_data
+            <tr>
+             <!-- <td>Luftfeuchte absolut</td> -->
+             <td> <canvas id="abscvs" width="250" height="250"></canvas></td>
+             <td>$current.absolutF</td>
+             <td><img src="dayabsF.png" alt="absolute Luftfeuchte" /></td>
+            </tr>
+         #end if
           <tr>
            <td>
             <canvas id="barout" width="250" height="250"></canvas>
@@ -210,10 +237,16 @@
            <td> 
             <canvas id="reghes" width="250" height="250"></canvas>
            </td>   
-           <!-- <td>Regen:&nbsp;$day.rain.sum</td> -->
-           <td>&nbsp;</td>
+           <td>$day.rain.sum</td>
            <td><img src="dayrain1.png"      alt="rain 5min" /></td>
           </tr>
+         #if $day.snow.has_data
+            <tr>
+             <td>Schneehöhe</td>
+             <td>$day.snowTotal.max</td>
+             <td><img src="daysnow.png" alt="Schnee" /></td>
+            </tr>
+         #end if
          #if $day.ET.has_data
             <tr>
              <td>ET Verdunstung</td>
@@ -294,17 +327,19 @@
               </td>
               <td><img src="daywinddir.png"   alt="Hi Wind" /></td>
              </tr>
-             <tr>
-              <td>Wind Vector:&nbsp;</td>
-              <td></td>
-              <td><img src="daywindvec.png"   alt="Wind Vector" /></td>
+          <tr>
+          <td colspan='2'><img src="wr/daywindspeed.png" alt="windRose" width="260" height="250" /></td>
+              <!-- <td></td> -->
+          <td><img src="daywindvec.png"   alt="Wind Vector" /></td>
           </tr>
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>1-Wire OWFS Temperatursensor</td></tr>
           <tr>
            <td>
              <canvas id="temcar" width="250" height="250"></canvas>
            </td>
-           <td>$trend.extraTemp2&nbsp;</td>
+           <td>$current.extraTemp2&nbsp;</td>
            <td><img src="dayextra2.png"    alt="Carport" /></td></tr>
+          <tr><td>1-wire</td><td>&nbsp;</td><td>Teiche Wassertemperatur</td></tr>
          #if $day.extraTemp1.has_data 
           <tr>
            <td>
@@ -329,6 +364,7 @@
            <td>&nbsp;</td>
            <td><img src="dayTeichG.png"    alt="Goldfischteich" /></td></tr>
          #end if
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>Licht- / Solarsensor</td></tr>
          #if $day.lighting.has_data
             <tr>
              <td>Helligkeit:&nbsp;$current.lighting</td>
@@ -336,6 +372,7 @@
              <td><img src="daylighting.png" alt="Helligkeit" /></td>
             </tr>
          #end if
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Vantage PRO 2 UV+Solarstrahlung</td></tr>
          #if $day.radiation.has_data
             <tr>
              <td>Globalstrahlung:&nbsp;$current.radiation</td>
@@ -343,7 +380,7 @@
              <td><img src="dayradiation.png" alt="Radiation" /></td>
             </tr>
          #end if
-         #if $day.sunshinehours.has_data
+         #if $day.sunshineS.has_data
              <tr>
               <td>Sonnenschein:&nbsp;$day.sunshineS.sum.hour</td>
               <td></td>
@@ -357,24 +394,41 @@
               <td><img src="dayuv.png"        alt="Tag UV Index"/></td>
              </tr>
           #end if
-          #if $day.soilTemp1.has_data
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>1-Wire OWFS Temperatursensor</td></tr>
+          #if $day.soilTempO1.has_data
             <tr>
-             <td>Bodentemperatur +5 -5 -20 -50 -100 cm</td>
+             <td>Bodentemperatur +5 -5 -10 -20 -50 -100 cm</td>
              <td></td>
              <td><img src="dayTempB.png"      alt="Boden 5cm Luft" /><br />
                  <img src="daysoilT.png"    alt="Bodentemperatur" /></td>
+            </tr>
+          #end if
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Sensorstation 6345OVCS</td></tr>
+          #if $day.soilTemp1.has_data
+            <tr>
+             <td>Davis-Bodentemperatur -5 -10 -20 -50 cm</td>
+             <td></td>
+             <td><img src="daysoilD.png" alt="Davis-Bodentemperatur" /></td>
             </tr>
           #end if
           #if $day.soilMoist1.has_data
             <tr>
              <td>Bodenfeuchtigkeit</td>
              <td></td>
-             <td><img src="daysoilF.png"      alt="Bodenfeuchtigkeit" /></td>
+             <td><img src="daysoilF.png" alt="Davis-Bodenfeuchtigkeit" /></td>
             </tr>
           #end if
+          #if $day.leafWet1.has_data
+            <tr>
+             <td>Blattfeuchtigkeit</td>
+             <td></td>
+             <td><img src="dayleafW.png" alt="Davis-Blattfeuchtigkeit" /></td>
+            </tr>
+          #end if
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>AirPi Gassensor</td></tr>
           <tr>
            <td>
-            Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor.format('%.1f') ppm
+            Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor
            </td>
            <td>
             &nbsp;
@@ -383,13 +437,42 @@
           </tr> 
           <tr>
            <td>
-            Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor.format('%.1f') ppm
+            HCHO-Sensor&nbsp; $latest($data_binding='air_binding').hcho_sensor
            </td>
            <td>
             &nbsp;
            </td>
-           <td><img src="dayGas.png" alt="Air-Quality" /></td>
+           <td><img src="dayHCHO.png" alt="HCHO-Quality" /></td>
           </tr>
+          <tr>
+           <td>
+            Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor<br />
+            Gas-Sensor(MQ-2)&nbsp; $latest($data_binding='air_binding').gasC_sensor
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayGas.png" alt="Gas-Sensor-Quality" /></td>
+          </tr>
+          <tr>
+           <td>
+            PM 2.5 Sensor&nbsp; $latest($data_binding='air2_binding').pm_25
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayPM25.png" alt="PM 2.5 Quality" /></td>
+          </tr>
+          <tr>
+           <td>
+            PM 10 Sensor&nbsp; $latest($data_binding='air2_binding').pm_10
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayPM10.png" alt="PM 10 Quality" /></td>
+          </tr>
+
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
           <tr>
            <td>
@@ -412,21 +495,18 @@
            <td>$trend.inDewpoint</td>
            <td><img src="dayindew.png"    alt="Inside" /></td>
           </tr>
+         #if $day($data_binding='air_binding').sound.has_data
+          <tr>
+           <td>
+            Sound-Sensor&nbsp; $latest($data_binding='air_binding').sound.format("%.1f")
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="daySound.png" alt="Sound-Quality" /></td>
+          </tr>
+         #end if
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Berechnung</td></tr>
-          <tr>
-           <td>
-            $current.consBatteryVoltage
-           </td>
-           <td>$trend.consBatteryVoltage</td>
-           <td><img src="dayBate.png"    alt="Stations-Spannung" /></td>
-          </tr>
-          <tr>
-           <td>
-            $current.rxCheckPercent
-           </td>
-           <td>$trend.rxCheckPercent</td>
-           <td><img src="dayStat.png"    alt="Stations-Erreichbarkeit" /></td>
-          </tr>
           <tr>
            <td>
             $current.cloudbase
@@ -462,6 +542,29 @@
            <td>&nbsp;</td>
            <td><img src="dayWindDruck.png"    alt="Winddruck" /></td>
           </tr>
+          <tr>
+           <td>
+            $latest($data_binding='lightning_binding').distance
+           </td>
+           <td>$latest($data_binding='lightning_binding').energy.format("%.1f")</td>
+           <td><img src="dayBlitz.png"    alt="Blitz" /></td>
+          </tr>
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Station / OWFS</td></tr>
+            <tr>
+             <td>Spannung OWFS:&nbsp;</td>
+             <td></td>
+             <td><img src="dayVolt.png" alt="Spannung OWFS" /></td>
+            </tr>
+            <tr>
+             <td>Spannung Vantage:&nbsp;</td>
+             <td></td>
+             <td><img src="dayBateDay.png" alt="Station Voltage" /></td>
+            </tr>
+            <tr>
+             <td>Signalqualität Vantage:&nbsp;</td>
+             <td></td>
+             <td><img src="dayStatDay.png" alt="Signal Voltage" /></td>
+            </tr>
          </table>
         </div> <!-- End id "plots" -->
       </div> <!-- End id "content" -->
@@ -470,16 +573,20 @@
      #include $Extras.footer
 
 #set $tem1 = $current.outTemp.raw 
+#set $dewp = $current.dewpoint.raw
 #set $tem3 = $current.outTemp.raw
 #set $hum1 = $current.outHumidity.raw
 #set $bar1 = $current.barometer.raw
 #set $tem2 = $current.inTemp.raw
 #set $hum2 = $current.inHumidity.raw
-#set $wihi = $current.windchill.raw
+#set $wici = $current.windchill.raw
+#set $hiin = $current.heatindex.raw
 #set $rainhi = $day.rain.sum.raw
+#set $abscvs = $current.absolutF.raw
 
-<script>
-    var gauge = new RGraph.Gauge('temout', -20, 30, $tem1)
+<script type="text/javascript">
+
+    var gauge = new RGraph.Gauge('temout', -10, 40, $tem1)
         .Set('scale.decimals', 0)
         .Set('tickmarks.small', 50)
         .Set('tickmarks.big',5)
@@ -491,7 +598,19 @@
         .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
         .Draw();
 
-    var gauge = new RGraph.Gauge('temcar', -20, 30, $tem3)
+    var gauge = new RGraph.Gauge('dewpo', -20, 30, $dewp)
+        .Set('scale.decimals', 0)
+        .Set('tickmarks.small', 50)
+        .Set('tickmarks.big',5)
+        .Set('title.top', 'Taupunkt')
+        .Set('title.top.size', 12)
+        .Set('title.top.pos', 0.15)
+        .Set('title.bottom', '°C')
+        .Set('title.bottom.color', '#aaa')
+        .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
+        .Draw();
+
+    var gauge = new RGraph.Gauge('temcar', -10, 40, $tem3)
         .Set('scale.decimals', 0)
         .Set('tickmarks.small', 50)
         .Set('tickmarks.big',5)
@@ -518,7 +637,7 @@
 
     var gauge = new RGraph.Gauge('barout', 950, 1050, $bar1)
         .Set('scale.decimals', 0)
-        .Set('tickmarks.small', 40)
+        .Set('tickmarks.small', 50)
         .Set('tickmarks.big',5)
         .Set('title.top', 'Luftdruck')
         .Set('title.top.size', 10)
@@ -552,11 +671,23 @@
         .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
         .Draw();
 
-    var gauge = new RGraph.Gauge('wihi', -20, 30, $wihi)
+    var gauge = new RGraph.Gauge('wici', -20, 30, $wici)
         .Set('scale.decimals', 0)
         .Set('tickmarks.small', 50)
         .Set('tickmarks.big',5)
         .Set('title.top', 'Windchill')
+        .Set('title.top.size', 10)
+        .Set('title.top.pos', 0.15)
+        .Set('title.bottom', '°C')
+        .Set('title.bottom.color', '#aaa')
+        .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
+        .Draw();
+
+    var gauge = new RGraph.Gauge('hiin', -10, 40, $hiin)
+        .Set('scale.decimals', 0)
+        .Set('tickmarks.small', 50)
+        .Set('tickmarks.big',5)
+        .Set('title.top', 'Hitzeindex')
         .Set('title.top.size', 10)
         .Set('title.top.pos', 0.15)
         .Set('title.bottom', '°C')
@@ -576,6 +707,17 @@
         .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
         .Draw();
 
+    var gauge = new RGraph.Gauge('abscvs', 0, 25, $abscvs)
+        .Set('scale.decimals', 0)
+        .Set('tickmarks.small', 50)
+        .Set('tickmarks.big',5)
+        .Set('title.top', 'Luftfeuchte, absolut')
+        .Set('title.top.size', 10)
+        .Set('title.top.pos', 0.15)
+        .Set('title.bottom', 'g/m³')
+        .Set('title.bottom.color', '#aaa')
+        .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
+        .Draw();
 
 </script>
 

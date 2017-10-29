@@ -1,13 +1,14 @@
 ## forecast strip chart - Copyright 2012-2016 Matthew Wall
-## $Id: forecast_strip.inc 1467 2016-03-14 15:36:18Z mwall $
-## version = 0.1
+## $Id: forecast_strip.inc 1593 2016-11-27 02:59:40Z mwall $
+#set $forecast_strip_version = 0.3
 ##
-## Include this file to display forecast data.
+## Include this file to display forecast data.  This file uses icons from the
+## forecast icon set.
 ##
 ## To override the default settings in this file, use the following syntax in
 ## skin.conf or weewx.conf:
 ##
-## [forecast_settings]
+## [forecast_strip_settings]
 ##     source = NWS
 ##     num_periods = 40
 ##
@@ -19,15 +20,19 @@
 ## <div id='forecast_strip'></div>
 ## </body>
 ##
-## To display strips from multiple sources:
+## To display strips from multiple sources in a single page:
 ##
-## #set global $forecast_settings['source'] = ['NWS', 'OWM']
-## #set global $forecast_settings['num_periods'] = 300
+## #set global $forecast_strip_settings = {}
+## #set global $forecast_strip_settings['num_periods'] = 300
+## #set global $forecast_strip_settings['source'] = 'NWS'
 ## #include forecast_strip.inc
 ##
-## <body onload="populate_strip('nws_strip', 'NWS'); populate_strip('owm_strip', 'OWM'">
-## <div id='nws_strip'></div>
-## <div id='owm_strip'></div>
+## #set global $forecast_strip_settings['source'] = 'OWM'
+## #include forecast_strip.inc
+##
+## <body onload="populate_strip('nws', 'NWS'); populate_strip('owm', 'OWM'">
+## <div id='nws'></div>
+## <div id='owm'></div>
 ## </body>
 
 #if $varExists('forecast')
@@ -40,75 +45,64 @@
 
 ## How many forecast periods should be considered?
 ## Up to 40 for NWS, up to 240 for WU.  More periods take longer to generate.
-#set $num_periods = 24
+#set $num_periods = 300
 
-## Override defaults with anything specified in the skin
-#if $varExists('forecast_settings')
-#if $forecast_settings.has_key('source')
-#set $strip_source = $forecast_settings.source
-#end if
-#if $forecast_settings.has_key('num_periods')
-#set $num_periods = int($forecast_settings.num_periods)
-#end if
+## Which columns should be displayed?
+#set $show_temp = 1
+#set $show_temp_min = 1
+#set $show_temp_max = 1
+#set $show_dewpoint = 0
+#set $show_humidity = 0
+#set $show_wind = 1
+#set $show_clouds = 1
+#set $show_pop = 1
+#set $show_snow = 1
+#set $show_precip = 1
+#set $show_sun = 0
+#set $show_moon = 0
+#set $show_moonphase = 0
+#set $show_tides = 0
+
+#set $local_settings = dict()
+
+## First look for values from skin.conf or weewx.conf
+#if $varExists('Extras') and $varExists('Extras.forecast_strip_settings')
+#for $sv in $Extras.forecast_strip_settings.keys()
+#set $local_settings[$sv] = $Extras.forecast_strip_settings[$sv]
+#end for
 #end if
 
+## Look for overrides defined by any template that includes this file
+#if $varExists('forecast_strip_settings')
+#for $sv in $forecast_strip_settings.keys()
+#set $local_settings[$sv] = $forecast_strip_settings[$sv]
+#end for
+#end if
+
+## Now assign the values that will actually be used
+#set $strip_source = $local_settings.get('source', $strip_source)
+#set $num_periods = int($local_settings.get('num_periods', $num_periods))
+#set $show_temp = int($local_settings.get('show_temp', $show_temp))
+#set $show_temp_min = int($local_settings.get('show_temp_min', $show_temp_min))
+#set $show_temp_maX = int($local_settings.get('show_temp_max', $show_temp_max))
+#set $show_dewpoint = int($local_settings.get('show_dewpoint', $show_dewpoint))
+#set $show_humidity = int($local_settings.get('show_humidity', $show_humidity))
+#set $show_wind = int($local_settings.get('show_wind', $show_wind))
+#set $show_clouds = int($local_settings.get('show_clouds', $show_clouds))
+#set $show_pop = int($local_settings.get('show_pop', $show_pop))
+#set $show_snow = int($local_settings.get('show_snow', $show_snow))
+#set $show_precip = int($local_settings.get('show_precip', $show_precip))
+#set $show_sun = int($local_settings.get('show_sun', $show_sun))
+#set $show_moon = int($local_settings.get('show_moon', $show_moon))
+#set $show_moonphase = int($local_settings.get('show_moonphase', $show_moonphase))
+#set $show_tides = int($local_settings.get('show_tide', $show_tides))
+
+#set $tides = $forecast.xtides(startofday=True)
 #set $periods = $forecast.weather_periods($strip_source, max_events=$num_periods)
 
-## These are the styles used by the forecast display as well as the generic
-## javascript for populating the DOM elements with forecast data.  Ensure that
-## these are included only once.
+## Define this javascript only once
 #if not $varExists('forecast_strip_included')
 #set global $forecast_strip_included = 1
-<style>
-th {
-  font-weight: normal;
-  font-size: 80%;
-}
-td {
-  font-weight: normal;
-  text-align: right;
-}
-.qpf td {
-  font-size: 80%;
-}
-.qsf td {
-  font-size: 80%;
-}
-.date td {
-  text-align: left;
-}
-.hour td {
-  font-size: 80%;
-}
-.clouds img {
-  width: 25px;
-}
-.sun img {
-  width: 20px;
-}
-.moon img {
-  width: 14px;
-}
-.windDir img {
-  width: 15px;
-}
-.legend-img {
-  width: 15px;
-}
-.day {
-  font-size: 100%;
-  font-weight: bold;
-}
-.tide_date {
-  font-size: 80%;
-}
-.sources {
-  font-size: 8pt;
-  font-style: italic;
-  color: #aaaaaa;
-  padding-top: 10px;
-}
-</style>
 <script>
 var forecast_data = {};
 
@@ -120,21 +114,50 @@ function populate_strip(div_id, data_id) {
   var tbl = document.createElement('table');
   tbl.appendChild(create_tr(forecast_data[data_id].date));
   tbl.appendChild(create_tr(forecast_data[data_id].hour));
+#if $show_temp_max
   tbl.appendChild(create_tr(forecast_data[data_id].tempMax));
+#end if
+#if $show_temp
   tbl.appendChild(create_tr(forecast_data[data_id].temp));
+#end if
+#if $show_temp_min
   tbl.appendChild(create_tr(forecast_data[data_id].tempMin));
+#end if
+#if $show_dewpoint
   tbl.appendChild(create_tr(forecast_data[data_id].dewpoint));
+#end if
+#if $show_humidity
   tbl.appendChild(create_tr(forecast_data[data_id].humidity));
+#end if
+#if $show_wind
   tbl.appendChild(create_tr(forecast_data[data_id].windSpeed));
   tbl.appendChild(create_tr(forecast_data[data_id].windGust));
   tbl.appendChild(create_tr(forecast_data[data_id].windDir));
+#end if
+#if $show_clouds
   tbl.appendChild(create_tr(forecast_data[data_id].clouds));
+#end if
+#if $show_pop
   tbl.appendChild(create_tr(forecast_data[data_id].pop));
+#end if
+#if $show_precip
   tbl.appendChild(create_tr(forecast_data[data_id].qpf));
+#if $show_snow
   tbl.appendChild(create_tr(forecast_data[data_id].qsf));
+#end if
+#end if
+#if $show_sun
   tbl.appendChild(create_tr(forecast_data[data_id].sun));
+#end if
+#if $show_moon
   tbl.appendChild(create_tr(forecast_data[data_id].moon));
+#end if
+#if $show_moonphase
   tbl.appendChild(create_tr(forecast_data[data_id].moonphase));
+#end if
+#if $show_tides and len($tides) > 0
+  tbl.appendChild(create_tr(forecast_data[data_id].tide));
+#end if
   var d = document.createElement('div');
   d.appendChild(tbl);
   e.appendChild(d);
@@ -163,7 +186,7 @@ function create_tr(data) {
     if(data.td_type == 'icon') {
       if(v != '') {
         var img = document.createElement('img');
-        img.setAttribute('src', 'xicons/' + v + '.png')
+        img.setAttribute('src', 'icons/' + v + '.png')
         td.appendChild(img);
       }
     } else if(data.td_type == 'txt') {
@@ -172,7 +195,7 @@ function create_tr(data) {
       } else {
         var n = document.createTextNode(v);
         td.appendChild(n);
-        var bg = get_tint(v, data.className);
+        var bg = get_tint(v, data.className, data.units);
         if(bg != '') {
           td.style.background = bg;
 //          td.style.border = '1px solid #dddddd';
@@ -182,8 +205,8 @@ function create_tr(data) {
       if(v.colspan) { td.colSpan = v.colspan; }
       if(v.label) {
         td.innerHTML = v.label;
-      } else {
-        td.innerHTML = v;
+//      } else {
+//        td.innerHTML = v;
       }
     }
     tr.appendChild(td);
@@ -210,73 +233,104 @@ function get_rgba(r, g, b, a) {
   return 'rgba('+r+','+g+','+b+','+a+')';
 }
 
+// table of tint thresholds and limits
+// t_max;  maximum tint - anything over this is maximum high color
+// t_min;  minimum tint - anything under this is maximum low color
+// t_up;   upper threshold - start tinting when over this value
+// t_dn;   lower threshold - start tinting when below this value
+// the r,g,b values control the tint color
+var tint_limits = {
+  'pop': {'t_max': 100.0, 't_up': 30.0, // percent
+          'r': 0, 'g': 144, 'b': 200},
+  'qpf': {'t_max': 2.5, // cm
+          'r': 0, 'g': 120, 'b': 250},
+  'qsf': {'t_max': 15.0, // cm
+          'r': 120, 'g': 120, 'b': 250},
+  'wind': {'t_max': 65.0, // kph
+           'r': 255, 'g': 144, 'b': 0},
+  'temp': {'t_max': 45.0, 't_min': -30.0, 't_up': 15.0, 't_dn': 10.0, // C
+           'r_up': 200, 'g_up': 20, 'b_up': 20,
+           'r_dn': 60, 'g_dn': 60, 'b_dn': 250},
+  'humidity': {'t_max': 100.0, 't_up': 10.0, // percent
+               'r': 20, 'g': 120, 'b': 200},
+  'moonphase': {'t_max': 100.0, // percent
+                'r': 200, 'g': 200, 'b': 100}
+};
+
 function get_tint(v, class_name, units) {
   if(v == '') return '';
-//  var t_max; // maximum tint - anything over this is maximum high color
-//  var t_min; // minimum tint - anything under this is maximum low color
-//  var t_up; // upper threshold - start tinting when over this value
-//  var t_dn; // lower threshold - start tinting when below this value
+  if(units === undefined) units = '';
   if(class_name == 'pop') {
-    var t_max = 100.0;
-    var t_up = 30.0;
-    var a = (v - t_up) / (t_max - t_up);
-    return get_rgba(0, 144, 200, a);
+    var a = (v - tint_limits[class_name]['t_up']) /
+      (tint_limits[class_name]['t_max'] - tint_limits[class_name]['t_up']);
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   if(class_name == 'qpf') {
-    var t_max = 1.0; // inch
-    var a = v / t_max;
-    return get_rgba(0, 120, 250, a);
+    var d = v;
+    if(units.endsWith('in')) d = d * 2.54; // convert to cm
+    if(units.endsWith('mm')) d = d / 10.0; // convert to cm
+    var a = d / tint_limits[class_name]['t_max'];
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   if(class_name == 'qsf') {
-    var t_max = 6.0; // inch
-    var a = v / t_max;
-    return get_rgba(120, 120, 250, a);
+    var d = v;
+    if(units.endsWith('in')) d = d * 2.54; // convert to cm
+    if(units.endsWith('mm')) d = d / 10.0; // convert to cm
+    var a = d / tint_limits[class_name]['t_max'];
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   if(class_name == 'windSpeed' || class_name == 'windGust') {
-    var t_max = 40.0; // mph
-    var a = (v > t_max) ? 1.0 : v / t_max;
-    return get_rgba(255, 144, 0, a);
+    class_name = 'wind';
+    var s = v;
+    if(units.endsWith('mph')) s = s * 1.60934; // convert to kph
+    var a = (s > tint_limits[class_name]['t_max']) ?
+      1.0 : s / tint_limits[class_name]['t_max'];
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   if(class_name.indexOf('temp') >= 0 || class_name == 'dewpoint') {
-/*
-    // red only, progressively darker with increase in temperature
-    // kelvin makes the math easier
-    var k = (v + 459.67) * 5.0 / 9.0;
-    var t_max = 316;
-    var t_min = 233;
-    if(k > t_min) {
-      var a = (k > t_max) ? 1.0 : k / t_max;
-      return get_rgba(250, 0, 0, a);
-    }
-*/
     // blue for cold, red for warm, darker toward either end of spectrum
-    // convert to celsius to make the math easier
-    var c = (v - 32.0) * 5.0 / 9.0;
-    var t_up = 10.0; // C
-    var t_max = 40.0; // C
-    var t_dn = 5.0; // C
-    var t_min = -25.0; // C
-    if(c > t_up) {
-      var a = (c > t_max) ? 1.0 : (c - t_up) / (t_max - t_up);
+    class_name = 'temp';
+    var c = v;
+    if(units.endsWith('F')) c = (v - 32.0) * 5.0 / 9.0; // convert to C
+    if(c > tint_limits[class_name]['t_up']) {
+      var a = (c > tint_limits[class_name]['t_max']) ?
+        1.0 : (c - tint_limits[class_name]['t_up']) /
+          (tint_limits[class_name]['t_max'] - tint_limits[class_name]['t_up']);
       if(a > 0.8) { a = 0.8; }
-      return get_rgba(200, 20, 20, a);
-    } else if(c < t_dn) {
-      var a = (c < t_min) ? 1.0 : (c - t_dn) / (t_min - t_dn);
+      return get_rgba(tint_limits[class_name]['r_up'],
+                      tint_limits[class_name]['g_up'],
+                      tint_limits[class_name]['b_up'], a);
+    } else if(c < tint_limits[class_name]['t_dn']) {
+      var a = (c < tint_limits[class_name]['t_min']) ?
+        1.0 : (c - tint_limits[class_name]['t_dn']) /
+          (tint_limits[class_name]['t_min'] - tint_limits[class_name]['t_dn']);
       if(a > 0.8) { a = 0.8; }
-      return get_rgba(60, 60, 250, a);
+      return get_rgba(tint_limits[class_name]['r_dn'],
+                      tint_limits[class_name]['g_dn'],
+                      tint_limits[class_name]['b_dn'], a);
     }
   }
   if(class_name == 'humidity') {
-    var t_max = 100.0;
-    var t_up = 10.0;
-    var a = (v - t_up) / (t_max - t_up);
+    var a = (v - tint_limits[class_name]['t_up']) /
+      (tint_limits[class_name]['t_max'] - tint_limits[class_name]['t_up']);
     a = (a - 0.5 < 0) ? 0 : a - 0.5;
-    return get_rgba(20, 120, 200, a);
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   if(class_name == 'moonphase') {
-    var t_max = 100.0;
-    var a = v / t_max;
-    return get_rgba(200, 200, 100, a);
+    var a = v / tint_limits[class_name]['t_max'];
+    return get_rgba(tint_limits[class_name]['r'],
+                    tint_limits[class_name]['g'],
+                    tint_limits[class_name]['b'], a);
   }
   return '';
 }
@@ -351,7 +405,7 @@ forecast_data.$strip_source = {
   ]},
   'temp': {
     'className': 'temp',
-    'legend': 'xicons/thermometer-red.png',
+    'legend': 'icons/thermometer-red.png',
     'units': '$unit.label.outTemp',
     'td_type': 'txt',
     'values':[ #slurp
@@ -361,7 +415,7 @@ forecast_data.$strip_source = {
   ]},
   'dewpoint': {
     'className': 'dewpoint',
-    'legend': 'xicons/thermometer-dewpoint.png',
+    'legend': 'icons/thermometer-dewpoint.png',
     'units': '$unit.label.dewpoint',
     'td_type': 'txt',
     'values':[ #slurp
@@ -371,7 +425,7 @@ forecast_data.$strip_source = {
   ]},
   'humidity': {
     'className': 'humidity',
-    'legend': 'xicons/thermometer-blue.png',
+    'legend': 'icons/thermometer-blue.png',
     'units': '%',
     'td_type': 'txt',
     'skip_zeros': true,
@@ -382,7 +436,7 @@ forecast_data.$strip_source = {
   ]},
   'windSpeed': {
     'className': 'windSpeed',
-    'legend': 'xicons/flag.png',
+    'legend': 'icons/flag.png',
     'units': '$unit.label.wind',
     'td_type': 'txt',
     'values':[ #slurp
@@ -431,7 +485,7 @@ forecast_data.$strip_source = {
   ]},
   'pop': {
     'className': 'pop',
-    'legend': 'xicons/pop.png',
+    'legend': 'icons/pop.png',
     'units': '%',
     'td_type': 'txt',
     'skip_zeros': true,
@@ -442,7 +496,7 @@ forecast_data.$strip_source = {
   ]},
   'qpf': {
     'className': 'qpf',
-    'legend': 'xicons/raindrop.png',
+    'legend': 'icons/raindrop.png',
     'units': '$unit.label.rain',
     'td_type': 'txt',
     'skip_zeros': true,
@@ -453,7 +507,7 @@ forecast_data.$strip_source = {
   ]},
   'qsf': {
     'className': 'qsf',
-    'legend': 'xicons/snowflake.png',
+    'legend': 'icons/snowflake.png',
     'units': '$unit.label.rain',
     'td_type': 'txt',
     'skip_zeros': true,
@@ -464,7 +518,7 @@ forecast_data.$strip_source = {
   ]},
   'sun': {
     'className': 'sun',
-    'legend': 'xicons/sunriseset.png',
+    'legend': 'icons/sunriseset.png',
     'units': '',
     'td_type': 'icon',
     'values':[ #slurp
@@ -484,7 +538,7 @@ forecast_data.$strip_source = {
   ]},
   'moon': {
     'className': 'moon',
-    'legend': 'xicons/moonriseset.png',
+    'legend': 'icons/moonriseset.png',
     'units': '',
     'td_type': 'icon',
     'values':[ #slurp
@@ -504,7 +558,7 @@ forecast_data.$strip_source = {
   ]},
   'moonphase': {
     'className': 'moonphase',
-    'legend': 'xicons/moonphase.png',
+    'legend': 'icons/moonphase.png',
     'units': '',
     'td_type': 'txt',
     'values':[ #slurp
@@ -513,6 +567,24 @@ forecast_data.$strip_source = {
 "$alm.moon_fullness", #slurp
 #end for
   ]},
+#if len($tides) > 0
+  'tide': {
+    'className': 'tide',
+    'legend': 'icons/water.png',
+    'units': '$unit.label.altitude',
+    'td_type': 'html',
+    'values':[ #slurp
+#for $period in $periods
+  #set $tide_info = ''
+  #for $tide in $tides
+    #if $period.event_ts.raw <= $tide.event_ts.raw < $period.event_ts.raw + $period.duration
+      #set $tide_info = '<span class="tide_offset">%s</span><br/><span class="tide_date">%s</span>' % ($tide.offset.nolabel('%.1f'), $tide.event_ts.format('%H:%M'))
+    #end if
+  #end for
+'$tide_info', #slurp
+#end for
+  ]},
+#end if
   'summary': {
     'source': "$strip_source",
     'location': "$strip_location",

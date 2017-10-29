@@ -22,9 +22,13 @@
      </script>
 
     <title>$station.location Regen Kalender</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
+    <script src="js/jquery-1.8.2.min.js"></script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/highcharts-more.js"></script>
+    <script src="js/themes/grid.js"></script>
 
   </head>
 
@@ -51,17 +55,49 @@
        <td class="stats_label">Niederschlagsintensität am Tag</td>
        <td class="stats_data">$day.rainRate.max</td>
       </tr>
-      <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+      <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
       <tr>
        <td class="stats_label">Niederschlag Gestern</td>
        <td class="stats_data">$yesterday.rain.sum</td>
        <td class="stats_label">Niederschlagsintensität am Vortag</td>
        <td class="stats_data">$yesterday.rainRate.max</td>
       </tr>
-     </table><br />
+      <tr>
+       <td class="stats_label">Niederschlag Woche</td>
+       <td class="stats_data">$week.rain.sum</td>
+       <td class="stats_label">Niederschlag Monat</td>
+       <td class="stats_data">$month.rain.sum</td>
+      </tr>
+     </table>
+  #if $latest($data_binding='wdsupp_binding')stormRain.raw > 0.0
+     <table>
+      <tr>
+       <td>Niederschlag Vantage Storm Rain</td>
+       <td class="stats_data">$latest($data_binding='wdsupp_binding')stormStart.format("%d.%m.%Y")</td>
+       <td>Niederschlagmenge</td>
+       <td class="stats_data">$latest($data_binding='wdsupp_binding')stormRain</td>
+      </tr>
+     </table>
+  #else
+     <table>
+      <tr>
+       <td>Niederschlag Vantage Storm Rain</td>
+       <td class="stats_data">Nein</td>
+       <td>Niederschlagmenge</td>
+       <td class="stats_data">Keine</td>
+      </tr>
+     </table>
+  #end if
+  #if $day.snowTotal.max.raw > 0
      <hr />
-     <h3>Die letzten 24 Stunden</h3>
-    #if $day.rain.sum.raw > 0
+     <h3>Aktuell liegen ca. $current.snowTotal Schnee.</h3>
+     
+  #end if
+  
+
+  #if $day.rain.sum.raw > 0
+    <hr />
+    <h3>Die letzten 24 Stunden</h3>
      <table>
       #for $zeit in range(24)
           <tr><td>Niederschlag vor</td><td>$zeit</td><td>h</td>
@@ -102,15 +138,16 @@
           </tr>
       #end for
      </table>
-    #else
+  #else
       <p>&nbsp;</p>
-    #end if
-     <hr />
+  #end if
+     <hr /> 
 
 <h2>Niederschlag</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
-<p>Als Niederschlag werden nur Regenschauer, in einer Höhe von 1 m über Grund, erfasst.<br />
+<p>Als Niederschlag werden nur Regenschauer, in einer Höhe von 2 m über Grund, erfasst.<br />
 Andere Niederschläge (Schnee oder Hagel) können aufgrund einer fehlenden Heizung nicht registriert werden. <br />
-Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.</p>
+Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt. Meine Wetterstation erfasst
+Niederschlägen ab 0,2 mm.</p>
 <p>&nbsp;</p>
 
 <div id="Report">
@@ -120,11 +157,11 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
    <td>Anzahl der <br />nach Jahren</td>
    <td style="background-color: #FF4949;">Regentage</td>
    <td >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="background-color: #FF8C5F;">Tage mit &gt;= 3 mm</td>
+   <td style="background-color: #FF8C5F;">Tage mit &gt;= 1 mm</td>
    <td style="background-color: #FFAC4B;">Tage mit &gt;= 5 mm</td>
    <td style="background-color: #33FF33;">Tage mit &gt;= 10 mm</td>
-   <td style="background-color: #23FF9E;">Tage mit &gt;= 30 mm</td>
-   <td style="background-color: #4B84FF;">Tage mit &gt;= 50 mm</td>
+   <td style="background-color: #23FF9E;">Tage mit &gt;= 15 mm</td>
+   <td style="background-color: #4B84FF;">Tage mit &gt;= 20 mm</td>
   </tr>
 
 #for $year in $alltime.years
@@ -132,11 +169,11 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
       <td>$year.dateTime.format("%Y")</td>
       <td style="background-color: #FF4949;">$year.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
       <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-      <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.3, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.1, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #33FF33;">$year.rain.sum_ge((1.0, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #23FF9E;">$year.rain.sum_ge((3.0, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #4B84FF;">$year.rain.sum_ge((5.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #23FF9E;">$year.rain.sum_ge((1.5, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.rain.sum_ge((2.0, "cm", "group_rain")).format("%.0f")</td>
    </tr>
 #end for
 </table>
@@ -165,12 +202,13 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
     </tr>
 #end for
 </table>
-
+<hr />
 <h3>Regenmengen in mm</h3>
  <p>&nbsp; </p>
  <table>
     <tr>
-     <td>Jahr&nbsp;</td>
+     <td>Jahr</td>
+     <td>gesamt</td>
      <td>Jan</td><td>Feb</td><td>Mär</td>
      <td>Apr</td><td>Mai</td><td>Jun</td>
      <td>Jul</td><td>Aug</td><td>Sep</td>
@@ -179,6 +217,7 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
  #for $year in $alltime.years
     <tr>
       <td>$year.dateTime.format("%Y")</td>
+      <td><b>$year.rain.sum.formatted</b></td>
       #for $month in $year.months
           #if $month.rain.sum.raw is not None:
              #if $month.rain.sum.raw < 0.01
@@ -299,6 +338,145 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
      <td>$winter.rain.sum.formatted </td>
     </tr>
 </table>
+<hr />
+  <h3>Perioden von Trockenheit und Regentagen</h3>
+   <ul>
+    <li>Längste Trockenperiode in diesem Monat&nbsp;<b>$month_con_dry_days</b>&nbsp;Tage, vom $month_con_dryS_days_time.format("%d.%m.%Y")
+     bis zum  $month_con_dry_days_time.format("%d.%m.%Y")</li>
+    <li>Längste Trockenperiode in diesem Jahr&nbsp;<b>$year_con_dry_days</b>&nbsp;Tage, vom $year_con_dryS_days_time.format("%d.%m.%Y")
+      bis zum  $year_con_dry_days_time.format("%d.%m.%Y")</li>
+    <li>und</li>
+    <li>Längste Trockenperiode bisher mit&nbsp;<b>$alltime_con_dry_days</b>&nbsp;Tage, vom $alltime_con_dryS_days_time.format("%d.%m.%Y")
+       bis zum  $alltime_con_dry_days_time.format("%d.%m.%Y")</li>
+    <li>&nbsp;</li>
+    <li>Längste Regenperiode mit&nbsp;<b>$month_con_wet_days</b>&nbsp;Tage im Monat, vom $month_con_wetS_days_time.format("%d.%m.%Y")
+      bis zum  $month_con_wet_days_time.format("%d.%m.%Y")</li>
+    <li>Längste Niederschlagsperiode mit&nbsp;<b>$year_con_wet_days </b>&nbsp;Tage im Jahr, vom $year_con_wetS_days_time.format("%d.%m.%Y")
+       bis zum  $year_con_wet_days_time.format("%d.%m.%Y")</li>
+    <li></li>  
+    <li>Längste Niederschlagsperiode mit&nbsp;<b>$alltime_con_wet_days</b>&nbsp;Tage, vom $alltime_con_wetS_days_time.format("%d.%m.%Y")
+      bis zum  $alltime_con_wet_days_time.format("%d.%m.%Y")</li>
+    <li>&nbsp;</li>
+   </ul>
+#set $rainhm = 0
+#try
+    #for $day in $month.days
+        #if $day.rain.count.raw > 0
+            #set $rainhm = $rainhm + 300.0
+        #end if
+    #end for
+#except TypeError
+    #$rainhm = 0
+#end try
+
+#set $secondsm = $rainhm
+#set $hoursm = $secondsm //3600
+#set $secondsm %= 3600
+#set $minutesm = $secondsm //60
+#set $secondsm %= 60
+
+#set $rainhy = 0
+#try
+    #for $day in $year.days
+        #if $day.rain.count.raw > 0
+            #set $rainhy = $rainhy + 300.0
+        #end if
+    #end for
+#except TypeError
+    #$rainhy = 0
+#end try
+
+#set $secondsy = $rainhy
+#set $hoursy = $secondsy //3600
+#set $secondsy %= 3600
+#set $minutesy = $secondsy//60
+#set $secondsy %= 60
+<ul>
+<!--  <li>Diesen Monat gab es etwa
+ <b>$(" %d Stunden und %d Minuten" % ($hoursm, $minutesm))</b> Regen.</li>  -->
+ <li>Im aktuellen Jahr waren es etwa
+ <b>$(" %d Stunden und %d Minuten" % ($hoursy, $minutesy))</b> Regen.</li>
+</ul>
+  <hr />
+   <h3>Extremwerte Niederschlag</h3>
+    <ul>
+     <li>Mit<b>&nbsp;$alltime.rainRate.max&nbsp;</b>gab es am<b>&nbsp;$alltime.rainRate.maxtime&nbsp;</b>
+           den heftigsten Schauer seit Beginn <b>meiner</b> Wetteraufzeichung.</li>
+     <li><b>&nbsp;$alltime.snow.max&nbsp;Schnee</b> gab es am $alltime.snow.maxtime&nbsp;Uhr</li>
+    </ul>
+   <hr />
+<script>
+    $(document).ready(function() {
+
+        var options = {
+            chart: {
+                    renderTo: 'Chart2',
+                    type: 'column'
+                   },
+
+                   title: {
+                           text: '2013-17 Monatliche Regenmengen'
+                        },
+
+                   legend: {
+                           enabled: true
+                        },
+
+                   xAxis: {
+                           categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+                        },
+
+                   yAxis: {
+                            minorTickInterval: 'auto',
+                            minorTickLength: 0,
+                            title:  {
+                                     text: 'mm'
+                                }
+                        },
+
+                   tooltip: {
+                             shared: true,
+                             valueDecimals: 0,
+                             valueSuffix: 'mm'
+                        },
+
+
+                   series: [{
+                             name: '2013'
+                        }, {
+                             name: '2014'
+                        }, {
+                             name: '2015'
+                        }, {
+                             name: '2016'
+                        }, { 
+                             name: '2017'
+                        }]
+                };
+
+                $.getJSON('Data/Rain-2013.json', function(data) {
+                        options.series[0].data = data;
+                        $.getJSON('Data/Rain-2014.json', function(data) {
+                                options.series[1].data = data;
+                                $.getJSON('Data/Rain-2015.json', function(data) {
+                                        options.series[2].data = data;
+                                        $.getJSON('Data/Rain-2016.json', function(data) {
+                                                options.series[3].data = data;
+                                                $.getJSON('Data/Rain-2017.json', function(data) {
+                                                        options.series[4].data = data;
+                                                        var chart = new Highcharts.Chart(options);
+                                                });
+                                        });
+                                });
+                        });
+                });
+
+        });
+</script>
+
+<div id="Chart2">
+       Chart 2
+</div>  <!-- End id "Chart2" -->
 
 <hr />
 
@@ -308,7 +486,7 @@ Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt.
 
   #include $Extras.footer
 
-
+</div>
 </body>
 
 </html>

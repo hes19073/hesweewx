@@ -21,7 +21,7 @@
      </script>
 
     <title>$station.location Wetterbilder</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
 
@@ -34,16 +34,21 @@
 
    <div id="stats_group">
 
-    #include $Extras.current
+    #set global $period1 = $yesterday
+    #set global $period2 = $day
+    #set global $period1Name = "Gestern"
+    #set global $period2Name = "Heute"
+
+    #include $Extras.chart
 
   </div> <!--End class "stats_group" -->  
 
  <div id="content">        
   <div id="about">
    <div class="header">Wetterbilder der letzten sieben Tage</div>
-   <p>Wetterbilder von 00:00 Uhr bis 23:55 Uhr im 5 min Abstand aufgenommen, als Video im mp4-Format zusammengefasst (ca. 5 min Laufzeit). 
+   <p>Wetterbilder von 04:00 Uhr bis 23:00 Uhr im 1 min Abstand aufgenommen, als Video im mp4 und ogv-Format zusammengefasst (ca. 45 s Laufzeit). 
       <br />Bildformat 640px x 368px aufgenommen mit einer IP-Kamera.</p>
-   <table border="2">
+   <table id='all'>
     <tbody>
      <tr>
       <td>Datum</td>
@@ -57,13 +62,13 @@
 
 #for $day in $seven_day.days
 
-     #set $bild1 = "060000"
-     #set $bild2 = "090000"
-     #set $bild3 = "120000"
-     #set $bild4 = "150000"
-     #set $bild5 = "180000"
-     #set $bild6 = "210000"
-     #set $video = $day.dateTime.format("%d%m%Y")
+     #set $bild1 = "06-00"
+     #set $bild2 = "09-00"
+     #set $bild3 = "12-00"
+     #set $bild4 = "15-00"
+     #set $bild5 = "18-00"
+     #set $bild6 = "21-00"
+     #set $video = $day.dateTime.format("%Y%m%d")
      #set $bild0 = $day.dateTime.format("%Y%m%d")
      #set $wetter = $current.dateTime.format("%Y%m%d%H%M%S")
 
@@ -72,14 +77,20 @@
       #if $current.dateTime.format("%d.%m.%Y") == $day.dateTime.format("%d.%m.%Y")
           kein Video
       #else
-          #set $vimg = 'wetter/hesout_' + $video + '.mp4'
-          <a href='$vimg' >Video vom Tag<br /> im Extrafenster </a> 
+          #set $vimg = 'wetter/video/wetter_' + $video + '.ogv'
+          #set $vimg1 = 'wetter/video/wetter_' + $video + '.mp4'
+          <a href='$vimg' >Video ogv </a>  <br />
+          <a href='$vimg1' >Video mp4 </a>
+         <!--  <video width="120" height="90" controls>
+          <scource src="$vimg1" type="video/mp4">
+          <scource src="$vimg" type="video/ogv">
+          </video> -->
       #end if
      </td>
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild1
      #if $ansicht < $wetter
-          #set $bimg1 = 'wetter/' + $bild0 + $bild1 + '-snapshot.jpg'
+          #set $bimg1 = 'wetter/wetter_' + $bild0 + '_' + $bild1 + '.jpg'
           <a href='$bimg1'>
           <img src='$bimg1' width="120" height="90" alt="Wetter"></a>
      #else
@@ -90,7 +101,7 @@
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild2
      #if $ansicht < $wetter
-          #set $bimg2 = 'wetter/' + $bild0 + $bild2 + '-snapshot.jpg'
+          #set $bimg2 = 'wetter/wetter_' + $bild0 + '_' + $bild2 + '.jpg'
           <a href='$bimg2'>
           <img src='$bimg2' width="120" height="90" alt="Wetter"></a>
      #else
@@ -101,7 +112,7 @@
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild3
      #if $ansicht < $wetter
-          #set $bimg3 = 'wetter/' + $bild0 + $bild3 + '-snapshot.jpg'
+          #set $bimg3 = 'wetter/wetter_' + $bild0 + '_' + $bild3 + '.jpg'
           <a href='$bimg3'>
           <img src='$bimg3' width="120" height="90" alt="Wetter"></a>
      #else
@@ -112,7 +123,7 @@
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild4
      #if $ansicht < $wetter
-          #set $bimg4 = 'wetter/' + $bild0 + $bild4 + '-snapshot.jpg'
+          #set $bimg4 = 'wetter/wetter_' + $bild0 + '_' + $bild4 + '.jpg'
           <a href='$bimg4'>
           <img src='$bimg4' width="120" height="90" alt="Wetter"></a>
      #else
@@ -123,7 +134,7 @@
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild5
      #if $ansicht < $wetter
-          #set $bimg5 = 'wetter/' + $bild0 + $bild5 + '-snapshot.jpg'  
+          #set $bimg5 = 'wetter/wetter_' + $bild0 + '_' + $bild5 + '.jpg'  
           <a href='$bimg5'>
           <img src='$bimg5' width="120" height="90" alt="Wetter"></a>
      #else
@@ -134,7 +145,7 @@
      <td class="allstats_data">
      #set $ansicht = $bild0 + $bild6
      #if $ansicht < $wetter
-          #set $bimg6 = 'wetter/' + $bild0 + $bild6 + '-snapshot.jpg'
+          #set $bimg6 = 'wetter/wetter_' + $bild0 + '_' + $bild6 + '.jpg'
           <a href='$bimg6'>
           <img src='$bimg6' width="120" height="90" alt="Wetter"></a>
      #else
@@ -156,6 +167,7 @@
   #include $Extras.footer
 
 
+</div>
 </body>
 
 </html>

@@ -22,10 +22,79 @@
      </script>
 
     <title>$station.location Wind - Daten</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
+   <script src="js/jquery-1.8.2.min.js"></script>
+   <script src="js/highcharts.js"></script>
+   <script src="js/highcharts-more.js"></script>
+   <script src="js/themes/grid.js"></script>
+   <script>
+     $(document).ready(function() {
 
+          var options = {
+                 chart: {
+                         renderTo: 'Chart1',
+                         type: 'boxplot'
+                        },
+
+                        title: {
+                                text: '2013-17 Monat Temperatur'
+                        },
+
+                        subtitle: {
+                                text: '(Max, ∅Tag-Max, ∅Tag, ∅Tag-Min, Min)'
+                        },
+
+                        legend: {
+                                enabled: true
+                        },
+
+                        xAxis: {
+                                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+                        },
+
+                        yAxis: {
+                                minorTickInterval: 'auto',
+                                minorTickLength: 0,
+                                title:  {
+                                        text: 'Grad C'
+                                }
+                        },
+
+                        plotOptions: {
+                                boxplot: {
+                                        fillColor: 'LightSteelBlue',
+                                        groupPadding: 0.1,
+                                        lineWidth: 2.5,
+                                        medianWidth: 2.5,
+                                        stemWidth: 2.5,
+                                        whiskerLength: '75%',
+                                        whiskerWidth: 2.5
+                                }
+                        },
+                  
+                        series: [{ name: '2013', pointPadding: 0.25 },
+                                 { name: '2014', pointPadding: 0.25 },
+                                 { name: '2015', pointPadding: 0.25 },
+                                 { name: '2016', pointPadding: 0.25 },
+                                 { name: '2017', pointPadding: 0.26 }]
+                };
+
+                $.getJSON('Data/Data-2013.json', function(data) {options.series[0].data = data; 
+                           $.getJSON('Data/Data-2014.json', function(data) { options.series[1].data = data;
+                                      $.getJSON('Data/Data-2015.json', function(data) { options.series[2].data = data; 
+                                                 $.getJSON('Data/Data-2016.json', function(data) {options.series[3].data = data; 
+                                                            $.getJSON('Data/Data-2017.json', function(data) {options.series[4].data = data;
+                                                                       var chart = new Highcharts.Chart(options); 
+                                                            });
+                                                 }); 
+                                      }); 
+                           }); 
+               });
+
+        });
+</script>
 
   </head>
 
@@ -40,10 +109,32 @@
     <div class="section">
 
 <h2>Außentemperatur</h2>
-<h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen </h3>
-<p>&nbsp; </p> 
-<div id="Report">
-
+<p>Nach Weather Underground (Archiv) wurde im Jahr 
+  <b>$latest($data_binding='wdsupp_binding').tempRecordHighYear.raw</b> 
+ eine Rekordtemperatur von <b>$latest($data_binding='wdsupp_binding').tempRecordHigh</b> gemessen, 
+ die normale Tagestemperatur lag sonst bei  $latest($data_binding='wdsupp_binding').tempNormalHigh. <br />
+ Die tiefste Temperatur wurde im Jahr <b>$latest($data_binding='wdsupp_binding').tempRecordLowYear.raw</b> 
+ mit  $latest($data_binding='wdsupp_binding').tempRecordLow festgestellt, 
+ die normale  Tiefsttemperatur lag bei  $latest($data_binding='wdsupp_binding').tempNormalLow.</p>
+<hr /> 
+ <h3>Perioden von Frost- und Eistagen</h3>
+  <ul>
+   <li>Längste Frostperiode in diesem Jahr,&nbsp;<b>$year_frost_minE_days</b>&nbsp;Tage, vom $year_frost_minS_days_time.format("%d.%m.%Y")
+      bis zum  $year_frost_minE_days_time.format("%d.%m.%Y")</li>
+   <li>und</li>
+   <li>Längste Frostperiode bisher,&nbsp;<b>$alltime_frost_minE_days</b>&nbsp;Tage, vom $alltime_frost_minS_days_time.format("%d.%m.%Y")
+       bis zum  $alltime_frost_minE_days_time.format("%d.%m.%Y")</li>
+   <li>&nbsp;</li>
+   <li>Letzter Frosttag (Temperatur MIN &lt; 0,0°C) am&nbsp;<b>$lastfrost_day.format("%d.%m.%Y")</b>,
+       das war vor&nbsp;<b>$lastfrost_delta_time</b>.</li>
+   <li>&nbsp;</li>
+   <li>&nbsp;</li>
+   <li>Längste Eistag-Periode (Temperatur MAX &lt; 0,0°C) mit&nbsp;<b>$alltime_frost_maxE_days</b>&nbsp;Tage, vom $alltime_frost_maxS_days_time.format("%d.%m.%Y")
+      bis zum  $alltime_frost_maxE_days_time.format("%d.%m.%Y")</li>
+   <li>&nbsp;</li>
+  </ul>
+ <hr />
+<h3>Anzahl der Tage in den Jahren nach </h3>
 <table>
     <tr>
      <td>Anzahl der <br />nach Jahren</td>
@@ -245,6 +336,11 @@
     </tr>
 #end for
  </table>
+<hr />
+<div id="Report">
+       <div id="Chart1">
+        Chart 1
+      </div>  <!-- End id "Chart1" -->
 </div>
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
@@ -252,7 +348,7 @@
 
   #include $Extras.footer
 
-
+</div>
 </body>
 
 </html>

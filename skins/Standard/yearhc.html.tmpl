@@ -25,9 +25,7 @@
    </script>
 
    <title>$station.location Aktuelles Wetter</title>
-
-   <link rel='stylesheet' type='text/css' href='hesweewx.css' />
-
+   <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
    <link rel='icon' type='image/png' href='favicon.ico' />
    <script type='text/javascript' src='js/hesweewx.js'></script>
    <script>
@@ -266,7 +264,7 @@
 										options.series[7].data = data;
 										$.getJSON('Data/RainSoakDay-2016.json', function(data) {
 											options.series[8].data = data;
-                                											var chart = new Highcharts.Chart(options);
+                											var chart = new Highcharts.Chart(options);
 										});
 									});
 								});
@@ -401,7 +399,7 @@
       <div id="Chart4">
         Chart 4
       </div>  <!-- End id "Chart4" -->
-
+    </div> <!-- ende content -->
    </div> <!-- ende container -->
 
      #include $Extras.footer

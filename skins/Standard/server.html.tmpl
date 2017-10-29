@@ -4,15 +4,12 @@
 ##    $Date: 2013-03-27 14:52:32 -0700 (Wed, 27 Mar 2013) $
 #encoding UTF-8
 <!doctype html>
-<html>
+<html lang="de">
   <head>
-    #if $encoding == 'utf8'
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    #end if    
     <title>$station.location Aktuelle Wetter Bedingungen</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
-    <!-- <script type='text/javascript' src='exfoliation.js'></script> -->
     <script type='text/javascript' src='js/hesweewx.js'></script>
     <script>
       window.onload = function() { applypopups(); }
@@ -27,8 +24,6 @@
  
    <div id="stats_group">
 
-    #include $Extras.current
-
     #set global $period1 = $yesterday
     #set global $period2 = $day
     #set global $period1Name = "Gestern"
@@ -41,7 +36,7 @@
       <div id="content">
         <div id="about">
           <div class="header">
-            Der AMD 350 / 16 MB Ram / 1 TB Raid 1
+            PC  Celeron / 4 MB Ram / 1 TB HDD
           </div>
           <hr />
           <div id="plots">
@@ -53,9 +48,11 @@
                 <img src="daymem.png" alt="mem" /><br /> 
                 <img src="daynet.png" alt="net" /><br />
                 <img src="daycputemp.png" alt="CPUTemp" />
+                <img src="daybavolt.png" alt="Spanung" /><br />
+                <img src="daybakern.png" alt="CPU-Takt" />
                 <hr />
                 Die Wetterstation<br />
-                <img src="dayBate.png" alt="CPUTemp" />
+                <img src="dayBate.png" alt="ConsBattVolt" />
                 <img src="dayStat.png" alt="CPUTemp" />
                 
              <br /><hr /><br />Die Woche<br /><hr />
@@ -66,11 +63,13 @@
                 <img src="weekmem.png" alt="mem" /><br />
                 <img src="weeknet.png" alt="net" />
                 <img src="weekcputemp.png" alt="CPU temp" />
-                <img src="weekBate.png" alt="CPUTemp" />
-                <img src="weekStat.png" alt="CPUTemp" />
+                <img src="weekbavolt.png" alt="Spanung" /><br />
+                <img src="weekbakern.png" alt="CPU-Takt" />
+                <img src="weekBate.png" alt="CPUBaterie" />
+                <img src="weekStat.png" alt="ISS" />
                 <br /><hr />
-                <img src="monthBate.png" alt="CPUTemp" />
-                <img src="monthStat.png" alt="CPUTemp" />
+                <img src="monthBate.png" alt="CPUBaterie" />
+                <img src="monthStat.png" alt="ISS" />
 <br />
                 
           </div> <!-- End id "plots" -->
@@ -79,6 +78,7 @@
 
   #include $Extras.footer
 
+</div>
 </body>
 
 </html>

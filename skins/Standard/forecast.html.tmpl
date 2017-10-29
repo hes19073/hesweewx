@@ -11,109 +11,27 @@
     <link rel='stylesheet' type='text/css' href='hesweewx.css'/>
     <link rel='stylesheet' type='text/css' href='forecast.css'/>
     <link rel='icon' type='image/png' href='favicon.ico' />
-    <script type='text/javascript' src='js/cookies.js'></script>
     <script type='text/javascript' src='js/hesweewx.js'></script>
     <script>
       window.onload = function() { applypopups(); }
     </script>
-<style>
-.navigation {
-  padding-bottom: 15px;
-  float: right;
-}
-.fc_select {
-  padding-top: 15px;
-  padding-bottom: 10px;
-}
-.fc_pane {
-  display: none;
-}
-.fc_table {
-  display: none;
-}
-.fc_strip {
-}
-#graphPopup {
-  margin: 0px;
-  padding: 0px;
-  border: 1px solid #dddddd;
-}
-
-.btn {
-  font-size: 85%;
-  color: #207020;
-  padding-left: 25px;
-  padding-right: 25px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  background-color: #f0f0f0;
-  border: 1px solid #c0c0c0;
-  cursor: pointer;
-}
-.btn_selected {
-  font-size: 85%;
-  color: #207020;
-  padding-left: 25px;
-  padding-right: 25px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  background-color: #b0d0d0;
-  border: 1px solid #c0c0c0;
-  cursor: pointer;
-}
-    </style>
-    <script>
-var forecasts = [
-  'WU',
-  'AWM',
-  'OWM',
-];
-var fc_panes = ['table', 'strip', 'cmp'];
-function choose_pane(id) {
-  set_cookie('weather.forecast.pane', id);
-  for(var i=0; i<fc_panes.length; i++) {
-    var c = document.getElementById('btn_'+fc_panes[i]);
-    if(c) c.className = (fc_panes[i] == id) ? 'btn_selected' : 'btn';
-    var g = document.getElementById('fc_pane_'+fc_panes[i]);
-    if(g) g.style.display = (fc_panes[i] == id) ? 'block' : 'none';
-  }
-}
-
-function choose_forecast_strip(fcID) {
-  set_cookie('weather.forecast.source', fcID);
-  populate_strip('forecast_strip', fcID);
-}
-
-function choose_forecast_table(fcID) {
-  set_cookie('weather.forecast.source', fcID);
-  for(var i=0; i<forecasts.length; i++) {
-    elem = document.getElementById(forecasts[i]);
-    if(elem) {
-      if(forecasts[i] == fcID) {
-        elem.style.display = 'inline';
-      } else {
-        elem.style.display = 'none';
-      }
+    <script type='text/javascript'>
+function toggle(control, id) {
+  elem = document.getElementById(id + '.hours');
+  if(elem) {
+    if(elem.style.display != 'none') {
+      elem.style.display = 'none';
+      control.src = 'xicons/triangle-right.png'
+    } else {
+      elem.style.display = 'inline';
+      control.src = 'xicons/triangle-down.png'
     }
   }
 }
-
-function setup() {
-  var pane = get_cookie('weather.forecast.pane', 'table');
-  choose_pane(pane);
-  var source = get_cookie('weather.forecast.source', 'WU');
-  choose_forecast_strip(source);
-  var e = document.getElementById('strip_selector');
-  if(e) { e.value = source; }
-  choose_forecast_table(source);
-  var e = document.getElementById('table_selector');
-  if(e) { e.value = source; }
-}
-    </script>
-
+   </script>
   </head>
 
-<body onload='setup();'>
+<body>
 <div id="hes11">
 
   <div id="container">
@@ -121,12 +39,9 @@ function setup() {
     #include $Extras.header
             
    <div id="stats_group">
-    #set global $period1 = $yesterday
-    #set global $period2 = $day
-    #set global $period1Name = "Gestern"
-    #set global $period2Name = "Heute"
 
-    #include $Extras.chart
+    #include $Extras.current
+
   </div> <!--End class "stats_group" -->
    <div id="content">
     <div id="about">
@@ -134,84 +49,37 @@ function setup() {
           Vorschaudaten für Station Klein Rogahn
      </div>
     </div>
-
-  <div class='navigation'>
-    <span class='btn' id='btn_table' href="#" onclick="choose_pane('table')">Tabelle</span>
-    <span class='btn' id='btn_strip' href="#" onclick="choose_pane('strip')">Zeile</span>
-    <span class='btn' id='btn_cmp' href="#" onclick="choose_pane('cmp')">weitere</span>
-  </div> 
-
-  <div id='fc_pane_table' class='fc_pane'>
-<p class='fc_select'>
-<select id='table_selector' onchange='choose_forecast_table(value)'>
-  <option value="WU">Weather Underground</option>
-  <option value="AWM">Aeris</option>
-  <option value="OWM">Open WeatherMap</option>
-</select>
-</p>
-<div id="WU" class='fc_table'>
+    <p>
+     <iframe id="forecast_embed" type="text/html" frameborder="0" height="245" width="100%" src="http://forecast.io/embed/#lat=53.605963&lon=11.341407&name=Klein Rogahn, Germany&color=#3d6c87&font=Georgia&units=si"> </iframe>
+    </p>
+    <hr/>
+    <div style="width:100%;">
+    <h3>Weather Underground WU</h3>
     #include $Extras.forecastWUT
     <p>Stündliche Wettervorhersage</p>
     #include $Extras.forecastWU
     <hr />
-</div>
-<div id="AWM" class='fc_table'>
+    <h3>Aeris AWM</h3>
     #include $Extras.forecastAWMT
     <p>Stündliche Wettervorhersage</p>
     #include $Extras.forecastAWM
     <hr />
-</div>
-<div id="OWM" class='fc_table'>
+    <h3>Open Weather Map OWM</h3>
     #include $Extras.forecastOWMT
     <p>Stündliche Wettervorhersage</p>
     #include $Extras.forecastOWM
     <hr />
-</div>
-</div>
-
- <div id='fc_pane_strip' class='fc_pane'>
-
-   ##set global $forecast_settings['source'] = ['WU', 'Aeris', 'OWM',  'WWO']
-   ##set global $forecast_settings['num_periods'] = 24
-
-   ##include "forecast_strip.inc"
-   #include "wu_strip.inc"
-   #include "aeris_strip.inc"
-   #include "owm_strip.inc"
-
-<div class='fc_select'>
-  <select id='strip_selector' onchange='choose_forecast_strip(value)'>
-    <option value="WU">Weather Underground</option>
-    <option value="Aeris">Aeris</option>
-    <option value="OWM">Open WeatherMap</option>
-  </select>
-</div>
-<div id='forecast_strip' class='fc_strip'></div>
-</div> 
-
-  <div id='fc_pane_cmp' class='fc_pane'>
-    <p>&nbsp;</p>
-    <div>
-    <p>
-     <iframe id="forecast_embed" type="text/html" frameborder="0" height="245" width="100%" src="http://forecast.io/embed/#lat=53.605963&lon=11.341407&name=Klein Rogahn, Germany&color=#3d6c87&font=Georgia&units=si">
-    </iframe>
-    </p>
+    <h3>World Weather Online WWO</h3>
+    #include $Extras.forecastWWOT 
+    <p>Stündliche Wettervorhersage</p>
+    #include $Extras.forecastWWO
     </div>
-    <hr />
-   <div>
-    <iframe src="https://www.meteoblue.com/de/wetter/widget/daily/klein-rogahn_deutschland_2888316?geoloc=fixed&days=7&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&coloured=coloured&pictoicon=1&maxtemperature=1&mintemperature=1&windspeed=1&windgust=1&winddirection=1&uv=1&humidity=1&precipitation=1&precipitationprobability=1&spot=1&layout=light" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups" style="width: 378px;height: 442px"></iframe>
-   <div>
-        <!-- DO NOT REMOVE THIS LINK -->
-        <a href="https://www.meteoblue.com/de/wetter/vorhersage/woche/klein-rogahn_deutschland_2888316?utm_source=weather_widget&utm_medium=linkus&utm_content=daily&utm_campaign=Weather%2BWidget" target="_blank">meteoblue</a>
-        </div>
-   </div>
-   <hr />
     <p>&nbsp;</p>
     <div style="width: 640px; height: 15px; font-size: 14px; font-family: Arial,Helvetica,sans-serif;">
-        <span style="float:left;"><a target="_top" href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright" style="color: #2fa900; font-weight:bold; text-decoration:none;" title="Wetter Widget">YoWindow.com</a></span>
-        <span style="float:right; color:#888888;">Forecast by&nbsp;<a href="http://yr.no" style="color: #2fa900; text-decoration:none;">yr.no</a></span>
+	<span style="float:left;"><a target="_top" href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright" style="color: #2fa900; font-weight:bold; text-decoration:none;" title="Wetter Widget">YoWindow.com</a></span>
+	<span style="float:right; color:#888888;">Forecast by&nbsp;<a href="http://yr.no" style="color: #2fa900; text-decoration:none;">yr.no</a></span>
     </div>
-    <div style="width:800px; height:420px;">
+   <div style="width:800px; height:420px;">
     <object type="application/x-shockwave-flash" data="http://swf.yowindow.com/yowidget3.swf" width="800" height="420">
     	<param name="movie" value="http://swf.yowindow.com/yowidget3.swf"/>
     	<param name="allowfullscreen" value="true"/>
@@ -224,11 +92,11 @@ function setup() {
         style="width:800px;height:420px;display: block;text-indent: -50000px;font-size: 0px;background:#DDF url(http://yowindow.com/img/logo.png) no-repeat scroll 50% 50%;"
         >Wetter Widget</a>
     </object>
-   </div>
-   <div style="width: 800px; height: 15px; font-size: 14px; font-family: Arial,Helvetica,sans-serif;">
+</div>
+<div style="width: 800px; height: 15px; font-size: 14px; font-family: Arial,Helvetica,sans-serif;">
 	<span style="float:left;"><a target="_top" href="http://WeatherScreenSaver.com?client=widget&amp;link=copyright" style="color: #2fa900; font-weight:bold; text-decoration:none;" title="Wetter Widget">YoWindow.com</a></span>
 	<span style="float:right; color:#888888;">Forecast by&nbsp;<a href="http://yr.no" style="color: #2fa900; text-decoration:none;">yr.no</a></span>
-   </div> 
+</div>
 
 </div><!-- Ende containt -->
 </div>

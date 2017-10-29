@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>$station.location Woche Zusammenstellung</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
 
@@ -31,21 +31,20 @@
       <div id="content">
         
         <div class="header">
-          <h3>W&ouml;chentliche Statistik und Diagramme <a href="week-table.html" alt='table'>/ Tabelle</a></h3>
+          <h3>W&ouml;chentliche Statistik und Diagramme <a href="week-table.html">/ Tabelle</a></h3>
         </div>
         <div id="plots">
           <img src="weektempdew.png" alt="temperatures" />
           <img src="weektempchill.png" alt="heatchill" />
           <img src="weekrain.png" alt="rain" />
-          <img src="weekETa.png" alt="ET rechnung" />
+          <img src="weeksnow.png" alt="Schnee" />
           <img src="weekET.png" alt="ET" />
           <img src="weekbarometer.png" alt="barometer"/>
           <img src="weekhumid.png"     alt="humidity" />
           <img src="weekwind.png" alt="wind" />
           <img src="weekwinddir.png" alt="Hi Wind" />
           <img src="weekwindvec.png" alt="Wind Vector" />
-          <img src="weekinside.png" alt="Inside" />          
-          <img src="weekinhume.png" alt="InsideHumid" />
+          <hr />          
           #if $week.extraTemp4.has_data
           <img src="weekextra2.png" alt="Carport" />
           #end if
@@ -56,7 +55,7 @@
           <img src="weekradiation.png" alt="Radiation" />
           #end if
           #if $week.rxCheckPercent.has_data
-          <img src="weekrx.png" alt="week rx percent"/>
+          <img src="weekBate.png" alt="week rx percent"/>
           #end if
           #if $week.extraTemp1.has_data
           <img src="weekextra1.png" alt="Teich Temperatur" />
@@ -67,23 +66,19 @@
           #if $week.extraTemp6.has_data
           <img src="weekTeichG.png" alt="Goldfisch Temperatur" />
           #end if
-
-          #if $week.soilTemp1.has_data
+          <hr />
           <img src="weekTempB.png" alt="Bodentemperatur" />
           <img src="weeksoilT.png" alt="Luft Boden" />
-          #end if
-          #if $week.soilMoist1.has_data
           <img src="weeksoilF.png" alt="Bodenfeuchte" />
-          #end if
-          #if $week.cloudbase.has_data
           <img src="weekcloudbase.png" alt="Wolkenunterkante" />
-          #end if
-          #if $week.windrund.has_data
           <img src="weekwindrun.png" alt="Windrun" />
-          #end if
-          #if $week.beaufort.has_data
           <img src="weekwindB.png" alt="Wind in Beaufort" />
-          #end if
+          <hr />
+          <img src="weekDensity.png" alt="Luftdichte" />
+          <img src="weekWindDruck.png" alt="Winddruck" />
+          <hr />
+          <img src="weekinside.png" alt="Inside" />
+          <img src="weekinhume.png" alt="InsideHumid" />
         </div>
       </div> <!-- End id "content" -->
 

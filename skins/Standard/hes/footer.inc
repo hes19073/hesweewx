@@ -1,5 +1,5 @@
 ## weewx-footer for weewx - Copyright 2013-2014 Hartmut Schweidler
-## $Id: footer.inc 634 2014-09-08 08:34:04Z hes1 $
+##  footer.inc 634 2014-09-08 08:34:04Z hes1 $
 ## nach Vorlage von mwall $
 #encoding UTF-8
 <div id='footer'><footer>
@@ -17,9 +17,9 @@
 <div style="background-color:yellow">
      weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     weewx  Version:&nbsp; $station.version&nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     Wetterstation:&nbsp; $station.hardware&nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     Zusatz: forecast; cmon; owfs und 13 one-wire-Sensoren
+     weewx  Version:&nbsp; $station.version<br />
+     Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
+     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Pollen
 </div>
 
 <p>
@@ -30,15 +30,22 @@
 <hr />
 
 <div class="navbar">
-   <input type="button" value=" SteelGauge  " onclick="openURL('ss/index.html')" />        
+  <p> 
+   <input type="button" value=" SteelGauge  " onclick="openURL('ss/index.html')" />
    <input type="button" value="   Aktuell   " onclick="openURL('index.html')" />
    <input type="button" value="    OWFS     " onclick="openURL('index2.html')" />
-   <input type="button" value="   Prognose  " onclick="openURL('forecastT.html')" />
-   <input type="button" value="     Tag     " onclick="openURL('day.html')" />
+   <input type="button" value=" Boden/Blatt " onclick="openURL('index1.html')" />
+   <input type="button" value=" Air-Sensoren " onclick="openURL('indexAir.html')" />
+   <input type="button" value=" Tag /Heute  " onclick="openURL('day.html')" />
+   <input type="button" value="  Prognose   " onclick="openURL('forecastT.html')" />
+   <input type="button" value="  Statistik  " onclick="openURL('statistik.html')" />
    <input type="button" value="    Woche    " onclick="openURL('week.html')" />
    <input type="button" value="    Monat    " onclick="openURL('month.html')" />
    <input type="button" value="    Jahr     " onclick="openURL('year.html')" />
+   <input type="button" value=" ISS " onclick="openURL('iss/index.html')" />
+   <input type="button" value="   Archiv    " onclick="openURL('archiv.html')" />
 
+  </p>
    <select NAME=noaaselect onchange="openNoaaFile(value)">
    #for $monthYear in $SummaryByMonth
        <option value="$monthYear">$monthYear</option>
@@ -69,31 +76,11 @@
 <div class="lthes">Copyright &copy; 2013 - $current.dateTime.format("%Y") by Hartmut Schweidler</div>
 <div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime</div>
 <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
-                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a></div>
+                 <a href="http://v4v6.ipv6-test.com/api/myip.php"> IP ? </a> 
+                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a>
+
 </div>
-<hr />
-<p>
-<iframe style="border: 0; height: 200px; width: 800px;" src="http://piwik.hes61.de/index.php?module=CoreAdminHome&amp;action=optOut&amp;language=de"></iframe> 
-</p>
-
-<!-- Piwik -->
-<script type="text/javascript">
-  var _paq = _paq || [];
-  _paq.push(["trackPageView"]);
-  _paq.push(["enableLinkTracking"]);
-
-  (function() {
-    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.hes61.de/";
-    _paq.push(["setTrackerUrl", u+"piwik.php"]);
-    _paq.push(["setSiteId", "5"]);
-    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
-    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<noscript>
-  <p><img src="http://piwik.hes61.de/piwik.php?idsite=5&amp;rec=1" style="border:0" alt="" /></p>
-</noscript>
-<!-- End Piwik Code -->
+</div>
 
 ## Include the Google Analytics code if there is an ID available:
 #if $Extras.has_key('googleAnalyticsId')

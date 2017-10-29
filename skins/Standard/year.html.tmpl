@@ -6,11 +6,9 @@
 <!doctype html>
 <html lang = "de">
   <head>
-    #if $encoding == 'utf8'
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    #end if    
     <title>$station.location Jährliche Zusammenstellung</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
 
@@ -61,15 +59,16 @@
       <div id="content">
         
         <div class="header">
-          <h3>J&auml;hrliche Statistik und Diagramme  <a href="year-table.html" alt='table'>/ Tabelle</a></h3>
+          <h3>J&auml;hrliche Statistik und Diagramme  <a href="year-table.html">/ Tabelle</a></h3>
         </div>
         <div id="plots">
           <img src="yeartempdew.png" alt="temperature" />
-          <img src="yeartempchill.png" alt="hitzechill" />
           <img src="yearhilow.png" alt="Yearly high/low" />
+          <img src="yeartempchill.png" alt="hitzechill" />
           <img src="yearhumid.png" alt="humidity" />
           <img src="yearbarometer.png" alt="barometer"/>
           <img src="yearrain.png" alt="rain" />
+          <img src="yearsnow.png" alt="schnee" />
           <img src="yearET.png" alt="ET berechnet" />
           <img src="yearwind.png" alt="wind" />
           <img src="yearwinddir.png" alt="Hi Wind" />
@@ -89,7 +88,7 @@
           <img src="yearuv.png" alt="UV-Index" />
           #end if
           #if $year.rxCheckPercent.has_data
-          <img src="yearrx.png" alt="year rx percent"/>
+          <img src="yearBate.png" alt="year rx percent"/>
           #end if
           #if $year.extraTemp1.has_data
           <img src="yearextra1.png" alt="Teich Temperatur" />
@@ -108,15 +107,25 @@
           #if $year.soilMoist1.has_data
           <img src="yearsoilF.png" alt="Bodenfeuchtigkeit" />
           #end if
+         <hr />
           #if $year.cloudbase.has_data
           <img src="yearcloudbase.png" alt="Wolkenunterkante" />
           #end if
-          #if $year.windrund.has_data
+          #if $year.windrun.has_data
           <img src="yearwindrun.png" alt="Windrun" />
           #end if
           #if $year.beaufort.has_data
           <img src="yearwindB.png" alt="Wind in Beaufort" />
           #end if
+          #if $year.airDensity.has_data
+          <img src="yearDensity.png" alt="Density" />
+          #end if
+          #if $year.windDruck.has_data
+          <img src="yearWindDruck.png" alt="WindDruck" />
+          #end if
+          <hr />
+          <img src="yearPM10.png" alt="Luft 10ppm" />
+          <img src="yearPM25.png" alt="Luft 2.5ppm" />
         </div>
       </div> <!-- End id "content" -->
 

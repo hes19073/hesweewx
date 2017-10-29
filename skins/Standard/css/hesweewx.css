@@ -1,0 +1,1514 @@
+/*
+ * $Author:  $ Hartmut $
+*/
+  
+/* Global */
+
+body {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    background-color: #f2f2f7;
+    background-image: url('./../backgrounds/Clouds.jpg');
+    background-repeat: repeat;
+    background-attachment: scroll;
+}	
+
+#all,
+#all th,
+#all td {
+      border: 1px solid;
+     }
+
+#hes11 {
+   /*margin: 0;
+   padding: 0; */
+   background-image: url('./../backgrounds/Clouds.jpg');
+}
+
+#container {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+a:link {
+  text-decoration: none;
+  color: #207020;
+}
+
+a:hover {
+  text-decoration: none;
+  color: #30a030;
+}
+
+a:visited {
+  text-decoration: none;
+  color: #207020;
+}
+
+
+/*
+ * This is the big header at the top of the page
+ */
+
+#header {   
+  clear: both;
+  border: 1px solid #000000;
+  border-top-left-radius: 100px;
+  border-top-right-radius: 100px;
+  margin: 10px;
+  padding: 2px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+
+#masthead {
+    margin: 1% 1% 0 1%;
+    padding: 5px;
+    vertical-align: middle;
+    text-align: center;
+    /*border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;*/
+}
+
+#masthead h1 {
+    color: #3d6c87;
+}
+
+#masthead h2 {
+    color: #5f8ea9;
+}
+
+/*
+#masthead table { width: 100%; }
+
+#masthead img {  width: 80px;  
+                 height: 80px;
+              }
+*/
+
+/*  indexx  */
+
+#links {
+  clear: both;
+  background-color: #f0ffff;
+  border-radius: 15px;
+  box-shadow: 6px 4px 9px #000;
+  padding: 2px;
+  margin: 10px;
+  width: 350px;
+  float: left;
+}
+
+ 
+#rechts {
+     background-color: #f0ffff;
+     border-radius: 15px;
+     box-shadow: 6px 4px 9px #000;
+     padding: 2px;
+     margin: 10px;
+     width: 310px;
+     float: right;
+}
+
+#contentx {
+         background-color: #f0ffff;
+         box-shadow: 6px 4px 10px #000;
+         border-radius: 20px;
+         width: 640px;
+         text-align: center;
+         margin: 20px auto;
+         padding: 2px;
+}
+
+#contentx table {
+     width: 100%;
+}
+
+
+.mitte {  
+    width: 95%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+  }
+
+
+.heatindex {
+        color: #aa4444;
+}
+
+.windchill {
+        color: #4444aa;
+}
+
+.temphi {
+        color: #aa4444;
+}
+
+.templo {
+        color: #4444aa;
+}
+
+.precip-img {
+        width: 44px;
+}
+
+.obvis-img {
+        width: 44px;
+}
+
+.pop-img {
+        width: 8px;
+}
+
+.table_heading  {
+        font-size: 80%;
+        color: #888888;
+        border-bottom: 1px solid #cccccc;
+        padding-top: 20px;
+}
+
+
+/*
+ * This holds the statistics (daily high/low, etc.) on the left: 
+ */
+
+#stats_group {
+    width: 30%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 5px;
+    float: left;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+.stats table {
+    border: thin solid #000000;
+    width: 100%;
+}
+
+.stats td {
+    border: thin solid #000000;
+    padding: 2px;
+}
+
+.stats_header  {
+    background-color: #000000;
+    color: #a8b8c8;
+    font-size: 14pt;
+    font-weight: bolder;
+}
+
+.stats_label {
+    color: green;
+    font-size: 10pt;
+}
+
+.stats_data {
+    color: darkblue;
+    font-size: 10pt;
+}
+
+/*
+ * This holds the "About", "Almanac", and plots on the right
+ */
+
+#contentl, #contentr { 
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+#contentl table {
+    width: 100%;
+}
+
+#content {
+    width: 62%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    float: right;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+    text-align: center;
+}
+
+#content .header {
+    font-size: 14pt;
+    font-weight: bolder;
+    color: #3d6c87;
+    margin-bottom: 10px;
+}
+
+#content .caption {
+    font-weight: bold;
+    color: #3d6c87;
+}
+
+#content table {
+    text-align: center;
+    width: 100%;
+}
+
+#content .label {
+    text-align: right;
+    font-style: italic;
+}
+
+#content .data {
+    text-align: left;
+}
+
+#about, #almanac { 
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+}
+
+#contentwe {
+    width: 64%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    float: right;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+    text-align: center;
+}
+
+#contentwe table {
+    text-align: center;
+    width: 100%;
+    border: thin solid #000000;
+}
+
+#contentwe td {
+    border: thin solid #000000;
+    padding: 2px;
+}
+
+.celestial_group {
+}
+    
+.celestial_body {
+    width: 48%;
+    vertical-align: top;
+    display:inline-block;
+}
+
+#plots { 
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+    
+#plots img {
+    border: thin solid #3d6c87;
+    margin: 3px;
+    padding: 3px;
+}
+
+/*
+ * Navigation bar (week, month, etc.) at the bottom
+ */
+
+.navbar {
+    /*margin: 0 1% 1% 1%;*/
+    padding: 5px;
+    text-align: center;
+    clear: both;
+    border-radius: 5px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+}
+
+.hesnavbar {
+    margin: 0 1% 1% 1%;
+    padding: 5px;
+    width: 150px;
+    text-align: left;
+    clear: both;
+    border-radius: 5px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    box-shadow: 6px 10px 10px #000000;
+}
+
+
+/* main menu styles */
+#nav {
+    display:inline-block;
+    width:100%;
+    margin:0px auto;
+    padding:0;
+    /*background:#335599 url(../images/bg.png) repeat-x 0 -110px;*/
+    border-radius:10px; 
+    box-shadow:0 6px 6px rgba(0,0,0, .5);
+}
+#nav li {
+    margin:10px;
+    float:left;
+    position:relative;
+    list-style:none;
+    z-index: 5;
+}
+#nav a {
+    font-weight:bold;
+    color:#e7e5e5;
+    text-decoration:none;
+    display:block;
+    padding:8px 20px;
+
+    border-radius:10px; /*some css3*/
+    text-shadow:0 2px 2px rgba(0,0,0, .7);
+}
+
+#nav li:hover > a {
+    background-image: linear-gradient(to right,
+                                           green,
+                                           yellow,
+                                           red);
+    color:#000;
+    border-top:1px solid #f8f8f8;
+    box-shadow:0 2px 2px rgba(0,0,0, .7); 
+    text-shadow:0 2px 2px rgba(255,255,255, 0.7);
+}
+
+#nav ul li:hover a, #nav li:hover li a {
+    background:none;
+    border:none;
+    color:#000;
+}
+#nav ul li a:hover {
+    background:#335533 repeat-x 0 -100px;
+    color:#fff;
+    border-radius:10px; 
+    text-shadow:0 2px 2px rgba(0,0,0, 0.7);
+}
+
+#nav ul li:first-child > a {
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+}
+#nav ul li:last-child > a {
+    border-bottom-left-radius:10px;
+    border-bottom-right-radius:10px;
+}
+
+/* drop down */
+#nav li:hover > ul {
+    opacity:1;
+    visibility:visible;
+}
+#nav ul {
+    opacity:0;
+    visibility:hidden;
+    padding:0;
+    width:175px;
+    position:absolute;
+    background-image: linear-gradient(to right,
+                                           green,
+                                           yellow,
+                                           red);
+    border:1px solid #7788aa;
+    border-radius:10px; 
+    box-shadow:0 2px 2px rgba(0,0,0, .5);
+    transition:opacity .25s linear, visibility .1s linear .1s;
+}
+#nav ul li {
+    float:none;
+    margin-bottom: 12px;
+}
+#nav ul a {
+    font-weight:normal;
+    text-shadow:0 2px 2px rgba(255,255,255, 0.7);
+}
+#nav ul ul {
+    left:160px;
+    top:0px;
+}
+
+
+/*************** Global Styles ***************/
+
+h2, h3, h4, h5, h6 {
+    color: #3d6c87;
+}
+
+.header {
+    font-size: 14pt;
+    font-weight: bolder;
+    color: #3d6c87;
+    margin-bottom: 10px;
+}
+
+
+li {  list-style-type: none;   }  
+
+
+/**************** linke Tabelle index.html.tmpl *********************/
+
+.metrics {
+  font-size: 80%;
+}
+
+.metrics table {
+   width: 100%;
+}
+
+.metrics a {
+  text-decoration: none;
+}
+
+.metric_title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.metric_name {
+  text-align: right;
+}
+
+.metric_large {
+  text-align: left;
+  font-weight: bold;
+  font-size: 230%;
+}
+
+tr.even {
+  background-color: #ffffff;
+}
+
+tr.odd {
+  background-color: #B5D3DB;
+}
+
+.metric_value {
+  text-align: left;
+  font-weight: bold;
+}
+
+.metric_units {
+  text-align: left;
+}
+
+.hilo_time {
+  text-align: left;
+  color: #333333;
+  font-size: 85%;
+}
+
+/****************** almanach ****************************/
+
+.ametrics {
+}
+
+.ametrics table {
+   width: 100%;
+}
+
+.ametrics a {
+  text-decoration: none;
+}
+
+.ametric_title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.ametric_name {
+  text-align: right;
+}
+
+.ametric_sym {
+  font-weight: bold;
+  font-size: 250%;
+}
+
+.ametric_sym1 {
+  font-weight: bold;
+  font-size: 120%;
+}
+.ametric_large {
+  text-align: left;
+  font-weight: bold;
+  font-size: 230%;
+}
+
+.ametric_value {
+  text-align: left;
+  color: #007000;
+}
+
+.ametric_valuem {
+  text-align: left;
+  color: #ff0000;
+}
+
+.ametric_units {
+  text-align: left;
+}
+
+.ahilo_time {
+  text-align: left;
+  font-size: 85%;
+}
+
+
+
+/************************* footer ******************************/
+
+#footer p {
+   text-align: center;
+}
+
+#footer  {
+    clear: both;
+    margin: 1% 1% 2% 1%;
+    padding: 5px;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 6px 10px 10px #000000;
+    background-color: #fafaff;
+}
+
+
+#fzei {
+    width: 95%;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+    text-align: center;
+}
+
+.rthes {
+   float: right;
+   clear: right;
+   text-align: right;
+   font-size: 8pt;
+}
+    
+.lthes {
+    float: left;
+    clear: left;
+    text-align: left;
+    font-size: 8pt;
+}
+
+#iphes p {
+    text-align: center;
+}
+
+
+/*  rechts */
+
+
+#radar_img,
+#radar_img1,
+#radar_img2,
+#radar_img3,
+#radar_blitz,
+#radar_wetter,
+#radar_iso,
+#radar_local_img {
+    width: 506px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin: 3px;
+    padding: 3px;
+}
+    
+#radar_img img,
+#radar_img1 img,
+#radar_img2 img,
+#radar_img3 img,
+#radar_blitz img,
+#radar_wetter img,
+#radar_iso img,
+#radar_local_img img {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    margin: 3px;
+    padding: 3px;
+}
+    
+#radar_img p,
+#radar_img1 p,
+#radar_img2 p,
+#radar_img3 p,
+#radar_blitz p,
+#radar_wetter p,
+#radar_iso p,
+#radar_local_img p {
+    width: 90%;
+    font-style: italic;
+    font-size: smaller;
+    text-align: center;
+    margin-top: 0;
+}
+    
+/***************** Tabellen *******************/
+
+#hesdata {
+  clear: both;
+  background-color: #f0ffff;
+  border: 1px solid #000;
+  border-radius: 10px 20px;
+  margin: 10px;
+  padding: 20px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+.mittetab {                
+    width: 95%;
+    min-height: 50px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+}
+
+#hesdata table {
+    text-align: center;
+    width: 100%;
+}
+
+
+#contentcmon {
+  clear: both;
+  border: 1px solid #000000;
+  border-radius: 10px 20px;
+  margin: 10px;
+  padding: 2px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+/* neue Seite */
+
+.hes1 {
+  font-size: 90%;
+}
+
+.hes1_kopfa {
+    font-size: 150%;
+    color: coral;
+    font-weight: bold;
+}
+
+.hes1_bigval {
+    font-size: 200%;
+    color: chocolate;
+    font-weight: bold;
+    text-align: right;
+}
+
+/*#flexbox {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row ;
+    flex-wrap: wrap ;
+
+}
+#flexbox div {
+      flex-grow: 1 ;
+      flex-basis: auto;
+}*/
+
+.hes {
+    float: left;
+    width: 330px;
+    margin: 10px;
+    padding: 2px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    box-shadow: 6px 4px 10px #000000;
+    background-color: #f0ffff;
+}
+
+.hes table {
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 100%;
+}
+
+.hesbox {
+    margin: 1%;
+    padding: 5px;
+    vertical-align: center;
+    text-align: center;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+.hes1_kopf {
+        font-size: 80%;
+        color: #888888;
+        border-bottom: 1px solid #cccccc;
+        padding-top: 20px;
+}
+
+.hes1_kopfb {
+       text-align: right;
+       padding-top: 10px;
+}
+
+.hes1_kopfc {
+       text-align: center;
+       padding-top: 10px;
+}
+
+.hes1_valhi {
+        color: fuchsia;
+}
+
+.hes1_vallo {
+        color: dodgerblue;
+}
+
+.hes1_leer {
+     width: 44px;
+     background-color: #faebd7;
+}
+
+.hes1_trendhi {
+       color: fuchsia;
+       font-weight: bold;
+       font-size: 180%;
+}
+
+.hes1_trendlo {
+       color: dodgerblue;
+       font-weight: bold;
+       font-size: 180%;
+}
+
+.hes1_wind {
+       width: 45px;
+}
+.hes1_nam {
+      background-color: gold;
+}
+.hes1_mon {
+     background-color: darkblue;
+     color: white;
+}
+/*
+.hes_lufe,
+.hes_reg {
+      background-image: url('backgrounds/drops.gif');
+}
+
+.hes_temp {
+      background-image: url('backgrounds/leaf.jpg');
+}
+
+.hes_win {
+        background-image: url('backgrounds/butterfly.jpg');
+}
+
+.hes_somo {
+     background-image: url('backgrounds/night.gif');
+}*/
+
+
+td.hes1_wol {
+   width: 33%;
+}
+td.hes1_wind {
+   font-size: 230%;
+   font-weight: bold;
+}
+
+.hesso {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 30px;
+    left: 50px;
+    text-align: center;
+}
+.hesso, th, td {
+    padding: 1.5px;
+}
+
+.hesmo {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 30px;
+    right: 80px;
+    text-align: center;
+}
+
+.tab_datab {
+   font-size: large;
+   text-align: center;
+}
+
+#report{
+     font-family: arial;
+     color: #000000;
+}
+
+#report table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Temp */
+
+.hest01 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #0000cc;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest02 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #0066cc;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 85%;;
+}
+
+.hest03 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #0099cc;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest04 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #00ccff;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest05 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #00ffcc;
+    font-weight: bold;
+    font-size: 85%;;
+}
+
+.hest06 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #00ff99;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest07 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ccff00;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest08 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ffff66;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest09 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ffcc00;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest10 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ff9933;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest11 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ff6600;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest12 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ff3300;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest13 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #cc3300;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest14 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ff6600;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest15 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ff3300;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hest16 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #cc3300;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+/* wind */
+
+.hesw00 {
+    background-color: #ffffff;
+
+}
+
+.hesw01 {
+    background-color: #ccffff;
+}
+
+.hesw02 {
+    background-color: #99ffcc;
+}
+
+.hesw03 {
+    background-color: #99ff99;
+}
+
+.hesw04 {
+    background-color: #99ff66;
+}
+
+.hesw05 {
+    background-color: #99ff00;
+}
+
+.hesw06 {
+    background-color: #99cc00;
+}
+
+.hesw07 {
+    background-color: #cccc00;
+}
+
+.hesw08 {
+    background-color: #ffcc00;
+}
+
+.hesw09 {
+    background-color: #ff9900;
+}
+
+.hesw10 {
+    background-color: #ff6600;
+}
+
+.hesw11 {
+    background-color: #ff3300;
+}
+
+.hesw12 {
+    background-color: #ff0000;
+}
+
+.hesb00 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FFFFFF;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+/* Luftdruck */
+
+.hesb01 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #CCFFFF;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb02 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #99FFCC;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb03 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #99FF99;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb04 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #99FF66;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb05 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #99FF00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb06 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #99CC00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb07 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #CCCC00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb08 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FFCC00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb09 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF9900;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb10 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF6600;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb11 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF3300;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb12 {
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF0000;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.hesb13 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #cc3300;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+/* UV */
+
+.hesuv1 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hesuv2 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+    font-size: 85%;;
+}
+
+.hesuv3 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: orange;
+    color: black;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hesuv4 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: red;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+.hesuv5 {
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #ee82ee;
+    font-weight: bold;
+    font-size: 85%;
+}
+
+/* Wind Richtung */
+
+.heswdir1 {  /* North */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #0000FF;
+    color:white;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.heswdir2 {	/* NNE */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #003399;
+    color:white;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+}
+
+.heswdir3 {	/* NE */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #2A52BE;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:white;
+}
+
+.heswdir4 {	/* ENE */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FFF700;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir5 {	/* East */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FFFF00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir6 {	/* ESE */	
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FFEF00;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir7 {	/* SE */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #F4C2C2;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir8 {	/* SSE */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF5C5C;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir9 {	/* South */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #FF0000;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir10 { /* SSW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #E34234;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir11 {	/* SW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #CD5C5C;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir12 {	/* WSW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #D2691E;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir13 {	/* West */
+    border: 1px solid #666666;
+    text-align: center;
+    background-color: #FF6700;
+    font-weight: bold;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir14 {	/* WNW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #ED872D;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:black;
+}
+
+.heswdir15 {	/* NW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #002FA7;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:white;
+}
+
+.heswdir16 {	/* NNW */
+    border: 1px solid #22464F;
+    text-align: center;
+    background-color: #00009C;
+    font-weight: bold;
+    padding: 2px;
+    font-size: 85%;
+    color:white;
+}
+
+#hesBtn {
+    display: none; /* Hidden by default */
+    position: fixed; /* Fixed/sticky position */
+    bottom: 20px; /* Place the button at the bottom of the page */
+    right: 30px; /* Place the button 30px from the right */
+    z-index: 99; /* Make sure it does not overlap */
+    border: none; /* Remove borders */
+    outline: none; /* Remove outline */
+    background-color: red; /* Set a background color */
+    color: white; /* Text color */
+    cursor: pointer; /* Add a mouse pointer on hover */
+    padding: 15px; /* Some padding */
+    border-radius: 10px; /* Rounded corners */
+}
+
+#hesBtn:hover {
+    background-color: #555; /* Add a dark-grey background on hover */
+}
+
+ /* Popup container */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* The actual popup (appears on top) */
+.popup .popuptext {
+    visibility: hidden;
+    width: 160px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class when clicking on the popup container (hide and show the popup) */
+.popup .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s
+}
+
+/* Add animation (fade in the popup) 
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+*/
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+} 
+

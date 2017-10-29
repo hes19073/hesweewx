@@ -21,7 +21,7 @@
         document.createElement("footer");
      </script>
     <title>$station.location Astro</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
   </head>
@@ -37,7 +37,7 @@
    <div class='stats_header'>Sonne</div>
    <table>
    <tr><td class="ametric_title">Sonne</td>
-      <td><img src='xicons/p/Sun.png' class='legend-img' alt='S' title='Sonne' /></td></tr>
+      <td><img src='xicons/p/Sun.png' class='legend-img' alt='S' /></td></tr>
    <tr>
       <td class="ametric_name">Start astronomische D&auml;mmerung:&nbsp;</td>
    #if $almanac(horizon=-18).sun(use_center=1).rise.raw is not None
@@ -194,7 +194,7 @@
  <tr>
   <td>
   <table>
-    <tr><td align="center" colspan="2"><img src='xicons/p/Mercury.png' class='legend-img' alt='M' title='Merkur' /></td></tr>
+    <tr><td colspan="2"><img src='xicons/p/Mercury.png' class='legend-img' alt='M' title='Merkur' /></td></tr>
     <tr><td class="ametric_title">Merkur</td><td class="ametric_sym">&#x263F;</td></tr>
     <tr>
      <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -220,7 +220,7 @@
 </td>
 <td>
 <table>
-  <tr><td align="center" colspan="2"><img src='xicons/p/Venus.png' class='legend-img' alt='V' title='Venus' /></td></tr>
+  <tr><td colspan="2"><img src='xicons/p/Venus.png' class='legend-img' alt='V' title='Venus' /></td></tr>
     <tr><td class="ametric_title">Venus</td><td class="ametric_sym">&#x2640;</td></tr>
     <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -248,7 +248,7 @@
 <tr>
 <td>
 <table>
-   <tr><td align="center" colspan="2"><img src='xicons/p/Mars.png' class='legend-img' alt='M' title='Mars' /></td></tr>
+   <tr><td colspan="2"><img src='xicons/p/Mars.png' class='legend-img' alt='M' title='Mars' /></td></tr>
    <tr><td class="ametric_title">Mars</td><td class="ametric_sym">&#x2642;</td></tr>
    <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -274,7 +274,7 @@
 </td>
 <td>
 <table>
-  <tr><td align="center" colspan="2"> <img src='xicons/p/Jupiter.png' class='legend-img' alt='J' title='Jupiter' /></td></tr>
+  <tr><td colspan="2"> <img src='xicons/p/Jupiter.png' class='legend-img' alt='J' title='Jupiter' /></td></tr>
   <tr><td class="ametric_title">Jupiter</td><td class="ametric_sym">&#x2643;</td></tr>
   <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -302,7 +302,7 @@
 <tr>
 <td>
 <table>
-  <tr><td align="center" colspan="2"><img src='xicons/p/Saturn.png' class='legend-img' alt='S' title='Saturn' /></td></tr>
+  <tr><td colspan="2"><img src='xicons/p/Saturn.png' class='legend-img' alt='S' title='Saturn' /></td></tr>
   <tr><td class="ametric_title">Saturn</td><td class="ametric_sym">&#x2644;</td></tr>
   <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -328,7 +328,7 @@
 </td>
 <td>
 <table>
-  <tr><td align="center" colspan="2"><img src='xicons/p/Uranus.png' class='legend-img' alt='U' title='Uranus' /></td></tr>
+  <tr><td colspan="2"><img src='xicons/p/Uranus.png' class='legend-img' alt='U' title='Uranus' /></td></tr>
   <tr><td class="ametric_title">Uranus</td><td class="ametric_sym">&#x2645;</td></tr>
   <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -356,7 +356,7 @@
 <tr>
 <td>
 <table>
-   <tr><td align="center" colspan="2"><img src='xicons/p/Neptune.png' class='legend-img' alt='N' title='Neptun' /></td></tr>
+   <tr><td colspan="2"><img src='xicons/p/Neptune.png' class='legend-img' alt='N' title='Neptun' /></td></tr>
    <tr><td class="ametric_title">Neptun</td><td class="ametric_sym">&#x2646;</td></tr>
   <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -382,7 +382,7 @@
 </td>
 <td>
 <table>
-  <tr><td align="center" colspan="2"><img src='xicons/p/Pluto.png' class='legend-img' alt='P' title='Pluto' /></td></tr>
+  <tr><td colspan="2"><img src='xicons/p/Pluto.png' class='legend-img' alt='P' title='Pluto' /></td></tr>
   <tr><td class="ametric_title">Pluto</td><td class="ametric_sym">&#x2647;</td></tr>
   <tr>
     <td class="ametric_name">Aufgang:&nbsp;</td>
@@ -755,50 +755,53 @@
   </tr>
 </table>
 </td>
+<td>
+&nbsp;
+</td>
 </tr>
 </table>
 <br />
 <div class="stats">
     <div class='stats_header'>Sterne</div>
 <table>
-   <tr>
-    <td>
+ <tr>
+  <td>
    <table>
-   <tr><td class="ametric_title">Altair</td><td class="ametric_sym1"></td></tr>
-  <tr>
-    <td class="ametric_name">Transit:&nbsp;</td>
-    <td class="ametric_value">$almanac.Altair.transit</td>
-  </tr>
-  <tr>
-    <td class="ametric_name">Azimuth:&nbsp;</td>
-    <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.az)</td>
-  </tr>
-  <tr>
-    <td class="ametric_name">Altitude:&nbsp;</td>
-    <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.alt)</td>
-  </tr>
+    <tr><td class="ametric_title">Altair</td><td class="ametric_sym1"></td></tr>
+    <tr>
+     <td class="ametric_name">Transit:&nbsp;</td>
+     <td class="ametric_value">$almanac.Altair.transit</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Azimuth:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.az)</td>
+    </tr>
+    <tr>
+     <td class="ametric_name">Altitude:&nbsp;</td>
+     <td class="ametric_value">$("%.1f&deg;" % $almanac.Altair.alt)</td>
+    </tr>
+   </table>
+   </td>
+   <td>
+    <table>
+     <tr><td class="ametric_title">Regulus</td><td class="ametric_sym1"></td></tr>
+     <tr>
+       <td class="ametric_name">Transit:&nbsp;</td>
+       <td class="ametric_value">$almanac.Regulus.transit</td>
+     </tr>
+     <tr>
+       <td class="ametric_name">Azimuth:&nbsp;</td>
+       <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.az)</td>
+     </tr>
+     <tr>
+       <td class="ametric_name">Altitude:&nbsp;</td>
+       <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.alt)</td>
+     </tr>
+    </table>
+  </td>
+ </tr>
 </table>
- </td>
- <td>
-   <table>
-   <tr><td class="ametric_title">Regulus</td><td class="ametric_sym1"></td></tr>
-  <tr>
-    <td class="ametric_name">Transit:&nbsp;</td>
-    <td class="ametric_value">$almanac.Regulus.transit</td>
-  </tr>
-  <tr>
-    <td class="ametric_name">Azimuth:&nbsp;</td>
-    <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.az)</td>
-  </tr>
-  <tr>
-    <td class="ametric_name">Altitude:&nbsp;</td>
-    <td class="ametric_value">$("%.1f&deg;" % $almanac.Regulus.alt)</td>
-  </tr>
-</table>
-</td>
-</tr>
-&nbsp;
-</table>
+
 </div>
     <hr />
     </div>
@@ -816,7 +819,7 @@
      </p>
      <h2>Daten von  Sonne, Mond und Planeten </h2>
       <br /> Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
-             Der aktuelle Wochentag ist der <b>&nbsp;$current.dateTime.format("%A")&nbsp;.</b>
+             Der aktuelle Wochentag ist der<b>&nbsp;$current.dateTime.format("%A")&nbsp;.</b>
 	    #set $now = $current.dateTime.raw
 	    #set $yeste = $now - 24*3600
 	    #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
@@ -867,7 +870,7 @@
     <li>&nbsp;</li>
     <li>Die kürzeste Entfernung (Perihel) zwischen Erde und Sonne am&nbsp;<b>$next_perihelion&nbsp;Uhr.</b></li>
     <li>Das Perihel ist der sonnennächste Punkt.</li> 
-    <li<&nbsp;</li>
+    <li>&nbsp;</li>
    </ul>
    <hr />
 <h2>Sternenbilder&nbsp;&nbsp;&frasl;&nbsp;&nbsp;Tierkreis</h2>
@@ -905,62 +908,62 @@
      #set $stag = int($stag)
      
      #if $stag > 79 and $stag < 111
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 110 and $stag < 142
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 141 and $stag < 173
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 172 and $stag < 204
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 203 and $stag < 236
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 235 and $stag < 267
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 266 and $stag < 297
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 296 and $stag < 327
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 326 and $stag < 356
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 355 or $stag < 21
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if 
      #if $stag > 20 and $stag < 51
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
      #if $stag > 50 and $stag < 80
-      <td><img src='xicons/CL.png' class='legend-img' alt='S' title='Sonne' /></td>
+      <td><img src='xicons/CL.png' class='legend-img' alt='S' /></td>
      #else
       <td></td>
      #end if
@@ -970,7 +973,7 @@
  <hr />
 <h2>Tag und Nacht Weltkarte</h2>
    <p>&nbsp;</p>
-     <a href="daylight.php"><img src="daylight.php" /></a>
+     <a href="daylight.php"><img src="daylight.php" alt='Weltkarte Tag und Nacht' /></a>
    <p>&nbsp;</p>
    <hr />
 <h2>Sternenhimmel</h2>
@@ -989,11 +992,16 @@
 Erfahren Sie auf Der-Mond.org alles wissenswertes über unseren Erdtrabanten! Vom Basiswissen über Ephemeridenberechnung, aktuelle Mondphasen und sogar einer interaktiven Mondkarte ist für jeden etwas dabei! -->
 <!-- Diesen Link nicht entfernen! -->
 <a href="http://www.der-mond.org/mond-aktuell/mond-aktuell-fuer-ihre-homepage/" target=_blank>
-<img border=0 width="800" src="http://feature.sternenwelt.net/luna_kalender.php?version=3&txue=Mond+aktuell&zefu=1&txph=1&txmoph=1&txmophti=1&txmost=0&txmostau=0&txze=1&zezo=1&zeso=1&schgr=9&faan=1&scro=255&scgr=255&scbl=255&hiro=0&higr=0&hibl=0&soep=0&txsost=0&txsostau=0&geolagr=11&geolami=20&geolase=48&geola=O&geobrgr=53&geobrmi=36&geobrse=36&geobr=N&lang=de&kalender_zeitraum=0&jahr=2015&monat=4">
+<img width="800" src="http://feature.sternenwelt.net/luna_kalender.php?version=3&txue=Mond+aktuell&zefu=1&txph=1&txmoph=1&txmophti=1&txmost=0&txmostau=0&txze=1&zezo=1&zeso=1&schgr=9&faan=1&scro=255&scgr=255&scbl=255&hiro=0&higr=0&hibl=0&soep=0&txsost=0&txsostau=0&geolagr=11&geolami=20&geolase=48&geola=O&geobrgr=53&geobrmi=36&geobrse=36&geobr=N&lang=de&kalender_zeitraum=0&jahr=2015&monat=4" alt='Mond'>
 <!--- Hinweis nicht enfernen -->
 <br>
 Ein Service von www.Der-Mond.org</a>
   <hr />  
+<h2>Die ISS by www.heavens-above.com</h2>
+<a href="http://www.heavens-above.com/" target=_blank>
+<img width="800" src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=600&height=300&mode=M&satid=25544"  alt='ISS'/>
+<br>Siehe www.heavens-above.com </a>
+  <!-- hes19073 && .zJ -->
   </div> <!-- End about   -->
  </div>  <!-- End content -->
 

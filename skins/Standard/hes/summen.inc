@@ -4,15 +4,15 @@
 <table>
  <tr>
   <td>Anzahl der <br />nach Jahren</td>
-  <td style="background-color: #FF4949">Wüstentag      <br />T<sub>max</sub> >= 35°C</td>
-  <td style="background-color: #FF6969">Heißer Tag     <br />T<sub>max</sub> >= 30°C</td>
-  <td style="background-color: #FF8C5F">Tropennacht    <br />T<sub>min</sub> >= 20°C</td>
-  <td style="background-color: #FFAC4B">Sommertag      <br />T<sub>max</sub>>= 25°C</td>
-  <td style="background-color: #33FF33">Vegetationstag <br />T<sub>min</sub> >= 5°C</td>
-  <td style="background-color: #23FF9E">Frosttag       <br />T<sub>min</sub> < 0°C</td>
-  <td style="background-color: #4B84FF">Eistag         <br />T<sub>max</sub> < 0 °C</td>
-  <td style="background-color: #4B84FF">Kalter Tag     <br />T<sub>min</sub> < -10 °C</td>
-  <td style="background-color: #4B84FF">Sehr kalter Tag<br />T<sub>min</sub>< -15 °C</td>
+  <td style="background-color: #FF4949">Wüstentag      <br />T<sub>max</sub> &gt;= 35°C</td>
+  <td style="background-color: #FF6969">Heißer Tag     <br />T<sub>max</sub> &gt;= 30°C</td>
+  <td style="background-color: #FF8C5F">Tropennacht    <br />T<sub>min</sub> &gt;= 20°C</td>
+  <td style="background-color: #FFAC4B">Sommertag      <br />T<sub>max</sub> &gt;= 25°C</td>
+  <td style="background-color: #33FF33">Vegetationstag <br />T<sub>min</sub> &gt;= 5°C</td>
+  <td style="background-color: #23FF9E">Frosttag       <br />T<sub>min</sub> &lt; 0°C</td>
+  <td style="background-color: #4B84FF">Eistag         <br />T<sub>max</sub> &lt; 0 °C</td>
+  <td style="background-color: #4B84FF">Kalter Tag     <br />T<sub>min</sub> &lt; -10 °C</td>
+  <td style="background-color: #4B84FF">Sehr kalter Tag<br />T<sub>min</sub> &lt; -15 °C</td>
  </tr>
 #for $year in $alltime.years
  <tr>

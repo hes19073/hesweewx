@@ -54,10 +54,10 @@
 		<td>Temp (min):</td><td class="data"> $day.outTemp.min um $day.outTemp.mintime </td>
 	</tr>
         <tr class="alt">
-		<td><a href="daytempchill.png">Hitzeindex / WincChill:</a></td><td class="data"> $current.heatindex / $current.windchill </td>
+		<td><a href="daytempchill.png">Hitzeindex / WindChill:</a></td><td class="data"> $current.heatindex / $current.windchill </td>
 	</tr>
         <tr>
-		<td>Luftfeuchte:</td><td class="data"> $current.outHumidity </td></tr>
+		<td>Luftfeuchte:</td><td class="data"> $current.outHumidity </td>
 	</tr>
         <tr class="alt">
 		<td><a href="dayrain.png">Regenschauer:</a></td><td class="data"> $day.rain.sum </td>
@@ -77,16 +77,10 @@
 #if $Extras.has_key('radar_url')
 <!-- yes I was too lazy to CSS the style below :-) -->
 <div class="radar">
-    <a href="$Extras.radar_url"><img src="$Extras.radar_url"></img></a>
+    <a href="$Extras.radar_local_img"><img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
     <p style="font-size: 12px; color: black; text-align: center;"> $current.dateTime</p>
 </div>
 #end if
-<p>&nbsp;</p>
- #if $Extras.has_key('radar_local_img')
-  <div id="radar_local_img">
-  <a  href='$Extras.radar_local_img'><img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
-  </div>
- #end if
 
 </center>
 </body>

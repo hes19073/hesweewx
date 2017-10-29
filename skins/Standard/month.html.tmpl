@@ -10,7 +10,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     #end if    
     <title>$station.location Monatliche Wetterdaten</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
 
@@ -33,13 +33,14 @@
       <div id="content">
         
         <div class="header">
-          <h3>Monatliche Statistik und Diagramme  <a href='month-table.html' alt='tab'>/ Tabelle</a></h3>
+          <h3>Monatliche Statistik und Diagramme  <a href='month-table.html'>/ Tabelle</a></h3>
         </div>
         <div id="plots">
           <img src="monthtempdew.png" alt="temperatures" />
           <img src="monthtempchill.png" alt="heatchill" />
           <img src="monthhumid.png" alt="humidity" />   
           <img src="monthrain.png" alt="rain" />
+          <img src="monthsnow.png" alt="snow" />
          #if $month.ET.has_data
            <img src="monthET.png" alt="ET Rechnung" />
          #end if
@@ -59,7 +60,7 @@
           <img src="monthradiation.png" alt="Radiation" />
           #end if
           #if $month.rxCheckPercent.has_data
-          <img src="monthrx.png" alt="month rx percent"/>
+          <img src="monthBate.png" alt="month rx percent"/>
           #end if
           #if $month.extraTemp1.has_data
           <img src="monthextra1.png" alt="Teich Wassertemperaturen" />

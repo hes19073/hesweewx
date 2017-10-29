@@ -65,6 +65,16 @@
               </tr>
               <tr>
                 <td class="stats_label">
+                  Luftfeuchte absolut(max)<br />
+                  Luftfeuchte        (min)
+                </td>
+                <td class="stats_data">
+                  $werte.absolutF.max&nbsp;$wertum&nbsp; $werte.absolutF.maxtime<br />
+                  $werte.absolutF.min&nbsp;$wertum&nbsp; $werte.absolutF.mintime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
                   Hum-Index (max)<br />
                   Hum-Index (min)
                 </td>
@@ -107,6 +117,14 @@
                 </td>
                 <td class="stats_data">
                   $werte.rainRate.max&nbsp;$wertum&nbsp; $werte.rainRate.maxtime
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Schneehöhe<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $werte.snow.max&nbsp;$wertum&nbsp; $werte.snow.maxtime
                 </td>
               </tr>
               <tr>
@@ -236,7 +254,7 @@
                 </td>
               </tr>
             #end if
-
+            <tr><td>Sonne</td><td>&nbsp;</td></tr>
             #if $werte.lighting.has_data
               <tr>
                 <td class="stats_label">
@@ -278,14 +296,14 @@
                 </td>
               </tr>
              #end if
-             #if $werte.sunshinehours.has_data 
+             #if $werte.sunshineS.has_data 
               <tr>
                 <td class="stats_label">
                   Sonnenscheindauer berechnet (max)<br />
                  &nbsp;
                 </td>
                 <td class="stats_data">
-                  $werte.sunshinehours.max.format("%.2f")&nbsp;$wertum&nbsp; $werte.sunshinehours.maxtime
+                  $werte.sunshineS.sum.format("%.2f")
                 </td>
               </tr>
              #end if
@@ -303,63 +321,63 @@
               </tr>
             #end if
 
-            #if $werte.soilTemp1.has_data
+            #if $werte.soilTempO1.has_data
               <tr>
                 <td class="stats_label">
                   BodenTemp -5 cm (max)<br />
                   BodenTemp -5 cm (min)
                 </td>
                 <td class="stats_data">
-                  $werte.soilTemp1.max&nbsp;$wertum&nbsp; $werte.soilTemp1.maxtime<br />
-                  $werte.soilTemp1.min&nbsp;$wertum&nbsp; $werte.soilTemp1.mintime
+                  $werte.soilTempO1.max&nbsp;$wertum&nbsp; $werte.soilTempO1.maxtime<br />
+                  $werte.soilTempO1.min&nbsp;$wertum&nbsp; $werte.soilTempO1.mintime
                 </td>
               </tr>
             #end if
-            #if $werte.soilTemp2.has_data
+            #if $werte.soilTempO2.has_data
               <tr>
                 <td class="stats_label">
                   BodenTemp -10 cm (max)<br />
                   BodenTemp -10 cm (min)
                 </td>
                 <td class="stats_data">
-                  $werte.soilTemp2.max&nbsp;$wertum&nbsp; $werte.soilTemp2.maxtime<br />
-                  $werte.soilTemp2.min&nbsp;$wertum&nbsp; $werte.soilTemp2.mintime
+                  $werte.soilTempO2.max&nbsp;$wertum&nbsp; $werte.soilTempO2.maxtime<br />
+                  $werte.soilTempO2.min&nbsp;$wertum&nbsp; $werte.soilTempO2.mintime
                 </td>
               </tr>
               #end if
-              #if $werte.soilTemp3.has_data
+              #if $werte.soilTempO3.has_data
               <tr>
                 <td class="stats_label">
                   BodenTemp -20 cm (max)<br />
                   BodenTemp -20 cm (min)
                 </td>
                 <td class="stats_data">
-                  $werte.soilTemp3.max&nbsp;$wertum&nbsp; $werte.soilTemp3.maxtime<br />
-                  $werte.soilTemp3.min&nbsp;$wertum&nbsp; $werte.soilTemp3.mintime
+                  $werte.soilTempO3.max&nbsp;$wertum&nbsp; $werte.soilTempO3.maxtime<br />
+                  $werte.soilTempO3.min&nbsp;$wertum&nbsp; $werte.soilTempO3.mintime
                 </td>
               </tr>
               #end if
-              #if $werte.soilTemp4.has_data
+              #if $werte.soilTempO4.has_data
               <tr>
                 <td class="stats_label">
                   BodenTemp -50 cm (max)<br />
                   BodenTemp -50 cm (min)
                 </td>
                 <td class="stats_data">
-                  $werte.soilTemp4.max&nbsp;$wertum&nbsp; $werte.soilTemp4.maxtime<br />
-                  $werte.soilTemp4.min&nbsp;$wertum&nbsp; $werte.soilTemp4.mintime
+                  $werte.soilTempO4.max&nbsp;$wertum&nbsp; $werte.soilTempO4.maxtime<br />
+                  $werte.soilTempO4.min&nbsp;$wertum&nbsp; $werte.soilTempO4.mintime
                 </td>
               </tr>
               #end if
-              #if $werte.soilTemp5.has_data
+              #if $werte.soilTempO5.has_data
               <tr>
                 <td class="stats_label">
                   BodenTemp -100 cm (max)<br />
                   BodenTemp -100 cm (min)
                 </td>
                 <td class="stats_data">
-                  $werte.soilTemp5.max&nbsp;$wertum&nbsp; $werte.soilTemp5.maxtime<br />
-                  $werte.soilTemp5.min&nbsp;$wertum&nbsp; $werte.soilTemp5.mintime
+                  $werte.soilTempO5.max&nbsp;$wertum&nbsp; $werte.soilTempO5.maxtime<br />
+                  $werte.soilTempO5.min&nbsp;$wertum&nbsp; $werte.soilTempO5.mintime
                 </td>
               </tr>
               #end if

@@ -22,19 +22,19 @@
      </script>
 
     <title>$station.location Sonnen Kalender</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
     <link rel="icon" type="image/png" href="favicon.ico" />
     <script type='text/javascript' src='js/hesweewx.js'></script>
 
   </head>
 
 <body>
- <div id="hes11">
+ <div id="hes11"> 
    #include $Extras.header
   <div id="stats_group">
     #include $Extras.current
-  </div> <!--End class "stats_group" -->
-  <div id="content">
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
    <div id="about">
     <div class="header"><h2>Sonnenschein</h2></div>
      <hr />
@@ -45,17 +45,23 @@
           <tr><td>Sonne vor</td><td>$zeit</td><td>h</td>
          #if $hours_ago($hours_ago=$zeit).radiation.sum.raw > 0
            #if $hours_ago($hours_ago=$zeit).radiation.sum.raw < 50
-              <td class="tab_datab" style="background-color: #84ebff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td class="tab_datab" style="background-color: #84ebff">$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
            #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 100
-              <td class="tab_datab" style="background-color: #57ddff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td class="tab_datab" style="background-color: #57ddff">$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
            #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 300
-              <td class="tab_datab" style="background-color: #23c5ff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td class="tab_datab" style="background-color: #23c5ff">$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
            #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 10000
-              <td class="tab_datab" style="background-color: #009eff">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td class="tab_datab" style="background-color: #009eff">$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
            #elif $hours_ago($hours_ago=$zeit).radiation.sum.raw < 20000
-              <td class="tab_datab" style="background-color: #0077f7">$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td class="tab_datab" style="background-color: #0077f7">$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour   </td>
            #else
-              <td>$hours_ago($hours_ago=$zeit).radiation.sum</td>
+              <td>$hours_ago($hours_ago=$zeit).radiation.sum
+              &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
            #end if
          #else
            <td>&nbsp;</td>
@@ -69,8 +75,7 @@
      <hr />
 
 <h2>Sonne</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
-<p>Sonnenschein wird über eine Solarzelle ermittelt.<br />
-Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
+<p>Sonnenschein wird über eine Solarzelle ermittelt.</p>
 <p>&nbsp;</p>
 
 <div id="Report">
@@ -91,6 +96,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 <hr />
 
 <h3>Sonnentage nach Monaten in den Jahren</h3>
+<p>Wenn die maximale Strahlung größer als 120 W/m² war.</p>
 <table>
     <tr>
      <td>Jahr&nbsp;</td>
@@ -114,6 +120,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 #end for
 </table>
 <h3>Sonne nach Monaten in den Jahren</h3>
+<p>Nach Berechnung durch weewx</p>
 <table>
     <tr>
      <td>Jahr&nbsp;</td>
@@ -128,30 +135,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
       <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.12, "second", "group_elapsed")).format("%.0f")</td>
-          #else
-            <td style="background-color: #FFFFFF;">-</td>
-          #end if
-      #end for
-    </tr>
-#end for
-</table>
-<h3>Sonne2 nach Monaten in den Jahren</h3>
-<table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
-
-#for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-      #for $month in $year.months
-          #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshinehours.sum_ge((0.12, "second", "group_elapsed")).format("%.0f")</td>
+            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
           #else
             <td style="background-color: #FFFFFF;">-</td>
           #end if
@@ -205,7 +189,7 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
                  <td class="hest14">$month.radiation.sum.formatted</td>
              #elif $month.radiation.sum.raw < 120000
                  <td class="hest15">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw > 120000
+             #elif $month.radiation.sum.raw > 120000 
                  <td class="hest16">$month.radiation.sum.formatted</td>
              #end if
           #else
@@ -229,17 +213,17 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
     </tr>
     <tr>
       <td>&nbsp;</td>
-     <td>Frühlings-Regen</td>
-     <td>Sommern-Regen</td>
-     <td>Herbst-Regen</td>
-     <td>Winter-Regen</td>
+     <td>Frühlings-Sonne</td>
+     <td>Sommer-Sonne</td>
+     <td>Herbst-Sonne</td>
+     <td>Winter-Sonne</td>
     </tr>
     <tr>
      <td>$year.dateTime.format("%Y")</td>
-     <td>$spring.radiation.sum.formatted </td>
-     <td>$summer.radiation.sum.formatted </td>
-     <td>$autumm.radiation.sum.formatted </td>
-     <td>$winter.radiation.sum.formatted </td>
+     <td>$spring.radiation.sum </td>
+     <td>$summer.radiation.sum </td>
+     <td>$autumm.radiation.sum </td>
+     <td>$winter.radiation.sum </td>
     </tr>
 </table>
 
@@ -247,11 +231,11 @@ Als Sonnentag wird ein Tag bezeichnet an dem mehr als 120 W/m².</p>
 
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
- </div>
+ </div> 
 
   #include $Extras.footer
 
-
+</div>
 </body>
 
 </html>

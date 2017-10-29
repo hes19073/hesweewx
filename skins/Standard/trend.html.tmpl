@@ -22,10 +22,10 @@
      </script>
 
     <title>$station.location Trend Kalender</title>
-    <link rel="stylesheet" type="text/css" href="hesweewx.css" />
-    <link rel="stylesheet" type="text/css" href="weereport.css" />
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/weereport.css" />
     <link rel="icon" type="image/png" href="favicon.ico" />
-    <script type='text/javascript' src='hesweewx.js'></script>
+    <script type='text/javascript' src='js/hesweewx.js'></script>
 
   </head>
 
@@ -49,67 +49,50 @@
        <td class="stats_data">$current.barometer</td>
        <td class="stats_data">$current.rain</td>
        <td class="stats_data">$current.radiation</td>
-       <td class="stats_data">$current.sunshinehours</td>
+       <td class="stats_data">$current.sunshineS</td>
+      </tr>
+      <tr><td collspan="10">&nbsp;</td></tr>
+      <tr>
+       <td>Stunden</td>
+       <td>Temperatur</td>
+       <td>Wind</td>
+       <td>Wind</td>
+       <td>Wind</td>
+       <td>Luft-</td>
+       <td>Luft-</td>
+       <td>Nieder-</td>
+       <td>Solar</td>
+       <td>Sonnen</td>
       </tr>
       <tr>
-       <td class="stats_label">Stunden</td>
-       <td class="stats_label">Temperatur</td>
-       <td></td>
-       <td class="stats_label">Wind</td>
-       <td></td>
-       <td class="stats_label">Luft-</td>
-       <td class="stats_label">Luft-</td>
-       <td class="stats_label">Nieder-</td>
-       <td class="stats_label">Solar</td>
-       <td class="stats_label">Sonne</td>
+       <td>zuvor</td>
+       <td>&nbsp;</td>
+       <td>geschwindigkeit</td>
+       <td>böen</td>
+       <td>richtung</td>
+       <td>feuchte</td>
+       <td>druck</td>
+       <td>schlag</td>
+       <td>leistung</td>
+       <td>stunden</td>
       </tr>
+      <tr><td collspan="10">&nbsp;</td></tr>
+      #for $zeit in range(24)
       <tr>
-       <td class="stats_label">zuvor</td>
-       <td class="stats_label">&nbsp;</td>
-       <td class="stats_label">geschwindigkeit</td>
-       <td class="stats_label">böen</td>
-       <td class="stats_label">richtung</td>
-       <td class="stats_label">feuchte</td>
-       <td class="stats_label">druck</td>
-       <td class="stats_label">schlag</td>
-       <td class="stats_label">stunden</td>
+       <td class="stats_label">$zeit</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).outTemp.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windSpeed.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windGust.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).windDir.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).outHumidity.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).barometer.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).rain.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).radiation.avg</td>
+       <td class="stats_data">$hours_ago($hours_ago=$zeit).sunshineS.avg</td>
       </tr>
-      <tr>
-       <td class="stats_label">1</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).outTemp.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).windSpeed.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).windGust.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).windDir.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).outHumidity.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).barometer.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).rain.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).radiation.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=1).sunshinehours.avg</td>
-      </tr>
-      <tr>
-       <td class="stats_label">2</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).outTemp.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).windSpeed.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).windGust.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).windDir.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).outHumidity.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).barometer.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).rain.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).radiation.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=2).sunshinehours.avg</td>
-      </tr>
-      <tr>
-       <td class="stats_label">3</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).outTemp.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).windSpeed.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).windGust.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).windDir.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).outHumidity.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).barometer.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).rain.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).radiation.avg</td>
-       <td class="stats_data">$hours_ago($hours_ago=3).sunshinehours.avg</td>
-      </tr>
+     #end for
+      <tr><td collspan="10">&nbsp;</td></tr>
+      <tr><td collspan="10">&nbsp;</td></tr>
       <tr>
        <td class="stats_label">Gestern</td>
        <td class="stats_data">$yesterday.outTemp.max</td>
@@ -120,11 +103,11 @@
        <td class="stats_data">$yesterday.barometer.max</td>
        <td class="stats_data">$yesterday.rain.sum</td>
        <td class="stats_data">$yesterday.radiation.max</td>
-       <td class="stats_data">$yesterday.sunshinehours.sum</td>
+       <td class="stats_data">$yesterday.sunshineS.sum</td>
       </tr>
 
       </table>
-      <hr />
+      <hr /><h4>Regen</h4>
     <table>
      <tr>
       <td>&nbsp;</td><td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td><td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
@@ -134,35 +117,41 @@
   #for $month in $year.months
     #if $month.rain.sum.raw is not None:
       #if $month.rain.sum.raw < 10
-          <td class="tab_datab" style="background-color: #84ebff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #84ebff;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 15
-          <td class="tab_datab" style="background-color: #57ddff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #57ddff;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 25
-          <td class="tab_datab" style="background-color: #23c5ff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #23c5ff;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 40
-          <td class="tab_datab" style="background-color: #009eff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #009eff;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 80
-          <td class="tab_datab" style="background-color: #0077f7">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #0077f7;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 160
-          <td class="tab_datab" style="background-color: #0050a9 color: #ffffff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #0050a9 color: #ffffff;">$month.rain.sum.formatted</td>
       #elif $month.rain.sum.raw < 300
-          <td class="tab_datab" style="background-color: #001c5b color: #ffffff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #001c5b color: #ffffff;">$month.rain.sum.formatted</td>
       #else
-          <td class="tab_datab" style="background-color: #0000ff color: #ffffff">$month.rain.sum.formatted</td>
+          <td class="tab_datab" style="background-color: #0000ff color: #ffffff;">$month.rain.sum.formatted</td>
       #end if
     #else
-          <td calss="tab_datab" style="background-color: #ffffff">-</td>
+          <td class="tab_datab" style="background-color: #ffffff;">-</td>
     #end if
   #end for
   </tr> 
     </table>
+    <p>StormRain:$latest($data_binding='wdsupp_binding').stormRain<br />
+       StormStart:$latest($data_binding='wdsupp_binding').stormStart.format('%d.%m.%Y')<br />
+       $latest($data_binding='wdsupp_binding').vantageForecastIcon </p>
+       <p> month con dry days:$month_con_dry_days<br />
+           month con days time:$month_con_dry_days_time</p>
+
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
 <!-- </div> -->
 
   #include $Extras.footer
 
-
+</div>
 </body>
 
 </html>
