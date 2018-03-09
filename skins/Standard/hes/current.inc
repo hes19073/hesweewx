@@ -15,8 +15,8 @@
    <tr>
     <td class="stats_label">scheinbare<br />Temperatur</td>
     <!-- <td class="stats_data"><b>$current.appTemp</b></td> -->
-    <td class="stats_data" style="$decorator_color('temphes', $current.appTemp.raw)">$current.appTemp 
-     &nbsp;&nbsp; $decorator_text('temphes', $current.appTemp.raw)</td>
+    <td class="stats_data" style="$decorator_color('heattemp', $current.appTemp.raw)">$current.appTemp 
+     &nbsp;&nbsp; $decorator_text('heattemp', $current.appTemp.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Summer-Simmer-Index
@@ -70,6 +70,10 @@
    <tr>
     <td class="stats_label">Luftfeuchte<br />absolut&nbsp;</td>
     <td class="stats_data">$current.absolutF</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Dampfdichte<br />tatsächlich&nbsp;</td>
+    <td class="stats_data">$current.AVP</td>
    </tr>
    <tr>
     <td class="stats_label">Dampfdruck<br />(Wasserdampfdruck)</td>
@@ -192,7 +196,7 @@
    <td class="stats_data">$current.extraTemp3</td>
   </tr>
   #end if
-  <tr><td>Sonne</td><td>Info</td></tr>
+  <tr><td>Sonne<br />&nbsp;</td><td>Info</td></tr>
   <tr>
    <td class="stats_label">Beleuchtungsstärke<br />(Illuminance)</td>
    <td class="stats_data">$current.lighting</td>
@@ -285,7 +289,7 @@
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTemp4.raw)">$current.soilTemp4</td>
    </tr>
   #end if
-   <tr><td>Davis<br />Bodenfeuchtigkeit</td><td>&nbsp;</td></tr>
+   <tr><td>Davis<br />Bodenfeuchtigkeit</td><td>Seit dem 03.02.2017</td></tr>
   #if $day.soilMoist1.has_data
    <tr>
     <td class="stats_label">Bodenfeuchte bei<br />-5 cm</td>
@@ -314,7 +318,7 @@
      &nbsp; $decorator_text('soilmoist', $current.soilMoist4.raw)</td>
    </tr>
   #end if
-   <tr><td>Davis<br />Blattfeuchtigkeit</td><td>&nbsp;</td></tr>
+   <tr><td>Davis<br />Blattfeuchtigkeit</td><td>Seit dem 03.02.2017</td></tr>
    <tr>
     <td class="stats_label">Blattfeuchte 1<br />Blick Nord</td>
     <!-- <td class="stats_data">$current.leafWet1</td> -->
@@ -327,9 +331,8 @@
     <td class="stats_data" style="$decorator_color('leafwet', $current.leafWet2.raw)">$current.leafWet2
      &nbsp; $decorator_text('leafwet', $current.leafWet2.raw)</td>
    </tr>
-
    <tr>
-    <td>Station Büro</td><td>Info</td>
+    <td>Station<br /> Büro</td><td>Info</td>
    </tr>
    <tr>
     <td class="stats_label">Temperatur <sup>(innen)</sup><br />&nbsp;</td>
@@ -343,7 +346,31 @@
      <td class="stats_label">Taupunkt <sup>(innen)</sup><br />&nbsp;</td>
      <td class="stats_data">$current.inDewpoint</td>
    </tr>
-   <tr><td>Berechnungen</td><td>Info</td></tr>
+   <tr>
+     <td class="stats_label">tatsächliche Dampfdichte <sup>(innen)</sup><br />&nbsp;</td>
+     <td class="stats_data">$latest($data_binding='wd_binding').AVPin</td>
+   </tr>
+   <tr>
+     <td class="stats_label">Sättigungsdampfdichte <sup>(innen)</sup><br />&nbsp;</td>
+     <td class="stats_data">$latest($data_binding='wd_binding').SVPin</td>
+   </tr>
+
+   <tr><td>Strahlung<br />Radiaktivität</td><td>Seit dem 15.12.2017</td></tr>
+   <tr>
+     <td class="stats_label">Zerfall je Minute<br />&nbsp;</td>
+     <td class="stats_data" style="$decorator_color('cpm', $latest($data_binding='geiger_binding').rad_cpm.raw)">
+      $latest($data_binding='geiger_binding').rad_cpm.format("%.0f")&nbsp;CPM
+      &nbsp;&nbsp; $decorator_text('cpm', $latest($data_binding='geiger_binding').rad_cpm.raw)</td>
+     <!-- <td class="stats_data">$latest($data_binding='geiger_binding').rad_cpm.format("%.0f")&nbsp;CPM</td> -->
+   </tr>
+   <tr>
+     <td class="stats_label">Radioaktivität<br />&nbsp;</td>
+     <td class="stats_data" style="$decorator_color('msvh', $latest($data_binding='geiger_binding').rad_nsvh.raw)">
+      $latest($data_binding='geiger_binding').rad_nsvh
+      &nbsp;&nbsp; $decorator_text('msvh', $latest($data_binding='geiger_binding').rad_nsvh.raw)</td>
+     <!-- <td class="stats_data">$latest($data_binding='geiger_binding').rad_nsvh</td> -->
+   </tr>
+   <tr><td>Berechnungen<br />weewx</td><td>Info</td></tr>
    <tr>
     <td class="stats_label">Wachtumstage Monat<br />&nbsp;</td>
     <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
@@ -367,6 +394,10 @@
      <td>$day.cooldeg.sum</td>
    </tr>
    <tr>
+     <td class="stats_label">Heizgradtag <br />eines Gebäudes. Basis 15 °C</td>
+     <td>$latest($data_binding='wd_binding').homedeg</td>
+   </tr>
+   <tr>
     <td class="stats_label">Kühlgrenztemperatur<br />Feuchte Kugel Temperatur</td>
     <!-- <td>$current.wetBulb </td> -->
     <td class="stats_data" style="$decorator_color('wetBulb', $current.wetBulb.raw)">$current.wetBulb
@@ -378,12 +409,13 @@
     <td class="stats_data" style="$decorator_color('cbIndex', $current.cbIndex.raw)">$current.cbIndex&nbsp;/100
      &nbsp; $decorator_text('cbIndex', $current.cbIndex.raw)</td>
    </tr>
+   <tr><td>Davis Vantage Pro 2<br />Modell 6163EU</td><td>Seit dem 20.06.2016</td></tr>
    <tr>
-    <td class="stats_label">Davis Vantage Pro 2<br />Stationsspannung</td>
+    <td class="stats_label">Stationsspannung<br />&nbsp;</td>
     <td>$current.consBatteryVoltage</td>
    </tr>
    <tr>
-    <td class="stats_label">Davis Vantage Pro 2<br />Signal</td>
+    <td class="stats_label">Signal<br />&nbsp;</td>
     <!-- <td>$current.rxCheckPercent</td> -->
     <td class="stats_data" style="$decorator_color('empfang', $current.rxCheckPercent.raw)">$current.rxCheckPercent
      &nbsp; $decorator_text('empfang', $current.rxCheckPercent.raw)</td>

@@ -14,19 +14,25 @@ import weewx.uwxutils
 from math import sin
 from datetime import datetime
 
+
+from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH 
+from weewx.units import CtoK, CtoF, FtoC
+
 INHG_PER_MBAR = 0.0295299830714
 METER_PER_FOOT = 0.3048
 METER_PER_MILE = 1609.34
 MM_PER_INCH = 25.4
 
+""" 
 def CtoK(x):
     return x + 273.15
 
 def CtoF(x):
-    return x * 1.8 + 32.0
+    return (x * 1.8 + 32.0)
 
 def FtoC(x):
     return (x - 32.0) * 5.0 / 9.0
+"""
 
 def mps_to_mph(x):
     return x * 3600.0 / METER_PER_MILE
@@ -85,7 +91,7 @@ def dewpointC(T, R):
 
 def windchillF(T_F, V_mph):
     """Calculate wind chill.
-    http://www.nws.noaa.gov/om/cold/wind_chill.shtml
+    http://www.nws.noaa.gov/om/cold/windchill.shtml
     
     T_F: Temperature in Fahrenheit
     
@@ -370,9 +376,9 @@ def solar_rad_RS(lat, lon, altitude_m, ts=None, atc=0.8):
         el = alm.sun.alt  # solar elevation degrees from horizon
         R = alm.sun.earth_distance
         z = altitude_m
-        nrel = 1367.0  # NREL solar constant, W/m^2
+        nrel = 1367.0     # NREL solar constant, W/m^2
         sinal = math.sin(math.radians(el))
-        if sinal >= 0:  # sun must be above horizon
+        if sinal >= 0:    # sun must be above horizon
             rm = math.pow((288.0 - 0.0065 * z) / 288.0, 5.256) / (sinal + 0.15 * math.pow(el + 3.885, -1.253))
             toa = nrel * sinal / (R * R)
             sr = toa * math.pow(atc, rm)
@@ -539,7 +545,6 @@ def beaufort(ws_kts):
         return 11
     return 12
 
-
 def equation_of_time(doy):
     """Equation of time in minutes. Plus means sun leads local time.
     
@@ -549,16 +554,16 @@ def equation_of_time(doy):
     """
     b = 2 * math.pi * (doy - 81) / 364.0
     return 0.1645 * math.sin(2 * b) - 0.1255 * math.cos(b) - 0.025 * math.sin(b)
-    
+
 def hour_angle(t_utc, longitude, doy):
     """Solar hour angle at a given time in radians.
     
     t_utc: The time in UTC.
     longitude: the longitude in degrees
     doy: The day of year
-    
+        
     Returns hour angle in radians. 0 <= omega < 2*pi
-    
+        
     Example:
     >>> print "%.4f radians" % hour_angle(15.5, -16.25, 274)
     0.6821 radians
@@ -573,7 +578,7 @@ def hour_angle(t_utc, longitude, doy):
 
 def solar_declination(doy):
     """Solar declination for the day of the year in radians
-    
+
     Example (1 October is the 274th day of the year):
     >>> print "%.6f" % solar_declination(274)
     -0.075274
@@ -582,7 +587,7 @@ def solar_declination(doy):
 
 def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     """Extraterrestrial radiation. Radiation at the top of the atmosphere
-    
+
     doy: Day-of-year
 
     latitude_deg, longitude_deg: Lat and lon in degrees
@@ -592,20 +597,19 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     interval: The time interval over which the radiation is to be calculated in hours
 
     Returns the (average?) solar radiation over the time interval in MJ/m^2/hr
-    
+
     Example:
-    >>> print "%.3f" % sun_radiation(doy=274, latitude_deg=16.217, 
+    >>> print "%.3f" % sun_radiation(doy=274, latitude_deg=16.217,
     ...                              longitude_deg=-16.25, tod_utc=16.0, interval=1.0)
     3.543
     """
-
     # Solar constant in MJ/m^2/hr
     Gsc = 4.92
 
     delta = solar_declination(doy)
-    
+
     earth_distance = 1.0 + 0.033 * math.cos(2.0 * math.pi * doy / 365.0)  # dr
-    
+
     start_utc = tod_utc - interval
     stop_utc = tod_utc
     start_omega = hour_angle(start_utc, longitude_deg, doy)
@@ -618,32 +622,32 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     
     # http://www.fao.org/docrep/x0490e/x0490e00.htm Eqn 28
     Ra = (12.0 / math.pi) * Gsc * earth_distance * (part1 + part2)
-    
+
     if Ra < 0:
         Ra = 0
-    
+
     return Ra
 
 def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
     """Calculate the net long-wave radiation.
     Ref: http://www.fao.org/docrep/x0490e/x0490e00.htm Eqn 39
-    
+
     Tmin_C: Minimum temperature during the calculation period
     Tmax_C: Maximum temperature during the calculation period
     ea: Actual vapor pressure in kPa
     Rs: Measured radiation. See below for units.
     Rso: Calculated clear-wky radiation. See below for units.
     rh: Relative humidity in percent
-    
+
     Because the formula uses the ratio of Rs to Rso, their actual units do not matter,
     so long as they use the same units.
-    
+
     Returns back radiation in MJ/m^2/day
-    
+
     Example:
     >>> print "%.1f mm/day" % longwave_radiation(Tmin_C=19.1, Tmax_C=25.1, ea=2.1, Rs=14.5, Rso=18.8, rh=50)
     3.5 mm/day
-    
+
     Night time example. Set rh = 40% to reproduce the Rs/Rso ratio of 0.8 used in the paper.
     >>> print "%.1f mm/day" % longwave_radiation(Tmin_C=28, Tmax_C=28, ea=3.402, Rs=0, Rso=0, rh=40)
     2.4 mm/day
@@ -654,7 +658,7 @@ def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
 
     # Stefan-Boltzman constant in MJ/K^4/m^2/day
     sigma = 4.903e-09
-    
+
     # Use the ratio of measured to expected radiation as a measure of cloudiness, but
     # only if it's daylight
     if Rso:
@@ -678,8 +682,7 @@ def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
     Rnl = Rnl_part1 * Rnl_part2 * Rnl_part3
 
     return Rnl
-    
-    
+
 def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
                               ws_mps, wind_height_m, latitude_deg, longitude_deg, altitude_m,
                               timestamp):
@@ -716,7 +719,6 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mps=3.3, wind_height_m=2,
     ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8, timestamp=timestamp)
     ET0 = 0.63 mm/hr
-    
     Another example, this time for night
     >>> sr_mean_wpm2 = 0.0        # night time
     >>> timestamp = 1475294400    # 1-Oct-2016 at 04:00UTC (0300 local)
@@ -728,18 +730,18 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     if None in (Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2, ws_mps,
                 latitude_deg, longitude_deg, timestamp):
         return None
-    
+       
     if wind_height_m is None:
         wind_height_m = 2.0
     if altitude_m is None:
         altitude_m = 0.0
-
+    
     # Numerator and denominator terms for the reference crop type
     cn = 37
     cd = 0.34
     # Albedo. for grass reference crop
     albedo = 0.23
-
+    
     # figure out the day of year [1-366] from the timestamp
     doy = time.localtime(timestamp)[7] - 1
     # Calculate the UTC time-of-day in hours
@@ -748,18 +750,18 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     
     # Calculate mean temperature
     tavg_C = (Tmax_C + Tmin_C) / 2.0
-    
+
     # Mean humidity
     rh_avg = (rh_min + rh_max) / 2.0
 
     # Adjust windspeed for height
     u2 = 4.87 * ws_mps / math.log(67.8 * wind_height_m - 5.42)
-
+    
     # Calculate the atmospheric pressure in kPa
     p = 101.3 * math.pow((293.0 - 0.0065 * altitude_m) / 293.0, 5.26)
     # Calculate the psychrometric constant in kPa/C (Eqn 8)
     gamma = 0.665e-03 * p
-    
+
     # Calculate mean saturation vapor pressure, converting from hPa to kPa (Eqn 12)
     etmin = weewx.uwxutils.TWxUtils.SaturationVaporPressure(Tmin_C, 'vaTeten') / 10.0
     etmax = weewx.uwxutils.TWxUtils.SaturationVaporPressure(Tmax_C, 'vaTeten') / 10.0
@@ -978,7 +980,7 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     ws_mph - windSpeed in mile per hour
 
     """
-    if dp_F is None or t_F is None or p_inHg is None:
+    if dp_F is None or t_F is None or p_inHg is None or ws_mph is None:
         return None
 
     t_C = FtoC(t_F)
@@ -1118,6 +1120,69 @@ def absF_F(t_F, RH):
     absF_x = absF_C(t_C, RH)
 
     return absF_x if absF_x is not None else None
+
+def dampfD_C(t_C):
+
+    # t_C is outTemp in C
+
+    if t_C is None:
+        return None
+
+    """ ueber Wasser t_C -45 C bis 60 C
+       ddM_C = 6.112 * math.exp(17.62 * t_C / (243.12 + t_C))
+       ueber Eis t_C -65 C bis 0.01 C
+       ddM_C = 6.112 * math.exp(22.46 * t_C / (272.62 + t_C))
+    """
+    if t_C < 0.0:
+
+        dd_C = 6.112 * math.exp(22.46 * t_C / (272.62 + t_C))
+
+    else:
+
+        dd_C = 6.112 * math.exp(17.62 * t_C / (243.12 + t_C))
+
+    return dd_C
+
+def dampfD_F(t_F):
+
+    #  t_F = temperatur degree F
+
+    if t_F is None:
+         return None
+
+    t_C = FtoC(t_F)
+    dd_C = dampfD_C(t_C)
+
+    return (dd_C * INHG_PER_MBAR) if (dd_C * INHG_PER_MBAR) is not None else None
+
+def sumsimIndex_F(t_F, RH):
+    # Summer Simmer Index-Berechnung
+    # rel. Luftfeuchte RH 
+    # temperatur in degree F
+
+    if t_F is None or RH is None:
+         return None
+
+    ssI_F = 1.98 * (t_F - (0.55 - 0.0055 * RH) * (t_F - 58)) - 56.83
+
+    return ssI_F if ssI_F is not None else None
+
+def sumsimIndex_C(t_C, RH):
+    # Summer Simmer Index-Berechnung
+    # rel. Luftfeuchte RH 
+    # temperatur in degree C
+
+    if t_C is None or RH is None:
+         return None
+
+    t_F = CtoF(t_C)
+
+    ssI_F = sumsimIndex_F(t_F, RH)
+
+    ssI_C = FtoC(ssI_F)
+
+    return ssI_C if ssI_C is not None else None
+
 
 
 if __name__ == "__main__":

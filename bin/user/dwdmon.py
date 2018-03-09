@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # $Id: dwdmon.py 1651 2017-04-17 12:10:37Z hes $
 # Copyright 2017 Hartmut Schweidler
+from __future__ import with_statement
 
-import calendar
 import configobj
 import hashlib
 import os, errno
@@ -14,8 +14,16 @@ import syslog
 import threading
 import datetime
 import time
-import xml.etree.ElementTree as etree
-import xml.etree.cElementTree
+
+try:
+    import cjson as json
+    setattr(json, 'dumps', json.encode)
+    setattr(json, 'loads', json.decode)
+except (ImportError, AttributeError):
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 import weewx
 import weedb
@@ -24,11 +32,10 @@ import weeutil.weeutil
 from weewx.engine import StdService
 from weewx.cheetahgenerator import SearchList
 
-
-VERSION = "0.1.3"
+VERSION = "0.2.3"
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'DWD-Pollen-forecast: %s: %s' % 
+    syslog.syslog(level, 'DWD-Pollen-Forecast: %s: %s' % 
                   (threading.currentThread().getName(), msg))
 
 def logdbg(msg):
@@ -397,7 +404,7 @@ class Forecast(StdService):
 Z_KEY = 'Pollen'
             
 class DWDPollen(Forecast):
-    """calculate zambretti code"""
+    """calculate Pollen DWD code"""
   
     def __init__(self, engine, config_dict):
         super(DWDPollen, self).__init__(engine, config_dict, Z_KEY,
@@ -421,58 +428,72 @@ class DWDPollen(Forecast):
                    (Z_KEY, weeutil.weeutil.timestamp_to_string(ts)))
             return None
 
-        filename = '/home/dwd/filelist/pollen0.xml'
+        #filename = '/home/dwd/filelist/pollen0.xml'
+        filename = '/home/dwd/filelist/pollen.json'
+        #url : 'https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json'
 
-        #self.tz = dateutil.tz.gettz('Europe/Berlin')
+        with open(filename) as f:
+            data = (line.strip() for line in f) #Erzeugt Generator Objekt
+            data_json = "[{0}]".format(','.join(data))
 
-        #fxp = etree.parse(filename, etree.XMLParser(encoding='ISO-8859-1'))
-        #root = fxp.getroot()
+        obj = json.loads(data_json)
+        msgs = []
+        records = []
 
-        #date = root.attrib['last_update'].split()[0].split('-')
-        #day0 = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), 12, 0, 0, 0, tzinfo=self.tz)
-
-        fxp_parser = etree.XMLParser(encoding='ISO-8859-1')
-        root = etree.parse(filename, parser=fxp_parser).getroot()
-        #fxp = xml.etree.cElementTree.fromstring(filename)
+        #obj = json.loads(filename)
+        if ['last_update'] in obj:
+            last_up = ['last_update']
+        if ['next_update'] in obj:
+            next_up = ['next_update']
 
         self.last_event_ts = ts
+        for period in range(10):   # obj['content']:
+            heo = obj['content'][0]['region_id']
 
-        for reg in root.findall('region'):
+            if heo == '20': # Mecklenburg-Vorpommern
+                try:
+                    r = {}
+                    r['method'] = Z_KEY
+                    r['usUnits'] = weewx.METRIC
+                    r['dateTime'] = now
+                    r['issued_ts'] = issued_ts
+                    r['event_ts'] = ts
+                    r['duration'] = 43210
+                    r['region'] = obj['content']['region_name']
+                    r['up_date'] = last_up
+                    r['next_date'] = next_up
+                    r['hasel_h'] = obj['content']['Pollen']['Hasel']['today']
+                    r['hasel_m'] = obj['content']['Pollen']['Hasel']['tomorrow']
+                    r['hasel_n'] = obj['content']['Pollen']['Hasel']['dayafter_to']
+                    r['erle_h'] = obj['content']['Pollen']['Erle']['today']
+                    r['erle_m'] = obj['content']['Pollen']['Erle']['tomorrow']
+                    r['erle_n'] = obj['content']['Pollen']['Erle']['dayafter_to']
+                    r['birke_h'] = obj['content']['Pollen']['Birke']['today']
+                    r['birke_m'] = obj['content']['Pollen']['Birle']['tomorrow']
+                    r['birke_n'] = obj['content']['Pollen']['Birke']['dayafter_to']
+                    r['graeser_h'] = obj['content']['Pollen']['Graeser']['today']
+                    r['graeser_m'] = obj['content']['Pollen']['Graeser']['tomorrow']
+                    r['graeser_n'] = obj['content']['Pollen']['Graeser']['dayafter_to']
+                    r['roggen_h'] = obj['content']['Pollen']['Roggen']['today']
+                    r['roggen_m'] = obj['content']['Pollen']['Roggen']['tomorrow']
+                    r['roggen_n'] = obj['content']['Pollen']['Roggen']['dayafter_to']
+                    r['esche_h'] = obj['content']['Pollen']['Esche']['today']
+                    r['esche_m'] = obj['content']['Pollen']['Esche']['tomorrow']
+                    r['esche_n'] = obj['content']['Pollen']['Esche']['dayafter_to']
+                    r['beifuss_h'] = obj['content']['Pollen']['Beifuss']['today']
+                    r['beifuss_m'] = obj['content']['Pollen']['Beifuss']['tomorrow']
+                    r['beifuss_n'] = obj['content']['Pollen']['Beifuss']['dayafter_to']
+                    r['ambrosia_h'] = obj['content']['Pollen']['Ambrosia']['today']
+                    r['ambrosia_m'] = obj['content']['Pollen']['Ambrosia']['tomorrow']
+                    r['ambrosia_n'] = obj['content']['Pollen']['Ambrosia']['dayafter_to']
 
-            if reg.attrib['ID'] == '20':
-
-                record = {}
-                record['method'] = Z_KEY
-                record['dateTime'] = now
-                record['usUnits'] = weewx.METRIC
-                record['issued_ts'] = now
-                record['event_ts'] = ts
-                record['duration'] = 43210
-                record['region'] = reg.attrib['name']
-                record['up_date'] = root.attrib['last_update']
-                record['next_date'] = root.attrib['next_update']
-                record['hasel_h'] = reg.find("Hasel/today").text
-                record['hasel_m'] = reg.find("Hasel/tomorrow").text
-                record['erle_h'] = reg.find("Erle/today").text
-                record['erle_m'] = reg.find("Erle/tomorrow").text
-                record['esche_h'] = reg.find("Esche/today").text
-                record['esche_m'] = reg.find("Esche/tomorrow").text
-                record['birke_h'] = reg.find("Birke/today").text
-                record['birke_m'] = reg.find("Birke/tomorrow").text
-                record['graeser_h'] = reg.find("Graeser/today").text
-                record['graeser_m'] = reg.find("Graeser/tomorrow").text
-                record['roggen_h'] = reg.find("Roggen/today").text
-                record['roggen_m'] = reg.find("Roggen/tomorrow").text
-                record['beifuss_h'] = reg.find("Beifuss/today").text
-                record['beifuss_m'] = reg.find("Beifuss/tomorrow").text
-                record['ambrosia_h'] = reg.find("Ambrosia/today").text
-                record['ambrosia_m'] = reg.find("Ambrosia/tomorrow").text
-
-            loginf('%s: generated 1 forecast record' % Z_KEY)
-            #return record
-        return [record]
-
-#                r['event_ts'] = AerisForecast.str2int(p, 'timestamp')
+                    records.append(r)
+                except KeyError, e:
+                    msg = '%s: failure in Pollen-forecast period %d: %s' % (
+                        Z_KEY, cnt, e)
+                    msgs.append(msg)
+                    logerr(msg)
+        return records, msgs
 
 
 

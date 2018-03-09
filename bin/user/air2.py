@@ -48,10 +48,6 @@ class Air2Monitor(StdService):
         loginf("service version is %s" % VERSION)
 
         d = config_dict.get('Air2Monitor', {})
-        #self.hardware = d.get('hardware', [None])
-        #if not isinstance(self.hardware, list):
-        #    self.hardware = [self.hardware]
-        #self.max_age = weeutil.weeutil.to_int(d.get('max_age', 2592000))
 
         # get the database parameters we need to function
         binding = d.get('data_binding', 'air2_binding')
@@ -66,11 +62,6 @@ class Air2Monitor(StdService):
         if dbcol != memcol:
             raise Exception('air schema mismatch: %s != %s' % (dbcol, memcol))
 
-        # see what we are running on
-        #self.system = platform.system()
-
-        # provide info about the system on which we are running
-        #loginf('sysinfo: %s' % ' '.join(os.uname()))
 
         self.last_ts = None
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -91,35 +82,16 @@ class Air2Monitor(StdService):
         if self.last_ts is not None:
             self.save_data(self.get_data(now, self.last_ts))
         self.last_ts = now
-        #if self.max_age is not None:
-        #    self.prune_data(now - self.max_age)
 
     def save_data(self, record):
         """save data to database"""
         self.dbm.addRecord(record)
-
-    def prune_data(self, ts):
-        """delete records with dateTime older than ts"""
-        sql = "delete from %s where dateTime < %d" % (self.dbm.table_name, ts)
-        self.dbm.getSql(sql)
-        try:
-            # sqlite databases need some help to stay small
-            self.dbm.getSql('vacuum')
-        except Exception, e:
-            pass
 
     def get_data(self, now_ts, last_ts):
         record = {}
         record['dateTime'] = now_ts                       # required
         record['usUnits'] = weewx.METRIC                  # required
         record['interval'] = int((now_ts - last_ts) / 60) # required
-
-        record.update(self._get_linux_info())
-
-        return record
-
-    # this should work on any linux running kernel 2.2 or later
-    def _get_linux_info(self):
 
         try:
 

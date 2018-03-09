@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#    Copyright (c) 2009-2017 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -9,6 +9,7 @@
 
 import locale
 import time
+import datetime
 import syslog
 
 import weewx
@@ -31,6 +32,20 @@ def CtoF(x):
 
 def FtoC(x):
     return (x - 32.0) * 5.0 / 9.0
+
+# Conversions to and from Felsius. 
+# For the definition of Felsius, see https://xkcd.com/1923/
+def FtoE(x):
+    return (7.0 * x - 80.0) / 9.0
+
+def EtoF(x):
+    return (9.0 * x + 80.0) / 7.0
+
+def CtoE(x):
+    return (7.0 / 5.0) * x + 16.0
+    
+def EtoC(x):
+    return (x - 16.0) * 5.0 / 7.0
 
 def mps_to_mph(x):
     return x * 3600.0 / METER_PER_MILE
@@ -57,6 +72,7 @@ unit_nicknames = {weewx.US       : 'US',
 obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "cooldeg"            : "group_degree_day",
                               "heatdeg"            : "group_degree_day",
+                              "homedeg"            : "group_degree_day",
                               "gustdir"            : "group_direction",
                               "vecdir"             : "group_direction",
                               "windDir"            : "group_direction",
@@ -66,10 +82,6 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "soilMoist2"         : "group_moisture",
                               "soilMoist3"         : "group_moisture",
                               "soilMoist4"         : "group_moisture",
-                              "soilMoist01"        : "group_moisture",
-                              "soilMoist02"        : "group_moisture",
-                              "soilMoist03"        : "group_moisture",
-                              "soilMoist04"        : "group_moisture",
                               "extraHumid1"        : "group_percent",
                               "extraHumid2"        : "group_percent",
                               "extraHumid3"        : "group_percent",
@@ -83,6 +95,9 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "altimeter"          : "group_pressure",
                               "barometer"          : "group_pressure",
                               "pressure"           : "group_pressure",
+                              "dampfDruck"         : "group_pressure",
+                              "SVP"                : "group_pressure",
+                              "SVPin"              : "group_pressure",
                               "maxSolarRad"        : "group_radiation",
                               "radiation"          : "group_radiation",
                               "ET"                 : "group_rain",
@@ -92,6 +107,7 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "monthRain"          : "group_rain",
                               "rain"               : "group_rain",
                               "snow"               : "group_snow",
+                              "snowTotal"          : "group_snow",
                               "rain24"             : "group_rain",
                               "totalRain"          : "group_rain",
                               "stormRain"          : "group_rain",
@@ -142,27 +158,41 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "leafTemp2"          : "group_temperature",
                               "leafTemp3"          : "group_temperature",
                               "leafTemp4"          : "group_temperature",
-                              "leafTemp01"          : "group_temperature",
-                              "leafTemp02"          : "group_temperature",
                               "outTemp"            : "group_temperature",
+                              "outTempDay"         : "group_temperature",
+                              "outTempNight"       : "group_temperature",
                               "soilTemp1"          : "group_temperature",
                               "soilTemp2"          : "group_temperature",
                               "soilTemp3"          : "group_temperature",
                               "soilTemp4"          : "group_temperature",
                               "soilTemp5"          : "group_temperature",
-                              "soilTemp01"         : "group_temperature",
-                              "soilTemp02"         : "group_temperature",
-                              "soilTemp03"         : "group_temperature",
-                              "soilTemp04"         : "group_temperature",
+                              "soilTempO1"         : "group_temperature",
+                              "soilTempO2"         : "group_temperature",
+                              "soilTempO3"         : "group_temperature",
+                              "soilTempO4"         : "group_temperature",
+                              "soilTempO5"         : "group_temperature",
                               "windchill"          : "group_temperature",
                               "wetBulb"            : "group_temperature",
+                              "temp"               : "group_temperature",
+                              "tempMin"            : "group_temperature",
+                              "tempMax"            : "group_temperature",
+                              "summersimmerIndex"  : "group_temperature",
+                              "tempRecordHigh"     : "group_temperature",
+                              "tempNormalHigh"     : "group_temperature",
+                              "tempRecordLow"      : "group_temperature",
+                              "tempNormalLow"      : "group_temperature",
+                              "tempRecordHighYear" : "group_count",
+                              "tempRecordLowYear"  : "group_count",
                               "dateTime"           : "group_time",
+                              "green_day"          : "group_time",
+                              "stormStart"         : "group_time",
                               "leafWet1"           : "group_count",
                               "leafWet2"           : "group_count",
                               "cbIndex"            : "group_count",
                               "forecastIcon"       : "group_count",
                               "currentIcon"        : "group_count",
                               "vantageForecastIcon" : "group_count",
+                              "rad_cpm"            : "group_cpm",
                               "UV"                 : "group_uv",
                               "consBatteryVoltage" : "group_volt",
                               "heatingVoltage"     : "group_volt",
@@ -181,9 +211,11 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "cloudbase"          : "group_altitude",
                               "windrun"            : "group_distance",
                               "distance"           : "group_distance",
+                              "visibility_km"      : "group_distance",
                               "lighting"           : "group_lux",
                               "sunshineS"          : "group_elapsed",
                               "sunshinehours"      : "group_elapsed",
+                              "sound"              : "group_anzahl",
                               "beaufort"           : "group_anzahl",
                               "lightning"          : "group_anzahl",
                               "gas"                : "group_anzahl",
@@ -191,6 +223,11 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "was"                : "group_anzahl",
                               "airDensity"         : "group_druck3",
                               "windDruck"          : "group_druck2",
+                              "absolutF"           : "group_gram",
+                              "AVP"                : "group_gram",
+                              "AVPin"              : "group_gram",
+                              "pm_10"              : "group_ppm",
+                              "pm_25"              : "group_ppm",
                               "air_sensor"         : "group_ppm",
                               "gas_sensor"         : "group_ppm",
                               "hcho_sensor"        : "group_ppm",
@@ -207,7 +244,8 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "net_eth0_rbytes"    : "group_data",
                               "net_eth0_tbytes"    : "group_data",
                               "disk_root_total"    : "group_data",
-                              "disk_root_used"     : "group_data"})
+                              "disk_root_used"     : "group_data",
+                              "rad_nsvh"           : "group_radio"})
 
 # Some aggregations when applied to a type result in a different unit
 # group. This data structure maps aggregation type to the group:
@@ -260,6 +298,9 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_ppm"         : "ppm",
                        "group_druck2"      : "N_per_meter_squared",
                        "group_druck3"      : "kg_per_meter_qubic",
+                       "group_gram"        : "g_per_meter_qubic",
+                       "group_radio"       : "nSv_per_hour",
+                       "group_cpm"         : "cpm",
                        "group_length"      : "inch"})
 
 # This dictionary maps unit groups to a standard unit type in the 
@@ -296,6 +337,9 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_ppm"         : "ppm",
                            "group_druck2"      : "N_per_meter_squared",
                            "group_druck3"      : "kg_per_meter_qubic",
+                           "group_gram"        : "g_per_meter_qubic",
+                           "group_radio"       : "nSv_per_hour",
+                           "group_cpm"         : "cpm",
                            "group_length"      : "cm"})
 
 # This dictionary maps unit groups to a standard unit type in the 
@@ -313,7 +357,10 @@ conversionDict = {
       'inHg'             : {'mbar'             : lambda x : x / INHG_PER_MBAR, 
                             'hPa'              : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 25.4},
-      'degree_F'         : {'degree_C'         : FtoC},
+      'degree_E'         : {'degree_C'         : EtoC,
+                            'degree_F'         : EtoF},
+      'degree_F'         : {'degree_C'         : FtoC,
+                            'degree_E'         : FtoE},
       'degree_F_day'     : {'degree_C_day'     : lambda x : x * (5.0/9.0)},
       'mile_per_hour'    : {'km_per_hour'      : lambda x : x * 1.609344,
                             'knot'             : lambda x : x * 0.868976242,
@@ -341,7 +388,8 @@ conversionDict = {
       'hPa'              : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 0.75006168,
                             'mbar'             : lambda x : x * 1.0},
-      'degree_C'         : {'degree_F'         : CtoF},
+      'degree_C'         : {'degree_F'         : CtoF,
+                            'degree_E'         : CtoE},
       'degree_C_day'     : {'degree_F_day'     : lambda x : x * (9.0/5.0)},
       'km_per_hour'      : {'mile_per_hour'    : kph_to_mph,
                             'knot'             : lambda x : x * 0.539956803,
@@ -405,6 +453,8 @@ conversionDict = {
                             'kilobyte'         : lambda x : x*1024*1024*1024,
                             'megabyte'         : lambda x : x*1024*1024,
                             'gigabyte'         : lambda x : x*1024},
+      'nSv_per_hour'     : {'mSv_per_hour'     : lambda x : x / 1000},
+      'mSv_per_hour'     : {'nSv_per_hour'     : lambda x : x * 1000}
       }
 
 
@@ -416,9 +466,11 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "cm"                 : "%.1f",
                             "cm_per_hour"        : "%.1f",
                             "cubic_foot"         : "%.1f",
+                            "cpm"                : "%.1f",
                             "day"                : "%.1f",
                             "degree_C"           : "%.1f",
                             "degree_C_day"       : "%.1f",
+                            "degree_E"           : "%.1f",
                             "degree_F"           : "%.1f",
                             "degree_F_day"       : "%.1f",
                             "degree_compass"     : "%.0f",
@@ -457,7 +509,10 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "lume_per_meter_squared" : "%.0f",
                             "N_per_meter_squared"    : "%.3f",
                             "kg_per_meter_qubic"     : "%.3f",
-                            "NONE"              : "   N/A"}
+                            "g_per_meter_qubic"      : "%.3f",
+                            "nSv_per_hour"           : "%.1f",
+                            "mSv_per_hour"           : "%.4f",
+                            "NONE"                   : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
 default_unit_label_dict = { "amp"               : " A",
@@ -467,12 +522,14 @@ default_unit_label_dict = { "amp"               : " A",
                             "cm"                : " cm",
                             "cm_per_hour"       : " cm/hr",
                             "cubic_foot"        : " ft\xc2\xb3",
+                            "cpm"               : " CPM",
                             "day"               : (" day", " days"),
-                            "degree_C"          : "\xc2\xb0C",
-                            "degree_C_day"      : "\xc2\xb0C-day",
-                            "degree_F"          : "\xc2\xb0F",
-                            "degree_F_day"      : "\xc2\xb0F-day",
-                            "degree_compass"    : "\xc2\xb0",
+                            "degree_C"          : " \xc2\xb0C",
+                            "degree_C_day"      : " \xc2\xb0C-day",
+                            "degree_E"          : " \xc2\xb0E",
+                            "degree_F"          : " \xc2\xb0F",
+                            "degree_F_day"      : " \xc2\xb0F-day",
+                            "degree_compass"    : " \xc2\xb0",
                             "foot"              : " feet",
                             "gallon"            : " gal",
                             "hPa"               : " hPa",
@@ -497,9 +554,9 @@ default_unit_label_dict = { "amp"               : " A",
                             "mm"                : " mm",
                             "mmHg"              : " mmHg",
                             "mm_per_hour"       : " mm/hr",
-                            "percent"           : "%",
+                            "percent"           : " %",
                             "second"            : (" second", " seconds"),
-                            "uv_index"          : "",
+                            "uv_index"          : " ",
                             "volt"              : " V",
                             "watt"              : " W",
                             "watt_hour"         : " Wh",
@@ -510,7 +567,10 @@ default_unit_label_dict = { "amp"               : " A",
                             "lume_per_meter_squared" : " lm/m\xc2\xb2",
                             "N_per_meter_squared"    : " N/m\xc2\xb2",
                             "kg_per_meter_qubic"     : " kg/m\xc2\xb3",
-                            "NONE"              : "" }
+                            "g_per_meter_qubic"      : " g/m\xc2\xb3",
+                            "nSv_per_hour"           : " nSv/h",
+                            "mSv_per_hour"           : " \xc2\xb5Sv/h",
+                            "NONE"                   : "" }
 
 # Default strftime formatting to be used in the absence of a skin
 # configuration file. The entry for delta_time uses a special

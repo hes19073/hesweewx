@@ -72,6 +72,8 @@ class MyFrostDays(SearchList):
         Returns:
           lastfrost_day                 last day of the year if outTemp MIN < 0
           lastfrost_delta_time          days, horas, mins lastfrost_day to now 
+          lasteis_day                   last day of the year if outTemp MAX < 0
+          lasteis_delta_time            days, horas, mins lastfrost_day to now 
 
           year_frost_minE_days:         Length of longest run of consecutive min<0
                                         days in current year
@@ -134,6 +136,17 @@ class MyFrostDays(SearchList):
             except:
                 _lastfrost_ts = None
 
+        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE max < 0")
+        lasteis_ts = _row[0]
+
+        if lasteis_ts is not None:
+            try:
+                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0 AND dateTime > ? AND dateTime <= ?", (lasteis_ts, lasteis_ts + 86400))
+                _lasteis_ts = _row[0]
+            except:
+                _lasteis_ts = None
+
+
 
         # Get our year stats vectors
         _outTemp_vector = []
@@ -142,15 +155,20 @@ class MyFrostDays(SearchList):
             _row = db_lookup().getSql("SELECT dateTime, min FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (tspan.start, tspan.stop))
             if _row is not None:
                 _time_vector.append(_row[0])
-                _outTemp_vector.append(_row[1])
+                if _row[1] < 0:
+                    fr = 2
+                else:
+                    fr = 0
+
+                _outTemp_vector.append(fr)
         # Get our run of year min0 days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
         # Use itertools groupby method to make our search for a run easier
         # Step through each of the groups itertools has found
-        for k,g in itertools.groupby(_outTemp_vector):
+        for k,g in itertools.groupby(_outTemp_vector, key=lambda r:1 if r > 0 else 0):
             _length = len(list(g))
-            if k < 0:   # If we have a run of les then 0 degree C (ie no outTemp) add it to our
+            if k > 0:   # If we have a run of les then 0 degree C (ie no outTemp) add it to our
                         # list of runs
                 _interim.append((k, _length, _index))
             _index += _length
@@ -173,16 +191,21 @@ class MyFrostDays(SearchList):
             _row = db_lookup().getSql("SELECT dateTime, max FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (tspan.start, tspan.stop))
             if _row is not None:
                 _time_vector.append(_row[0])
-                _outTemp_vector.append(_row[1])
+                if _row[1] < 0:
+                    fr = 2
+                else:
+                    fr = 0
+
+                _outTemp_vector.append(fr)
         # Get our run of year max0 days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
         # Use itertools groupby method to make our search for a run easier
         # Step through each of the groups itertools has found
-        for k,g in itertools.groupby(_outTemp_vector):
+        for k,g in itertools.groupby(_outTemp_vector, key=lambda r:1 if r > 0 else 0):
             _length = len(list(g))
-            if k < 0:   # If we have a run of les then 0 degree C (ie no outTemp) add it to our
-                        # list of runs
+            if k > 0:   # If we have a run of les then 0 degree C (ie no outTemp) add it to our
+                          # list of runs
                 _interim.append((k, _length, _index))
             _index += _length
         if _interim != []:
@@ -190,7 +213,7 @@ class MyFrostDays(SearchList):
             (_temp, _year_maxE_run, _position) = max(_interim, key=lambda a:a[1])
             # Our 'time' is the day the run ends so we need to add on run-1 days
             _year_maxE_time_ts = _time_vector[_position] + (_year_maxE_run - 1) * 86400
-            _year_maxS_time_ts = _year_minE_time_ts - (86400 * _year_maxE_run)
+            _year_maxS_time_ts = _year_maxE_time_ts - (86400 * _year_maxE_run)
         else:
             # If we did not find a run then set our results accordingly
             _year_maxE_run = 0
@@ -204,16 +227,21 @@ class MyFrostDays(SearchList):
             _row = db_lookup().getSql("SELECT dateTime, min FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (tspan.start, tspan.stop))
             if _row is not None:
                 _time_vector.append(_row[0])
-                _outTemp_vector.append(_row[1])
+                if _row[1] < 0:
+                    fr = 2
+                else:
+                    fr = 0
+
+                _outTemp_vector.append(fr)
         # Get our run of alltime min0 days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
         # Use itertools groupby method to make our search for a run easier
         # Step through each of the groups itertools has found
-        for k,g in itertools.groupby(_outTemp_vector):
+        for k,g in itertools.groupby(_outTemp_vector, key=lambda r:1 if r > 0 else 0):
             _length = len(list(g))
-            if k < 0:  # If we have a run of 0s (ie no outTemp) add it to our
-                        # list of runs
+            if k > 0:  # If we have a run of 0s (ie no outTemp) add it to our
+                         # list of runs
                 _interim.append((k, _length, _index))
             _index += _length
         if _interim != []:
@@ -236,15 +264,20 @@ class MyFrostDays(SearchList):
             _row = db_lookup().getSql("SELECT dateTime, max FROM archive_day_outTemp WHERE dateTime >= ? AND dateTime < ? ORDER BY dateTime", (tspan.start, tspan.stop))
             if _row is not None:
                 _time_vector.append(_row[0])
-                _outTemp_vector.append(_row[1])
+                if _row[1] < 0:
+                    fr = 2
+                else:
+                    fr = 0
+
+                _outTemp_vector.append(fr)
         # Get our run of alltime min0 days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
         # Use itertools groupby method to make our search for a run easier
         # Step through each of the groups itertools has found
-        for k,g in itertools.groupby(_outTemp_vector):
+        for k,g in itertools.groupby(_outTemp_vector, key=lambda r:1 if r > 0 else 0):
             _length = len(list(g))
-            if k < 0:  # If we have a run of 0s (ie no outTemp) add it to our
+            if k > 0:  # If we have a run of 0s (ie no outTemp) add it to our
                         # list of runs
                 _interim.append((k, _length, _index))
             _index += _length
@@ -264,10 +297,15 @@ class MyFrostDays(SearchList):
         # Make our timestamps ValueHelpers to give more flexibility in how we can format them in our reports
         _lastfrost_vt = (_lastfrost_ts, dateTime_type, dateTime_group)
         _lastfrost_vh = ValueHelper(_lastfrost_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _lasteis_vt = (_lasteis_ts, dateTime_type, dateTime_group)
+        _lasteis_vh = ValueHelper(_lasteis_vt, formatter=self.generator.formatter, converter=self.generator.converter)
 
         _delta_time = time.time() - _lastfrost_ts if _lastfrost_ts else None
         _delta_time_vt = (_delta_time, 'second', 'group_deltatime')
         _delta_time_vh = ValueHelper(_delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _delta_eistime = time.time() - _lasteis_ts if _lasteis_ts else None
+        _delta_eistime_vt = (_delta_eistime, 'second', 'group_deltatime')
+        _delta_eistime_vh = ValueHelper(_delta_eistime_vt, formatter=self.generator.formatter, converter=self.generator.converter)
 
         _year_minE_time_vt = (_year_minE_time_ts, dateTime_type, dateTime_group)
         _year_minE_time_vh = ValueHelper(_year_minE_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
@@ -292,6 +330,9 @@ class MyFrostDays(SearchList):
         # Create a small dictionary with the tag names (keys) we want to use
         search_list_extension = {'lastfrost_day': _lastfrost_vh,
                                  'lastfrost_delta_time': _delta_time_vh, 
+                                 'lasteis_day': _lasteis_vh,
+                                 'lasteis_delta_time': _delta_eistime_vh,
+
                                  'year_frost_minE_days': _year_minE_run,
                                  'year_frost_minE_days_time': _year_minE_time_vh,
                                  'year_frost_minS_days_time': _year_minS_time_vh,

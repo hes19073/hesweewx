@@ -20,9 +20,9 @@ import weewx.units
 from weeutil.weeutil import to_bool, to_int, to_float
 from weewx.units import ValueTuple
 
-# =============================================================================
+#===============================================================================
 #                    Class ImageGenerator
-# =============================================================================
+#===============================================================================
 
 class ImageGenerator(weewx.reportengine.ReportGenerator):
     """Class for managing the image generator."""
@@ -57,10 +57,10 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
         ngen = 0
 
         # Loop over each time span class (day, week, month, etc.):
-        for timespan in self.image_dict.sections :
+        for timespan in self.image_dict.sections:
             
             # Now, loop over all plot names in this time span class:
-            for plotname in self.image_dict[timespan].sections :
+            for plotname in self.image_dict[timespan].sections:
                 
                 # Accumulate all options from parent nodes:
                 plot_options = weeutil.weeutil.accumulateLeaves(
@@ -81,9 +81,21 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                 
                 ai = to_int(plot_options.get('aggregate_interval'))
                 # Check whether this plot needs to be done at all:
-                if skipThisPlot(plotgen_ts, ai, img_file) :
+                if skipThisPlot(plotgen_ts, ai, img_file):
                     continue
-                
+
+                # skip image files that are fresh, but only if staleness is defined
+                stale = to_int(plot_options.get('stale_age'))
+                if stale is not None:
+                    t_now = time.time()
+                    try:
+                        last_mod = os.path.getmtime(img_file)
+                        if t_now - last_mod < stale:
+                            syslog.syslog(syslog.LOG_DEBUG, "imagegenerator: Skip '%s': last_mod=%s age=%s stale=%s" % (img_file, last_mod, t_now - last_mod, stale))
+                            continue
+                    except os.error:
+                        pass
+
                 # Create the subdirectory that the image is to be put in.
                 # Wrap in a try block in case it already exists.
                 try:
@@ -94,7 +106,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                 # Create a new instance of a time plot and start adding to it
                 plot = weeplot.genplot.TimePlot(plot_options)
                 
-                # Calculate a suitable min, max time for the requested time.
+                # Calculate a suitable min, max time for the requested time
                 (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(plotgen_ts - int(plot_options.get('time_length', 86400)), plotgen_ts)
                 # Override the x interval if the user has given an explicit interval:
                 timeinc_user = to_int(plot_options.get('x_interval'))
@@ -132,7 +144,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     if aggregate_type in (None, '', 'None', 'none'):
                         # No aggregation specified.
                         aggregate_type = aggregate_interval = None
-                    else :
+                    else:
                         try:
                             # Aggregation specified. Get the interval.
                             aggregate_interval = line_options.as_int('aggregate_interval')
@@ -189,7 +201,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     # Get the line width, if explicitly requested.
                     width = to_int(line_options.get('width'))
                     
-                    interval_vec = None                        
+                    interval_vec = None
 
                     # Some plot types require special treatments:
                     if plot_type == 'vector':
@@ -215,10 +227,6 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                         
                     marker_type = line_options.get('marker_type')
                     marker_size = to_int(line_options.get('marker_size', 8))
-                    
-                    # Get the spacings between labels, i.e. every how many lines a label is drawn
-                    x_label_spacing = plot_options.get('x_label_spacing', 2)
-                    y_label_spacing = plot_options.get('y_label_spacing', 2)
 
                     # Add the line to the emerging plot:
                     plot.addLine(weeplot.genplot.PlotLine(

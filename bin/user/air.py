@@ -79,9 +79,6 @@ class AirMonitor(StdService):
         loginf("service version is %s" % VERSION)
 
         d = config_dict.get('AirMonitor', {})
-        self.hardware = d.get('hardware', [None])
-        if not isinstance(self.hardware, list):
-            self.hardware = [self.hardware]
 
         # get the database parameters we need to function
         binding = d.get('data_binding', 'air_binding')
@@ -96,11 +93,6 @@ class AirMonitor(StdService):
         if dbcol != memcol:
             raise Exception('air schema mismatch: %s != %s' % (dbcol, memcol))
 
-        # see what we are running on
-        self.system = platform.system()
-
-        # provide info about the system on which we are running
-        loginf('Air sysinfo: %s' % ' '.join(os.uname()))
         loginf('AirMonitor')
 
         self.last_ts = None
@@ -129,30 +121,12 @@ class AirMonitor(StdService):
         """save data to database"""
         self.dbm.addRecord(record)
 
-    def prune_data(self, ts):
-        """delete records with dateTime older than ts"""
-        sql = "delete from %s where dateTime < %d" % (self.dbm.table_name, ts)
-        self.dbm.getSql(sql)
-        try:
-            # sqlite databases need some help to stay small
-            self.dbm.getSql('vacuum')
-        except Exception, e:
-            pass
 
     def get_data(self, now_ts, last_ts):
         record = {}
         record['dateTime'] = now_ts                       # required
         record['usUnits'] = weewx.METRIC                  # required
         record['interval'] = int((now_ts - last_ts) / 60) # required
-        if self.system == 'Linux':
-            record.update(self._get_linux_info())
-        else:
-            logerr('unsupported system %s' % self.system)
-
-        return record
-
-    # this should work on any linux running kernel 2.2 or later
-    def _get_linux_info(self):
 
         rev = GPIO.RPI_REVISION
         if rev == 2 or rev == 3:
@@ -160,7 +134,6 @@ class AirMonitor(StdService):
         else:
             bus = smbus.SMBus(0)
 
-        record = {}
 
         air_sen = 0
         gas_sen = 1
@@ -186,11 +159,7 @@ class AirMonitor(StdService):
         sensor = 4
         blue = 1
 
-        #record = {}
-
         try:
-
-            #record = {}
 
             loginf("START BYTE GOOD")
             temp = bmp.readTemperature()
@@ -225,8 +194,6 @@ class AirMonitor(StdService):
 
             loginf("END BYTE GOOD")
 
-            #uvi = grovepi5.analogRead(0)
-            #record['uv_sensor'] = uvi * 307 / 2000
 
         except IOError:
              print "Error"

@@ -32,13 +32,13 @@
 #set $show_precip = 1
 #set $show_obvis = 1
 
-#set $wlog = ''
+#set $wloc = ''
 #set $wts = ''
 
 ## These are the styles used by the forecast display.  Putting the styles
 ## like this works (in page, not in head), but it is not good practice.
 ##<style>
-<script type='text/javascript'>
+<script>
 function toggle(control, id) {
   elem = document.getElementById(id + '.hours');
   if(elem) {

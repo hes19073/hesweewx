@@ -12,12 +12,6 @@ Muster bitte anpassen und per crontab
 36 7-23 * * * /home/weewx/dwd/foredwd.py 1>/dev/null 2>&1
 36 2,4,6 * * * /home/weewx/dwd/foredwd.py 1>/dev/null 2>&1
 
-41 7-23 * * * /home/weewx/dwd/foredwdc.py 1>/dev/null 2>&1
-41 2,4,6 * * * /home/weewx/dwd/foredwdc.py 1>/dev/null 2>&1
-
-32 4,6,10,15,17,20 * * * /home/dwd/foredwdw.py 1>/dev/null 2>&1
-33 4,6,10,15,17,20 * * * /home/dwd/foredwdwc.py 1>/dev/null 2>1&
-
 5 11 * * * /home/dwd/foredwdp.py 1>/dev/null 2>&1
 
 Meine Versuche und Erweiterungen Pollen von DWD

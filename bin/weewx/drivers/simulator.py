@@ -25,7 +25,7 @@ def loader(config_dict, engine):
     start_ts = resume_ts = None
     if 'start' in config_dict[DRIVER_NAME]:
         # A start has been specified. Extract the time stamp.
-        start_tt = time.strptime(config_dict[DRIVER_NAME]['start'], "%Y-%m-%dT%H:%M")        
+        start_tt = time.strptime(config_dict[DRIVER_NAME]['start'], "%Y-%m-%d %H:%M")
         start_ts = time.mktime(start_tt)
         # If the 'resume' keyword is present and True, then get the last
         # archive record out of the database and resume with that.
@@ -98,6 +98,18 @@ class Simulator(weewx.drivers.AbstractDevice):
         # The following doesn't make much meteorological sense, but it is
         # easy to program!
         self.observations = {
+            'soilMoist1'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'soilMoist2'    : Observation(magnitude=18.0,   average=68.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'soilMoist3'    : Observation(magnitude=21.0,  average= 55.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'soilMoist4'    : Observation(magnitude=19.0,   average=65.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'leafWet1'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'leafWet2'    : Observation(magnitude=18.0,   average=68.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'soilTemp1'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'soilTemp2'    : Observation(magnitude=18.0,   average=68.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'extraTemp5'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'extraTemp3'    : Observation(magnitude=18.0,   average=68.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'extraTemp1'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=13.0, start=start_ts),
+            'extraTemp2'    : Observation(magnitude=18.0,   average=68.0, period=24.0, phase_lag=13.0, start=start_ts),
             'outTemp'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
             'inTemp'     : Observation(magnitude=5.0,   average= 68.0, period=24.0, phase_lag=12.0, start=start_ts),
             'barometer'  : Observation(magnitude=1.0,   average= 30.1, period=48.0, phase_lag= 0.0, start=start_ts),
@@ -264,9 +276,8 @@ class SimulatorConfEditor(weewx.drivers.AbstractConfEditor):
     # Generator.  Emit LOOP packets as fast as possible (useful for testing).
     #mode = generator
 
-    # The start time. Format is YYYY-mm-ddTHH:MM. If not specified, the default 
-    # is to use the present time.
-    #start = 2011-01-01T00:00
+    # The start time. If not specified, the default is to use the present time.
+    #start = 2011-01-01 00:00
 
     # The driver to use:
     driver = weewx.drivers.simulator

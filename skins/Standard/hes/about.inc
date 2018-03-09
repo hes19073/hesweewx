@@ -1,3 +1,4 @@
+#encoding UTF-8
 <!-- about the station -->
 #import platform
 #import sys
@@ -19,6 +20,10 @@
     <tr>
       <td class="label">Hardware</td>
       <td class="data">DS18B20</td>
+    </tr>
+    <tr>
+      <td class="label">Hardware</td>
+      <td class="data">GQ GMC-300E</td>
     </tr>
     <tr>
       <td class="label">Software</td>
@@ -91,6 +96,10 @@
     <tr>
       <td class="label">DWD Vorschau</td>
       <td class="data">0.5</td>
+    </tr>
+    <tr>
+      <td class="label">Radioaktivität</td>
+      <td class="data">0.2</td>
     </tr>
   </table>
 </div>

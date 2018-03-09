@@ -21,7 +21,6 @@ import codecs
 sourcepathw = 'filedownload/warnlagen/'
 sourcepathf = '/home/dwd/filelist/'
 targetpath = '/home/weewx/dwd/'
-#targetpath = 'converted/' 
 
 #*********************************************************************
  
@@ -30,29 +29,21 @@ myfile = open(sourcepathf + 'wetter0.txt', 'r')
 
 newfile = ''
 for line in myfile:
-    #line = line.replace('0xd6', '&Ouml;')
-    #line = line.replace('0xf6', '&ouml;')
-    #line = line.replace('0xdc', '&Uuml;')
-    #line = line.replace('0xfc', '&uuml;')
-    #line = line.replace('0xc4', '&Auml;')
-    #line = line.replace('0xe4', '&auml;')
-    #line = line.replace('0xdf', '&zslig')
     line = line.decode("windows-1252")
     line = line.encode("utf-8")
-    line = line.replace(chr(1), ' ')   # Steuerzeichen SOH aus Textanfang entfernen
-    line = line.replace(chr(3), ' ')   # Steuerzeichen ETX aus Textende entfernen
-    line = line.replace('\r\n', '\n')
-    line = line.replace('. ', '.\n') 
+    line = line.replace(chr(1), '<p>')   # Steuerzeichen SOH aus Textanfang entfernen
+    line = line.replace(chr(3), '</p>')   # Steuerzeichen ETX aus Textende entfernen
+    line = line.replace('<pre style="font-family: sans-serif">', ' ')
+    line = line.replace('</pre>', ' ')
+    line = line.replace('. ', '. <br>') 
     newfile = newfile + line
    
-    #print(line)
 myfile.close()
 
 outfile = open(targetpath + 'wetter0.txt',  "w")
 outfile.write('#encoding UTF-8')
 outfile.write( '\n' )
 outfile.write(newfile)
-#outfile.write( "\nHES\n" )
 outfile.close()
 
 # **************************************************************************
@@ -64,20 +55,20 @@ for line in myfile:
 
     line = line.decode("windows-1252")
     line = line.encode("utf-8")
-    line = line.replace(chr(1), ' ')   # Steuerzeichen SOH aus Textanfang entfernen
-    line = line.replace(chr(3), ' ')   # Steuerzeichen ETX aus Textende entfernen
-    line = line.replace('\r\n', '\n')
-    line = line.replace('. ', '.\n')
+    line = line.replace(chr(1), '<p>')   # Steuerzeichen SOH aus Textanfang entfernen
+    line = line.replace(chr(3), '</p>')   # Steuerzeichen ETX aus Textende entfernen
+    #line = line.replace('\r\n', '\n')
+    line = line.replace('<pre style="font-family: sans-serif">', ' ')
+    line = line.replace('</pre>', ' ')
+    line = line.replace('. ', '. <br>')
     newfile = newfile + line
 
-    #print(line)
 myfile.close()
 
 outfile = open(targetpath + 'wetter1.txt',  "w")
 outfile.write('#encoding UTF-8')
 outfile.write( '\n' )
 outfile.write(newfile)
-#outfile.write( "\nHES\n" )
 outfile.close()
 
 myfile = open(sourcepathf + 'wetter2.txt', 'r')
@@ -87,20 +78,20 @@ for line in myfile:
 
     line = line.decode("windows-1252")
     line = line.encode("utf-8")
-    line = line.replace(chr(1), ' ')   # Steuerzeichen SOH aus Textanfang entfernen
-    line = line.replace(chr(3), ' ')   # Steuerzeichen ETX aus Textende entfernen
-    line = line.replace('\r\n', '\n')
-    line = line.replace('. ', '.\n')
+    line = line.replace(chr(1), '<p>')   # Steuerzeichen SOH aus Textanfang entfernen
+    line = line.replace(chr(3), '</p>')   # Steuerzeichen ETX aus Textende entfernen
+    #line = line.replace('\r\n', '\n')
+    line = line.replace('<pre style="font-family: sans-serif">', ' ')
+    line = line.replace('</pre>', ' ')
+    line = line.replace('. ', '. <br>')
     newfile = newfile + line
 
-    #print(line)
 myfile.close()
 
 outfile = open(targetpath + 'wetter2.txt',  "w")
 outfile.write('#encoding UTF-8')
 outfile.write( '\n' )
 outfile.write(newfile)
-#outfile.write( "\nHES\n" )
 outfile.close()
 
 myfile = open(sourcepathf + 'wetter3.txt', 'r')
@@ -110,20 +101,20 @@ for line in myfile:
 
     line = line.decode("windows-1252")
     line = line.encode("utf-8")
-    line = line.replace(chr(1), ' ')   # Steuerzeichen SOH aus Textanfang entfernen
-    line = line.replace(chr(3), ' ')   # Steuerzeichen ETX aus Textende entfernen
-    line = line.replace('\r\n', '\n')
-    line = line.replace('. ', '.\n')
+    line = line.replace(chr(1), '<p>')   # Steuerzeichen SOH aus Textanfang entfernen
+    line = line.replace(chr(3), '</p>')   # Steuerzeichen ETX aus Textende entfernen
+    #line = line.replace('\r\n', '\n')
+    line = line.replace('<pre style="font-family: sans-serif">', ' ')
+    line = line.replace('</pre>', ' ')
+    line = line.replace('. ', '. <br>')
     newfile = newfile + line
 
-    #print(line)
 myfile.close()
 
 outfile = open(targetpath + 'wetter3.txt',  "w")
 outfile.write('#encoding UTF-8')
 outfile.write( '\n' )
 outfile.write(newfile)
-#outfile.write( "\nHES\n" )
 outfile.close()
 
 myfile = open(sourcepathf + 'wetter4.txt', 'r')
@@ -135,17 +126,18 @@ for line in myfile:
     line = line.encode("utf-8")
     line = line.replace(chr(1), ' ')   # Steuerzeichen SOH aus Textanfang entfernen
     line = line.replace(chr(3), ' ')   # Steuerzeichen ETX aus Textende entfernen
-    line = line.replace('\r\n', '\n')
-    line = line.replace('. ', '.\n')
+    #line = line.replace('\r\n', '\n')
+    line = line.replace('<pre style="font-family: sans-serif">', ' ')
+    line = line.replace('</pre>', ' ')
+    line = line.replace('. ', '. <br>')
     newfile = newfile + line
 
-    #print(line)
 myfile.close()
 
 outfile = open(targetpath + 'wetter4.txt',  "w")
 outfile.write('#encoding UTF-8')
 outfile.write( '\n' )
 outfile.write(newfile)
-outfile.write( "\nQuelle: Deutscher Wetterdienst      Zeit: UTC\n" )
+outfile.write( "\nQuelle: Deutscher Wetterdienst \n" )
 outfile.close()
 

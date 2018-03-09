@@ -37,16 +37,16 @@ function topFunction() {
 
 <div id='hes11'>
 
-    #include $Extras.header
-    #include $Extras.cwarn
-
+  #include $Extras.header
+  #include $Extras.cwarn
  <div id="stats_group">
+  #set global $period1 = $yesterday
+  #set global $period2 = $day
+  #set global $period1Name = "Gestern"
+  #set global $period2Name = "Heute"
 
-    #include $Extras.current
-    #set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
-
+  #include $Extras.chart
  </div> <!--End class "stats_group" -->
-
  <div id="content">
   <div id="hes">  <!-- align="center"> -->
     <h2>Historische Wetterdaten</h2>

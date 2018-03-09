@@ -15,6 +15,27 @@
   </head>
 
 <body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
    <div id="container">
 
     #include $Extras.header
@@ -30,59 +51,72 @@
 
       <div id="content">
         
-        <div class="header">
-          <h3>W&ouml;chentliche Statistik und Diagramme <a href="week-table.html">/ Tabelle</a></h3>
-        </div>
-        <div id="plots">
-          <img src="weektempdew.png" alt="temperatures" />
-          <img src="weektempchill.png" alt="heatchill" />
-          <img src="weekrain.png" alt="rain" />
-          <img src="weeksnow.png" alt="Schnee" />
-          <img src="weekET.png" alt="ET" />
-          <img src="weekbarometer.png" alt="barometer"/>
-          <img src="weekhumid.png"     alt="humidity" />
-          <img src="weekwind.png" alt="wind" />
-          <img src="weekwinddir.png" alt="Hi Wind" />
-          <img src="weekwindvec.png" alt="Wind Vector" />
-          <hr />          
-          #if $week.extraTemp4.has_data
-          <img src="weekextra2.png" alt="Carport" />
-          #end if
-          #if $week.lighting.has_data
-          <img src="weeklighting.png" alt="Helligkeit" />
-          #end if
-          #if $week.radiation.has_data
-          <img src="weekradiation.png" alt="Radiation" />
-          #end if
-          #if $week.rxCheckPercent.has_data
-          <img src="weekBate.png" alt="week rx percent"/>
-          #end if
-          #if $week.extraTemp1.has_data
-          <img src="weekextra1.png" alt="Teich Temperatur" />
-          #end if
-          #if $week.extraTemp2.has_data
-          <img src="weekTeichB.png" alt="Badeteich Temperatur" />
-          #end if
-          #if $week.extraTemp6.has_data
-          <img src="weekTeichG.png" alt="Goldfisch Temperatur" />
-          #end if
-          <hr />
-          <img src="weekTempB.png" alt="Bodentemperatur" />
-          <img src="weeksoilT.png" alt="Luft Boden" />
-          <img src="weeksoilF.png" alt="Bodenfeuchte" />
-          <img src="weekcloudbase.png" alt="Wolkenunterkante" />
-          <img src="weekwindrun.png" alt="Windrun" />
-          <img src="weekwindB.png" alt="Wind in Beaufort" />
-          <hr />
-          <img src="weekDensity.png" alt="Luftdichte" />
-          <img src="weekWindDruck.png" alt="Winddruck" />
-          <hr />
-          <img src="weekinside.png" alt="Inside" />
-          <img src="weekinhume.png" alt="InsideHumid" />
-        </div>
-      </div> <!-- End id "content" -->
-
-    </div> <!-- End id "container" -->
+    <div class="header">
+      <h3>W&ouml;chentliche Statistik und Diagramme <a href="week-table.html">/ Tabelle</a></h3>
+   </div>
+    <div id="plots">
+     <img src="weektemp.png" alt="temperatures" />
+     <img src="weekapptemp.png" alt="gefuehlt" />
+     <img src="weekwindchill.png" alt="windchill" />
+     <img src="weekheatindex.png" alt="heatindex" />
+     <img src="weekhumid.png"     alt="humidity" />
+     <img src="weekabsF.png" alt="absoluteFeuchtigkeit" />
+     <img src="weekbarometer.png" alt="barometer"/>
+     <hr />
+     <img src="weekrain.png" alt="rain" />
+     <img src="weeksnow.png" alt="Schnee" />
+     <img src="weekET.png" alt="ET" />
+     <hr />
+     <img src="weekwind.png" alt="wind" />
+     <img src="weekwinddir.png" alt="Hi Wind" />
+     <img src="weekwindvec.png" alt="Wind Vector" />
+     <hr />
+     <img src="weekGartenTemp.png" alt="Carport/Garten" />
+     <img src="weekTeichTemp.png" alt="GartenTeich" />
+     <img src="weekBadTemp.png" alt="Schwimmteich" />
+     <hr />
+     <img src="weeklighting.png" alt="Helligkeit" />
+     <img src="weekradiation.png" alt="Radiation" />
+     <img src="weeksun.png" alt="Sonnenstunden" />
+     <img src="weekuv.png" alt="UV-Index" />
+     <hr />
+     <img src="weekBoden5.png" alt="Bodentemperatur" />
+     <img src="weeksoilT.png" alt="OWFS Boden" />
+     <img src="weeksoilD.png" alt="Davis Boden" />
+     <img src="weeksoilF.png" alt="Bodenfeuchte" />
+     <hr />
+     <img src="weekleafW.png" alt="Blatt Feuchte" />
+     <img src="weekleafT.png" alt="Blatt Temperatur" />
+     <hr />
+     <img src="weekAir.png" alt="LuftGuete" />
+     <img src="weekHCHO.png" alt="Luft hcho" />
+     <img src="weekGas.png" alt="Luft gas" />
+     <img src="weekPM10.png" alt="Luft 10ppm" />
+     <img src="weekPM25.png" alt="Luft 2,5ppm" />
+     <hr />
+     <img src="weekinTemp.png" alt="Inside TEmp" />
+     <img src="weekinHumid.png" alt="InsideHumid" />
+     <img src="weekindew.png" alt="Inside dewpoint" />
+     <hr />
+     <img src="weekSound.png" alt="Sound" />
+     <hr />
+     <img src="weekcloudbase.png" alt="Wolkenunterkante" />
+     <img src="weekwindrun.png" alt="Windrun" />
+     <img src="weekwindB.png" alt="Wind in Beaufort" />
+     <img src="weekDensity.png" alt="Luftdichte" />
+     <img src="weekWindDruck.png" alt="Winddruck" />
+     <hr />
+     <img src="weekBlitz.png" alt="Blitz" />
+     <hr />
+     <img src="weekVolt.png" alt="OWFS-Spannung" />
+     <img src="weekBate.png" alt="Spannung" />
+     <img src="weekStat.png" alt="ISS-Signal" />
+     <hr />
+     <img src="weekGeiger.png" alt="CPM Signal" />
+     <img src="weekGeigerS.png" alt="h Signal" />
+    </div>
+   </div> <!-- End id "content" -->
+  </div> <!-- End id "container" -->
 
   #include $Extras.footer
 

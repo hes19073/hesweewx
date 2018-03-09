@@ -29,6 +29,26 @@
   </head>
 
 <body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
 <div id="hes11"> 
 
  #include $Extras.header
@@ -49,8 +69,7 @@
    <div class="header">Übersichten seit dem 31.10.2013 (Beginn dieser Wetteraufzeichnungen) </div>
     <p>Es werden die Messergebnisse der Wetterstation WX-2013 und von 13 one-wire Sensoren erfasst und gespeichert.</p>
     <p>Die WX-2013 wurde am 20.06.2016 durch eine Vantage Pro2 Aktiv Plus, 6163EU ersetzt. <br />
-       Seit dem 04.02.2017 werden auch die Bodenfeuchte, die Bodentemperatur und die Blattfeuchte mit einer Davis Sensorstation 6345 OVCS erfasst.<br />
-       Eigene Aufzeichnungen und Deutscher Wetterdienst, Daten seit dem 01.01.1999. </p>
+       Seit dem 04.02.2017 werden auch die Bodenfeuchte, die Bodentemperatur und die Blattfeuchte mit einer Davis Sensorstation 6345 OVCS erfasst.</p>
     <table>
      <caption class="caption">Koordinaten der Wetterstation</caption>
       <tr>
@@ -85,7 +104,7 @@
      #for $month in $year.months
         #if $month.outTemp.avg.raw is not None:
            #set $monthes = $month.dateTime.format("%m")
-           #set $montheb = $month.dateTime.format("%B")  
+           #set $montheb = $month.dateTime.format("%b")  
            #set $hesweb = "Archiv/KR-" + $yearhes + "-" +  $monthes + "-table.html"
            <td><input type="button" value="$montheb" onclick="openURL('$hesweb')" /></td>
         #else
@@ -150,6 +169,7 @@ Es werden nur die Werte bis zum 31.Mai berücksichtigt.</p>
      <tr><td>2015</td><td>736,50 K</td></tr>
      <tr><td>2016</td><td>531,13 K</td></tr>
      <tr><td>2017</td><td>146,35 K</td></tr>
+     <tr><td>2018</td><td>&nbsp;</td></tr>
      <tr>
      <td colspan="2">Die Wärmesumme ist ein Indikator für die Klasse eines Sommers.<br />
                      Sie wird von Juni bis August ermittelt.<br />
@@ -180,6 +200,7 @@ Es werden nur die Werte bis zum 31.Mai berücksichtigt.</p>
      <tr><td style="background-color: #23ff9e;">2014/ 2015</td><td style="background-color: #23ff9e;">26,64 K</td></tr>
      <tr><td style="background-color: #23ff9e;">2015/ 2016</td><td style="background-color: #23ff9e;">68,08 K</td></tr>
      <tr><td style="background-color: #23ff9e;">2016/ 2017</td><td style="background-color: #23ff9e;">76,28 K</td></tr>
+     <tr><td style="background-color: #23ff9e;">2017/ 2018</td><td style="background-color: #23ff9e;">&nbsp;</td></tr>
      <tr>
        <td colspan="2">Die Kältesumme ist ein Indikator für die Strenge eines Winters.<br />
                      Sie wird von November bis März ermittelt.<br />
@@ -319,7 +340,6 @@ Es werden nur die Werte bis zum 31.Mai berücksichtigt.</p>
      <div class="navbar">
       <input type="button" value=" Woche mit Tageswerten " onclick="openURL('week-table.html')" />
       <input type="button" value=" Monat mit Tageswerten " onclick="openURL('month-table.html')" />
-      <input type="button" value=" Die letzten 30 Tage " onclick="openURL('thirty-day.html')" />
       <input type="button" value=" Jahr mit Monatswerten " onclick="openURL('year-table.html')" />
      </div>
      <p>NOAA - Dateien

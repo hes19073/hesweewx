@@ -213,6 +213,8 @@ class MyXRainNo(SearchList):
             if _row is not None:
                 _time_vector.append(_row[0])
                 _rain_vector.append(_row[1])
+        # As an aside lets get our number of rainy days this month
+        _year_rainy_days = sum(1 for i in _rain_vector if i > 0)
         # Get our run of year dry days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
@@ -267,6 +269,8 @@ class MyXRainNo(SearchList):
             if _row is not None:
                 _time_vector.append(_row[0])
                 _rain_vector.append(_row[1])
+        # As an aside lets get our number of rainy days this month
+        _alltime_rainy_days = sum(1 for i in _rain_vector if i > 0)
         # Get our run of alltime dry days
         _interim = []   # List to hold details of any runs we might find
         _index = 0      # Placeholder so we can track the start dateTime of any runs
@@ -289,6 +293,7 @@ class MyXRainNo(SearchList):
             _alltime_dry_run = 0
             _alltime_dry_time_ts = None
             _alltime_dryS_time_ts = None
+
 
         # Get our run of alltime rainy days
         _interim = []   # List to hold details of any runs we might find
@@ -355,6 +360,8 @@ class MyXRainNo(SearchList):
                                  'alltime_con_wet_days': _alltime_wet_run,
                                  'alltime_con_wet_days_time': _alltime_wet_time_vh,
                                  'month_rainy_days': _month_rainy_days,
+                                 'year_rainy_days': _year_rainy_days, 
+                                 'alltime_rainy_days': _alltime_rainy_days,
                                  'month_con_dryS_days_time' : _month_dryS_time_vh,
                                  'year_con_dryS_days_time' : _year_dryS_time_vh,
                                  'alltime_con_dryS_days_time' : _alltime_dryS_time_vh,

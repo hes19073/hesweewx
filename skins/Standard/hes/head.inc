@@ -3,9 +3,7 @@
 #errorCatcher Echo
 #encoding UTF-8
 #import time
-#set $gmt_st = time.gmtime($current.dateTime.raw)
-#set $gmt = time.strftime("%H:%M", $gmt_st)
-##Local=$current.dateTime.format("%H:%M:%S") GMT=$gmt
+
 #if $latest($data_binding='wdsupp_binding').vantageForecastNumber.has_data
     #set $VPn = $latest($data_binding='wdsupp_binding').vantageForecastNumber.raw
     #set $VPn = int($VPn)
@@ -16,6 +14,7 @@
         #set $VPnumber = 'xicons/VPnumbers/' + $VPn + '.gif'
     #end if
 #end if
+
 <div id='header'>
  <div id="masthead">
   <h1>Private Wetterstation&nbsp;$station.location</h1>
@@ -26,8 +25,7 @@
       H&ouml;he:&nbsp;$station.altitude&nbsp;&brvbar;&nbsp;
       <a href="http://gpso.de/maps/?z=20;p=53.6061,11.34106,WP01-A;">Map</a>&nbsp;&brvbar;&nbsp;
       </p>
-  <h2>Aktuelle Messwerte am&nbsp;$current.dateTime.format("%A"), den&nbsp;$current.dateTime&nbsp;Uhr&nbsp;
-      $current.dateTime.format("%Z")&nbsp;&nbsp;&frasl;&frasl;&nbsp;&nbsp;$gmt&nbsp;Uhr GMT</h2>
+  <h2>Aktuelle Messwerte am&nbsp;$current.dateTime.format("%A"), den&nbsp;$current.dateTime&nbsp;Uhr&nbsp;(Zeitzone: $current.dateTime.format("%Z"))</h2>
 <div class='hesmo'>
  <ul>
   <li>Brandgefahr</li>
@@ -45,19 +43,32 @@
   <li style="$decorator_color('heattemp', $current.appTemp.raw)">&nbsp;$current.appTemp</li>
   <li style="$decorator_color('heattemp', $current.appTemp.raw)">$decorator_text('heattemp', $current.appTemp.raw)</li>
  </ul>
+#if len($day00) > 3
+  <p class="neon">$day00</p>
+#end if
 </div> <!-- ende Temp Sonne  -->
  
 <div class="navbar">
  <ul id="nav">
   <li><input type="button" value=" Aktuell " onclick="openURL('index.html')" /></li>
-  <li><input type="button" value=" OWFS  " onclick="openURL('index2.html')" /></li>
+  <li><input type="button" value=" OWFS  " onclick="openURL('indexOWFS.html')" /></li>
   <li><input type="button" value=" Boden " onclick="openURL('index1.html')" /></li>
-  <li><input type="button" value=" Air   " onclick="openURL('indexAir.html')" /></li>
-  <!-- <li><input type="button" value=" WH-3080 " onclick="openURL('inWX3080.html')" /></li> -->
-  <li><input type="button" value=" Tag " onclick="openURL('day.html')" /></li>
+  <li><input type="button" value=" Air " onclick="openURL('indexAir.html')" /></li>
+  <li><input type="button" value=" Rad " onclick="openURL('indexRad.html')" /></li>
+  <li><input type="button" value=" Tag " onclick="openURL('day.html')" />
+   <ul>
+    <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
+    <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
+    <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
+    <li><input type="button" value=" 24 Stunden " onclick="openURL('trend.html')" /></li>
+   </ul>
+  </li>
   <li><input type="button" value="  Prognose " onclick="openURL('forecastT.html')" />
    <ul>
-    <li><input type="button" value="  WU-Prognose   " onclick="openURL('forecastkr.html')" /></li>
+    <li><input type="button" value=" WetterWarnung " onclick="openURL('indexWarn.html')" /></li>
+    <li><input type="button" value=" WetterInfos " onclick="openURL('indexInfo.html')" /></li>
+    <li><input type="button" value=" WetterWissen " onclick="openURL('wissen.html')" /></li>
+    <!-- <li><input type="button" value=" ISS &Uuml;berflug " onclick="openURL('indexISS.html')" /></li> -->
     <li><input type="button" value="  IMECKLEN20    " onclick="openURL('http://www.wunderground.com/cgi-bin/findweather/hdfForecast?query=53.606%2C11.341&amp;sp=IMECKLEN20')" /></li>
    </ul>
   </li>
@@ -74,9 +85,12 @@
     <li><input type="button" value=" Der Monat " onclick="openURL('month.html')" /></li>
     <li><input type="button" value=" Das Jahr_ " onclick="openURL('year.html')" /></li>
     <li><input type="button" value=" _ Rekorde " onclick="openURL('alltime.html')" /></li>
-    <li><input type="button" value=" Archiv__  " onclick="openURL('archiv.html')" /></li>
-    <li><input type="button" value=" Alt-Archiv " onclick="openURL('altarchiv.html')" /></li>
-    <li><input type="button" value=" Historisch " onclick="openURL('historisch.html')" /></li>
+    <li><input type="button" value=" Archiv__  " onclick="openURL('archiv.html')" />
+     <ul>
+      <li><input type="button" value=" Alt-Archiv " onclick="openURL('altarchiv.html')" /></li>
+      <li><input type="button" value=" Historisch " onclick="openURL('historisch.html')" /></li>
+     </ul>
+    </li>
     <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
     <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
     <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
@@ -145,7 +159,7 @@
   </li>
   <li><input type="button" value=" Impressum " onclick="openURL('http://blog.hes61.de/?page_id=111')" />
    <ul>
-    <li><input type="button" value=" Impressum " onclick="openURL('http://blog.hes61.de/?page_id=111')" /></li>
+    <li><input type="button" value=" Word-Press  " onclick="openURL('http://blog.hes61.de')" /></li>
     <li><input type="button" value=" Datenschutz " onclick="openURL('http://blog.hes61.de/datenschutz/')" /></li>
    </ul>
   </li>

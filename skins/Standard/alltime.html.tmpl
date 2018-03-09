@@ -29,6 +29,26 @@
   </head>
 
 <body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
  <div id="hes11"> 
     #include $Extras.header
    <div id="stats_group">
@@ -338,7 +358,7 @@
               <tr>
                 <td class="allstats_label">Wolkenhöhe </td>
                 <td class="allstats_data"> $alltime.cloudbase.max <br /> ($alltime.cloudbase.maxtime)</td>
-                <td class="allstats_datak"> $alltime.cloudbase.min <br /> ($alltime.cloudbase.mintime)</td>
+                <td class="allstats_datak"> &nbsp; <br /> &nbsp;</td>
               </tr>
               <tr>
                 <td class="allstats_label">Wind - Weg </td>

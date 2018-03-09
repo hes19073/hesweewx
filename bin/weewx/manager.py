@@ -523,7 +523,7 @@ class Manager(object):
     
             # Is aggregation requested?
             if aggregate_type:
-                
+
                 aggregate_type = aggregate_type.lower()
 
                 # Check to make sure we have everything:

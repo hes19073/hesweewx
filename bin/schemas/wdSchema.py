@@ -39,8 +39,16 @@ weewxwd_schema = [
     ('interval',     'INTEGER NOT NULL'),
     ('humidex',      'REAL'),
     ('appTemp',      'REAL'),
+    ('summersimmerIndex',  'REAL'),
     ('outTempDay',   'REAL'),
     ('outTempNight', 'REAL'),
+    ('heatdeg',      'REAL'),
+    ('cooldeg',      'REAL'),
+    ('homedeg',      'REAL'),
+    ('SVP',          'REAL'),
+    ('SVPin',        'REAL'),
+    ('AVP',          'REAL'),
+    ('AVPin',        'REAL'),
     ]
 
 # Define schema for supp table

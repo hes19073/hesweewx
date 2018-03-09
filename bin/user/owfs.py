@@ -170,7 +170,7 @@ from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
 DRIVER_NAME = 'OWFS'
-DRIVER_VERSION = "0.19"
+DRIVER_VERSION = "0.18"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'owfs: %s' % msg)
@@ -366,17 +366,22 @@ def humhes(key, path, last_data, ts):
     vda = (5.0 / vdd) * vdo
     SrH = (vda - 0.847847) / (29.404604 / 1000)
     dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) - (0.0000011 * tem * tem))
-    if dhu > 100:
+    #dhu = (((vda / vdd) - 0.16) / 0.0062) / (1.0546 - (0.00216 * tem))
+    #dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) #- (0.0000011 * tem * 100))
+
+    if dhu > 100.0:
        d = 99
     else:
        d = dhu     
     return  d
     
 def lighes(key, path, last_data, ts):
+    li1 = get_float('%s%s' % (path, '/vis'))
     vdd = get_float('%s%s' % (path, '/VDD'))
     vao = get_float('%s%s' % (path, '/VAD'))
     vad = (5 / vdd) * vao
-    d = (vdd - vad) * 700
+    #d = (vdd - vad) * 700  # Helligkeit nach eservice
+    d = li1 * 4200.0        # watt nach eservice
     if d < 0:
         d = 0
 

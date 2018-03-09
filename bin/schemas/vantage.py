@@ -101,4 +101,10 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('soilTemp2',            'REAL'),
           ('soilTemp3',            'REAL'),
           ('soilTemp4',            'REAL'),
-          ('soilTemp5',            'REAL')]
+          ('soilTemp5',            'REAL'),
+          ('dampfDruck',           'REAL'),
+          ('summersimmerIndex',    'REAL'),
+          ('SVP',                  'REAL'),
+          ('SVPin',                'REAL'),
+          ('AVP',                  'REAL'),
+          ('AVPin',                'REAL')]

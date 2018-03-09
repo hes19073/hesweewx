@@ -32,13 +32,13 @@
 #set $show_precip = 1
 #set $show_obvis = 1
 
-#set $wlog = ''
+#set $wloc = ''
 #set $wts = ''
 
 ## These are the styles used by the forecast display.  Putting the styles
 ## like this works (in page, not in head), but it is not good practice.
 ##<style>
-<script type='text/javascript'>
+<script>
 function toggle(control, id) {
   elem = document.getElementById(id + '.hours');
   if(elem) {
@@ -211,7 +211,7 @@ function toggle(control, id) {
 #end if
 #if $show_tides and len($tides) > 0
         <td class='col-tides'>
-          <table cellspacing='0' cellpadding='0' width='100%'>
+          <table cellspacing='0' cellpadding='0'>
   #for $tide in $tides
     #if $summary.event_ts.raw <= $tide.event_ts.raw < $summary.event_ts.raw + $summary.duration
             <tr>
@@ -249,10 +249,10 @@ function toggle(control, id) {
   #if $summary.pop.raw > 0
           $summary.pop.format('%.0f','')<br/>
     #if $summary.qpf.raw > 0
-          $summary.qpf.nolabel('%.2f','') <img class='pop-img' src='xicons/raindrop.png' /><br/>
+          $summary.qpf.nolabel('%.2f','') <img class='pop-img' src='xicons/raindrop.png' alt='rain' /><br/>
     #end if
     #if $summary.qsf.raw > 0
-          $summary.qsf.nolabel('%.2f','') <img class='pop-img' src='xicons/snowflake.png' />
+          $summary.qsf.nolabel('%.2f','') <img class='pop-img' src='xicons/snowflake.png' alt='snow' />
     #end if
   #end if
         </td>
@@ -379,7 +379,7 @@ function toggle(control, id) {
 #end if
 #if $show_precip
         <td class='col-precip'>
-          <table width='100%'><tr>
+          <table><tr>
   #for $k,$v in $period.precip.items()
           <td>
     #set $precip_img = 'xicons/' + $k + '.png'

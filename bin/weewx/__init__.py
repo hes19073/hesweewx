@@ -6,11 +6,12 @@
 """Package weewx, containing modules specific to the weewx runtime engine."""
 import time
 
-__version__="3.8.0a1"
+__version__="3.8.0"
 
 # Holds the program launch time in unix epoch seconds:
 # Useful for calculating 'uptime.'
 #launchtime_ts = time.time()
+#launchtime_ts = 915145200
 launchtime_ts = 1383254340
 
 # Set to true for extra debug information:

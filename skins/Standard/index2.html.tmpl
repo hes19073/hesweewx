@@ -28,7 +28,7 @@
      <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
 
      <link rel='icon' type='image/png' href='favicon.ico' />
-     <script type='text/javascript' src='js/hesweewx.js'></script>
+     <script src='js/hesweewx.js'></script>
      <script>
        window.onload = function() { applypopups(); }
      </script>
@@ -50,9 +50,8 @@
    #include $Extras.cwarn
 #set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
 
-  #if $varExists('forecast')
-   #set $summary = $forecast.weather_summary($Extras.forecast_service)
-  #end if
+#set $summary = $forecast.weather_summary($Extras.forecast_service)
+
 #set $dd = $forecast.label('Weather', $summary.windDir)
 #set $wind_text = $windT_dir_dict.get($dd)
 
@@ -62,7 +61,6 @@
 
 <div class='hes'>
   <div class='hesbox'>
-#if $varExists('forecast')
    <table class="hes_prog">
     <tr>
      <td class='hes1_wol'>
@@ -85,29 +83,23 @@
      </td>
     </tr>
    </table>
-#end if
-     #if $varExists('forecast')
-       <b>Zambretti:</b> $forecast.label('Zambretti', $forecast.zambretti.code)<br />
+   <b>Zambretti:</b> $forecast.label('Zambretti', $forecast.zambretti.code)<br />
        Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
-     #end if
-<hr />      
-     #if $varExists('forecast')
-      #set $summary = $forecast.weather_summary('WU')
-       <p><b>WU</b>
+   <hr />      
+   <p><b>Weather Underground: </b>
         Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
         Wind aus<b>&nbsp;$wind_text&nbsp;</b>mit&nbsp;$forecast.label('Weather', $summary.windSpeed).&nbsp;
         Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp; und&nbsp;
         $forecast.label('Weather', $summary.tempMax).&nbsp;
         Luftfeuchtigkeit von ca.&nbsp;$forecast.label('Weather', $summary.humidity).&nbsp;
-       </p>
-     #end if
-     <hr />
-    <p><b>Die <b>VantagePro2</b> meint:</b>
+   </p>
+   <hr />
+   <p><b>Vantage Pro2:</b>
          $latest($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
-     <hr />
-     <p>Wetter-Cam Blick SW</p>
+   <hr />
+   <p>Wetter-Cam Blick SW</p>
        <img src="xicons/wet/snapshot.jpg" alt="Wetterstation" style="width:300px; height:175px;" />
-   </div>
+  </div>
 </div> <!-- ende Prognose -->
 
 #if $day.extraTemp9.has_data
@@ -189,6 +181,45 @@
  </div><!-- ende extraTemp4 -->
 #end if
 
+#if $day.extraHumid1.max.raw > 55
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Luftfeuchte<br />Carport</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayhumid1.png' class='popup'>$current.extraHumid1</a></td>
+    #if $trend.extraHumid1.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraHumid1</td>
+    #else
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraHumid1</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.extraHumid1.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraHumid1.min</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.extraHumid1.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraHumid1.min</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- Ende Luftfeuchte (extraHumid1) -->
+#end if
+
+
 #if $day.extraHumid2.max.raw > 55
   <div class="hes">
   <div class='hesbox'>
@@ -199,7 +230,7 @@
      <td class="hes1_kopf" colspan="2">Trend</td>
     </tr>
     <tr>
-     <td class='hes1_bigval' colspan='3'><a href='dayhumid.png' class='popup'>$current.extraHumid2</a></td>
+     <td class='hes1_bigval' colspan='3'><a href='dayhumid1.png' class='popup'>$current.extraHumid2</a></td>
     #if $trend.extraHumid2.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
      <td class='hes1_vallo'>$trend.extraHumid2</td>

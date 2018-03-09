@@ -56,6 +56,7 @@ import weewx.engine
 import weewx.manager
 import weewx.wxformulas
 import weewx.almanac
+import user.zformulas
 from weewx.units import convert, obs_group_dict
 from weeutil.weeutil import to_bool, accumulateLeaves
 from weewx.units import CtoF, CtoK, mps_to_mph, kph_to_mph
@@ -373,6 +374,42 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['summersimmerIndex'] = None
 
+        if 'outTemp' in event.packet:
+            data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 18.333)
+        else:
+            data_x['heatdeg'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['cooldeg'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 18.333)
+        else:
+            data_x['cooldeg'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['homedeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 15.0)
+        else:
+            data_x['homedeg'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['outTemp'])
+        else:
+            data_x['SVP'] = None
+
+        if 'inTemp' in event.packet:
+            data_x['SVPin'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['inTemp'])
+        else:
+            data_x['SVPin'] = None
+
+        if 'outTemp' in event.packet and 'outHumidity' in event.packet:
+            data_x['AVP'] = event.packet['outHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['outTemp'])) / 100.0
+        else:
+            data_x['AVP'] = None
+
+        if 'inTemp' in event.packet and 'inHumidity' in event.packet:
+            data_x['AVPin'] = event.packet['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['inTemp'])) / 100.0
+        else:
+            data_x['AVPin'] = None
+
+
         event.packet.update(data_x)
 
     def new_archive_record(self, event):
@@ -386,6 +423,42 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['summersimmerIndex'] = weewx.wxformulas.sumsimIndex_C(event.record['outTemp'], event.record['outHumidity'])
         else:
             data_x['summersimmerIndex'] = None
+
+        if 'outTemp' in event.record:
+            data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 18.333)
+        else:
+            data_x['heatdeg'] = None
+
+        if 'outTemp' in event.record:
+            data_x['cooldeg'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 18.333)
+        else:
+            data_x['cooldeg'] = None
+
+        if 'outTemp' in event.record:
+            data_x['homedeg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 15.0)
+        else:
+            data_x['homedeg'] = None
+
+        if 'outTemp' in event.record:
+            data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['outTemp'])
+        else:
+            data_x['SVP'] = None
+
+        if 'inTemp' in event.record:
+            data_x['SVPin'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['inTemp'])
+        else:
+            data_x['SVPin'] = None
+
+        if 'outTemp' in event.record and 'outHumidity' in event.record:
+            data_x['AVP'] = event.record['outHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['outTemp'])) / 100.0
+        else:
+            data_x['AVP'] = None
+
+        if 'inTemp' in event.record and 'inHumidity' in event.record:
+            data_x['AVPin'] = event.record['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['inTemp'])) / 100.0
+        else:
+            data_x['AVPin'] = None
+
 
         event.record.update(data_x)
 
@@ -424,6 +497,9 @@ class WdArchive(weewx.engine.StdService):
         obs_group_dict["summersimmerIndex"] = "group_temperature"
         obs_group_dict["outTempDay"] = "group_temperature"
         obs_group_dict["outTempNight"] = "group_temperature"
+        obs_group_dict["coolT_sum"] = "group_count" 
+        obs_group_dict["warmT_sum"] = "group_count"
+        obs_group_dict["green_sum"] = "group_count"
 
         # bind ourselves to NEW_ARCHIVE_RECORD event
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)

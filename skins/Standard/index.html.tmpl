@@ -5,7 +5,8 @@
 <!DOCTYPE html>
 <html lang="de">
   <head>
-     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta charset="utf-8"> 
+     <!-- <meta http-equiv='Content-Type' content='text/html; charset=utf-8' /> -->
      <meta name='viewport' content='width=device-width' />
      <meta name="robots" content="all" />
      <meta name="keywords" content="weather, Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
@@ -29,7 +30,7 @@
      <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
 
      <link rel='icon' type='image/png' href='favicon.ico' />
-     <script type='text/javascript' src='js/hesweewx.js'></script>
+     <script src='js/hesweewx.js'></script>
      <script>
        window.onload = function() { applypopups(); }
      </script>
@@ -42,9 +43,8 @@
 
 #include $Extras.header
 #include $Extras.cwarn
-#if $varExists('forecast')
-   #set $summary = $forecast.weather_summary('WU')
-#end if
+
+#set $summary = $forecast.weather_summary('WU')
 #set $dd = $forecast.label('Weather', $summary.windDir)
 #set $wind_text = $windT_dir_dict.get($dd)
 
@@ -52,71 +52,67 @@
  <div id='popupanchor' style='float:left'></div>
 
 <div class='hes'>
-  <div class='hesbox'>
-
-   <table class="hes_prog">
-    <tr>
-      <td class='hes1_wol'>
-      #if $summary.clouds is not None
-          #set $simg = 'xicons/' + $summary.clouds + '.png'
-           <a href='forecastT.html'>
-           <img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
-      #end if
-      </td>
-      <td class='hes1_wol'>
-      #for $k in $summary.precip
-          #set $precip_img = 'xicons/' + $k + '.png'
-          <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-      #end for
-      </td>
-      <td class='hes1_wol'>
-      #for $k in $summary.obvis
-          #set $obvis_img = 'xicons/' + $k + '.png'
-          <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-      #end for
-      </td>
-     </tr>
-    </table>
-    <b>Zambretti:</b>&nbsp;$forecast.label('Zambretti', $forecast.zambretti.code)<br />
-    Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
-   <hr />
-   #set $summary = $forecast.weather_summary('WU')
-   <p><b>WU</b>
-    Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).<br />
-    Wind aus&nbsp;<b>$wind_text&nbsp;</b>mit&nbsp;$forecast.label('Weather', $summary.windSpeed).<br />
-    Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp;und&nbsp;
-        $forecast.label('Weather', $summary.tempMax).&nbsp;
-    Die gefühlte Temperatur maximal&nbsp;$forecast.label('Weather',$summary.feelslikeMax).&nbsp;</p>
-    
-    <hr />
-    <p>Die <b>VantagePro 2:</b> $current($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
-    <hr />
-    #include "tagodernacht.inc"
-  </div>
+ <div class='hesbox'>
+  <table class="hes_prog">
+   <tr>
+    <td class='hes1_wol'>
+    #if $summary.clouds is not None
+        #set $simg = 'xicons/' + $summary.clouds + '.png'
+        <a href='forecastT.html'>
+        <img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
+    #end if
+    </td>
+    <td class='hes1_wol'>
+    #for $k in $summary.precip
+        #set $precip_img = 'xicons/' + $k + '.png'
+        <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+    #end for
+    </td>
+    <td class='hes1_wol'>
+    #for $k in $summary.obvis
+         #set $obvis_img = 'xicons/' + $k + '.png'
+         <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+    #end for
+    </td>
+   </tr>
+  </table>
+  <b>Zambretti:</b>&nbsp;$forecast.label('Zambretti', $forecast.zambretti.code)<br />
+   Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
+  <hr />
+  <p><b>VantagePro 2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
+  <hr />
+  <ul>
+   <li>Mond&nbsp;&#8679;&nbsp;$almanac.moon.rise&nbsp;&nbsp;Sonne&nbsp;&#8679;&nbsp;$almanac.sun.rise</li>
+   <li>Mond&nbsp;&#8681;&nbsp;$almanac.moon.set&nbsp;&nbsp;Sonne&nbsp;&#8681;&nbsp;$almanac.sun.set</li>
+   <li>$almanac.moon_phase&nbsp;$almanac.moon_fullness%</li>
+  </ul>
+  <hr />
+  <p>Wind heute meist aus&nbsp;<b>$wind_text</b></p>
+ </div>
 </div> <!-- ende Prognose -->
 
 <div class="hes">
-  <div class='hesbox'>
-    <h3>Wetter Kamera Richtung SW</h3>
-        <a href="xicons/wet/snapshot.jpg">
-         <img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
-         <hr />
-        #if $current($data_binding='wdsupp_binding').visibility_km.raw > 0.0
-         <p>WU-Sichtweite ca.: $current($data_binding='wdsupp_binding').visibility_km</p>
-        #else 
-         <p>&nbsp;</p>
-        #end if
-  </div>
+ <div class='hesbox'>
+  <h3>Wetter Kamera Richtung SW</h3>
+   <a href="xicons/wet/snapshot.jpg">
+   <img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
+   <hr />
+   #if $latest($data_binding='wdsupp_binding').visibility_km.raw > 0.0
+     <p>WU-Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km</p>
+   #else 
+     <p>&nbsp;</p>
+   #end if
+ </div>
 </div>
 
 <div class="hes">
-  <div class='hesbox'>
-   <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Temperatur</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
-        <td class='hes1_kopf' colspan="2">Trend</td></tr>
-    <tr>
-      <td class='hes1_bigval' colspan='3' style="$decorator_color('tempO', $current.outTemp.raw)">
-      <a href='daytemp.png' class='popup'>$current.outTemp</a></td>
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Temperatur</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+       <td class='hes1_kopf' colspan="2">Trend</td></tr>
+   <tr>
+     <td class='hes1_bigval' style="$decorator_color('tempO', $current.outTemp.raw)"></td>
+     <td class='hes1_bigval' colspan='2'><a href='daytemp.png' class='popup'>$current.outTemp</a></td>
 
  #if $trend.outTemp.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
@@ -154,8 +150,8 @@
      <td class='hes1_kopf' colspan="2">Trend</td>
     </tr>
     <tr>
-     <td class='hes1_bigval' colspan='3' style="$decorator_color('chill_C', $current.windchill.raw)">
-         <a href='daytempchill.png' class='popup'>$current.windchill</a></td>
+     <td class='hes1_bigval' style="$decorator_color('chill_C', $current.windchill.raw)"></td>
+     <td class='hes1_bigval' colspan='2' ><a href='daytempchill.png' class='popup'>$current.windchill</a></td>
 
     #if $trend.windchill.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
@@ -244,7 +240,7 @@
         <td class='hes1_vallo'>$trend.dewpoint</td>
     #elif $trend.dewpoint.raw == 0
         <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.dewpoind</td>
+        <td class="hes1_valhi">$trend.dewpoint</td>
     #elif $trend.dewpoint.raw > 0
         <td class="hes1_trendhi"> &#8679;</td>
         <td class='hes1_valhi'>$trend.dewpoint</td>
@@ -361,8 +357,7 @@
    </tr>
    <tr>
      <td class='hes1_bigval' colspan='3' ><a href='dayrain1.png' class='popup'>$current.rain</a></td>
-     <td></td>
-     <td>$day.rain.sum</td>
+     <td colspan='2'>$day.rain.sum</td>
    </tr>
 #if $varExists('forecast')
    <tr>
@@ -400,8 +395,7 @@
      <td class='hes1_bigval' colspan='3' >
       <a href='daysnow.png' class='popup'>$current.snow</a>
      </td>
-     <td></td>
-     <td>$day.snowRate.max</td>
+     <td colspan='2'>$day.snowTotal.max</td>
    </tr>
    #if $varExists('forecast')
    <tr>
@@ -409,21 +403,18 @@
       <span class='hes1_m'>Neuschneeprognose</span>
      </td>
        #if $summary.qsf.raw > 0
-        <td class='hes1_valhi'>
-         $summary.pop 
-        </td>
+        <td class='hes1_valhi'> $summary.pop </td>
         <td></td>
-       <td>
-           #if $summary.qsf.raw > 0
+        <td>
+          #if $summary.qsf.raw > 0
               $summary.qsf.cm.nolabel('%.1f',' ') <img class='pop-img' src='xicons/snowflake.png' alt='schnee'/>
            #end if
-       </td>
+        </td>
        #else
-       <td colspan='3'>&nbsp;</td>
+        <td colspan='3'>&nbsp;</td>
        #end if
    </tr>
-   <tr><td colspan='3'>Schnee aktuell: <b>$current.snowTotal</b></td></tr>
-   #end if
+  #end if
   </table>
   <hr />
   <img src="daysnowklein.png" alt="Schnee" />
@@ -637,38 +628,35 @@
    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   </tr>
   <tr>
-   <td class="stats_label">Feinstaub PM10</td>
-   <td class="stats_data">$latest($data_binding='air2_binding').pm_10</td>
-  </tr>
-  <tr>
-   <td class="stats_label">Feinstaub PM2.5</td>
-   <td class="stats_data">$latest($data_binding='air2_binding').pm_25</td>
-  </tr>
-  <tr>
-   <td class='re_data'>Blitz-Zeit</td>
-   <td class='re_data'>$latest($data_binding='lightning_binding').dateTime</td>
-  </tr>
-  <tr>
-   <td class='re_data'>Entfernung</td>
-   <td class='re_data'>$latest($data_binding='lightning_binding').distance</td>
-  </tr>
-  <tr>
-   <td class='re_data'>Energy</td>
-   <td class='re_data'>$latest($data_binding='lightning_binding').energy.format("%.2f")</td>
-  </tr>
-  <tr>
    <td class='re_data'>Blatt-Temp</td>
    <td class='re_data'>$current.leafTemp1</td>
   </tr>
+  <tr>
+   <td class='re_data'>Cool-Temp (18°C)</td>
+   <td class='re_data'>$latest($data_binding='wd_binding').cooldeg</td>
+  </tr>
+  <tr>
+   <td class='re_data'>Heat-Temp (18°C)</td>
+   <td class='re_data'>$latest($data_binding='wd_binding').heatdeg</td>
+  </tr>
+  <tr>
+   <td class='re_data'>Heiz-Temp (15°C)</td>
+   <td class='re_data'>$latest($data_binding='wd_binding').homedeg</td>
+  </tr>
 #if len($day00) > 3
   <tr>
-   <td class='re_data'>Hinweis</td>
-   <td class='re_data'>$day00</td>
+   <td class='re_data'>Heute</td>
+   <td class='re_data'><b> $day00 </b></td>
+  </tr>
+#else
+  <tr>
+   <td><b>&or;&nbsp;&or;&nbsp;&or;</b></td>
+   <td><b>&nbsp;&or;&nbsp;&or;</b></td>
   </tr>
 #end if
  </table>
  </div>
-</div> <!-- end werte -->
+</div> <!-- end werte  -->
 
 <div class="hes">
  <div class='hesbox'>
@@ -708,7 +696,7 @@
      <td>5x Bodentemperatur</td>
    </tr>
    <tr>
-     <td><a href='index2.html'>weiter</a></td>
+     <td><a href='indexOWFS.html'>weiter</a></td>
    </tr>
   </table>
  </div>
@@ -750,7 +738,24 @@
   </table>
  </div>
 </div> <!-- end Air -->
-
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr>
+     <td class='hes1_kopfa'>Radioaktivität</td>
+   </tr>
+   <tr>
+     <td>GQ GMC-300E</td>
+   </tr>
+   <tr>
+     <td>Geigerzähler</td>
+   </tr>
+   <tr>
+     <td><a href='indexRad.html'>weiter</a></td>
+   </tr>
+  </table>
+ </div>
+</div> <!-- end Rad -->
 <div class="hes">
  <div class='hesbox'>
   #include "bekannt.inc"

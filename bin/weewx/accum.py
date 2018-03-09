@@ -209,6 +209,8 @@ class VecStats(object):
             if _result < 0.0:
                 _result += 360.0
             return _result
+        # Return the last known direction when our vector sum is 0
+        return self.last[1]
 
 #===============================================================================
 #                             Class Accum
@@ -382,7 +384,7 @@ class Accum(dict):
         
     def extract_count(self, record, obs_type):
         record[obs_type] = self[obs_type].count
-        
+  
 
     #
     # Miscellaneous, utility functions

@@ -1,3 +1,4 @@
+#
 # Copyright (c) 2013 Chris Manton <cmanton@gmail.com>  www.onesockoff.org
 # See the file LICENSE.txt for your full rights.
 #
@@ -21,20 +22,15 @@
 #   pylint: disable-msg=R0915
 # suppress unused arguments   e.g. loader(...,engine)
 #   pylint: disable-msg=W0613
-"""Classes and functions to interface with an Oregon Scientific WMR200 station
+"""Classes and functions to interfacing with an Oregon Scientific WMR200 station
 
-WMR200:
- - logger
- - up to 10 channels
+    Oregon Scientific
+        http://us.oregonscientific.com/ulimages/manuals2/WMR200.pdf
 
-Oregon Scientific
-  http://us.oregonscientific.com/ulimages/manuals2/WMR200.pdf
-
-Bronberg Weather Station
-  For a pretty good summary of what's in these packets see
-  http://www.bashewa.com/wmr200-protocol.php
-
-The WMR200 does not report wind gust direction. 
+    Bronberg Weather Station
+       For a pretty good summary of what's in these packets see
+        http://www.bashewa.com/wmr200-protocol.php
+   
 """
 
 import select
@@ -48,7 +44,7 @@ import weewx.drivers
 import weeutil.weeutil
 
 DRIVER_NAME = 'WMR200'
-DRIVER_VERSION = "3.3.4"
+DRIVER_VERSION = "3.1"
 
 
 def loader(config_dict, engine):  # @UnusedVariable
@@ -261,7 +257,7 @@ class UsbDevice(object):
             # We only want to return the valid data.
             if DEBUG_READS:
                 buf = ''
-                for byte in report[1:report[0] + 1]:
+                for byte in report[1:report[0]+1]:
                     buf += '%02x ' % byte
                 logdbg('read_device(): %s' % buf)
             return report[1:report[0] + 1]
@@ -350,8 +346,8 @@ class Packet(object):
         Upon startup or other times we can may get out
         of sync with the weather console."""
         self._pkt_data.append(char)
-        if (len(self._pkt_data) == 2 and
-            self._pkt_data[1] > _WMR200_MAX_PACKET_SIZE):
+        if len(self._pkt_data) == 2 and \
+          self._pkt_data[1] > _WMR200_MAX_PACKET_SIZE:
             raise weewx.WeeWxIOError('Max packet size exceeded')     
 
     def size_actual(self):
@@ -446,7 +442,7 @@ class Packet(object):
         Raises exception upon checksum failure unless configured to drop."""
         if self._checksum_calculate() != self._checksum_field():
             msg = ('Checksum miscompare act:0x%04x exp:0x%04x' % 
-                   (self._checksum_calculate(), self._checksum_field()))
+                (self._checksum_calculate(), self._checksum_field()))
             logerr(self.to_string_raw('%s packet:' % msg))
             if self.wmr200.ignore_checksum:
                 raise WMR200PacketParsingError(msg)
@@ -474,20 +470,20 @@ class Packet(object):
         """Pulls the epoch timestamp from the packet."""
         try:
             minute = pkt_data[0]
-            hour = pkt_data[1]
-            day = pkt_data[2]
-            month = pkt_data[3]
-            year = 2000 + pkt_data[4]
+            hour   = pkt_data[1]
+            day    = pkt_data[2]
+            month  = pkt_data[3]
+            year   = 2000 + pkt_data[4]
             return time.mktime((year, month, day, hour, minute,
                                 0, -1, -1, -1))
         except IndexError:
             msg = ('Packet length too short to get timestamp len:%d'
-                   % len(self._pkt_data))
+                    % len(self._pkt_data))
             raise WMR200ProtocolError(msg)
 
         except (OverflowError, ValueError), exception:
             msg = ('Packet timestamp with bogus fields min:%d hr:%d day:%d'
-                   ' m:%d y:%d %s' % (pkt_data[0], pkt_data[1],
+	               ' m:%d y:%d %s' % (pkt_data[0], pkt_data[1], 
                    pkt_data[2], pkt_data[3], pkt_data[4], exception))
             raise WMR200PacketParsingError(msg)
 
@@ -612,10 +608,11 @@ class PacketArchive(Packet):
         try:
             loginf(('Using pc time adjusting archive record time by %d sec'
                     ' %s => %s' % (self.wmr200.time_drift,
-                                   weeutil.weeutil.timestamp_to_string(
-                                       self.timestamp_record()),
-                                   weeutil.weeutil.timestamp_to_string(
-                                       self.timestamp_record() + int(self.wmr200.time_drift)))))
+                                   weeutil.weeutil.timestamp_to_string\
+                                   (self.timestamp_record()),
+                                   weeutil.weeutil.timestamp_to_string\
+                                   (self.timestamp_record()
+                                    + int(self.wmr200.time_drift)))))
             self._record['dateTime'] += int(self.wmr200.time_drift)
         except TypeError:
             logerr('timestamp_adjust_drift() called with invalid time drift')
@@ -704,10 +701,10 @@ class PacketArchiveData(PacketArchive):
             # Number of sensors starting at zero inclusive.
             num_sensors = self._pkt_data[32]
 
-            for i in xrange(0, num_sensors + 1):
-                base = 33 + i * 7
+            for i in xrange(0, num_sensors+1):
+                base = 33 + i*7
                 self._record.update(decode_temp(self,
-                                                self._pkt_data[base:base + 7]))
+                                                self._pkt_data[base:base+7]))
         except IndexError:
             msg = ('%s decode index failure' % self.pkt_name)
             raise WMR200ProtocolError(msg)
@@ -733,10 +730,13 @@ def decode_wind(pkt, pkt_data):
         # Low nibble of high byte and high nibble of low byte
         # of average speed. Value is in 0.1 m/s
         avg_speed = ((pkt_data[3] >> 4)
-                     | (pkt_data[4] << 4)) / 10.0
+                     | ((pkt_data[4] << 4))) / 10.0
         # Wind direction in steps of 22.5 degrees.
         # 0 is N, 1 is NNE and so on. See WIND_DIR_MAP for complete list.
-        dir_deg = (pkt_data[0] & 0x0f) * 22.5
+        # Default to none unless speed is above zero.
+        dir_deg = None
+        if avg_speed > 0.0:
+            dir_deg = (pkt_data[0] & 0x0f) * 22.5
 
         # Windchill temperature. The value is in degrees F.
         # Set default to no windchill as it may not exist.
@@ -750,25 +750,30 @@ def decode_wind(pkt, pkt_data):
                 windchill = (((pkt_data[6] << 8) | pkt_data[5]) - 320) \
                         * (5.0 / 90.0)
             elif pkt_data[6] & 0x80:
-                windchill = ((((pkt_data[5]) * -1) - 320) * (5.0 / 90.0))
+                windchill = ((((pkt_data[5]) * -1) - 320) * (5.0/90.0))
 
         # The console returns wind speeds in m/s. weewx requires
         # kph, so the speeds needs to be converted.
-        record = {'wind_speed': avg_speed * 3.60,
-                  'wind_gust': gust_speed * 3.60,
-                  'wind_dir': dir_deg,
-                  'windchill': windchill}
+        record = {'windSpeed'         : avg_speed * 3.60,
+                  'windGust'          : gust_speed * 3.60,
+                  'windDir'           : dir_deg,
+                  'windchill'         : windchill,
+                 }
         # Sometimes the station emits a wind gust that is less than the
         # average wind.  weewx requires kph, so the result needs to be 
         # converted.
         if gust_speed < avg_speed:
-            record['wind_gust'] = None
+            record['windGust'] = None
+            record['windGustDir'] = None
+        else:
+            # use the regular wind direction for the gust direction
+            record['windGustDir'] = record['windDir']
 
         if DEBUG_PACKETS_WIND:
             logdbg('  Wind Dir: %s' % (WIND_DIR_MAP[pkt_data[0] & 0x0f]))
             logdbg('  Gust: %.1f m/s Wind:%.1f m/s' % (gust_speed, avg_speed))
             if windchill is not None:
-                logdbg('  Windchill: %.1f C' % windchill)
+                logdbg('  Windchill: %.1f C' % (windchill))
         return record
 
     except IndexError:
@@ -807,10 +812,10 @@ def decode_rain(pkt, pkt_data):
         # Convert into metric.
         rain_total = ((pkt_data[7] << 8) | pkt_data[6]) / 100.0 * 2.54
 
-        record = {'rain_rate': rain_rate,
-                  'rain_hour': rain_hour,
-                  'rain_24': rain_day + rain_hour,
-                  'rain_total': rain_total}
+        record = {'rainRate'          : rain_rate,
+                  'hourRain'          : rain_hour,
+                  'rain24'            : rain_day + rain_hour,
+                  'totalRain'         : rain_total}
 
         if DEBUG_PACKETS_RAIN:
             try:
@@ -844,7 +849,7 @@ def adjust_rain(pkt, packet):
     record = {}
 
     # Get the total current rain field from the console.
-    rain_total = pkt.record_get('rain_total')
+    rain_total = pkt.record_get('totalRain')
 
     # Calculate the amount of rain occurring for this interval.
     try:
@@ -853,7 +858,7 @@ def adjust_rain(pkt, packet):
         rain_interval = 0.0
 
     record['rain'] = rain_interval
-    record['rain_total_last'] = packet.rain_total_last
+    record['totalRainLast'] = packet.rain_total_last
 
     try:
         logdbg('  adjust_rain rain_total:%.02f %s.rain_total_last:%.02f'
@@ -893,7 +898,7 @@ class PacketRain(PacketLive):
 def decode_uvi(pkt, pkt_data):
     """Decode the uvi portion of a wmr200 packet."""
     try:
-        record = {'uv': pkt_data[0 & 0x0f]}
+        record = {'UV': pkt_data[0 & 0x0f]}
         if DEBUG_PACKETS_UVI:
             logdbg("  UV index:%s\n" % record['UV'])
         return record
@@ -930,12 +935,13 @@ def decode_pressure(pkt, pkt_data):
         # Similar to bytes 0 and 1, but altitude corrected
         # pressure. Upper nibble of byte 3 is still unknown. Seems to
         # be always 3.
-        altimeter = float(((pkt_data[3] & 0x0f) << 8) | pkt_data[2])
+        altimeter = float(((pkt_data[3] & 0x0f) << 8)
+                                     | pkt_data[2])
         unknown_nibble = (pkt_data[3] >> 4)
 
-        record = {'pressure': pressure,
-                  'altimeter': altimeter,
-                  'forecast_icon': forecast}
+        record = {'pressure'    : pressure,
+                  'altimeter'   : altimeter,
+                  'forecastIcon': forecast}
 
         if DEBUG_PACKETS_PRESSURE:
             logdbg('  Forecast: %s' % FORECAST_MAP[forecast])
@@ -999,10 +1005,10 @@ def decode_temp(pkt, pkt_data):
         # The first low nibble is the high byte of the temperature.
         # The second byte is low byte of the temperature. The value is in 1/10
         # degrees centigrade.
-        dew_point = (((pkt_data[5] & 0x0f) << 8) | pkt_data[4]) / 10.0
+        dew_point = (((pkt_data[5] & 0x0f) << 8)
+                     | pkt_data[4]) / 10.0
         if pkt_data[5] & 0x80:
             dew_point *= -1
-        # ignore the dewpoint and let weewx calculate it.
 
         # Heat index reported by console.
         heat_index = None
@@ -1010,10 +1016,22 @@ def decode_temp(pkt, pkt_data):
             # For some strange reason it's reported in degF so convert
             # to metric.
             heat_index = (pkt_data[6] - 32) / (9.0 / 5.0)
-        record['heatindex_%d' % sensor_id] = heat_index
 
-        record['temperature_%d' % sensor_id] = temp
-        record['humidity_%d' % sensor_id] = humidity
+        if sensor_id == 0:
+            # Indoor temperature sensor.
+            record['inTemp'] = temp
+            record['inHumidity'] = humidity
+        elif sensor_id == 1:
+            # Outdoor temperature sensor.
+            record['outTemp'] = temp
+            record['outHumidity'] = humidity
+            record['heatindex'] = heat_index
+        elif sensor_id >= 2:
+            # Extra temperature sensors.
+            # If additional temperature sensors exist (channel>=2), then
+            # use observation types 'extraTemp1', 'extraTemp2', etc.
+            record['extraTemp%d' % sensor_id] = temp
+            record['extraHumid%d' % sensor_id] = humidity
 
         if DEBUG_PACKETS_TEMP:
             logdbg('  Temperature id:%d %.1f C trend: %s'
@@ -1021,7 +1039,7 @@ def decode_temp(pkt, pkt_data):
             logdbg('  Humidity id:%d %d%% trend: %s'
                    % (sensor_id, humidity, TRENDS[hum_trend]))
             logdbg(('  Dew point id:%d: %.1f C' % (sensor_id, dew_point)))
-            if heat_index is not None:
+            if heat_index:
                 logdbg('  Heat id:%d index:%d' % (sensor_id, heat_index))
         return record
 
@@ -1072,52 +1090,53 @@ class PacketStatus(PacketLive):
         to make it fit."""
         super(PacketStatus, self).packet_process()
         # Setup defaults as good status.
-        self._record.update({'out_fault': 0,
-                             'wind_fault': 0,
-                             'uv_fault': 0,
-                             'rain_fault': 0,
-                             'clock_unsynchronized': 0,
-                             'battery_status_out': 0,
-                             'battery_status_wind': 0,
-                             'battery_status_uv': 0,
-                             'battery_status_rain': 0})
+        self._record.update({'outTempFault'         : 0,
+                             'windFault'            : 0,
+                             'uvFault'              : 0,
+                             'rainFault'            : 0,
+                             'clockUnsynchronized'  : 0,
+                             'outTempBatteryStatus' : 1.0,
+                             'windBatteryStatus'    : 1.0,
+                             'uvBatteryStatus'      : 1.0,
+                             'rainBatteryStatus'    : 1.0,
+                            })
         # This information may be sent to syslog
         msg_status = []
         if self._pkt_data[2] & 0x02:
             msg_status.append('Temp outdoor sensor fault')
-            self._record['out_fault'] = 1
+            self._record['outTempFault'] = 1
 
         if self._pkt_data[2] & 0x01:
             msg_status.append('Wind sensor fault')
-            self._record['wind_fault'] = 1
+            self._record['windFault'] = 1
 
         if self._pkt_data[3] & 0x20:
             msg_status.append('UV Sensor fault')
-            self._record['uv_fault'] = 1
+            self._record['uvFault'] = 1
 
         if self._pkt_data[3] & 0x10:
             msg_status.append('Rain sensor fault')
-            self._record['rain_fault'] = 1
+            self._record['rainFault'] = 1
 
         if self._pkt_data[4] & 0x80:
             msg_status.append('Clock time unsynchronized')
-            self._record['clock_unsynchronized'] = 1
+            self._record['clockUnsynchronized'] = 1
 
         if self._pkt_data[4] & 0x02:
             msg_status.append('Temp outdoor sensor: Battery low')
-            self._record['battery_status_out'] = 1
+            self._record['outTempBatteryStatus'] = 0.0
 
         if self._pkt_data[4] & 0x01:
             msg_status.append('Wind sensor: Battery low')
-            self._record['battery_status_wind'] = 1
+            self._record['windBatteryStatus'] = 0.0
 
         if self._pkt_data[5] & 0x20:
             msg_status.append('UV sensor: Battery low')
-            self._record['battery_status_uv'] = 1
+            self._record['uvBatteryStatus'] = 0.0
 
         if self._pkt_data[5] & 0x10:
             msg_status.append('Rain sensor: Battery low')
-            self._record['battery_status_rain'] = 1
+            self._record['rainBatteryStatus'] = 0.0
 
         if self.wmr200.sensor_stat:
             while msg_status:
@@ -1293,7 +1312,7 @@ class PollUsbDevice(threading.Thread):
                     # If we have sent several resets with no data,
                     # give up and abort.
                     if read_reset_cnt == 2:
-                        msg = 'Device unresponsive after multiple resets'
+                        msg = ('Device unresponsive after multiple resets')
                         logerr(msg)
                         raise weewx.RetriesExceeded(msg)
 
@@ -1358,57 +1377,6 @@ class PollUsbDevice(threading.Thread):
 class WMR200(weewx.drivers.AbstractDevice):
     """Driver for the Oregon Scientific WMR200 station."""
 
-    DEFAULT_MAP = {
-        'altimeter': 'altimeter',
-        'pressure': 'pressure',
-        'windSpeed': 'wind_speed',
-        'windDir': 'wind_dir',
-        'windGust': 'wind_gust',
-        'windBatteryStatus': 'battery_status_wind',
-        'inTemp': 'temperature_0',
-        'outTemp': 'temperature_1',
-        'extraTemp1': 'temperature_2',
-        'extraTemp2': 'temperature_3',
-        'extraTemp3': 'temperature_4',
-        'extraTemp4': 'temperature_5',
-        'extraTemp5': 'temperature_6',
-        'extraTemp6': 'temperature_7',
-        'extraTemp7': 'temperature_8',
-        'inHumidity': 'humidity_0',
-        'outHumidity': 'humidity_1',
-        'extraHumid1': 'humidity_2',
-        'extraHumid2': 'humidity_3',
-        'extraHumid3': 'humidity_4',
-        'extraHumid4': 'humidity_5',
-        'extraHumid5': 'humidity_6',
-        'extraHumid6': 'humidity_7',
-        'extraHumid7': 'humidity_8',
-        'inHeatindex': 'heatindex_0',
-        'heatindex': 'heatindex_1',
-        'heatindex1': 'heatindex_2',
-        'heatindex2': 'heatindex_3',
-        'heatindex3': 'heatindex_4',
-        'heatindex4': 'heatindex_5',
-        'heatindex5': 'heatindex_6',
-        'heatindex6': 'heatindex_7',
-        'heatindex7': 'heatindex_8',
-        'outTempBatteryStatus': 'battery_status_out',
-        'rain': 'rain',
-        'rainTotal': 'rain_total',
-        'rainRate': 'rain_rate',
-        'hourRain': 'rain_hour',
-        'rain24': 'rain_24',
-        'rainBatteryStatus': 'battery_status_rain',
-        'UV': 'uv',
-        'uvBatteryStatus': 'battery_status_uv',
-        'windchill': 'windchill',
-        'forecastIcon': 'forecast_icon',
-        'outTempFault': 'out_fault',
-        'windFault': 'wind_fault',
-        'uvFault': 'uv_fault',
-        'rainFault': 'rain_fault',
-        'clockUnsynchronized': 'clock_unsynchronized'}
-
     def __init__(self, **stn_dict):
         """Initialize the wmr200 driver.
         
@@ -1431,21 +1399,11 @@ class WMR200(weewx.drivers.AbstractDevice):
         """
         super(WMR200, self).__init__()
 
-        loginf('driver version is %s' % DRIVER_VERSION)
-
-        # User configurable options
+        ## User configurable options
         self._model = stn_dict.get('model', 'WMR200')
-
-        # get default mapping, override with user-specified
-        self._sensor_map = dict(self.DEFAULT_MAP)
-        if 'sensor_map' in stn_dict:
-            self._sensor_map.update(stn_dict['sensor_map'])
-        loginf('sensor map is %s' % self._sensor_map)
-
         # Provide sensor faults in syslog.
-        self._sensor_stat = \
-            weeutil.weeutil.tobool(stn_dict.get('sensor_status', True))
-
+        self._sensor_stat = weeutil.weeutil.tobool(stn_dict.get('sensor_status',
+                                                                True))
         # Use pc timestamps or weather console timestamps.
         self._use_pc_time = \
             weeutil.weeutil.tobool(stn_dict.get('use_pc_time', True))
@@ -1462,7 +1420,7 @@ class WMR200(weewx.drivers.AbstractDevice):
 
         # Archive threshold in seconds between archive packets before dropping.
         self._archive_threshold = int(stn_dict.get('archive_threshold',
-                                                   3600 * 24 * 7))
+                                                   3600*24*7))
 
         # Ignore checksum errors.
         self._ignore_checksum = \
@@ -1472,10 +1430,11 @@ class WMR200(weewx.drivers.AbstractDevice):
         self._archive_startup = int(stn_dict.get('archive_startup', 120))
 
         # Device specific hardware options.
-        vendor_id = int(stn_dict.get('vendor_id', '0x0fde'), 0)
-        product_id = int(stn_dict.get('product_id', '0xca01'), 0)
-        interface = int(stn_dict.get('interface', 0))
-        in_endpoint = int(stn_dict.get('IN_endpoint', usb.ENDPOINT_IN + 1))
+        vendor_id         = int(stn_dict.get('vendor_id',  '0x0fde'), 0)
+        product_id        = int(stn_dict.get('product_id', '0xca01'), 0)
+        interface         = int(stn_dict.get('interface', 0))
+        in_endpoint       = int(stn_dict.get('IN_endpoint',
+                                             usb.ENDPOINT_IN + 1))
 
         # Buffer of bytes read from weather console device.
         self._buf = []
@@ -1519,9 +1478,9 @@ class WMR200(weewx.drivers.AbstractDevice):
 
         # Create the watchdog thread to request live data.
         self._thread_watchdog = RequestLiveData(
-            kwargs={'wmr200': self,
-                    'poke_time': _WMR200_REQUEST_LIVE_DATA_INTERVAL,
-                    'sock_rd': self.sock_rd})
+            kwargs = {'wmr200'    : self,
+                      'poke_time' : _WMR200_REQUEST_LIVE_DATA_INTERVAL,
+                      'sock_rd'   : self.sock_rd})
 
         # Create the usb polling device thread.
         self._thread_usb_poll = PollUsbDevice(kwargs={'wmr200': self})
@@ -1722,8 +1681,8 @@ class WMR200(weewx.drivers.AbstractDevice):
         """Print summary of driver statistics."""
         loginf(('Received packet count live:%d archive:%d'
                 ' control:%d') % (PacketLive.pkt_rx,
-                                  PacketArchive.pkt_rx,
-                                  PacketControl.pkt_rx))
+                                      PacketArchive.pkt_rx,
+                                      PacketControl.pkt_rx))
         loginf('Received bytes:%d sent bytes:%d' %
                (self.usb_device.byte_cnt_rd,
                 self.usb_device.byte_cnt_wr))
@@ -1794,9 +1753,7 @@ class WMR200(weewx.drivers.AbstractDevice):
                     pkt.print_cooked()
                 logdbg('genLoop() Yielding live queued packet id:%d'
                        % pkt.pkt_id)
-                mapped = self._sensors_to_fields(pkt.packet_record(),
-                                                 self._sensor_map)
-                yield mapped
+                yield pkt.packet_record()
 
     def XXXgenArchiveRecords(self, since_ts=0):
         """A generator function to return archive packets from the wmr200.
@@ -1852,9 +1809,7 @@ class WMR200(weewx.drivers.AbstractDevice):
                 if pkt.timestamp_record() > since_ts:
                     logdbg(('genArchive() Yielding received archive record'
                             ' after requested timestamp'))
-                    mapped = self._sensors_to_fields(pkt.packet_record(),
-                                                     self._sensor_map)
-                    yield mapped
+                    yield pkt.packet_record()
                 else:
                     loginf(('genArchive() Ignoring received archive record'
                             ' before requested timestamp'))
@@ -1944,14 +1899,12 @@ class WMR200(weewx.drivers.AbstractDevice):
                             ' record exceeding archive interval cnt:%d'
                             ' threshold:%d timestamp:%s')
                            % (cnt, self._archive_threshold,
-                              weeutil.weeutil.timestamp_to_string(
-                                  pkt.timestamp_record())))
+                              weeutil.weeutil.timestamp_to_string\
+                              (pkt.timestamp_record())))
                 elif pkt.timestamp_record() > since_ts:
                     # Calculate the rain accumulation between valid archive 
                     # packets.
                     pkt.record_update(adjust_rain(pkt, PacketArchiveData))
-                    # Ensure that the packet has a valid 'interval' field
-                    pkt.record_update({'interval': int(timestamp_packet_interval / 60.0)})
 
                     timestamp_packet_previous = timestamp_packet_current
                     cnt += 1
@@ -1959,19 +1912,18 @@ class WMR200(weewx.drivers.AbstractDevice):
                             ' record cnt:%d after requested timestamp'
                             ':%d pkt_interval:%d pkt:%s')
                            % (cnt, since_ts, timestamp_packet_interval,
-                              weeutil.weeutil.timestamp_to_string(
-                                  pkt.timestamp_record())))
+                              weeutil.weeutil.timestamp_to_string\
+                              (pkt.timestamp_record())))
                     if DEBUG_PACKETS_COOKED:
                         pkt.print_cooked()
-                    mapped = self._sensors_to_fields(pkt.packet_record(),
-                                                     self._sensor_map)
-                    yield mapped
+                    yield pkt.packet_record()
                 else:
                     timestamp_packet_previous = timestamp_packet_current
                     loginf(('genStartup() Discarding received archive'
                             ' record before time requested cnt:%d'
-                            ' timestamp:%s') %
-                           (cnt, weeutil.weeutil.timestamp_to_string(since_ts)))
+                            ' timestamp:%s')
+                           % (cnt, weeutil.weeutil.timestamp_to_string\
+                              (since_ts)))
 
             # Return if we receive not more archive packets in a given time
             # interval.
@@ -1988,13 +1940,13 @@ class WMR200(weewx.drivers.AbstractDevice):
                     loginf(('genStartup() Yielded %d packets in %d sec '
                             ' between these dates %s ==> %s' %
                             (cnt, startup_time,
-                             weeutil.weeutil.timestamp_to_string(
-                                 timestamp_packet_first),
-                             weeutil.weeutil.timestamp_to_string(
-                                 timestamp_packet_current))))
+                             weeutil.weeutil.timestamp_to_string\
+                             (timestamp_packet_first),
+                             weeutil.weeutil.timestamp_to_string\
+                             (timestamp_packet_current))))
                     if startup_time > 0:
                         loginf(('genStartup() Average packets per minute:%f' %
-                                (cnt / (startup_time / 60.0))))
+                                (cnt/(startup_time/60.0))))
                 return
 
     def closePort(self):
@@ -2035,22 +1987,6 @@ class WMR200(weewx.drivers.AbstractDevice):
         self.usb_device.close_device()
         loginf('Driver gracefully exiting')
 
-    @staticmethod
-    def _sensors_to_fields(oldrec, sensor_map):
-        # map a record with observation names to a record with db field names
-        if oldrec:
-            newrec = dict()
-            for k in sensor_map:
-                if sensor_map[k] in oldrec:
-                    newrec[k] = oldrec[sensor_map[k]]
-            if newrec:
-                newrec['dateTime'] = oldrec['dateTime']
-                newrec['usUnits'] = oldrec['usUnits']
-                if 'interval' in oldrec:
-                    newrec['interval'] = oldrec['interval']
-                return newrec
-        return None
-
 
 class WMR200ConfEditor(weewx.drivers.AbstractConfEditor):
     @property
@@ -2069,8 +2005,5 @@ class WMR200ConfEditor(weewx.drivers.AbstractConfEditor):
     def modify_config(self, config_dict):
         print """
 Setting rainRate and windchill calculations to hardware."""
-        config_dict.setdefault('StdWXCalculate', {})
-        config_dict['StdWXCalculate'].setdefault('Calculations', {})
-        config_dict['StdWXCalculate']['Calculations']['rainRate'] = 'hardware'
-        config_dict['StdWXCalculate']['Calculations']['windchill'] = 'hardware'
-        config_dict['StdWXCalculate']['Calculations']['heatindex'] = 'hardware'
+        config_dict['StdWXCalculate']['rainRate'] = 'hardware'
+        config_dict['StdWXCalculate']['windchill'] = 'hardware'

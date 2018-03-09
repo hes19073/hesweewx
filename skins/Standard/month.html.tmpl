@@ -17,6 +17,27 @@
   </head>
 
 <body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
    <div id="container">
 
     #include $Extras.header
@@ -35,59 +56,66 @@
         <div class="header">
           <h3>Monatliche Statistik und Diagramme  <a href='month-table.html'>/ Tabelle</a></h3>
         </div>
-        <div id="plots">
-          <img src="monthtempdew.png" alt="temperatures" />
-          <img src="monthtempchill.png" alt="heatchill" />
-          <img src="monthhumid.png" alt="humidity" />   
-          <img src="monthrain.png" alt="rain" />
-          <img src="monthsnow.png" alt="snow" />
-         #if $month.ET.has_data
-           <img src="monthET.png" alt="ET Rechnung" />
-         #end if
-          <img src="monthbarometer.png" alt="barometer"/>
-          <img src="monthwind.png" alt="wind" />
-          <img src="monthwinddir.png" alt="Hi Wind" />
-          <img src="monthwindvec.png" alt="Wind Vector" />
-          <img src="monthinside.png" alt="Inside" />
-          <img src="monthinhume.png" alt="InsideHumid" />
-          #if $month.extraTemp4.has_data
-          <img src="monthextra2.png" alt="Carport" />
-          #end if
-          #if $month.lighting.has_data
-          <img src="monthlighting.png" alt="Helligkeit" />
-          #end if
-          #if $month.radiation.has_data
-          <img src="monthradiation.png" alt="Radiation" />
-          #end if
-          #if $month.rxCheckPercent.has_data
-          <img src="monthBate.png" alt="month rx percent"/>
-          #end if
-          #if $month.extraTemp1.has_data
-          <img src="monthextra1.png" alt="Teich Wassertemperaturen" />
-          #end if
-          #if $month.extraTemp2.has_data
-          <img src="monthTeichB.png" alt="Bade Wassertemperaturen" />
-          #end if
-          #if $month.extraTemp6.has_data
-          <img src="monthTeichG.png" alt="Gondfisch Wassertemperaturen" />
-          #end if
-
-          #if $month.soilTemp1.has_data
-          <img src="monthTempB.png" alt="Bodentemperaturen" />
-          <img src="monthsoilT.png" alt="Boden Luft" />
-          #end if
-          #if $month.soilMoist1.has_data
-          <img src="monthsoilF.png" alt="Bodenfeuchtigkeit" />
-          #end if
-          #if $month.cloudbase.has_data
-          <img src="monthcloudbase.png" alt="Wolkenunterkante" />
-          #end if
-          #if $month.windrund.has_data
-          <img src="monthwindrun.png" alt="Windrun" />
-          #end if
-          #if $month.beaufort.has_data
-          <img src="monthwindB.png" alt="Wind in Beaufort" />
-          #end if
+    <div id="plots">
+     <img src="monthtemp.png" alt="temperatures" />
+     <img src="monthapptemp.png" alt="gefuehlt" />
+     <img src="monthwindchill.png" alt="windchill" />
+     <img src="monthheatindex.png" alt="heatindex" />
+     <img src="monthhumid.png"     alt="humidity" />
+     <img src="monthabsF.png" alt="absoluteFeuchtigkeit" />
+     <img src="monthbarometer.png" alt="barometer"/>
+     <hr />
+     <img src="monthrain.png" alt="rain" />
+     <img src="monthsnow.png" alt="Schnee" />
+     <img src="monthET.png" alt="ET" />
+     <hr />
+     <img src="monthwind.png" alt="wind" />
+     <img src="monthwinddir.png" alt="Hi Wind" />
+     <img src="monthwindvec.png" alt="Wind Vector" />
+     <hr />
+     <img src="monthGartenTemp.png" alt="Carport/Garten" />
+     <img src="monthTeichTemp.png" alt="GartenTeich" />
+     <img src="monthBadTemp.png" alt="Schwimmteich" />
+     <hr />
+     <img src="monthlighting.png" alt="Helligkeit" />
+     <img src="monthradiation.png" alt="Radiation" />
+     <img src="monthsun.png" alt="Sonnenstunden" />
+     <img src="monthuv.png" alt="UV-Index" />
+     <hr />
+     <img src="monthBoden5.png" alt="Bodentemperatur" />
+     <img src="monthsoilT.png" alt="OWFS Boden" />
+     <img src="monthsoilD.png" alt="Davis Boden" />
+     <img src="monthsoilF.png" alt="Bodenfeuchte" />
+     <hr />
+     <img src="monthleafW.png" alt="Blatt Feuchte" />
+     <img src="monthleafT.png" alt="Blatt Temperatur" />
+     <hr />
+     <img src="monthAir.png" alt="LuftGuete" />
+     <img src="monthHCHO.png" alt="Luft hcho" />
+     <img src="monthGas.png" alt="Luft gas" />
+     <img src="monthPM10.png" alt="Luft 10ppm" />
+     <img src="monthPM25.png" alt="Luft 2,5ppm" />
+     <hr />
+     <img src="monthinTemp.png" alt="Inside TEmp" />
+     <img src="monthinHumid.png" alt="InsideHumid" />
+     <img src="monthindew.png" alt="Inside dewpoint" />
+     <hr />
+     <img src="monthSound.png" alt="Sound" />
+     <hr />
+     <img src="monthcloudbase.png" alt="Wolkenunterkante" />
+     <img src="monthwindrun.png" alt="Windrun" />
+     <img src="monthwindB.png" alt="Wind in Beaufort" />
+     <img src="monthDensity.png" alt="Luftdichte" />
+     <img src="monthWindDruck.png" alt="Winddruck" />
+     <hr />
+     <img src="monthBlitz.png" alt="Blitz" />
+     <hr />
+     <img src="monthVolt.png" alt="OWFS-Spannung" />
+     <img src="monthBate.png" alt="Spannung" />
+     <img src="monthStat.png" alt="ISS-Signal" />
+     <hr />
+     <img src="monthGeiger.png" alt="CPM Signal" />
+     <img src="monthGeigerS.png" alt="h Signal" />
         </div>
       </div> <!-- End id "content" -->
 

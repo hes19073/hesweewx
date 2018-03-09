@@ -39,6 +39,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
         self.loop_interval = float(stn_dict.get('loop_interval', 5))
 
         # e.g.'http://api.openweathermap.org/data/2.5/weather?q=Otterlo,nl&units=imperial'
+        #  http://api.openweathermap.org/data/2.5/weather?q=KleinRogahn.de&units=metric&appid=727a7ae5d06e77d4bc43795b12f5e6c0
         self.openweathermap_url = ''.join(stn_dict.get('openweathermap_url'))
         syslog.syslog(syslog.LOG_INFO, "WeatherAPIStation: openweathermap_url=%s" % self.openweathermap_url)
 
@@ -146,7 +147,7 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
     #         "speed": 5.7,
     #         "deg": 200
     #     },
-    #     "rain": { ## Achtung kein durchgehendes Argument 
+    #     "rain": {
     #     "1h": 47.27
     # }, "clouds": {
     #     "all": 90
@@ -174,11 +175,11 @@ class WeatherAPIStation(weewx.drivers.AbstractDevice):
             # speed, units, group = c.convert(p_m)
 
             packet['windSpeed'] = wind['speed']
-            # packet['windGust'] = wind['speed']
+            # packet['windGust'] = wind['temp']
             packet['windDir'] = wind['deg']
-            # packet['windGust'] = Wind['deg']
+            # packet['windGust'] = main['temp']
 
-            # packet['rainRate'] = rsp_dict['rain']['1h'] Element nicht permanent FIXME 
+            # packet['rainRate'] = rsp_dict['rain']['3h']
 
             packet['windchill'] = weewx.wxformulas.windchillF(packet['outTemp'], packet['windSpeed'])
             packet['dewpoint']  = weewx.wxformulas.dewpointF(packet['outTemp'], packet['outHumidity'])

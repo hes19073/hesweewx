@@ -386,9 +386,8 @@ class RESTThread(threading.Thread):
         _full_record = self.get_record(record, dbmanager)
         # ... format the URL, using the relevant protocol ...
         _url = self.format_url(_full_record)
-        # ... convert to a Request object ...
-        _request = urllib2.Request(_url)
-        _request.add_header("User-Agent", "weewx/%s" % weewx.__version__)
+        # ... get the Request to go with it...
+        _request = self.get_request(_url)
         #  ... get any POST payload...
         _payload = self.get_post_body(_full_record)
         # ... add a proper Content-Type if needed...
@@ -397,13 +396,18 @@ class RESTThread(threading.Thread):
             data = _payload[0]
         else:
             data = None
-
         # ... check to see if this is just a drill...            
         if self.skip_upload:
             raise AbortedPost()
 
         # ... then, finally, post it
         self.post_with_retries(_request, data)
+
+    def get_request(self, url):
+        """Get a request object. This can be overridden to add any special headers."""
+        _request = urllib2.Request(url)
+        _request.add_header("User-Agent", "weewx/%s" % weewx.__version__)
+        return _request
 
     def post_with_retries(self, request, data=None):
         """Post a request, retrying if necessary
@@ -415,7 +419,7 @@ class RESTThread(threading.Thread):
         
         data: The body of the POST. If not given, the request will be done as a GET.
         """
-        
+
         # Retry up to max_tries times:
         for _count in range(self.max_tries):
             try:
@@ -438,7 +442,7 @@ class RESTThread(threading.Thread):
                 # Provide method for derived classes to behave otherwise if
                 # necessary.
                 self.handle_code(_response.code, _count + 1)
-            except (urllib2.URLError, socket.error, httplib.BadStatusLine, httplib.IncompleteRead), e:
+            except (urllib2.URLError, socket.error, httplib.HTTPException), e:
                 # An exception was thrown. By default, log it and try again.
                 # Provide method for derived classes to behave otherwise if
                 # necessary.

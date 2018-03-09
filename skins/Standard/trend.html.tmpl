@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
     <link rel="stylesheet" type="text/css" href="css/weereport.css" />
     <link rel="icon" type="image/png" href="favicon.ico" />
-    <script type='text/javascript' src='js/hesweewx.js'></script>
+    <script src='js/hesweewx.js'></script>
 
   </head>
 
@@ -91,7 +91,19 @@
        <td class="stats_data">$hours_ago($hours_ago=$zeit).sunshineS.avg</td>
       </tr>
      #end for
-      <tr><td collspan="10">&nbsp;</td></tr>
+      <tr><td collspan="10">Tagesmaximalwerte&nbsp;</td></tr>
+      <tr>
+       <td class="stats_label">Heute</td>
+       <td class="stats_data">$day.outTemp.max</td>
+       <td class="stats_data">$day.windSpeed.max</td>
+       <td class="stats_data">$day.windGust.max</td>
+       <td class="stats_data">$day.windDir.avg</td>
+       <td class="stats_data">$day.outHumidity.max</td>
+       <td class="stats_data">$day.barometer.max</td>
+       <td class="stats_data">$day.rain.sum</td>
+       <td class="stats_data">$day.radiation.sum</td>
+       <td class="stats_data">$day.sunshineS.sum</td>
+      </tr>
       <tr><td collspan="10">&nbsp;</td></tr>
       <tr>
        <td class="stats_label">Gestern</td>
@@ -139,12 +151,8 @@
   #end for
   </tr> 
     </table>
-    <p>StormRain:$latest($data_binding='wdsupp_binding').stormRain<br />
-       StormStart:$latest($data_binding='wdsupp_binding').stormStart.format('%d.%m.%Y')<br />
-       $latest($data_binding='wdsupp_binding').vantageForecastIcon </p>
-       <p> month con dry days:$month_con_dry_days<br />
-           month con days time:$month_con_dry_days_time</p>
-
+    <p>StormRain:$latest($data_binding='wdsupp_binding').stormRain &nbsp;&nbsp;
+       StormStart:$latest($data_binding='wdsupp_binding').stormStart.format('%d.%m.%Y') </p>
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
 <!-- </div> -->

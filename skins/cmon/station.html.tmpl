@@ -1,0 +1,278 @@
+#errorCatcher Echo
+##    $Revision: 1126 $
+##    $Author: tkeffer $
+##    $Date: 2013-03-27 14:52:32 -0700 (Wed, 27 Mar 2013) $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperatueren und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author" content="hes1" />
+    <!-- <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+    <title>Wetterstation&nbsp;$station.location</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script src='js/hesweewx.js'></script>
+    <script>
+      window.onload = function() { applypopups(); }
+    </script>
+
+  </head>
+
+<body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+ #include $Extras.header
+
+ <div id="stats_group">
+
+  #set global $period1 = $yesterday($data_binding='weewx_binding')
+  #set global $period2 = $day($data_binding='weewx_binding')
+  #set global $period1Name = "Gestern"
+  #set global $period2Name = "Heute"
+
+  #include $Extras.chart
+
+  <div>
+  #include $Extras.about
+  </div>
+               
+ </div> <!--End class "stats_group" -->
+   <div id="content">
+    <div id="about">
+     <div class="header">
+      Die Wetterstation:
+     </div>
+     <table>
+      <caption class="caption">Koordinaten</caption>
+      <tr>
+       <td class="label">Breitengrad:</td>
+       <td class="data">$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</td>
+      </tr>
+      <tr>
+       <td class="label">L&auml;ngengrad:</td>
+       <td class="data">$station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]</td>
+      </tr>
+      <tr>
+       <td class="label">H&ouml;he:</td>
+       <td class="data">$station.altitude</td>
+      </tr>
+      </table>
+      <hr />
+      <h3>Messwerterfassung</h3>
+      <p>
+       Diese private Wetterstation <a href ="http://weewx.com/stations">'in Klein Rogahn'</a> 
+       verwendet eine Solar-Funk-Wetterstation mit der Bezeichnung  $station.hardware, 
+       <br />verwaltet von der Open Source Software  <a href="http://www.weewx.com">'weewx'</a>. 
+       <br />Die Software wurde in Python geschrieben. 
+       Es werden weitere Sensoren per Bussystem (1-wire) erfasst. 
+       <br />Meine Anpassungen/ Erweiterungen unter <a href =  "https://github.com/hes19073/hesweewx.git">Github/hesweewx </a>.
+      </p>
+      <h3>Haftung</h3>
+      <ul>
+       <li><b>Die ver&ouml;ffentlichten Daten sind Eigentum des Betreibers und erheben keinerlei Anspruch auf Richtigkeit,<br />
+         da es sich hierbei um eine rein private Wetterstation handelt.</b></li>
+       <li>Die von meiner Wetterstation gemessenen und berechneten Daten und Bilder sind ohne Gewähr.</li>
+       <li>Ich als Betreiber dieser Seiten hafte nicht für die Zuverlässigkeit und Richtigkeit der von meiner Wetterstation<br /> 
+           bereitgestellten oder berechneten Daten und Bilder</li>
+       <li><b>Die Nutzung der Wetterinformationen geschieht auf eigene Gefahr</b></li>
+      </ul>
+      <h3>Standort</h3>
+      <p>Die Gemeinde <a href="http://de.wikipedia.org/wiki/Klein_Rogahn"> Klein Rogahn </a>&nbsp;
+         liegt ca. 5 km s&uuml;dwestlich der Landeshauptstadt Schwerin.<br />
+         Amt Strahlendorf; Landkreis Ludwigslust-Parchim; Bundesland Mecklenburg-Vorpommern; Deutschland</p>
+      <hr />
+      <h3>Die Wetterstation</h3> 
+      <p>Die Wetterstation mit der Bezeichnung "Davis Vantage PRO 2" ist eine Solar-Funk-Wetterstation (868MHz),<br />
+          mit der Handelsbezeichung "Vantage Pro 2 Aktiv Plus", Modell 6163EU. 
+          <br />Die Basisstation ist mit einer seriell/USB Schnittstelle (Weather-Link Data-Logger) ausgestattet. Diese ist mit dem
+          <a href="server.html">Wetterserver</a>&nbsp;verbunden.<br />
+          Die Entfernung zwischen der Sendestation mit den Sensoren und dem Empfangsteil beträgt ca. 60 m. 
+          Die Sensoren der Davis Vantage Pro 2 ermitteln die Lufttemperatur, 
+          die Luftfeuchtigkeit, die Windrichtung, die Windgeschwindigkeit sowie die Niederschlagsmenge 
+          und übermitteln diese drahtlos über Funk (868 MHz) an die Basisstation. </p>
+         <p>Die Davis Vantage Pro 2 Plus&nbsp;Aktiv verfügt als zusätzliche Ausstattung über UV-Index und UV-Dosis, 
+            Sonneneinstrahlungsintensität und Evapotranspiration und den 24 Stunden aktiv belüfteten Bestrahlungsschutzschild.</p> 
+         <p>Solarstrahlung:</p>
+         <ul>
+          <li>Messbereich: 0 bis 1600 W/m²</li>
+          <li>Genauigkeit: +/- 5%</li>
+          <li>Auflösung: 1 W/m²</li>
+         </ul>
+        <p>UV-Index:</p>
+         <ul>
+          <li>Messbereich: 0 bis 16 Index</li>
+          <li>Genauigkeit: +/- 8%</li>
+          <li>Auflösung: 0,1 Index</li>
+         </ul>
+        <p>Aktivbelüftung über Solarpaneel</p>
+         <ul>
+          <li>eigene Stromversorgung mit Akkupufferung</li>
+          <li>24 Stunden Belüftung</li>
+          <li>Luftstrom tagsüber 2,5 m/sec.</li>
+          <li>Luftstrom nachts 1,4 m/sec</li>
+        </ul>
+       <p>Außensensoren</p>
+       <ul>
+        <li>Außentemperatur: Messbereich -40 °C bis +65 ° C; Auflösung: 0,1 °C; Genauigkeit: ± 1 °C </li>
+        <li>Außenluftfeuchtigkeit: Messbereich 1 bis 100 % rel. Feuchte, Auflösung: 1 %; Genauigkeit: ± 3% </li>
+        <li>Luftdruck: Messbereich: 540 hPa - 1100 hPa, Auflösung: 0,1 hPa, Genauigkeit: 1,0 hPa </li>
+        <li>Niederschlagssensor: Anzeigebereich: bis 999,9 mm, Auflösung pro Wippenschlag: 0,2 mm </li>
+        <li>Windgeschwindigkeitssensor: Messbereich Windstärke: 3 km/h bis 290 km/h, Genauigkeit Windstärke: 3 km/h, Auflösung: 1 km/h </li>
+        <li>Windrichtungssensor Auflösung Windrichtung grafisch: N, O, S, W mit 3 Zwischenschritten </li>
+      </ul>
+      <hr />
+      <h3>Aufstellung der Sensoren der Solar-Funk-Wetterstation</h3>
+      <p>
+       Die Sendeeinheit mit dem <b>Thermo-/Hygro-/Niederschlagssensor</b> befindet sich 2 m über Grund. <br /> 
+       <a href='xicons/p/kombi2.jpg'>
+        <img src="xicons/p/kombi2.jpg" style="width:120px; hight:60px;" alt="Kombisensor" title="Sensor 1" /></a><br />
+       Der <b>Windmesser</b> (Anemometer) ist über der Sendeeinheit in 10,6 m über Grund. <br />
+       <a href='xicons/p/wind2.jpg'>
+        <img src="xicons/p/wind2.jpg" style="width:120px; hight:60" alt="Wind" title="Wind-Sensor" /></a><br />
+       <p>Der <em>Luftdruck</em>, die <em>Innentemperatur</em> und die <em>Innenluftfeuchtigkeit</em> 
+          werden in der Basisstation ermittelt.<br />
+          <em>Taupunkt</em>, <em>Hitzeindex </em>und<em> Windchill</em> werden berechnet.<br />
+       </p>
+       <p> Die Messeinrichtungen der Wetterstation stehen im Garten.<br />
+       <b>Die Position:</b><br /><strong>Breitengrad, Latitude $station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2],
+          Längengrad, Longitude $station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]
+          Höhe $station.altitude</strong><br /></p>
+      <p>
+       <iframe width="640" height="350" src="http://www.openstreetmap.org/export/embed.html?bbox=11.32692575454712%2C53.60213186134444%2C11.355786323547362%2C53.60979627851543&amp;layer=mapnik&amp;marker=53.60596424379707%2C11.3413667678833" style="border: 1px solid black"></iframe><br/>
+       <small><a href="http://www.openstreetmap.org/?mlat=53.6060&amp;mlon=11.3414#map=16/53.6060/11.3414&amp;layers=N">Größere Karte anzeigen</a></small></p>
+
+     <h3>Davis Sensorstation 6345OVCS mit Boden- und Blattfeuchte/-temperatur-Sensoren</h3>
+     <h4>Start am 04.02.2017, 14:30 Uhr</h4>
+     <p>Die DAVIS Wireless Leaf Wetness - Soil Moisture - Temperature Station ist eine Funk-Mess-Station, 
+        die die Erfassung der Blattfeuchte, Bodenfeuchte und/oder Temperatur an beliebigen Orten ermöglicht.
+        Der Transmitter und die Solarstromversorgung sind in einem wetterfesten Schutzgehäuse untergebracht.<br />
+        Ich habe 4 Bodenfeuchte- und 4 Temperatursensoren, in 5, 10, 20 und 50 cm Tiefe angeschlossen. 
+        Der Temperatursensor besteht aus einem Epoxy gekapseltem Platin-Thermistor in einem Edelstahlgehäuse.
+        Die 2 Blattfeuchtesensor dienen zur Messung der Oberflächenfeuchte von Laub,
+        Zur Feststellung der Blattfeuchte-Intensität werden Werte von 0 - 15 ausgegeben. 
+     </p>
+     <h3>Zusätzliche Sensoren über OWFS</h3>
+     <p>Als Temperatursensoren verwende ich sowohl die wasserdichte Ausführung des <b>DS18B20</b> mit 1m Anschlussleitung als auch die einfache Form.<br />
+     <br />Der Messbereich dieser Sensoren liegt zwischen -55°C und 125°C (Messgenauigkeit &gt; ± 0,5°C).<br />
+     <!-- &#177; &plusmn; ). -->
+        Im Bereich zwischen -10°C und +85°C haben diese Sensoren eine Messgenauigkeit von ± 0,5°C, laut Hersteller. </p>
+     <p>Für die Messung der Luftfeuchtigkeit wird ein Sensor aus der <b>HIH-4000 Serie</b> verwendet.<br /> 
+        Die Messgenauigkeit des HIH-4000 Sensors liegt zwischen 0% und 59% relative Luftfeuchte bei ± 5% und <br />
+        zwischen 60% und 100% relative Luftfeuchtigkeit bei ± 8% (Spannung 5 V und 25°C).</p>
+     <br />
+     <p>Es befindet sich am Carport in 2 m über Grund ein Kombisensor für Temperatur (DS18B20) und <br /> 
+        ein DS2438 Multisensor zur Erfassung der Luftfeuchte (2. Messstelle) mittels HIH4000er Serie Sensor.<br /><br /> 
+        Dieser Kombimesseinrichtung ist ein Helligkeits-, Feuchte- und Temperatursensor des Anbieters 'e-service online'.
+        Diese Sensoreinheit wird mittels Strahlungsschutzschild aus Blumentopfuntersetzern vor der direkten Sonnenbestrahlung geschützt.<br /> 
+        <a href='xicons/p/tempfeucht.jpg'>
+         <img src="xicons/p/tempfeucht.jpg" style="width:120px; hight:60" alt="Sensor" title="Humid1" /></a><br />
+        Ein Sensor (DS18B20) erfasst die Lufttemperatur in 1m Höhe über Grund. <br />
+         <!-- <img src="" style="width:120px; hight:60" alt="" title="" />(Bild)<br /> -->
+        Die Wassertemperatur des kleinen Teiches (0,75 m³) wird per wasserdichten Temperatursensor (DS18B20) in 50 cm Tiefe ermittelt. <br />
+         <a href='xicons/p/teichklein.jpg'>
+          <img src="xicons/p/teichklein.jpg" style="width:120px; hight:60" alt="kleiner Teich" title="Kleiner Teich" /></a><br />
+        Im Schwimmteich (96 m³) gibt es zwei wasserdichte Temperatursensoren (DS18B20), einer in 20 cm und einer in 180 cm Tiefe. <br /> 
+          <!-- <img src="" style="width:120px; hight:60" alt="" title="" /><br /> -->
+        Auch im Gartenteich (20m³) befindet sich in ca. 50 cm Tiefe ein wasserdichter Temperatursensor (DS18B20). <br />
+          <img src="xicons/p/gartenteich.jpg" style="width:120px; hight:60" alt="Gartenteich" title="Gartenteich" /><br />
+        Die Bodentemperaturen werden in 5 cm, 10 cm, 20 cm, 50 cm und 100 cm Tiefe mittels wasserdichter Temperatursensoren (DS18B20) gemessen.<br />
+          <a href='xicons/p/boden.jpg'>
+           <img src="xicons/p/boden.jpg" style="width:120px; hight:60" alt="Bodentemperaturmessung" title="Bodentemperatur" /></a>
+        <br />Geplant sind noch Bodenfeuchtesensoren in 10 cm, 20 cm und 50 cm Tiefe.
+         Auch 5 cm über Grund befindet sich ein wasserdichte Temperatursensor (DS18B20).
+         Ein Solar-, Helligkeits- und Temperatursensor in 2 m Höhe südwestlich neben dem Schwimmteich liefert nur die Globalstrahlungswerte. <br />
+           <a href='xicons/p/solar.jpg'>
+            <img src="xicons/p/solar.jpg" style="width:120px; hight:60" alt="Solar" title="Solar" /></a>
+        </p>
+        <hr />
+        <h3>Umgebung der Sensoren</h3>
+         <p>Die Messeinrichtungen der Station sind entsprechend der Aufbauanleitung zusammengesetzt. 
+            Die Einheit Windrichtung und Windgeschwindigkeit wurde an einem 10m langen Rohr befestigt. </p>
+         <hr />
+         <h3> Der Wetterserver</h3>
+         <ul>
+          <li> Banana Pi mit </li>
+          <li>1GB RAM, </li>
+          <li>Festplatte mit 1TB </li>
+          <li>Betriebssystem: debian 8.1</li>
+          <li>Software: weewx mit den Erweiterungen owfs, forecast, cmon </li>
+          <li>Die Wetterdaten werden in einer MYSQL-Datenbank gespeichert.</li>
+          <li>Zusätzlich werden die forecast-Daten und die cmon-Daten in einer sqlite-Datei temporär abgelegt.</li>
+          <li>Die Daten von den AIR-Sensoren werden mit einem RasberryPi und einem GrovePi+board erfasst,</li>
+          <li>diese Air-Daten werden aus einer eigenen MYSQL-Datenbank importiert und nur angezeigt.</li>
+         </ul>
+         <hr />
+         <h3>Auswertungssoftware weewx</h3>
+         <p>Die Installation der Software ist sehr gut unter Weewx dokumentiert. 
+            Außerdem gibt es ein Forum unter ...<a href="https://groups.google.com/forum/#!forum/weewx-user">...WeewxHelp...</a>. Des 
+            Weiteren ist das ..<a href="http://sourceforge.net/p/weewx/wiki/Weewx%20Wiki/"> .Weewx Wiki..</a> . sehr hilfreich. 
+            Die meisten Webseiten werden alle 5 min neu erstellt und hochgeladen. Die weiteren Webseiten in unterschiedlichen Intervallen. </p>
+        <h4>Danke an Thomas Keffer, Matthew Wall und all die Anderen</h4>
+        <p>Neben der Software <a href="http://www.weewx.com">weewx</a> werden gegenwärtig Erweiterungen von Matthew Wall verwendet:<br />
+         1. <a href="http://lancet.mit.edu/mwall/projects/weather/releases/weewx-owfss-0.11.tgz">...OWFS Driver... </a>
+            Quelle:&nbsp;<a href="https://github.com/weewx/weewx/wiki/owfs">...owfss.py...</a>&nbsp;zum Auslesen der 1-wire Sensoren.<br />
+         2. <a href="http://lancet.mit.edu/mwall/projects/weather/releases/weewx-forecast-3.0.4.tgz">...forecasting...</a>
+            Quelle:&nbsp;<a href="https://github.com/weewx/weewx/wiki/forecasting">...Vorschau..</a>. zum Darstellen der Wetterprognose<br />
+         3. <a href="http://lancet.mit.edu/mwall/projects/weather/releases/weewx-cmon-0.7.tgz">...Monitor Computer Health...</a>
+            Quelle:&nbsp;<a href="https://github.com/weewx/weewx/wiki/cmon">...Server-</a>Überwachung...<br />
+         4. Ich verwende außerdem einige Erweiterungen aus dem Forum.<br />
+         5. Air-Daten von einem RasberryPi und einem GrovePi+board mit Air-Sensor, Sensor M9 und Sensor N 
+            <a href="http://www.seeedstudio.com/depot/GrovePi-Starter-Kit-for-Raspberry-Pi-p-2240.html">...(Grove)...</a>
+         </p>
+
+       <h5>Die Änderungen</h5>
+        <ul>
+        <li>Datenbank: vantage schema</li>
+        <li>die Datei (units.py), </li>
+        <li>die Datei (wxformulas.py), </li>
+        <li>sowie die Datei (tags.py )</li>
+      </ul>
+      <p>Außerdem wurden div. Variablen 'extraTemp1', 'extraHumid1',  und weitere Schema Änderungen eingepflegt, 
+         dieses sind bei jedem update zur Zeit noch per Hand zu Ergänzen.</p>  
+     <p>Zusätzlich und nicht unerwähnt die diversen Erweiterungen und Anpassungen in den Dateien skin.conf und weewx.conf.</p>
+     <h3>Wetterkamera</h3>
+     <p>Bei meiner Wetterkamera handelt es sich um eine IP-Camera der Marke 'INKOVIDEO'. (gegwärtig in der Testphase)<br />
+      <a href='xicons/p/ipcam.jpg'><img src="xicons/p/ipcam.jpg" style="width:120px; hight:60" alt="IP-Cam" title="IP-Cam" /></a><br />
+      In der jetzigen Testphase wird mittels shell-skript, gesteuert durch CRON, alle 2 min ein Bild aufgenommen und gespeichert. <br />
+      Einige dieser Bilder werden als Wetterbild auf der Seite <a href="wetter.html">...Wetterbilder..."</a> angezeigt. 
+      Des Weiteren werden die Bilder des aktuellen Tages in einem Verzeichnis abgelegt.
+      Bilder aus diesem Verzeichnis werden gegen Mitternacht per shell-skript zu einem Video zusammengesetzt. </p>
+     <p>Es werden für 7 Tage die Bilder von 6:00, 9:00, 12:00, 15:00 und 18:00 Uhr einschließlich des 
+        Vortagsvideos auf der Seite &nbsp;<a href="wetter.html">wetterbilder</a>&nbsp; präsentiert. </p>
+
+     <hr />
+      <img src="xicons/wet/vantage.jpg" alt="Wetterstation" style="width:320px; height:340px;" />
+      <img src="xicons/wet/snapshot.jpg" alt="Wetter Dach" style="width:480px; height:340px;" />
+
+   </div> <!-- End id "content" -->
+ </div>
+
+  #include $Extras.footer
+
+</body>
+
+</html>

@@ -358,45 +358,6 @@ Niederschlägen ab 0,2 mm.</p>
       bis zum  $alltime_con_wet_days_time.format("%d.%m.%Y")</li>
     <li>&nbsp;</li>
    </ul>
-#set $rainhm = 0
-#try
-    #for $day in $month.days
-        #if $day.rain.count.raw > 0
-            #set $rainhm = $rainhm + 300.0
-        #end if
-    #end for
-#except TypeError
-    #$rainhm = 0
-#end try
-
-#set $secondsm = $rainhm
-#set $hoursm = $secondsm //3600
-#set $secondsm %= 3600
-#set $minutesm = $secondsm //60
-#set $secondsm %= 60
-
-#set $rainhy = 0
-#try
-    #for $day in $year.days
-        #if $day.rain.count.raw > 0
-            #set $rainhy = $rainhy + 300.0
-        #end if
-    #end for
-#except TypeError
-    #$rainhy = 0
-#end try
-
-#set $secondsy = $rainhy
-#set $hoursy = $secondsy //3600
-#set $secondsy %= 3600
-#set $minutesy = $secondsy//60
-#set $secondsy %= 60
-<ul>
-<!--  <li>Diesen Monat gab es etwa
- <b>$(" %d Stunden und %d Minuten" % ($hoursm, $minutesm))</b> Regen.</li>  -->
- <li>Im aktuellen Jahr waren es etwa
- <b>$(" %d Stunden und %d Minuten" % ($hoursy, $minutesy))</b> Regen.</li>
-</ul>
   <hr />
    <h3>Extremwerte Niederschlag</h3>
     <ul>

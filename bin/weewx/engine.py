@@ -827,7 +827,7 @@ def main(options, args, engine_class=StdEngine):
     loop_on_init = options.loop_on_init
 
     # be sure that the system has a reasonable time (at least 1 jan 2000).
-    # log any problems every minute.
+    # log any problems every minute.  start db = 915145200
     n = 0
     while weewx.launchtime_ts < 946684800:
         if n % 120 == 0:

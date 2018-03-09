@@ -19,7 +19,7 @@
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      weewx  Version:&nbsp; $station.version<br />
      Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
-     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Pollen
+     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus
 </div>
 
 <p>
@@ -33,16 +33,17 @@
   <p> 
    <input type="button" value=" SteelGauge  " onclick="openURL('ss/index.html')" />
    <input type="button" value="   Aktuell   " onclick="openURL('index.html')" />
-   <input type="button" value="    OWFS     " onclick="openURL('index2.html')" />
+   <input type="button" value="    OWFS     " onclick="openURL('indexOWFS.html')" />
    <input type="button" value=" Boden/Blatt " onclick="openURL('index1.html')" />
    <input type="button" value=" Air-Sensoren " onclick="openURL('indexAir.html')" />
+   <input type="button" value=" Rad " onclick="openURL('indexRad.html')" />
    <input type="button" value=" Tag /Heute  " onclick="openURL('day.html')" />
    <input type="button" value="  Prognose   " onclick="openURL('forecastT.html')" />
    <input type="button" value="  Statistik  " onclick="openURL('statistik.html')" />
    <input type="button" value="    Woche    " onclick="openURL('week.html')" />
    <input type="button" value="    Monat    " onclick="openURL('month.html')" />
    <input type="button" value="    Jahr     " onclick="openURL('year.html')" />
-   <input type="button" value=" ISS " onclick="openURL('iss/index.html')" />
+   <!-- <input type="button" value=" ISS " onclick="openURL('indexISS.html')" /> -->
    <input type="button" value="   Archiv    " onclick="openURL('archiv.html')" />
 
   </p>
@@ -76,7 +77,6 @@
 <div class="lthes">Copyright &copy; 2013 - $current.dateTime.format("%Y") by Hartmut Schweidler</div>
 <div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime</div>
 <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
-                 <a href="http://v4v6.ipv6-test.com/api/myip.php"> IP ? </a> 
                  <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a>
 
 </div>
@@ -84,11 +84,11 @@
 
 ## Include the Google Analytics code if there is an ID available:
 #if $Extras.has_key('googleAnalyticsId')
-<script type="text/javascript">
+<script>
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
   document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
-<script type="text/javascript">
+<script>
   try{
   var pageTracker = _gat._getTracker("$Extras.googleAnalyticsId");
   pageTracker._trackPageview();

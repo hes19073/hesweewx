@@ -5,8 +5,8 @@
 <!doctype html>
 <html lang="de">
  <head>
-
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta charset="utf-8"> 
+    <!-- <meta http-equiv='Content-Type' content='text/html; charset=utf-8' /> -->
     <meta name='viewport' content='width=device-width' />
     <meta name="robots" content="all" />
     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
@@ -126,40 +126,9 @@ function topFunction() {
         </div> <!-- End id "about" -->
 
         <div id="hes">  <!-- align="center"> -->
-      Heute ist&nbsp;<b>$current.dateTime.format("%A")</b>, es ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres&nbsp;$current.dateTime.format("%Y"). <br />
-      #if len($day00) > 3
-          und es ist <b>$day00</b>
-      #end if
-      #set $now = $current.dateTime.raw
-      #set $yeste = $now - 24*3600
-      #set $today_daylight = $almanac.sun.set.raw -  $almanac.sun.rise.raw
-      #set $yeste_daylight = $almanac($almanac_time=$yeste).sun.set.raw - $almanac($almanac_time=$yeste).sun.rise.raw
-      #set $difference = $today_daylight - $yeste_daylight
-      #set $seconds = $almanac.sun.set.raw - $almanac.sun.rise.raw
-      #set $hours = $seconds //3600
-      #set $seconds %= 3600
-      #set $minutes = $seconds//60
-      #set $seconds %= 60
-   
-      #set $difhes = $difference
-      #set $dh = $difhes //3600
-      #set $difhes %= 3600
-      #set $dm = $difhes //60
-      #set $difhes %= 60
-            
-      #set $difhes1 = -$difference
-      #set $dh1 = $difhes1 //3600
-      #set $difhes1 %= 3600
-      #set $dm1 = $difhes1 //60
-      #set $difhes1 %= 60
-    <p>Die astronomische oder maximale Sonnenscheindauer beträgt Heute&nbsp;<b>$("%d Stunden, %d Minuten und %d Sekunden" % ($hours, $minutes, $seconds))</b>,<br/>
-      #if $difference > 0
-          dass sind <b> $("%d Sekunden " % $difference)</b> mehr als Gestern oder<b> $("%d Minuten und %d Sekunden," % ($dm, $difhes))</b></p>
-      #else
-          dass sind <b> $("%d Sekunden " % -$difference)</b> weniger als Gestern oder<b> $("%d Minuten und %d Sekunden," % ($dm1, $difhes1))</b></p>
-      #end if
-       #include "sommer.inc"
-     <!-- $daylightmax Maximales Tageslicht Aktuell $daylightday -->
+
+      #include 'zeitdiff.inc'
+
      </div>
        <hr />
        <div id="plots">
@@ -183,14 +152,14 @@ function topFunction() {
             <canvas id="wici" width="250" height="250"></canvas>
            </td>
            <td>$trend.windchill<br />  </td>
-           <td><img src="daytempchill.png" alt="windchill" /></td>
+           <td><img src="daywindchill.png" alt="windchill" /></td>
           </tr>
           <tr>
            <td>
             <canvas id="hiin" width="250" height="250"></canvas>
            </td>
            <td>$trend.heatindex<br />  </td>
-           <td><img src="daytempheat.png" alt="heatindex" /></td>
+           <td><img src="dayheatindex.png" alt="heatindex" /></td>
           </tr>
           <tr>
            <td>
@@ -199,14 +168,12 @@ function topFunction() {
            <td>$trend.outHumidity</td>
            <td><img src="dayhumid.png"     alt="humidity" /></td>
           </tr>
-         #if $day.absolutF.has_data
             <tr>
              <!-- <td>Luftfeuchte absolut</td> -->
              <td> <canvas id="abscvs" width="250" height="250"></canvas></td>
              <td>$current.absolutF</td>
              <td><img src="dayabsF.png" alt="absolute Luftfeuchte" /></td>
             </tr>
-         #end if
           <tr>
            <td>
             <canvas id="barout" width="250" height="250"></canvas>
@@ -238,29 +205,25 @@ function topFunction() {
             <canvas id="reghes" width="250" height="250"></canvas>
            </td>   
            <td>$day.rain.sum</td>
-           <td><img src="dayrain1.png"      alt="rain 5min" /></td>
+           <td><img src="dayrain.png"      alt="Regen in 5min und am Tag" /></td>
           </tr>
-         #if $day.snow.has_data
             <tr>
              <td>Schneehöhe</td>
              <td>$day.snowTotal.max</td>
              <td><img src="daysnow.png" alt="Schnee" /></td>
             </tr>
-         #end if
-         #if $day.ET.has_data
             <tr>
              <td>ET Verdunstung</td>
              <td>$current.ET</td>
              <td><img src="dayET.png" alt="Verdunstung" /></td>
             </tr>
-         #end if
           <tr>
-           <td>Windgeschwindigkeit:&nbsp;$current.windSpeed<br />
-               Spitzenwindgeschwindigkeit:&nbsp;$day.wind.max
+           <td>Windgeschwindigkeit:&nbsp;$current.windSpeed<br /><br /><br />
+               Spitzenwindgeschwindigkeit:&nbsp;$current.windGust
            </td>
            <td>
            #if $current.windSpeed.raw is None:
-                <h1>-</h1>
+                <img src='xicons/wind/wind_0.png alt='windstill' />
            #else
              #if $current.windSpeed.raw < 2
                <h1 style="background-color: #ffffff;">0</h1>
@@ -290,6 +253,37 @@ function topFunction() {
                <h1 style="background-color: #000000; color: #ffffff;">12</h1>
              #end if
            #end if
+           #if $current.windGust.raw is None:
+                <img src='xicons/wind/wind_0.png alt='windstill' />
+           #else
+             #if $current.windGust.raw < 2
+               <h1 style="background-color: #ffffff;">0</h1>
+             #else if $current.windGust.raw >= 2 and $current.windGust.raw <= 5
+               <h1 style="background-color: #d4d4fa;">1</h1>
+             #else if $current.windGust.raw >= 6 and $current.windGust.raw <= 11
+               <h1 style="background-color: #bcbcfa;">2</h1>
+             #else if $current.windGust.raw >= 12 and $current.windGust.raw <= 19
+               <h1 style="background-color: #a4a4f8;">3</h1>
+             #else if $current.windGust.raw >= 20 and $current.windGust.raw <= 28
+               <h1 style="background-color: #8d8df6;">4</h1>
+             #else if $current.windGust.raw >= 29 and $current.windGust.raw <= 38
+                <h1 style="background-color: #7575f2;">5</h1>
+             #else if $current.windGust.raw >= 39 and $current.windGust.raw <= 49
+               <h1 style="background-color: #6363f0;">6</h1>
+             #else if $current.windGust.raw >= 50 and $current.windGust.raw <= 61
+               <h1 style="background-color: #5252ed;">7</h1>
+             #else if $current.windGust.raw >= 62 and $current.windGust.raw <= 74
+               <h1 style="background-color: #4646eb;">8</h1>
+             #else if $current.windGust.raw >= 75 and $current.windGust.raw <= 88
+               <h1 style="background-color: #3838e8; color: #ffffff;">9</h1>
+             #else if $current.windGust.raw >= 89 and $current.windGust.raw <= 102
+               <h1 style="background-color: #2929e5; color: #ffffff;">10</h1>
+             #else if $current.windGust.raw >= 103 and $current.windGust.raw <= 117
+               <h1 style="background-color: #1616e3; color: #ffffff;">11</h1>
+             #else if $current.windGust.raw > 117
+               <h1 style="background-color: #000000; color: #ffffff;">12</h1>
+             #end if
+           #end if
             </td>
             <td><img src="daywind.png"      alt="wind" /></td>
            </tr>
@@ -302,26 +296,26 @@ function topFunction() {
              #end if
              <td>
        #if $current.windDir.raw is None:
-                      -
+                     <h1>-</h1>
        #else
         #if $current.windDir.raw < 22.5
-              <h1> &#8593;</h1>
+              <h1> &#8593;</h1>  <!-- 8593 -->
         #elif $current.windDir.raw < 67.5
-              <h1> &#8599;</h1>
+              <h1> &#8599;</h1>  <!-- 8599 -->
         #elif $current.windDir.raw < 112.5
-              <h1> &#8594;</h1>
+              <h1> &#8594;</h1>   <!-- 8594 -->
         #elif $current.windDir.raw < 157.5
-              <h1> &#8600;</h1>
+              <h1> &#8600;</h1>  <!-- 8600 -->
         #elif $current.windDir.raw < 202.5
-              <h1> &#8595;</h1>
+              <h1> &#8595;</h1>  <!-- 8595 -->
         #elif $current.windDir.raw < 247.5
-              <h1> &#8601;</h1>
+              <h1> &#8601;</h1>  <!-- 8601 -->
         #elif $current.windDir.raw < 292.5
-              <h1> &#8592;</h1>
+              <h1> &#8592;</h1>  <!-- 8592 -->
         #elif $current.windDir.raw < 337.5
-              <h1> &#8598;</h1>
+              <h1> &#8598;</h1>  <!-- 8598 -->
         #else
-              <h1> &#8593;</h1>
+              <h1> &#8593;</h1>  <!-- 8593 -->
         #end if
        #end if
               </td>
@@ -332,99 +326,83 @@ function topFunction() {
               <!-- <td></td> -->
           <td><img src="daywindvec.png"   alt="Wind Vector" /></td>
           </tr>
-          <tr><td>&nbsp;</td><td>&nbsp;</td><td>1-Wire OWFS Temperatursensor</td></tr>
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>one-wire OWFS Temperatursensor</td></tr>
           <tr>
            <td>
              <canvas id="temcar" width="250" height="250"></canvas>
            </td>
-           <td>$current.extraTemp2&nbsp;</td>
-           <td><img src="dayextra2.png"    alt="Carport" /></td></tr>
-          <tr><td>1-wire</td><td>&nbsp;</td><td>Teiche Wassertemperatur</td></tr>
-         #if $day.extraTemp1.has_data 
+           <td>$current.extraTemp4&nbsp;</td>
+           <td><img src="dayGartenTemp.png"    alt="Garten" /></td>
+          </tr>
+          <tr>
+           <td>&nbsp;</td>
+           <td>$current.extraTemp9&nbsp;</td>
+           <td><img src="dayCarport.png"    alt="Carport" /></td>
+          </tr>
+          <tr><td>one-wire</td><td>&nbsp;</td><td>Teiche Wassertemperatur</td></tr>
           <tr>
            <td>
             Teich ca. 0,75 m³<br />Wassertemperatur
            </td>
            <td>&nbsp;</td>
-           <td><img src="dayextra1.png"    alt="EXTRA1" /></td></tr>
-         #end if
-         #if $day.extraTemp2.has_data
+           <td><img src="dayTeichTemp.png"    alt="EXTRA1" /></td></tr>
           <tr>
            <td>
             Teich ca. 96 m³<br />Wassertemperatur
            </td>
            <td>&nbsp;</td>
-           <td><img src="dayTeichB.png"    alt="Badeteich" /></td></tr>
-         #end if
-         #if $day.extraTemp6.has_data
+           <td><img src="dayBadTemp.png"    alt="Badeteich" /></td></tr>
           <tr>
            <td>
             Teich ca. 20 m³<br />Wassertemperatur
            </td>
            <td>&nbsp;</td>
-           <td><img src="dayTeichG.png"    alt="Goldfischteich" /></td></tr>
-         #end if
+           <td><img src="dayFischTemp.png"    alt="Goldfischteich" /></td></tr>
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Licht- / Solarsensor</td></tr>
-         #if $day.lighting.has_data
             <tr>
              <td>Helligkeit:&nbsp;$current.lighting</td>
              <td></td>
              <td><img src="daylighting.png" alt="Helligkeit" /></td>
             </tr>
-         #end if
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Vantage PRO 2 UV+Solarstrahlung</td></tr>
-         #if $day.radiation.has_data
             <tr>
              <td>Globalstrahlung:&nbsp;$current.radiation</td>
              <td></td>
              <td><img src="dayradiation.png" alt="Radiation" /></td>
             </tr>
-         #end if
-         #if $day.sunshineS.has_data
              <tr>
               <td>Sonnenschein:&nbsp;$day.sunshineS.sum.hour</td>
               <td></td>
               <td><img src="daysun.png"        alt="Tag Sonne"/></td>
              </tr>
-         #end if
-         #if $day.UV.has_data
              <tr>
               <td>UV-Index:&nbsp;$current.UV</td>
               <td></td>
               <td><img src="dayuv.png"        alt="Tag UV Index"/></td>
              </tr>
-          #end if
-          <tr><td>&nbsp;</td><td>&nbsp;</td><td>1-Wire OWFS Temperatursensor</td></tr>
-          #if $day.soilTempO1.has_data
+          <tr><td>&nbsp;</td><td>&nbsp;</td><td>one-wire OWFS Temperatursensor</td></tr>
             <tr>
              <td>Bodentemperatur +5 -5 -10 -20 -50 -100 cm</td>
              <td></td>
-             <td><img src="dayTempB.png"      alt="Boden 5cm Luft" /><br />
+             <td><img src="dayBoden5.png"      alt="Boden 5cm Luft" /><br />
                  <img src="daysoilT.png"    alt="Bodentemperatur" /></td>
             </tr>
-          #end if
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Sensorstation 6345OVCS</td></tr>
-          #if $day.soilTemp1.has_data
             <tr>
              <td>Davis-Bodentemperatur -5 -10 -20 -50 cm</td>
              <td></td>
              <td><img src="daysoilD.png" alt="Davis-Bodentemperatur" /></td>
             </tr>
-          #end if
-          #if $day.soilMoist1.has_data
             <tr>
              <td>Bodenfeuchtigkeit</td>
              <td></td>
              <td><img src="daysoilF.png" alt="Davis-Bodenfeuchtigkeit" /></td>
             </tr>
-          #end if
-          #if $day.leafWet1.has_data
             <tr>
              <td>Blattfeuchtigkeit</td>
              <td></td>
              <td><img src="dayleafW.png" alt="Davis-Blattfeuchtigkeit" /></td>
             </tr>
-          #end if
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>AirPi Gassensor</td></tr>
           <tr>
            <td>
@@ -472,30 +450,48 @@ function topFunction() {
            </td>
            <td><img src="dayPM10.png" alt="PM 10 Quality" /></td>
           </tr>
-
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
           <tr>
            <td>
              <canvas id="temin" width="250" height="250"></canvas>
            </td>
            <td>$trend.inTemp</td>
-           <td><img src="dayinside.png"    alt="Inside" /></td>
+           <td><img src="dayinTemp.png"    alt="Inside" /></td>
           </tr>
           <tr>
            <td>
             <canvas id="humin" width="250" height="250"></canvas>
            </td>
            <td>$trend.inHumidity</td>
-           <td><img src="dayinhume.png"    alt="InsideHumid" /></td>
+           <td><img src="dayinHumid.png"    alt="InsideHumid" /></td>
           </tr>
           <tr>
            <td>
-            $current.inDewpoint
+            <canvas id="dewpi" width="250" height="250"></canvas>
            </td>
            <td>$trend.inDewpoint</td>
            <td><img src="dayindew.png"    alt="Inside" /></td>
           </tr>
-         #if $day($data_binding='air_binding').sound.has_data
+          <tr>
+           <td>
+            $current.appTemp
+           </td>
+           <td>&nbsp;</td>
+           <td><img src="dayapptemp.png"    alt="temp scheinbar" /></td>
+          </tr>
+          #if $day.extraHumid1.has_data or $day.extraHumid2.has_data
+          <tr>
+           <td>
+            Feuchtesensor 2 und 3
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayhumid1.png" alt="Feuchte 2 und 3" /></td>
+          </tr>
+         #end if
+
+          #if $day($data_binding='air_binding').sound.has_data
           <tr>
            <td>
             Sound-Sensor&nbsp; $latest($data_binding='air_binding').sound.format("%.1f")
@@ -553,18 +549,37 @@ function topFunction() {
             <tr>
              <td>Spannung OWFS:&nbsp;</td>
              <td></td>
-             <td><img src="dayVolt.png" alt="Spannung OWFS" /></td>
+             <td><img src="dayVoltK.png" alt="Spannung OWFS" /></td>
+            </tr>
+            <tr>
+             <td>Spannung USB:&nbsp;</td>
+             <td></td>
+             <td><img src="daybatteryK.png" alt="Spannung USB/OWFS" /></td>
             </tr>
             <tr>
              <td>Spannung Vantage:&nbsp;</td>
              <td></td>
-             <td><img src="dayBateDay.png" alt="Station Voltage" /></td>
+             <td><img src="dayBateK.png" alt="Station Voltage" /></td>
             </tr>
             <tr>
              <td>Signalqualität Vantage:&nbsp;</td>
              <td></td>
-             <td><img src="dayStatDay.png" alt="Signal Voltage" /></td>
+             <td><img src="dayStatK.png" alt="Signal Voltage" /></td>
             </tr>
+          <tr><td>Geiger Müller Counter</td><td>&nbsp;</td><td>GMC-300E Plus </td></tr>
+            <tr>
+             <td>Zerfall je Minute<br />
+             $latest($data_binding='geiger_binding').rad_cpm</td>
+             <td></td>
+             <td><img src="dayGeigerK.png" alt="Geige- Station" /></td>
+            </tr>
+            <tr>
+             <td>Radioaktivität:&nbsp;<br />
+             $latest($data_binding='geiger_binding').rad_nsvh</td>
+             <td></td>
+             <td><img src="dayGeigerSK.png" alt="Geige Signal " /></td>
+            </tr>
+
          </table>
         </div> <!-- End id "plots" -->
       </div> <!-- End id "content" -->
@@ -583,8 +598,9 @@ function topFunction() {
 #set $hiin = $current.heatindex.raw
 #set $rainhi = $day.rain.sum.raw
 #set $abscvs = $current.absolutF.raw
+#set $dewpin = $current.inDewpoint.raw
 
-<script type="text/javascript">
+<script>
 
     var gauge = new RGraph.Gauge('temout', -10, 40, $tem1)
         .Set('scale.decimals', 0)
@@ -599,6 +615,18 @@ function topFunction() {
         .Draw();
 
     var gauge = new RGraph.Gauge('dewpo', -20, 30, $dewp)
+        .Set('scale.decimals', 0)
+        .Set('tickmarks.small', 50)
+        .Set('tickmarks.big',5)
+        .Set('title.top', 'Taupunkt')
+        .Set('title.top.size', 12)
+        .Set('title.top.pos', 0.15)
+        .Set('title.bottom', '°C')
+        .Set('title.bottom.color', '#aaa')
+        .Set('border.outer', 'Gradient(white:white:white:white:white:white:white:white:white:white:#aaa)')
+        .Draw();
+
+    var gauge = new RGraph.Gauge('dewpi', -20, 30, $dewpin)
         .Set('scale.decimals', 0)
         .Set('tickmarks.small', 50)
         .Set('tickmarks.big',5)

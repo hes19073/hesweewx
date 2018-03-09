@@ -552,11 +552,11 @@ def clear_v2_data(config_dict, db_binding_wx):
                         #    hu1 = 0
                         #dbmanager_wx.updateValue(_rec['dateTime'], 'absolutF', hu1)
 
-                        if _rec['outTemp'] <> 0 and _rec['outHumidity'] <> 0:
-                            ssI = weewx.wxformulas.sumsimIndex_C(_rec['outTemp'], _rec['outHumidity'])
-                        else:
-                            ssI = 0
-                        dbmanager_wx.updateValue(_rec['dateTime'], 'summersimmerIndex', ssI)
+                        #if _rec['outTemp'] <> 0 and _rec['outHumidity'] <> 0:
+                        #    ssI = weewx.wxformulas.sumsimIndex_C(_rec['outTemp'], _rec['outHumidity'])
+                        #else:
+                        #    ssI = 0
+                        #dbmanager_wx.updateValue(_rec['dateTime'], 'summersimmerIndex', ssI)
 
                         """ test aus altem
                         if _rec['outTemp'] <> 0 and _rec['outHumidity'] <> 0 and _rec['windSpeed'] <> 0:
@@ -604,8 +604,62 @@ def clear_v2_data(config_dict, db_binding_wx):
                             wi1 = 0
                         dbmanager_wx.updateValue(_rec['dateTime'], 'windDruck', wi1)
                         """
+
+                        if _rec['outTemp'] <> 0:
+                            hdg = weewx.wxformulas.heating_degrees(_rec['outTemp'], 18.333)
+                        else:
+                            hdg = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'heatdeg', hdg)
+
+                        if _rec['outTemp'] <> 0:
+                            cdg = weewx.wxformulas.cooling_degrees(_rec['outTemp'], 18.333)
+                        else:
+                            cdg = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'cooldeg', cdg)
+
+                        if _rec['outTemp'] <> 0:
+                            odg = weewx.wxformulas.cooling_degrees(_rec['outTemp'], 15.0)
+                        else:
+                            odg = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'homedeg', odg)
+
+                        if _rec['outTemp'] <> None:
+                            svp = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec['outTemp'])
+                        else:
+                            svp = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'SVP', svp)
+
+                        if _rec['inTemp'] <> None:
+                            svpin = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec['inTemp'])
+                        else:
+                            svpin = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'SVPin', svpin)
+
+                        if _rec['outTemp'] <> None and _rec['outHumidity'] <> None:
+                            avp = _rec['outHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec['outTemp'])) / 100.0
+                        else:
+                            avp = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'AVP', avp)
+        
+                        if _rec['inTemp'] <> None and _rec['inHumidity'] <> None:
+                           avpin = _rec['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec['inTemp'])) / 100.0
+                        else:
+                           avpin = None
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'AVPin', avpin)
+
+
+                        """ Muster original
                         #dbmanager_wx.updateValue(_rec['dateTime'], 'extraTemp1', None)
                         #dbmanager_wx.updateValue(_rec['dateTime'], 'extraTemp2', None)
+                        achtung loescht die eintraege in extraTemp1 und extratTemp2 aus der Datenbank wx """
+
                         nrecs += 1
                     dbmanager_wx.connection.commit()
                     # all done, say so and give some stats
