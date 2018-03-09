@@ -24,3 +24,6 @@ Grundversorgung DWD über ftp-server/ Anmeldung notwendig
 Erweiterung txt-Daten vom DWD die einzelnen Verzeichnisse (Muster)
                               The individual directories (patterns)
  foredwd.py and foredwdc.py  must be executable
+
+Zur Zeit läuft weewx und cmon über weewx.service und cmon.service
+als multi-weewx
