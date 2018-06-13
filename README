@@ -17,13 +17,14 @@ Community support: https://groups.google.com/group/weewx-user
 
 
 Meine Wetterseiten unter http://wetter.hes61.de
-Ich habe von Matthew Wall -forecast-3.2.4- angepasst
-Achtung forecast-3.2.4 ist '''experimental'''
 
 Grundversorgung DWD über ftp-server/ Anmeldung notwendig
 Erweiterung txt-Daten vom DWD die einzelnen Verzeichnisse (Muster)
                               The individual directories (patterns)
  foredwd.py and foredwdc.py  must be executable
 
-Zur Zeit läuft weewx und cmon über weewx.service und cmon.service
+Zur Zeit läuft weewx und cmon über 
+
+/etc/init.d/weewx  mit weewx.conf und cmon.conf
+
 als multi-weewx
