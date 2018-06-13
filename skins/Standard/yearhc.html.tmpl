@@ -44,23 +44,23 @@
                          renderTo: 'Chart1',
                          type: 'boxplot'
 			},
-
+			
 			title: {
 				text: '2013-16 Monat Temperatur Statistik'
 			},
-
+			
 			subtitle: {
 				text: '(Max, ∅Tag Max, Tag Mean, ∅Tag Min, Min)'
 			},
-
+			
 			legend: {
 				enabled: true
 			},
-
+		
 			xAxis: {
 				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
 			},
-
+			
 			yAxis: {
 				minorTickInterval: 'auto',
 				minorTickLength: 0,
@@ -68,7 +68,7 @@
 					text: 'Grad C'
 				}
 			},
-
+			
 			plotOptions: {
 				boxplot: {
 					fillColor: 'LightSteelBlue',
@@ -80,7 +80,7 @@
 					whiskerWidth: 2.5 
 				}
 			},
-
+			
 			tooltip: {
 				shared: true,
 				useHTML: true,
@@ -102,7 +102,7 @@
 
 		$.getJSON('Data/Data-2013.json', function(data) {options.series[0].data = data; $.getJSON('Data/Data-2014.json', function(data) { options.series[1].data = data; $.getJSON('Data/Data-2015.json', function(data) { options.series[2].data = data; $.getJSON('Data/Data-2016.json', function(data) {options.series[3].data = data; var chart = new Highcharts.Chart(options); }); }); }); });
 
-	});
+	});	
 </script>
 <script>
 	$(document).ready(function() {
@@ -112,19 +112,19 @@
 				renderTo: 'Chart2',
 				type: 'column'
 			},
-
+			
 			title: {
 				text: '2014-16 Monatliche Regenmengen'
 			},
-
+			
 			legend: {
 				enabled: true
 			},
-
+		
 			xAxis: {
 				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
 			},
-
+			
 			yAxis: {
 				minorTickInterval: 'auto',
 				minorTickLength: 0,
@@ -132,14 +132,14 @@
 					text: 'mm'
 				}
 			},
-
+			
 			tooltip: {
 				shared: true,
 				valueDecimals: 0,
 				valueSuffix: 'mm'
 			},
-
-
+			
+			
 			series: [{
 				name: '2014'
 			}, {
@@ -160,32 +160,32 @@
 			});
 		});
 
-	});
+	});	
 </script>
 <script>
 	$(document).ready(function() {
-
+			
 		var options = {
 			colors: ['#82C6E3', '#058DC7', '#024664', '#A8DA98', '#50B432', '#204814', '#F49A76', '#ED561B', '#A63C11'],
-
+			
 			chart: {
 				renderTo: 'Chart3',
 				type: 'column'
 			},
-
+			
 			title: {
 				text: '2014-16 Monatliche Regentage'
 			},
-
+			
 			legend: {
 				width: 345,
 				itemWidth: 115
 			},
-
+		
 			xAxis: {
 				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
 			},
-
+			
 			yAxis: {
 				minorTickInterval: 'auto',
 				minorTickLength: 0,
@@ -193,12 +193,12 @@
 					text: 'Anzahl der Tage'
 				}
 			},
-
+			
 			tooltip: {
 				shared: true,
 				valueSuffix: ' Tage'
 			},
-
+			
 			 plotOptions: {
                 column: {
 					grouping: false,
@@ -206,7 +206,7 @@
 					borderwidth: 0
 				}
             },
-
+			
 			series: [{
 				name: '2014 Regen',
 				pointPadding: 0.35,
@@ -275,7 +275,7 @@
 			});
 		});
 
-	});
+	});	
 </script>
 <script>
 	$(document).ready(function() {
@@ -285,19 +285,19 @@
 				renderTo: 'Chart4',
 				type: 'column'
 			},
-
+			
 			title: {
 				text: '2014-16 Monatlich Sonnenstrahlung'
 			},
-
+			
 			legend: {
 				enabled: true
 			},
-
+		
 			xAxis: {
 				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
 			},
-
+			
 			yAxis: {
 				minorTickInterval: 'auto',
 				minorTickLength: 0,
@@ -305,20 +305,20 @@
 					text: 'Watt/m²'
 				}
 			},
-
-
+			
+			
 			tooltip: {
 				shared: true,
 				valueDecimals: 0,
 				valueSuffix: "W/m²"
 			},
-
+			
 			series: [{
-				 name: '2014',
+				name: '2014',
 			}, {
 				name: '2015',
-     }, {
-        name: '2016',
+                        }, {
+                                name: '2016',
 			}]
 		};
 
@@ -333,7 +333,7 @@
 			});
 		});
 
-	});
+	});	
 </script>
 
 
@@ -346,14 +346,14 @@
  #include $Extras.cwarn
 
       <div id="stats_group">
-
+        
         #set global $werte = $year
         #set global $wertename = 'Kalenderjahr'
         #set global $wertum = ' am'
         #include $Extras.cwerte
-
+          
         <p>&nbsp;</p>
-
+          
         <div class="stats">
           <div class="stats_header">
             Regen im Jahr seit (1. $station.rain_year_str Start)
@@ -387,10 +387,10 @@
       <div id="Chart1">
         Chart 1
       </div>  <!-- End id "Chart1" -->
-
+      
       <div id="Chart2">
         Chart 2
-      </div>  <!-- End id "Chart2" -->
+      </div>  <!-- End id "Chart2" -->			
 
       <div id="Chart3">
         Chart 3
@@ -403,7 +403,7 @@
    </div> <!-- ende container -->
 
      #include $Extras.footer
- </div>
+ </div> 
 </body>
 
 </html>

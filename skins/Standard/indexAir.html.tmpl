@@ -753,7 +753,8 @@
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
-     <td class='hes1_bigval' colspan='3'><a href='daysound.png' class='popup'>
+     <td class='hes1_bigval' colspan='2' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">
+     <td><a href='daysound.png' class='popup'>
              $latest($data_binding='air_binding').sound.format("%.1f")</a></td>
    #if $trend($data_binding='air_binding').sound.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
@@ -781,7 +782,7 @@
      <td class='hes1_vallo'>$yesterday($data_binding='air_binding').sound.min.format("%.1f")</td>
     </tr>
     <tr>
-    <td class='hes1_kopfb' colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='air_binding').sound.avg.format("%.1f")</td>
+    <td colspan='5' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">Tagesmittelwert:&nbsp;$day($data_binding='air_binding').sound.avg.format("%.2f")</td>
     </tr>
    </table>
   </div>

@@ -5,12 +5,12 @@
 <!DOCTYPE html>
 <html lang="de">
   <head>
-     <meta charset="utf-8"/>
      <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
      <meta name='viewport' content='width=device-width' />
      <meta name="robots" content="all" />
      <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und
+ Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
      <meta name="author"           content="Hartmut Schweidler" />
      <meta name="revisit-after"    content="5 min" />
 
@@ -48,7 +48,6 @@
 #set $dd = $forecast.label('Weather', $summary.windDir)
 #set $wind_text = $windT_dir_dict.get($dd)
 
-<section>
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
      <!-- <div id='popupanchor' style='position:absolute; left:350px; top:80px;'></div> -->
@@ -214,8 +213,6 @@
 
 
 </div> <!-- ende container -->
-
-</section>     
 
      #include $Extras.footer
 

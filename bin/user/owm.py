@@ -1,5 +1,6 @@
-# $Id: owm.py 1156 2014-12-03 19:44:45Z mwall $
+# $Id: owm.py 1767 2017-11-08 13:13:33Z mwall $
 # Copyright 2013 Matthew Wall
+
 """
 Upload data to OpenWeatherMap
   http://openweathermap.org
@@ -8,23 +9,33 @@ Thanks to Antonio Burriel for the dewpoint, longitude, and radiation fixes.
 
 [StdRESTful]
     [[OpenWeatherMap]]
-        username = OWM_USERNAME
-        password = OWM_PASSWORD
-        station_name = STATION_NAME
+        appid = APPID
+        station_id = STATION_ID
 """
 
+# FIXME: set the station lat/lon/alt using [PUT]/stations/{:id}
+
 import Queue
-import base64
 import syslog
 import urllib
 import urllib2
+
+try:
+    import cjson as json
+    setattr(json, 'dumps', json.encode)
+    setattr(json, 'loads', json.decode)
+except (ImportError, AttributeError):
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.3"
+VERSION = "0.7"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -42,15 +53,18 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
-class OpenWeatherMap(weewx.restx.StdRESTbase):
+
+def _obfuscate(s):
+    return ('X'*(len(s)-4) + s[-4:])
+
+
+class OpenWeatherMap(weewx.restx.StdRESTful):
     def __init__(self, engine, config_dict):
         """This service recognizes standard restful options plus the following:
 
-        username: OpenWeatherMap username
+        appid: APPID from OpenWeatherMap
 
-        password: OpenWeatherMap password
-
-        station_name: station name
+        station_id: station identifier
 
         latitude: Station latitude in decimal degrees
         Default is station latitude
@@ -66,9 +80,8 @@ class OpenWeatherMap(weewx.restx.StdRESTbase):
         try:
             site_dict = config_dict['StdRESTful']['OpenWeatherMap']
             site_dict = accumulateLeaves(site_dict, max_level=1)
-            site_dict['username']
-            site_dict['password']
-            site_dict['station_name']
+            site_dict['appid']
+            site_dict['station_id']
         except KeyError, e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
@@ -82,36 +95,56 @@ class OpenWeatherMap(weewx.restx.StdRESTbase):
         self.archive_thread = OpenWeatherMapThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("Data will be uploaded for %s" % site_dict['station_name'])
+        loginf("Data will be uploaded for %s" % site_dict['station_id'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
 
 class OpenWeatherMapThread(weewx.restx.RESTThread):
-    """The OpenWeatherMap api does not include timestamp, so we can only
-    upload the latest observation.
-    """
 
-    _SERVER_URL = 'http://openweathermap.org/data/post'
+    # observations we should provide but do not
+    # rain_6h mm
+    # show_1h mm
+    # snow_6h mm
+    # snow_24h mm
+    # visibility_distance km
+    # visibility_prefix (N,E,S,W)
+    # clouds[]:distance m
+    # clouds[]:condition (SKC,NSC,FEW,SCT,BKN,OVC)
+    # clouds[]:cumulus (CB,TCU)
+    # weather[]:precipitation
+    # weather[]:descriptor
+    # weather[]:intensity
+    # weather[]:proximity
+    # weather[]:obsruration
+    # weather[]:other
+    #
+    # derived quantities we could provide but do not
+    # humidex
+    # dew_point
+    # heat_index
+    #
+    # observations we could provide but the api does not accept
+    # uv
+    # luminosity
+    # radiation
+
+    _SERVER_URL = 'http://api.openweathermap.org/data/3.0/measurements'
     _DATA_MAP = {
-        'wind_dir':   ('windDir',     '%.0f', 1.0, 0.0),    # degrees
-        'wind_speed': ('windSpeed',   '%.1f', 0.2777777777, 0.0), # m/s
-        'wind_gust':  ('windGust',    '%.1f', 0.2777777777, 0.0), # m/s
-        'temp':       ('outTemp',     '%.1f', 1.0, 0.0),    # C
-        'humidity':   ('outHumidity', '%.0f', 1.0, 0.0),    # percent
-        'pressure':   ('barometer',   '%.3f', 1.0, 0.0),    # mbar?
-        'rain_1h':    ('hourRain',    '%.2f', 10.0, 0.0),   # mm
-        'rain_24h':   ('rain24',      '%.2f', 10.0, 0.0),   # mm
-        'rain_today': ('dayRain',     '%.2f', 10.0, 0.0),   # mm
-        'snow':       ('snow',        '%.2f', 10.0, 0.0),   # mm
-        'lum':        ('radiation',   '%.2f', 1.0, 0.0),    # W/m^2
-        'dewpoint':   ('dewpoint',    '%.1f', 1.0, 273.15), # K
-        'uv':         ('UV',          '%.2f', 1.0, 0.0),    # index
+        'dt':          ('dateTime',    1, 0),        # epoch
+        'wind_deg':    ('windDir',     1.0, 0.0),    # degrees
+        'wind_speed':  ('windSpeed',   0.2777777777, 0.0), # m/s
+        'wind_gust':   ('windGust',    0.2777777777, 0.0), # m/s
+        'temperature': ('outTemp',     1.0, 0.0),    # C
+        'humidity':    ('outHumidity', 1.0, 0.0),    # percent
+        'pressure':    ('barometer',   1.0, 0.0),    # mbar?
+        'rain_1h':     ('hourRain',    10.0, 0.0),   # mm
+        'rain_24h':    ('rain24',      10.0, 0.0),   # mm
         }
 
     def __init__(self, queue,
-                 username, password, latitude, longitude, altitude,
-                 station_name, manager_dict,
+                 appid, latitude, longitude, altitude,
+                 station_id, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
                  post_interval=None, max_backlog=0, stale=None,
                  log_success=True, log_failure=True,
@@ -127,26 +160,29 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
                                                    timeout=timeout,
                                                    max_tries=max_tries,
                                                    retry_wait=retry_wait)
-        self.username = username
-        self.password = password
+        self.appid = appid
         self.latitude = float(latitude)
         self.longitude = float(longitude)
         self.altitude = float(altitude)
-        self.station_name = station_name
+        self.station_id = station_id
         self.server_url = server_url
         self.skip_upload = to_bool(skip_upload)
 
     def process_record(self, record, dbm):
         r = self.get_record(record, dbm)
         data = self.get_data(r)
+        url = "%s?appid=%s" % (self.server_url, self.appid)
+        if weewx.debug > 1:
+            logdbg('url: %s?appid=%s' %
+                   (self.server_url, _obfuscate(self.appid)))
+            logdbg('data: %s' % data)
         if self.skip_upload:
             loginf("skipping upload")
             return
-        req = urllib2.Request(self.server_url, urllib.urlencode(data))
+        req = urllib2.Request(url, data)
         req.get_method = lambda: 'POST'
+        req.add_header("Content-Type", "application/json")
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
-        b64s = base64.encodestring('%s:%s' % (self.username, self.password)).replace('\n', '')
-        req.add_header("Authorization", "Basic %s" % b64s)
         self.post_with_retries(req)
 
     def get_data(self, in_record):
@@ -154,16 +190,12 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         record = weewx.units.to_METRIC(in_record)
 
         # put data into expected scaling, structure, and format
-        values = {}
-        values['name'] = self.station_name
-        values['lat']  = str(self.latitude)
-        values['long'] = str(self.longitude)
-        values['alt']  = str(self.altitude) # meter
-        for key in self._DATA_MAP:
-            rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
-                v = record[rkey] * self._DATA_MAP[key][2] + self._DATA_MAP[key][3]
-                values[key] = self._DATA_MAP[key][1] % v
+        values = dict()
+        values['station_id'] = self.station_id
+        for _key in self._DATA_MAP:
+            rkey = self._DATA_MAP[_key][0]
+            if rkey in record and record[rkey] is not None:
+                values[_key] = record[rkey] * self._DATA_MAP[_key][1] + self._DATA_MAP[_key][2]
+        data = json.dumps([values])
+        return data
 
-        logdbg('data: %s' % values)
-        return values

@@ -47,7 +47,6 @@
 #set $dd = $forecast.label('Weather', $summary.windDir)
 #set $wind_text = $windT_dir_dict.get($dd)
 
-<section>
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
 
@@ -362,36 +361,26 @@
 
  <div class="hes">
   <div class='hesbox'>
-   <table class='hes1'>
-  <tr><td class='hes1_kopfa' colspan='2'>Wachstumsgradtage (WTG)<br />&nbsp;</td>
-  </tr>
+   <table>
+  <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_growth.html'>Wachstums-</a><br />gradtage (WGT)</td></tr>
   <tr>    
-     <td>Wachstumstage Monat</td>
+     <td>Wachstums Tage im Monat (Basis 10°C)</td>
      <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   </tr>
   <tr>
-     <td>Wachstumstage Jahr</td>
+     <td>Wachstums Tage im Jahr (Basis 10°C)</td>
      <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
    </tr>
-  <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-  <tr><td colspan="2">Growing Degree Days/ GDD</td></tr>
-  <tr>
-   <td>GDD Monat</td>
-    <td class="re_data">$month_gdd</td>
-   </tr>
-   <tr>
-    <td>GDD Jahr</td>
-    <td class="re_data">$year_gdd</td>
-   </tr>
-   <tr><td>Berechnung</td><td> weewx</td></tr>
   </table>
+   <hr />
+   <img src="Cydia/C_growth.png" alt="WGT Basis 10" style="width:300px; height:175px;" />
  </div>
 </div> <!-- ende ggd -->
 
  <div class="hes">
    <div class='hesbox'>
     <table>
-     <tr><td class='hes1_kopfa' colspan='2'>Grünland-<br />temperatursumme</td></tr>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_green.html'>Grünland-</a><br />temperatursumme (GLT)</td></tr>
     #set $greenT_sum = '%.2f' % $green_sum
     #if $green_sum <= 200.0
     <tr><td>Summe aktuell</td><td>$greenT_sum</td></tr>
@@ -402,12 +391,22 @@
     #end if
    </table>
    <hr />
-   <p>Die Summe aus allen Tagesmittelwerten &gt; 0,0°C.<br />
-      Januarwerte * 0,5 / Februarwerte * 0,75<br />
-      Märzwerte * 1.0, wenn die Summe &gt; 200, <br />
-      beginnt die nachhaltige <b>Vegetation</b>. (bis 31.Mai)</p>
+    <img src="Cydia/C_green.png" alt="Gruenland" style="width:300px; height:175px;" />
    </div>
   </div> <!-- gruenlandtempsum -->
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_pomonella.html'>Apfelwickler</a><br>(Cydia pomonella)</td></tr>
+     <tr><td>Werte aktuell</td><td>mit Entwicklung</td></tr>
+   </table>
+   <hr />
+    <img src="Cydia/C_pomonella.png" alt="Apfelwickler" style="width:300px; height:175px;" />
+   <hr />
+    <a href='https://de.wikipedia.org/wiki/Apfelwickler'>Infos bei Wikipedia</a>
+   </div>
+  </div> <!-- Apfelwickler entwicklung -->
 
  <div class="hes">
    <div class='hesbox'>
@@ -564,7 +563,6 @@
 
 </div> <!-- ende container -->
 
-</section>     
 
      #include $Extras.footer
 

@@ -125,23 +125,23 @@ class MyFrostDays(SearchList):
         _year_ts = TimeSpan(_mn_first_of_year_ts, timespan.stop)
 
 
-        # First, create a TimespanBinder object for all time. 
-        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE min < 0")
+        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE min < 0.0")
         lastfrost_ts = _row[0]
 
         if lastfrost_ts is not None:
             try:
-                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0 AND dateTime > ? AND dateTime <= ?", (lastfrost_ts, lastfrost_ts + 86400))
+                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0.0 AND dateTime > ? AND dateTime <= ?", (lastfrost_ts, lastfrost_ts + 86400))
                 _lastfrost_ts = _row[0]
             except:
                 _lastfrost_ts = None
 
-        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE max < 0")
+
+        _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE max < 0.0")
         lasteis_ts = _row[0]
 
         if lasteis_ts is not None:
             try:
-                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0 AND dateTime > ? AND dateTime <= ?", (lasteis_ts, lasteis_ts + 86400))
+                _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0.0 AND dateTime > ? AND dateTime <= ?", (lasteis_ts, lasteis_ts + 86400))
                 _lasteis_ts = _row[0]
             except:
                 _lasteis_ts = None

@@ -49,6 +49,10 @@ weewxwd_schema = [
     ('SVPin',        'REAL'),
     ('AVP',          'REAL'),
     ('AVPin',        'REAL'),
+    ('wdd_deg',      'REAL'),
+    ('GDD4',         'REAL'),
+    ('GDD6',         'REAL'),
+    ('GDD10',        'REAL'),
     ]
 
 # Define schema for supp table

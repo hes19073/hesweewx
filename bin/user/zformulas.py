@@ -518,7 +518,7 @@ def dampfD_F(t_F):
 
     t_C = FtoC(t_F)
     dd_C = dampfD_C(t_C)
-    
+
     return (dd_C * INHG_PER_MBAR) if (dd_C * INHG_PER_MBAR) is not None else None
 
 def sumsimIndex_F(t_F, RH):
@@ -533,23 +533,59 @@ def sumsimIndex_F(t_F, RH):
 
     return ssI_F if ssI_F is not None else None
 
-def sumsimIndex_C(t_C, RH):         
+def sumsimIndex_C(t_C, RH):
     # Summer Simmer Index-Berechnung
-    # rel. Luftfeuchte RH           
-    # temperatur in degree C        
-                                    
-    if t_C is None or RH is None:   
-         return None                
-                                    
-    t_F = CtoF(t_C)                 
-                                    
-    ssI_F = sumsimIndex_F(t_F, RH)  
+    # rel. Luftfeuchte RH
+    # temperatur in degree C
+
+    if t_C is None or RH is None:
+        return None
+
+    t_F = CtoF(t_C)
+
+    ssI_F = sumsimIndex_F(t_F, RH)
 
     ssI_C = FtoC(ssI_F)
 
     return ssI_C if ssI_C is not None else None
 
 
+def gddx_C(Tmax, Tmin, xx):
+    # Tmax outTemp_max,
+    # Tmin outTemp_min,
+    # xx BasisTemp 4, 6, 10
+    if Tmax is None or Tmin is None:
+        return None
+
+    if Tmin < 10.0:
+        if Tmax < 30.0:
+            if Tmax < 10.0:
+                gddx = 0.0
+            else:
+                gddx = (Tmax + xx) / 2.0 - xx
+        else:
+            gddx = 20.0 
+
+    else:
+        if Tmax < 30.0:
+            gddx = (Tmax + Tmin) / 2.0 - xx
+        else:
+            gddx = 20.0
+
+    return gddx if gddx is not None else None
+
+
+def gddx_F(Tmax, Tmin, xx):
+
+    Tmax_F = CtoF(Tmax)
+    Tmin_F = CtoF(Tmin)
+    xx_F = CtoF(xx)
+
+    gddxC = gddx_C(Tmax_F, Tmin_F, xx_F)
+
+    gddx_F = CtoF(gddxC) 
+
+    return gddx_F
 
 if __name__ == "__main__":
     

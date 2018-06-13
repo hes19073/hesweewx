@@ -1,0 +1,29 @@
+#content {
+    width: auto;
+    float: none;
+}
+
+#content table {
+    width: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    border-spacing: 2px;
+}
+
+#content th {
+    width: 1px;
+    white-space: nowrap;
+    background-color: #a8b8c8;
+    padding: 10px;
+}
+
+#content td {
+    width: 1px;
+    white-space: nowrap;
+    padding: 10px;
+}
+
+#content p {
+    text-align: left;
+}
+

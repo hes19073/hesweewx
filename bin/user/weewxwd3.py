@@ -390,6 +390,11 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = None
 
         if 'outTemp' in event.packet:
+            data_x['wdd_deg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 10.0)
+        else:
+            data_x['wdd_deg'] = None
+
+        if 'outTemp' in event.packet:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['outTemp'])
         else:
             data_x['SVP'] = None
@@ -408,6 +413,22 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['AVPin'] = event.packet['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['inTemp'])) / 100.0
         else:
             data_x['AVPin'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['GDD4'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 4.0)
+        else:
+            data_x['GDD4'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['GDD6'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 6.0)
+        else:
+            data_x['GDD6'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 10.0)
+        else:
+            data_x['GDD10'] = None
+
 
 
         event.packet.update(data_x)
@@ -440,6 +461,11 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = None
 
         if 'outTemp' in event.record:
+            data_x['wdd_deg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 10.0)
+        else:
+            data_x['wdd_deg'] = None
+
+        if 'outTemp' in event.record:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['outTemp'])
         else:
             data_x['SVP'] = None
@@ -458,6 +484,21 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['AVPin'] = event.record['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['inTemp'])) / 100.0
         else:
             data_x['AVPin'] = None
+
+        if 'outTemp' in event.record:
+            data_x['GDD4'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 4.0)
+        else:
+            data_x['GDD4'] = None
+
+        if 'outTemp' in event.record:
+            data_x['GDD6'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 6.0)
+        else:
+            data_x['GDD6'] = None
+
+        if 'outTemp' in event.record:
+            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 10.0)
+        else:
+            data_x['GDD10'] = None
 
 
         event.record.update(data_x)
@@ -497,9 +538,6 @@ class WdArchive(weewx.engine.StdService):
         obs_group_dict["summersimmerIndex"] = "group_temperature"
         obs_group_dict["outTempDay"] = "group_temperature"
         obs_group_dict["outTempNight"] = "group_temperature"
-        obs_group_dict["coolT_sum"] = "group_count" 
-        obs_group_dict["warmT_sum"] = "group_count"
-        obs_group_dict["green_sum"] = "group_count"
 
         # bind ourselves to NEW_ARCHIVE_RECORD event
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -597,6 +635,67 @@ class WdGenerateDerived(object):
             _rec_mwx['outTempDay'], _rec_mwx['outTempNight'] = calc_daynighttemps(_rec_mwx['outTemp'], _rec_mwx['dateTime'])
         else:
             _rec_mwx['outTempDay'], _rec_mwx['outTempNight'] = (None, None)
+
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['heatdeg'] = weewx.wxformulas.heating_degrees(_rec_mwx['outTemp'], 18.333)
+        else:
+            _rec_mwx['heatdeg'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['cooldeg'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 18.333)
+        else:
+            _rec_mwx['cooldeg'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['homedeg'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 15.0)
+        else:
+            _rec_mwx['homedeg'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['outTemp'])
+        else:
+            _rec_mwx['SVP'] = None
+
+        if 'inTemp' in _rec_mwx:
+            _rec_mwx['SVPin'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['inTemp'])
+        else:
+            _rec_mwx['SVPin'] = None
+
+        if 'outTemp' in _rec_mwx and 'outHumidity' in _rec_mwx:
+            _rec_mwx['AVP'] = _rec_mwx['outHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['outTemp'])) / 100.0
+        else:
+            _rec_mwx['AVP'] = None
+
+        if 'inTemp' in _rec_mwx and 'inHumidity' in _rec_mwx:
+            _rec_mwx['AVPin'] = _rec_mwx['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['inTemp'])) / 100.0
+        else:
+            _rec_mwx['AVPin'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['wdd_deg'] = weewx.wxformulas.heating_degrees(_rec_mwx['outTemp'], 10.0)
+        else:
+            _rec_mwx['wdd_deg'] = None
+
+
+        # 'calculate' Green DayDegrees 4 6 10
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['GDD4'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 4.0)
+        else:
+            _rec_mwx['GDD4'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['GDD6'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 6.0)
+        else:
+            _rec_mwx['GDD6'] = None
+
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['GDD10'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 10.0)
+        else:
+            _rec_mwx['GDD10'] = None
+
+
 
         data_x = weewx.units.to_std_system(_rec_mwx, _rec['usUnits'])
         # return our modified record

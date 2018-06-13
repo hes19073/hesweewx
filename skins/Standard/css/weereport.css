@@ -666,7 +666,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest1 {
+#reportboden .hest1, #reportbodenDavis .hest1 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #0000cc;
@@ -675,7 +675,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest2 {
+#reportboden .hest2, #reportbodenDavis .hest2 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #0066cc;
@@ -684,7 +684,7 @@
     font-size: 85%;;
 }
 
-#reportboden .hest3 {
+#reportboden .hest3, #reportbodenDavis .hest3 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #0099cc;
@@ -693,7 +693,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest4 {
+#reportboden .hest4, #reportbodenDavis .hest4 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #00ccff;
@@ -701,7 +701,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest5 {
+#reportboden .hest5, #reportbodenDavis .hest5 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #00ffcc;
@@ -709,7 +709,7 @@
     font-size: 85%;;
 }
 
-#reportboden .hest6 {
+#reportboden .hest6, #reportbodenDavis .hest6 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #00ff99;
@@ -717,7 +717,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest7 {
+#reportboden .hest7, #reportbodenDavis .hest7 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ccff00;
@@ -725,7 +725,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest8 {
+#reportboden .hest8, #reportbodenDavis .hest8 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ffff66;
@@ -733,7 +733,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest9 {
+#reportboden .hest9, #reportbodenDavis .hest9 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ffcc00;
@@ -741,7 +741,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest10 {
+#reportboden .hest10, #reportbodenDavis .hest10 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ff9933;
@@ -749,7 +749,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest11 {
+#reportboden .hest11, #reportbodenDavis .hest11 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ff6600;
@@ -757,7 +757,7 @@
     font-size: 85%;
 }
 
-#reportboden .hest12 {
+#reportboden .hest12, #reportbodenDavis .hest12 {
     border: 1px solid #666666;
     text-align: center;
     background-color: #ff3300;

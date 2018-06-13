@@ -1,0 +1,164 @@
+#errorCatcher Echo
+#def round1(val): $eval('%6.1f' % $round($val, 1))
+#set $temp_unit = $unit.label.outTemp
+#set $date_format = "%d. %B"
+#set $now_format = "%d.%m.%Y"
+#set $temp_format = "%5.1f"
+#set $dd_format = "%5.1f"
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <title>${station.location} -- Wachstum Basis 4°C</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/cydia.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script src='js/hesweewx.js'></script>
+  </head>
+
+  <body>
+ <button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+    
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
+   <div id='hes11'>
+     <div id='header'>
+      <div id="masthead">
+        <h1>${station.location}</h1>
+        <h2>Wachstum-Grad-Tag Tulpen (Basis 4°C)</h2>
+          <h2>$day.dateTime.format("%d.%m.%Y")</h2>
+        <div class="navbar">
+         <ul id="nav">
+          <li><input type="button" value=" zurück/ back " onclick="openURL('index3.html')" /></li>
+         </ul>
+        </div>
+      </div><!-- Ende masthead -->
+    </div> <!-- Ende header -->
+
+      <div id="content">
+        <div id="plots">
+          <img src="dayGDD4.png" alt="Wachstum Basis 4 Tag" /><br>
+          <img src="yearGDD4.png" alt="Wachstum Basis 4  Jahr" />
+        </div>
+
+
+        <p style="text-align:center">... die Wachstum-Grad-Tage = ((tägliche maximale Temperatur + tägliche minimale Temperatur) /
+        2.0) - 4°C.</p>
+        <p style="text-align:center">
+<b>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD</b><br>
+Mit dem GDD-Modell lässt sich das Wachstum der Gräser recht gut vorhersagen. 
+Es ist jedoch zu berücksichtigen, dass neben der Temperatur auch die übrigen Wachstumsfaktoren 
+(wie z.B. Lichtniveau, Bodenfeuchte, Düngung, Bodenart, Grasart…) einen entsprechenden Einfluss auf die Gräserentwicklung ausüben.
+Die Berechnung der Growing Degree Days (GDD) berücksichtigt die Tagesmitteltemperatur in Grad C aus der Maximum- und Minimum-Lufttemperatur. 
+Außerdem bezieht man sich auf eine feste Basistemperatur, ab der die jeweilige Kultur mit dem Wachstum beginnt. 
+Bei den <b>Tulpen</b> geht man hier von 4°C aus.
+
+Formel:
+GDD = (Temperatur max + Temperatur min) – Basistemperatur (4 °C) / 2
+Beispiel:
+Lufttemperatur-Maximum: 15 °C
+Lufttemperatur-Minimum: 9 °C
+GDD = (15 °C + 9 °C) – 6 °C (Basis) = 4,0 °C  (Growing Degree Days)
+</p>                        2     
+<p style="text-align:center">
+Ergibt sich bei der Berechnung der GDD eine negative Zahl, 
+so wird diese wie 0 °C (also kein/kaum Wachstum) behandelt. <br />
+Für die Anwendung aller Modelle ist es selbstverständlich unerlässlich, 
+dass täglich verwertbare Wetterdaten erfasst werden (eigene Wetterstation). <br />
+<br />
+Die ermittelten Daten für GDD spiegeln das aktuelle Wachstumspotenzial wider. <br />
+Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorhersagen. 
+        </p>        
+
+        <table>
+          <tr style="vertical-align:top">
+            <th style="text-align:left">Datum</th>
+            <th style="text-align:right">Min Temp<br>$temp_unit</th>
+            <th style="text-align:right">Max Temp<br>$temp_unit</th>
+            <th style="text-align:right">Grad-Tag<br>$temp_unit</th>
+            <th style="text-align:right">Kumulativ<br>Grad-Tag<br>$temp_unit</th>
+          </tr>
+#set $d_gdd = 0.0
+
+#for $day in $year.days($data_binding='weewx_binding')
+
+#if $day.outTemp.min.has_data
+          <tr>
+            <td style="text-align:left">$day.dateTime.format('%d. %m')</td>
+            <td style="text-align:right">$day.outTemp.min</td>
+            <td style="text-align:right">$day.outTemp.max</td>
+
+#if $day.outTemp.min.raw < 4.0
+        #if $day.outTemp.max.raw < 25.0
+             #if $day.outTemp.max.raw < 4.0
+                 #set $GDD = 0.0
+             #else
+                 #set $GDD=($day.outTemp.max.raw + 4.0)/2.0 - 4.0
+             #end if
+        #else
+
+        #set $GDD = 20.0
+        #end if
+#else
+
+        #if $day.outTemp.max.raw < 25.0
+                #set $GDD=($day.outTemp.max.raw + $day.outTemp.min.raw)/2.0 - 4.0
+
+        #else
+                #set $GDD=(25.0 + $day.outTemp.min.raw)/2.0 - 4.0
+        #end if
+#end if
+            <td style="text-align:right">$round1($GDD)</td>
+            #set $d_gdd = $d_gdd + $GDD
+            <td style="text-align:right">$round1($d_gdd)</td>
+          </tr>
+#end if
+#end for
+        </table>
+      </div>
+ <div id='footer'>
+
+<div style="background-color: gold">
+      <p>
+      Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
+       $station.latitude[2]&nbsp;&brvbar;&nbsp;
+      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
+      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
+      H&ouml;he:&nbsp;$station.altitude
+      </p>
+</div>
+<div style="background-color:yellow">
+     weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     weewx  Version:&nbsp; $station.version&nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Wetterstation:&nbsp; $station.hardware
+</div>
+<div id="fzei">
+<div class="lthes">Copyright &copy; 2013 - $current.dateTime.format("%Y") by Hartmut Schweidler</div>
+<div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime.format("%d.%B %Y")</div>
+<div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
+                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a></div>
+</div>
+</div><!-- end id "footer" -->
+</div>
+  </body>
+</html>
