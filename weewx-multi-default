@@ -1,0 +1,2 @@
+"""/etc/default/weewx-multi"""
+WEEWX_INSTANCES="weewx cmon"
