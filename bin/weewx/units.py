@@ -33,20 +33,6 @@ def CtoF(x):
 def FtoC(x):
     return (x - 32.0) * 5.0 / 9.0
 
-# Conversions to and from Felsius. 
-# For the definition of Felsius, see https://xkcd.com/1923/
-def FtoE(x):
-    return (7.0 * x - 80.0) / 9.0
-
-def EtoF(x):
-    return (9.0 * x + 80.0) / 7.0
-
-def CtoE(x):
-    return (7.0 / 5.0) * x + 16.0
-    
-def EtoC(x):
-    return (x - 16.0) * 5.0 / 7.0
-
 def mps_to_mph(x):
     return x * 3600.0 / METER_PER_MILE
 
@@ -357,10 +343,7 @@ conversionDict = {
       'inHg'             : {'mbar'             : lambda x : x / INHG_PER_MBAR, 
                             'hPa'              : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 25.4},
-      'degree_E'         : {'degree_C'         : EtoC,
-                            'degree_F'         : EtoF},
-      'degree_F'         : {'degree_C'         : FtoC,
-                            'degree_E'         : FtoE},
+      'degree_F'         : {'degree_C'         : FtoC},
       'degree_F_day'     : {'degree_C_day'     : lambda x : x * (5.0/9.0)},
       'mile_per_hour'    : {'km_per_hour'      : lambda x : x * 1.609344,
                             'knot'             : lambda x : x * 0.868976242,
@@ -388,8 +371,7 @@ conversionDict = {
       'hPa'              : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                             'mmHg'             : lambda x : x * 0.75006168,
                             'mbar'             : lambda x : x * 1.0},
-      'degree_C'         : {'degree_F'         : CtoF,
-                            'degree_E'         : CtoE},
+      'degree_C'         : {'degree_F'         : CtoF},
       'degree_C_day'     : {'degree_F_day'     : lambda x : x * (9.0/5.0)},
       'km_per_hour'      : {'mile_per_hour'    : kph_to_mph,
                             'knot'             : lambda x : x * 0.539956803,
