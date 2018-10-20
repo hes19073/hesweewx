@@ -56,15 +56,12 @@ def get_green_t(mo_temp, d_temp_avg):
 
         if mo_temp == 1:
             day_green = d_temp_a * 0.5
-            #day_green = CtoF(day_greenF)
 
         elif mo_temp == 2:
             day_green = d_temp_a * 0.75
-            #day_green = CtoF(day_greenF)
 
         elif mo_temp > 2 and mo_temp < 6:
             day_green = d_temp_a
-            #day_green = CtoF(day_greenF)
 
         else:
             day_green = 0.0
@@ -83,7 +80,7 @@ default_search_list = [
     "weewx.cheetahgenerator.Extras"]
 
 def logmsg(lvl, msg):
-    syslog.syslog(lvl, 'Greengenerator: %s' % msg)
+    syslog.syslog(lvl, 'GreenGenerator: %s' % msg)
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -106,24 +103,24 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
     """Class for managing the image generator.
 
     """
-    
+
     def __init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record=None):
         weewx.reportengine.ReportGenerator.__init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record)
-        self.Green_report_generator = GreenReportGenerator(config_dict, skin_dict, gen_ts, first_run, stn_info, record)
+        self.green_report_generator = GreenReportGenerator(config_dict, skin_dict, gen_ts, first_run, stn_info, record)
         return
 
     def run(self):
         self.setup()
         self.genImages(self.gen_ts)
         if hasattr(self, 'plot'):
-            self.Green_report_generator.recs = self.zip_vectors()
-            self.Green_report_generator.run()
+            self.green_report_generator.recs = self.zip_vectors()
+            self.green_report_generator.run()
         return self
-        
+
     def setup(self):
-        
+
         self.image_dict = self.skin_dict['ImageGenerator']
-        self.Green_dict = self.skin_dict['GreenGenerator']
+        self.green_dict = self.skin_dict['GreenGenerator']
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
         self.formatter  = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
@@ -139,22 +136,22 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
     def genImages(self, gen_ts):
 
         """Generate the images.
-        
+
         The time scales will be chosen to include the given timestamp, with
         nice beginning and ending times.
-    
+
         gen_ts: The time around which plots are to be generated. This will
         also be used as the bottom label in the plots.
-        
+
         """
 
         t1 = time.time()
         ngen = ZERO
-        
-        for species_name in self.Green_dict.sections:
+
+        for species_name in self.green_dict.sections:
             # Get the path that the image is going to be saved to:
             plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict['year_images'])
-            species_options = weeutil.weeutil.accumulateLeaves(self.Green_dict[species_name])
+            species_options = weeutil.weeutil.accumulateLeaves(self.green_dict[species_name])
             plot_options.update(species_options)
 
             date_string = plot_options.get('end_date')
@@ -174,16 +171,16 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
                 now_tuple = time.localtime(plotgen_ts)
                 new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
                 start_date_ts = time.mktime(tuple(new_year_tuple))
-            
+
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
-#            skin_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['SKIN_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-#            html_file = os.path.join(image_root, '%s.html' % species_name)
-            ai = 3600 #86400           # enspricht 24 Stunden seit START
-            
+            #html_file = os.path.join(image_root, '%s.html' % species_name)
+            ai = 43200
+
+
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)
-             
+
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
@@ -191,7 +188,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             csv_name = csv.replace('YYYY', str(time.localtime(plotgen_ts).tm_year))
             csv_file_name = os.path.join(text_root, '%s' % csv_name)
             recs = self.get_vectors((minstamp, maxstamp), csv_file_name)
-                
+
             # Do any necessary unit conversions:
             self.vectors = {}
             for (key, val) in recs.iteritems():
@@ -206,7 +203,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
                     os.makedirs(os.path.dirname(img_file))
                 except OSError:
                     pass
-            
+
                 self.plot = self.plot_image(
                     species_name,
                     plot_options,
@@ -222,13 +219,12 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
                     image.save(img_file)
                     ngen += 1
                 except IOError, e:
-                    syslog.syslog(syslog.LOG_CRIT, "Greengenerator: Unable to save to file '%s' %s:" % (img_file, e))
+                    syslog.syslog(syslog.LOG_CRIT, "GreenGenerator: Unable to save to file '%s' %s:" % (img_file, e))
                 t2 = time.time()
                 if self.log_success:
-                    syslog.syslog(syslog.LOG_INFO, "Greengenerator: Generated %d images for %s in %.2f seconds" % \
+                    syslog.syslog(syslog.LOG_INFO, "GreenGenerator: Generated %d images for %s in %.2f seconds" % \
                         (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
-                        
-                        
+
         return self
 
     def plot_image(
@@ -242,19 +238,19 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
 
         line_options = plot_options
         (minstamp, maxstamp, timeinc) = stamps
-        
+
         # Create a new instance of a time plot and start adding to it
         result = TimeHorizonPlot(plot_options)
-                
+
         # Override the x interval if the user has given an explicit interval:
         timeinc_user = to_int(plot_options.get('x_interval'))
         if timeinc_user is not None:
             timeinc = timeinc_user
         result.setXScaling((minstamp, maxstamp, timeinc))
-        
-        # Set the y-scaling, using any user-supplied hints: 
+
+        # Set the y-scaling, using any user-supplied hints:
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
-        
+
         # Get a suitable bottom label:
         bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
         bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
@@ -274,7 +270,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         # See if a line label has been explicitly requested:
         label = line_options.get('label')
         if not label:
-            # No explicit label. Is there a generic one? 
+            # No explicit label. Is there a generic one?
             # If not, then the SQL type will be used instead
             label = self.title_dict.get(var_type, var_type)
 
@@ -286,9 +282,9 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             biofix_label = 'GreenDay'
         else:
             biofix = get_float_t(line_options.get('biofix_estimated', [392, 'degree_F']), 'group_temperature')
-            biofix_label = 'Vegetationsbeginn (GreenDay)'
+            biofix_label = 'Vegetationsbeginn'
         horizons.append([biofix, biofix_label])
-        offsets = self.Green_dict[species_name].get('Offsets_from_Biofix')
+        offsets = self.green_dict[species_name].get('Offsets_from_Biofix')
         if offsets:
             for (horizon_label, offset) in offsets.iteritems():
                 horizon_val = offset.get('offset')
@@ -329,12 +325,12 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             )
         result.horizon_label_offset = int(line_options.get('horizon_label_offset', 3))
 
-        
+
         # Get the line width, if explicitly requested.
         width = to_int(line_options.get('width'))
-                            
+
         # Some plot types require special treatments:
-        interval_vec = None                        
+        interval_vec = None
         vector_rotate = None
         gap_fraction = None
         if plot_type == 'bar':
@@ -362,7 +358,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         result.addLine(weeplot.genplot.PlotLine(
             vectors['date'][ZERO],
             vectors['dd_cumulative'][ZERO],
-            label         = label, 
+            label         = label,
             color         = color,
             fill_color    = fill_color,
             width         = width,
@@ -375,16 +371,16 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             gap_fraction  = gap_fraction,
             ))
         return result
-    
+
     def get_vectors(self, stamps, csv_file_name):
 
         (minstamp, maxstamp) = stamps
         result = {
             'date': ValueTuple([], 'unix_epoch', 'group_time'),
             'daily_max': ValueTuple([], 'degree_F', 'group_temperature'),
-            'daily_avg': ValueTuple([], 'degree_F', 'group_temperature'), 
-            'dd': ValueTuple([], 'count', 'group_count'), 
-            'dd_cumulative': ValueTuple([], 'count', 'group_count'), 
+            'daily_avg': ValueTuple([], 'degree_F', 'group_temperature'),
+            'dd': ValueTuple([], 'count', 'group_count'),
+            'dd_cumulative': ValueTuple([], 'count', 'group_count'),
             }
         try:
             with open(csv_file_name) as csv_file:
@@ -416,6 +412,10 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
                             result['dd'][ZERO].append(dd)
                             dd_cumulative += dd
                             result['dd_cumulative'][ZERO].append(dd_cumulative)
+                            if dd_cumulative >= 200.0:
+                                dat_gd = open("/home/weewx/public_html/Cydia/C_green.txt", "w")
+                                dat_gd.write(str(stamp))
+                                dat_gd.close()
                         except ValueError:
                             pass
                         except TypeError:
@@ -424,7 +424,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             syslog.syslog(syslog.LOG_CRIT, "Greengenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
         return result
 
-    
+
     def zip_vectors(self):
         size = len(self.vectors['date'][ZERO])
         result = []
@@ -457,7 +457,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             rec['remark'] = weewx.units.ValueHelper(val_t, 'day', self.formatter, self.converter)
         return result
 
-            
+
 def skipThisPlot(time_ts, aggregate_interval, img_file):
 
     """A plot can be skipped if it was generated recently and has not changed.
@@ -465,7 +465,6 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
     aggregation interval.
 
     """
-    
     # Images without an aggregation interval have to be plotted every time.
     # Also, the image definitely has to be generated if it doesn't exist.
     if aggregate_interval is None or not os.path.exists(img_file):
@@ -474,7 +473,7 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
     # If its a very old image, then it has to be regenerated
     if time_ts - os.stat(img_file).st_mtime >= aggregate_interval:
         return False
-    
+
     # Finally, if we're on an aggregation boundary, regenerate.
     time_dt = datetime.datetime.fromtimestamp(time_ts)
     tdiff = time_dt -  time_dt.replace(hour=ZERO, minute=ZERO, second=ZERO, microsecond=ZERO)
@@ -485,7 +484,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
 
     def _getScaledDraw(self, draw):
         """Returns an instance of ScaledDraw, with the appropriate scaling.
-        
+
         draw: An instance of ImageDraw
         """
         sdraw = ScaledDrawText(
@@ -500,11 +499,11 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             ],
             )
         return sdraw
-        
+
     def render(self):
         """Traverses the universe of things that have to be plotted in this image, rendering
         them and returning the results as a new Image object.
-        
+
         """
 
         # NB: In what follows the variable 'draw' is an instance of an ImageDraw object and is in pixel units.
@@ -512,20 +511,20 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         # (e.g., the horizontal scaling might be for seconds, the vertical for degrees Fahrenheit.)
         image = weeplot.genplot.Image.new("RGB", (self.image_width, self.image_height), self.image_background_color)
         draw = self._getImageDraw(image)
-        draw.rectangle(((self.lmargin,self.tmargin), 
-                        (self.image_width - self.rmargin, self.image_height - self.bmargin)), 
+        draw.rectangle(((self.lmargin,self.tmargin),
+                        (self.image_width - self.rmargin, self.image_height - self.bmargin)),
                         fill=self.chart_background_color)
 
         self._renderBottom(draw)
         self._renderTopBand(draw)
-        
+
         self._calcXScaling()
         self._calcYScaling()
         (lo, hi, step) = self.yscale
         self.yscale = (min(self.horizon_min, lo), max(self.horizon_max, hi), max(step, 100.0))
         self._calcXLabelFormat()
         self._calcYLabelFormat()
-        
+
         sdraw = self._getScaledDraw(draw)
         if self.horizons:
             self._renderHorizons(sdraw)
@@ -543,12 +542,12 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             image.thumbnail((self.image_width / self.anti_alias, self.image_height / self.anti_alias), Image.ANTIALIAS)
 
         return image
-    
+
     def _renderHorizons(self, sdraw):
         """Draw horizontal bands for insect developmental stages and treatments.
 
         """
-        
+
         self.horizons.sort()
         self.horizons.reverse()
         origin = self.yscale[ZERO]
@@ -562,7 +561,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         """Draw horizontal shading.
 
         """
-        
+
         shades = self.horizon_gradient
         overall_height = (self.yscale[1] - self.yscale[ZERO]) * 0.10
         stripe_height = overall_height / shades
@@ -591,7 +590,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         label_offset = (self.horizon_label_offset / sdraw.xscale, self.horizon_label_offset / sdraw.yscale)
         sdraw.text(
             (self.xscale[ZERO] + label_offset[ZERO], y_pos - height - label_offset[1]),
-            txt, 
+            txt,
             fill=self.horizon_label_font_color,
             font=horizon_label_font,
             )
@@ -616,12 +615,12 @@ class ScaledDrawText(weeplot.utilities.ScaledDraw):
 # =============================================================================
 
 class GreenReportGenerator(weewx.reportengine.ReportGenerator):
-    
+
     """Class for generating files from Green templates.
-    
+
     Useful attributes (some inherited from ReportGenerator):
 
-        config_dict:      The weewx configuration dictionary 
+        config_dict:      The weewx configuration dictionary
         skin_dict:        The dictionary for this skin
         gen_ts:           The generation time
         first_run:        Is this the first time the generator has been run?
@@ -630,11 +629,11 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
         formatter:        An instance of weewx.units.Formatter
         converter:        An instance of weewx.units.Converter
         search_list_objs: A list holding search list extensions
-                          
+
     """
 
     def run(self):
-        
+
         """Main entry point for file generation using Green Templates.
 
         """
@@ -642,23 +641,23 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
         t1 = time.time()
 
         self.setup()
-        
+
         # Make a copy of the skin dictionary (we will be modifying it):
         gen_dict = configobj.ConfigObj(self.skin_dict.dict())
-        
+
         # Look for options in [GreenGenerator],
-        Green_dict = gen_dict["GreenGenerator"]
-        
+        green_dict = gen_dict["GreenGenerator"]
+
         # determine how much logging is desired
-        log_success = to_bool(Green_dict.get('log_success', True))
+        log_success = to_bool(green_dict.get('log_success', True))
 
         # configure the search list extensions
-        self.initExtensions(Green_dict)
+        self.initExtensions(green_dict)
 
         # Generate any templates in the given dictionary:
         ngen = ZERO
-        for species_name in Green_dict.sections:
-            ngen += self.generate(Green_dict, species_name)
+        for species_name in green_dict.sections:
+            ngen += self.generate(green_dict, species_name)
 
         self.teardown()
 
@@ -668,21 +667,17 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
                    (ngen, self.skin_dict['REPORT_NAME'], elapsed_time))
 
     def setup(self):
-        
+
         # This dictionary will hold the formatted dates of all generated files
-        
-#        self.outputted_dict = {}
-#        for key in self.generator_dict.iter_keys():
-#            self.outputted_dict[key] = []; 
         self.formatter = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter = weewx.units.Converter.fromSkinDict(self.skin_dict)
 
     def initExtensions(self, gen_dict):
-        
+
         """Load the search list
 
         """
-        
+
         self.search_list_objs = []
 
         search_list = weeutil.weeutil.option_as_list(gen_dict.get('search_list'))
@@ -705,48 +700,48 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
                 class_ = weeutil.weeutil._get_object(x)
                 # Then instantiate the class, passing self as the sole argument
                 self.search_list_objs.append(class_(self))
-                
+
     def teardown(self):
-        
+
         """Delete any extension objects we created to prevent back references
         from slowing garbage collection
 
         """
-        
+
         while self.search_list_objs:
             self.search_list_objs.pop(NA)
-            
-    def generate(self, Green_dict, species_name):
-        
+
+    def generate(self, green_dict, species_name):
+
         """Generate one or more reports for the indicated species.
 
         species_dict: A ConfigObj dictionary, holding the templates to be
         generated.
-        
+
         self.gen_ts: The report will be current to this time.
-        
+
         """
-        
+
         ngen = 0
-        
+
         # Change directory to the skin subdirectory.  We use absolute paths
         # for Green, so the directory change is not necessary for generating
         # files.  However, changing to the skin directory provides a known
         # location so that calls to os.getcwd() in any templates will return
         # a predictable result.
-        
+
         os.chdir(os.path.join(self.config_dict['WEEWX_ROOT'],
                               self.skin_dict['SKIN_ROOT'],
                               self.skin_dict['skin']))
 
-        report_dict = weeutil.weeutil.accumulateLeaves(Green_dict[species_name])
-        
+        report_dict = weeutil.weeutil.accumulateLeaves(green_dict[species_name])
+
         (template, dest_dir, encoding, default_binding) = self._prepGen(species_name, report_dict)
         (dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
         dest_file = os.path.join(dest_dir, dest_file_name)
 
         # Get start and stop times
-#        default_archive = self.db_binder.get_manager(default_binding)
+        # default_archive = self.db_binder.get_manager(default_binding)
         if self.recs:
             start_ts = self.recs[ZERO]['date'].raw
             stop_ts = self.recs[-1]['date'].raw
@@ -754,7 +749,7 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
             loginf('Skipping template %s: cannot find start time' % section['template'])
             return ngen
 
-            # skip files that are fresh, but only if staleness is defined
+        # skip files that are fresh, but only if staleness is defined
         timespan = weeutil.weeutil.TimeSpan(start_ts, stop_ts)
         stale = to_int(report_dict.get('stale_age'))
         if stale is not None:
@@ -770,7 +765,7 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
 
         searchList = self._getSearchList(encoding, timespan, default_binding, species_name, report_dict)
         tmpname = dest_file + '.tmp'
-            
+
         try:
             compiled_template = Cheetah.Template.Template(
                 file=template,
@@ -819,13 +814,12 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
                 #'threshold_lo': weewx.units.ValueHelper(threshold_lo_t, 'year', self.formatter, self.converter),
                 #'threshold_hi': weewx.units.ValueHelper(threshold_hi_t, 'year', self.formatter, self.converter),
                 },
-            }, 
-#            self.outputted_dict,
+            },
             ]
-        
+
         # Bind to the default_binding:
         db_lookup = self.db_binder.bind_default(default_binding)
-        
+
         # Then add the V3.X style search list extensions
         for obj in self.search_list_objs:
             searchList += obj.get_extension_list(timespan, db_lookup)
@@ -833,7 +827,7 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
 
 
     def _prepGen(self, species_name, report_dict):
-        
+
         """Get the template, destination directory, encoding, and default
         binding.
 

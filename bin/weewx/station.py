@@ -33,7 +33,7 @@ class StationInfo(object):
             altitude_t = weeutil.weeutil.option_as_list(stn_dict.get('altitude', (None, None)))
             try:
                 self.altitude_vt = weewx.units.ValueTuple(float(altitude_t[0]), altitude_t[1], "group_altitude")
-            except KeyError, e:
+            except KeyError as e:
                 raise weewx.ViolatedPrecondition("Value 'altitude' needs a unit (%s)" % e)
 
         if console and hasattr(console, 'hardware_name'):
@@ -83,14 +83,22 @@ class Station(object):
         self.version = weewx.__version__
 
     @property
-    def uptime(self):        
+    def uptime(self):
         """Lazy evaluation of weewx uptime."""
         delta_time = time.time() - weewx.launchtime_ts if weewx.launchtime_ts else None
-            
+
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
                                        formatter=self.formatter,
                                        converter=self.converter)
-    
+    @property
+    def db_uptime(self):
+        """Lazy evaluation of weewx uptime."""
+        delta_time = time.time() -  1383254340
+
+        return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
+                                       formatter=self.formatter,
+                                       converter=self.converter)
+
     @property
     def os_uptime(self):
         """Lazy evaluation of the server uptime."""

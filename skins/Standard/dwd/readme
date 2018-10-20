@@ -1,0 +1,9 @@
+in to crontab -e 
+
+36 7-23 * * * /home/dwd/foredwd.py 1>/dev/null 2>&1
+36 2,4,6 * * * /home/dwd/foredwd.py 1>/dev/null 2>&1
+
+41 7-23 * * * /home/dwd/foredwdc.py 1>/dev/null 2>&1
+41 2,4,6 * * * /home/dwd/foredwdc.py 1>/dev/null 2>&1
+
+

@@ -1,5 +1,5 @@
 #errorCatcher Echo
-## NOAA-YYYY-MM.txt.tmpl 2749 2014-11-29 18:15:24Z tkeffer $
+## $Id: NOAA-YYYY-MM.txt.tmpl 2749 2014-11-29 18:15:24Z tkeffer $
 #set $YM="%Y %m"
 #set $D=" %d"
 #set $M=" %b"
@@ -18,7 +18,7 @@
                    MONTHLY CLIMATOLOGICAL SUMMARY for $month_name $year_name
 
 
-NAME: $station.location
+NAME: $station.location                  
 ELEV: $station.altitude    LAT: $station.latitude[0]-$station.latitude[1] $station.latitude[2]    LONG: $station.longitude[0]-$station.longitude[1] $station.longitude[2]
 
 
@@ -37,3 +37,4 @@ $day.dateTime.format($D)
 #end for
 ---------------------------------------------------------------------------------------
     $month.outTemp.avg.nolabel($Temp,$NONE) $month.outTemp.max.nolabel($Temp,$NONE)    $month.outTemp.maxtime.format($D) $month.outTemp.min.nolabel($Temp,$NONE)    $month.outTemp.mintime.format($D) $month.heatdeg.sum.nolabel($Temp,$NONE) $month.cooldeg.sum.nolabel($Temp,$NONE) $month.rain.sum.nolabel($Rain,$NONE) $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)    $month.wind.maxtime.format($D) $month.wind.vecdir.nolabel($Dir)
+    

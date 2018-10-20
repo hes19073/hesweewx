@@ -16,6 +16,7 @@ days, or $thirty_day.wind.max for maximum wind speed in the past thirty days.
 """
 import datetime
 import time
+import weewx
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
@@ -23,10 +24,10 @@ from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
 
 class ExtendedStatistics(SearchList):
-    
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-  
+
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with additions.
 
@@ -46,7 +47,7 @@ class ExtendedStatistics(SearchList):
                                    formatter=self.generator.formatter,
                                    converter=self.generator.converter,
                                    skin_dict=self.generator.skin_dict)
-        
+
         # Now create a TimespanBinder for the last seven days. This one we
         # will have to calculate. First, calculate the time at midnight, seven
         # days ago. The variable week_dt will be an instance of datetime.date.
@@ -70,10 +71,56 @@ class ExtendedStatistics(SearchList):
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter,
                                           skin_dict=self.generator.skin_dict)
-        
+
+
+        # Now use a similar process to get statistics for last year.
+        year = datetime.date.today().year
+        start_ts = time.mktime((year - 1, 1, 1, 0, 0, 0, 0, 0, 0))
+        stop_ts = time.mktime((year, 1, 1, 0, 0, 0, 0, 0, 0))
+        last_year_stats = TimespanBinder(TimeSpan(start_ts, stop_ts),
+                                          db_lookup,
+                                          context='last_year',
+                                          formatter=self.generator.formatter,
+                                          converter=self.generator.converter)
+
+        # Now use a similar process to get statistics for last year to date.
+        year = datetime.date.today().year
+        month = datetime.date.today().month
+        day = datetime.date.today().day
+        start_ts = time.mktime((year - 1, 1, 1, 0, 0, 0, 0, 0, 0))
+        stop_ts = time.mktime((year - 1, month, day, 0, 0, 0, 0, 0, 0))
+        last_year_todate_stats = TimespanBinder(TimeSpan(start_ts, stop_ts),
+                                                db_lookup,
+                                                context='last_year_todate',
+                                                formatter=self.generator.formatter,
+                                                converter=self.generator.converter)
+
+        # Now use a similar process to get statistics for last calendar month.
+        start_ts = time.mktime((year, month - 1, 1, 0, 0, 0, 0, 0, 0))
+        stop_ts = time.mktime((year, month, 1, 0, 0, 0, 0, 0, 0)) - 1
+        last_month_stats = TimespanBinder(TimeSpan(start_ts, stop_ts),
+                                          db_lookup,
+                                          context='last_month',
+                                          formatter=self.generator.formatter,
+                                          converter=self.generator.converter)
+
+        ## Get ts Weewx was launched
+        ##
+        starttime = 1383254340
+        # Start Datenbank
+        starttime_vt = (starttime, 'unix_epoch', 'group_time')
+        starttime_vh = ValueHelper(starttime_vt,
+                                   formatter=self.generator.formatter,
+                                   converter=self.generator.converter)
+
         return [{'alltime': all_stats,
                  'seven_day': seven_day_stats,
-                 'thirty_day': thirty_day_stats}]
+                 'thirty_day': thirty_day_stats,
+                 'last_month': last_month_stats,
+                 'start_time': starttime_vh,
+                 'last_year': last_year_stats,
+                 'last_year_today': last_year_todate_stats,
+               }]
 
 
 # For backwards compatibility:

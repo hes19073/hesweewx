@@ -57,51 +57,54 @@ function topFunction() {
       <div id="content">
         <div id="plots">
           <img src="dayGDD10.png" alt="Wachstum Basis 10 " /><br>
-          <img src="yearGDD10.png" alt="Wachstum Basis 10 Jahr" />
+          <img src="Cydia/C_growth10.png" alt="Wachstum Basis 10 Jahr" />
         </div>
 
 
         <p style="text-align:center">... die Wachstum-Grad-Tage = ((tägliche maximale Temperatur + tägliche minimale Temperatur) /
         2.0) - 10°C.</p>
-        <p style="text-align:center">
-<b>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD</b><br>
-Mit dem GDD-Modell lässt sich das Wachstum der Gräser recht gut vorhersagen. 
-Es ist jedoch zu berücksichtigen, dass neben der Temperatur auch die übrigen Wachstumsfaktoren 
-(wie z.B. Lichtniveau, Bodenfeuchte, Düngung, Bodenart, Grasart…) einen entsprechenden Einfluss auf die Gräserentwicklung ausüben.
-Die Berechnung der Growing Degree Days (GDD) berücksichtigt die Tagesmitteltemperatur in Grad C aus der Maximum- und Minimum-Lufttemperatur. 
-Außerdem bezieht man sich auf eine feste Basistemperatur, ab der die jeweilige Kultur mit dem Wachstum beginnt. 
-Bei den Rasengräsern geht man hier von 6 °C aus. (Amerikanische Autoren nutzen als Basis 50 °F oder 10 °C).
+<h3>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD </h3>
+<p style="text-align:center">
+<br>
+<p style="text-align:center">
+Die Berechnung der Growing Degree Days (GDD) berücksichtigt die <b>Tagesmitteltemperatur in Grad C</b> aus der Maximum- und Minimum-Lufttemperatur. <br>
+Bei meinen Berechnungen verwende ich die Methode der <b>Berechnung des einfachen Durchschnitts</b>.<br>
+Außerdem bezieht man sich auf eine feste Basistemperatur, ab der die jeweilige Kultur mit dem Wachstum beginnt. <br>
+Allgemein verwendet man als Basistemperatur <b>10 Grad C</b>.<br> 
+Bei den Rasengräsern geht man von einer Basistemperatur von 6 °C aus. <br>
+</p>
 
-Formel:
-GDD = (Temperatur max + Temperatur min) – Basistemperatur (6 °C) / 2
-Beispiel:
-Lufttemperatur-Maximum: 15 °C
-Lufttemperatur-Minimum: 9 °C
-GDD = (15 °C + 9 °C) – 6 °C (Basis) = 6,0 °C  (Growing Degree Days)
-                        2     
+<h4>Formel:</h4>
+<p style="text-align:center">
+GDD = (Maximum der Lufttemperatur + Minimum der Lufttemperatur des Tages) / 2 – Basistemperatur </p>
 
-Ergibt sich bei der Berechnung der GDD eine negative Zahl, 
-so wird diese wie 0 °C (also kein/kaum Wachstum) behandelt. 
-Für die Anwendung aller Modelle ist es selbstverständlich unerlässlich, 
-dass täglich verwertbare Wetterdaten erfasst werden (eigene Wetterstation, s. Abb.1) oder für den jeweiligen Ort verfügbar sind (z.B. Internet).
+<p style="text-align:center"><u>Formel:</u><strong> </strong><br />
+           <strong><em>GDD =<u>(Tempmax+Tempmin)</u></em></strong><strong><em> &ndash; Basistemperatur (10 &deg;C)</em></strong><strong></strong><br />
+ 
+<strong><em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2</em></strong><strong></strong><br/></p>
 
-Die ermittelten Daten für GDD spiegeln das aktuelle Wachstumspotenzial  wider. 
-Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorhersagen. 
-So berichtete HUNT (2013) in seinem Blog, dass an seinem Standort die Blüte von 
-Poa annua var. annua bei 154 GDD eintrat (7. Mai), dagegen blühte Poa annua  var. reptans bei 191,5 GDD (19.Mai).
-
-Vergleicht man die GDD-Daten mehrerer Jahre für verschiedene Standorte, 
-so stellt man fest, dass das Wachstumspotenzial für die Gräser je nach Jahr, 
-Standort und topographischer Lage stark variiert. 
-Es ist daher sehr nützlich, das Wachstum mittels GDD für seinen Standort zu quantifizieren.
-
-Fazit
-Die GDD-Daten können eine Entscheidungshilfe bezüglich Art und Zeitpunkt verschiedener 
-Pflegemaßnahmen sein. Besonders nützlich sind die Daten jedoch auch bei der Kommunikation 
-mit den Nutzern und Verantwortlichen der Golf- und Sportrasenflächen.
-Bei der Erläuterung von Beeinträchtigungen in der Rasenqualität durch Witterungseinflüsse, 
-lassen sich konkrete Zahlen für das Wachstumspotenzial heranziehen, 
-sodass eine objektive Beurteilung möglich wird.
+<h4>Beispiel:</h4>
+<p style="text-align:center">
+<lu>
+<li> Maximum Lufttemperatur: 15 °C </li>
+<li> Minimum Lufttemperatur-: 9 °C </li>
+<li> GDD = (15 °C + 9 °C) / 2 – 10 °C  = 2,0 °C  (Growing Degree Days)</li>
+</ul>
+</p>
+<p style="text-align:center">
+Ergibt sich bei der Berechnung der GDD eine negative Zahl, so wird diese wie 0 °C (also kein/kaum Wachstum) behandelt.<br>
+Sollte das Maximum der Lufttemperatur größer als 30 °C sein, wird dieser gekappt.<br>
+In diesem Fall wird als Maximum Lufttemperatur der Wert 30 °C angenommen. <br>
+Für die Anwendung der Modelle ist es selbstverständlich unerlässlich, <br>
+dass täglich verwertbare Wetterdaten erfasst werden. </p>
+<p style="text-align:center">
+Die ermittelten Daten für GDD spiegeln das aktuelle Wachstumspotenzial wider. <br>
+Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorhersagen. <br>
+</p>
+<p style="text-align:center">
+<b>Fazit</b>
+Die GDD-Daten können eine Entscheidungshilfe bezüglich Art und Zeitpunkt <br>
+verschiedener Pflegemaßnahmen sein. 
         </p>        
 
         <table>
@@ -127,19 +130,19 @@ sodass eine objektive Beurteilung möglich wird.
              #if $day.outTemp.max.raw < 10.0
                  #set $GDD = 0.0
              #else
-                 #set $GDD=($day.outTemp.max.raw + 10.0)/2.0 - 10.0
+                 #set $GDD = ($day.outTemp.max.raw + 10.0) / 2.0 - 10.0
              #end if
         #else
 
-        #set $GDD = 20.0
+        #set $GDD = (30.0 + $day.outTemp.min.raw) / 2.0 - 10.0
         #end if
 #else
 
         #if $day.outTemp.max.raw < 30.0
-                #set $GDD=($day.outTemp.max.raw + $day.outTemp.min.raw)/2.0 - 10.0
+                #set $GDD = ($day.outTemp.max.raw + $day.outTemp.min.raw) / 2.0 - 10.0
 
         #else
-                #set $GDD=(30.0 + $day.outTemp.min.raw)/2.0 - 10.0
+                #set $GDD = (30.0 + $day.outTemp.min.raw) / 2.0 - 10.0
         #end if
 #end if
             <td style="text-align:right">$round1($GDD)</td>

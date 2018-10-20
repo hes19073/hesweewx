@@ -18,3 +18,19 @@ import locale
 # Other options are possible. See:
 # http://docs.python.org/2/library/locale.html#locale.setlocale
 locale.setlocale(locale.LC_ALL, '')
+
+
+# setup units to support custom Klimalogg sensor map
+from weewx.units import obs_group_dict
+
+obs_group_dict['current_temp'] = 'group_temperature'
+obs_group_dict['current_apptemp'] = 'group_temperature'
+obs_group_dict['current_wind'] = 'group_speed'
+obs_group_dict['densityA'] = 'group_altitude'
+#obs_group_dict['temp3'] = 'group_temperature'
+#obs_group_dict['temp4'] = 'group_temperature'
+#obs_group_dict['temp5'] = 'group_temperature'
+#obs_group_dict['temp6'] = 'group_temperature'
+#obs_group_dict['temp7'] = 'group_temperature'
+#obs_group_dict['temp8'] = 'group_temperature'
+

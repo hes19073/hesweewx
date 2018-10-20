@@ -1,31 +1,41 @@
-#errorCatcher Echo
 <!DOCTYPE html>
+#errorCatcher Echo
+#encoding UTF-8
 <!-- demonstration page for steel series gauges for weewx -->
 <!-- by Matthew Wall, based on work by Mark Crossley      -->
+<!-- angepasst Hartmut Schweidler 28.10.2016              -->
 <!-- 26dec2014                                            -->
-#encoding UTF-8
 <html lang="de">
+  <head>
+   <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+   <meta name='viewport' content='width=device-width' />
+   <meta name="robots" content="all" />
+   <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+   <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerinim Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+   <meta name="author"           content="Hartmut Schweidler" />
 
-<head>
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-    <meta name='viewport' content='width=device-width' />
-    <meta name="robots" content="all" />
-    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
-    <meta name="author"           content="Hartmut Schweidler" />
-    <meta name="revisit-after"    content="5 min" />
-    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
-    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+   <title>$station.location Aktuelles Wetter</title>
 
-  <title>$station.location weather</title>
-  <link rel="stylesheet" href="css/gauges-ss.css">
-    <link rel="stylesheet" type="text/css" href="./../hesweewx.css" />
-    <link rel="icon" type="image/png" href="./../favicon.ico" />
-    <script type='text/javascript' src='./../hesweewx.js'></script>
+   <link rel='stylesheet' type='text/css' href='./../css/hesweewx.css' />
+   <link rel='icon' type='image/png' href='./../favicon.ico' />
+   <script src='./../js/hesweewx.js'></script>
+    <script>
+       window.onload = function() { applypopups(); }
+    </script>
 
+   <link rel="stylesheet" href="css/gauges-ss.css">
 </head>
 
 <body>
+#set $VPn = $latest($data_binding='wdsupp_binding').vantageForecastNumber.raw
+#set $VPn = int($VPn)
+#set $VPn = str($VPn)
+#if $current.outTemp.raw < 0.0
+     #set $VPnumber = './../xicons/VPnumbers/' + $VPn + 's.gif'
+#else
+     #set $VPnumber = './../xicons/VPnumbers/' + $VPn + '.gif'
+#end if
+
 <div id='header'>
  <div id="masthead">
   <h1>Wetterstation&nbsp;$station.location</h1>
@@ -34,28 +44,61 @@
       L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
       $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
       H&ouml;he:&nbsp;$station.altitude</p>
-  <div class="navbar">
-   <ul id="nav">
-    <li><input type="button" value=" Aktuell " onclick="openURL('./../index.html')" /></li>
-    <li><input type="button" value=" OWFS " onclick="openURL('./../index2.html')" /></li>
-    <li><input type="button" value=" Heute/ Tag " onclick="openURL('./../day.html')" /></li>
-    <li><input type="button" value=" Prognose " onclick="openURL('./../forecastT.html')" /></li>
-    <li><input type="button" value=" Statistik " onclick="openURL('./../statistik.html')" /></li>
-   </ul>
-  </div> <!-- End navbar1 -->
- </div><!-- Ende masthead -->
-</div> <!-- Ende header -->
+  <h2>Aktuelle Messwerte am&nbsp;$current.dateTime&nbsp;Uhr</h2>
 
-  <div class="content">
+<div class='hesso'>
+  <ul>
+   <li><img style="border: 0px solid; width: 60px; height: 60px;" alt="Wetter" src="$VPnumber" /></li>
+  </ul>
+</div> <!-- ende Temp Sonne  -->
+
+<div class="navbar">
+ <ul id="nav">
+  <li><input type="button" value=" Aktuell " onclick="openURL('./../index.html')" /></li>
+  <li><input type="button" value=" OWFS " onclick="openURL('./../index2.html')" /></li>
+  <li><input type="button" value=" Heute/ Tag " onclick="openURL('./../day.html')" /></li>
+  <li><input type="button" value="  Prognose  " onclick="openURL('./../forecastT.html')" /></li>
+  <li><input type="button" value=" WEEWX  " onclick="openURL('http://www.weewx.com')" />
+   <ul>
+    <li><input type="button" value=" weewx-Map " onclick="openURL('http://www.weewx.com/stations')" /></li>
+    <li><input type="button" value=" Neuigkeiten " onclick="openURL('http://www.weewx.com/news.html')" /></li>
+    <li><input type="button" value=" Dokumente  " onclick="openURL('http://www.weewx.com/docs.html')" /></li>
+    <li><input type="button" value=" Daten/Files " onclick="openURL('https://github.com/weewx/weewx')" /></li>
+    <li><input type="button" value=" Nutzerforum " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-user')" /></li>
+    <li><input type="button" value=" Entwicklung " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-development')" /></li>
+    <li><input type="button" value=" GitHub Hes  " onclick="openURL('https://github.com/hes19073/hesweewx.git')" /></li>
+   </ul>
+  </li>
+ <li><input type="button" value="  RSS  " onclick="openURL('./../RSS/weewx_rss.xml')" /></li>
+  <li><input type="button" value=" Ansicht " onclick="openURL('./../mobile.html')" />
+   <ul>
+    <li><input type="button" value=" SteelGauge " onclick="openURL('index.html')" /></li>
+    <li><input type="button" value=" Mobilphone " onclick="openURL('./../mobile.html')" /></li>
+    <li><input type="button" value=" Smartphome " onclick="openURL('./../smartphone/index.html')" /></li>
+   </ul>
+  </li>
+  <li><input type="button" value=" Impressum " onclick="openURL('http://blog.hes61.de/?page_id=111')" />
+   <ul>
+    <li><input type="button" value=" Impressum " onclick="openURL('http://blog.hes61.de/?page_id=111')" /></li>
+    <li><input type="button" value=" Datenschutz " onclick="openURL('http://blog.hes61.de/datenschutz/')" /></li>
+   </ul>
+  </li>
+</ul>
+
+   </div><!--  End navbar1 -->
+  </div><!-- Ende masthead -->
+ </div> <!-- Ende header -->
+
     <noscript>
       <h2 style="color:red; text-align:center">&gt;&gt;This pages requires JavaScript enabling in your browser.&lt;&lt;<br>&gt;&gt;Please enable scripting it to enjoy this site at its best.&lt;&lt;</h2>
     </noscript>
-  </div>
+
   <div class="row">
     <canvas id="canvas_led" width="25" height="25"></canvas>&nbsp;&nbsp;
     <canvas id="canvas_status" width="550" height="25"></canvas>&nbsp;&nbsp;
     <canvas id="canvas_timer" width="70" height="25"></canvas>
   </div>
+
   <div class="row">
     <div class="gauge">
       <div id="tip_0">
@@ -234,7 +277,7 @@
       H&ouml;he:&nbsp;$station.altitude
       </p>
 </div>
-  
+
 <div style="background-color:yellow">
      weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
@@ -242,18 +285,58 @@
      Wetterstation:&nbsp; $station.hardware&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Zusatz: forecast; cmon; owfs und 13 one-wire-Sensoren
 </div>
-  <p>
-   #if $Extras.has_key('station_subtitle')
-       $Extras.station_subtitle<br/>
-   #end if
-  </p>
+
+<p>
+ #if $Extras.has_key('station_subtitle')
+     $Extras.station_subtitle<br/>
+ #end if
+</p>
+<hr />
+<div class="navbar">
+   <input type="button" value=" SteelGauge  " onclick="openURL('index.html')" />
+   <input type="button" value="   Aktuell   " onclick="openURL('./../index.html')" />
+   <input type="button" value="    OWFS     " onclick="openURL('./../index2.html')" />
+   <input type="button" value="   Prognose  " onclick="openURL('./../forecastT.html')" />
+   <input type="button" value="     Tag     " onclick="openURL('./../day.html')" />
+   <input type="button" value="    Woche    " onclick="openURL('./../week.html')" />
+   <input type="button" value="    Monat    " onclick="openURL('./../month.html')" />
+   <input type="button" value="    Jahr     " onclick="openURL('./../year.html')" />
+
+   <select NAME=noaaselect onchange="openNoaaFile(value)">
+   #for $monthYear in $SummaryByMonth
+       <option value="$monthYear">$monthYear</option>
+   #end for
+       <option selected>- Monat -</option>
+   </select>
+
+   Auswahl:&nbsp;
+   <select NAME=noaaselect onchange="openNoaaFile(value)">
+   #for $yr in $SummaryByYear
+       <option value="$yr">$yr</option>
+   #end for
+       <option selected>- Jahr -</option>
+  </select>
+
+  Monatsübersicht per
+  &#8658;&nbsp;Auswahl:
+  <select NAME=archivselect onchange="openArchivFile(value)">
+  #for $monthYear in $SummaryByMonth
+       <option value="$monthYear">$monthYear</option>
+  #end for
+       <option selected>- Jahr-Monat -</option>
+  </select>
+ </div> <!-- End class navbar -->
 <hr />
 <div id="fzei">
-  <div class="lthes">Copyright &copy; 2013 -&nbsp;$year_name&nbsp; by Hartmut Schweidler</div>
+  <div class="lthes">Copyright &copy; 2013 - $current.dateTime.format("%Y") by Hartmut Schweidler</div>
   <div class="rthes">Letzte &Auml;nderung am &nbsp;$current.dateTime</div>
   <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
-                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a></div>
-</div>
-</footer></div><!-- end id "footer" -->
+                 <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a>
+  </div>
+ </div>
+ </footer>
+</div> <!-- footer -->
+
 </body>
+
 </html>

@@ -27,7 +27,7 @@ Falling|#slurp
 #else
 Steady|#slurp
 #end if
-||#slurp
+|$day.windGust.max.formatted|#slurp
 ##20-24
 $day.rain.sum.formatted|$yesterday.rain.sum.formatted|$month.rain.sum.formatted|$year.rain.sum.formatted|$current.rainRate.formatted|#slurp
 ##25-30
@@ -47,11 +47,17 @@ $day.barometer.max.formatted|$day.barometer.maxtime|$day.barometer.min.formatted
 ## 46-52
 #set $cloudHeight = round((($current.outTemp.degree_F.raw - $current.dewpoint.degree_F.raw) * 1000 / 4.4 + $station.altitude.foot.raw) * .3048, 0)
 $cloudHeight|#slurp
+#if $almanac.hasExtras
 $almanac.moon.rise|$almanac.moon.set|$almanac.next_full_moon|$almanac.next_new_moon|$almanac.moon_phase|$almanac.moon_fullness|#slurp
+#else
+||||||#slurp
+#end if
 ## 53-59
+#if $almanac.hasExtras
 $day.ET.sum.formatted|$current.dateTime.format("%a, %d %b %Y")|$current.dateTime.format("%H:%M %Z")|$station.location|$almanac.sun.rise|$almanac.sun.set|$almanac.sun.transit|#slurp
-## 
-## this info should be set based on weewx settings rather than user defined
+#else
+$day.ET.sum.formatted|$current.dateTime.format("%a, %d %b %Y")|$current.dateTime.format("%H:%M %Z")|$station.location||||#slurp
+#end if
 ##
 ## 60-64
 $unit.label.outTemp|$unit.label.windSpeed|$unit.label.rain|$unit.label.barometer|$unit.label.outHumidity|#slurp

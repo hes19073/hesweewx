@@ -445,7 +445,7 @@ import weewx.wxformulas
 from weeutil.weeutil import timestamp_to_string
 
 DRIVER_NAME = 'TE923'
-DRIVER_VERSION = '0.22'
+DRIVER_VERSION = '0.24'
 
 def loader(config_dict, engine):  # @UnusedVariable
     return TE923Driver(**config_dict[DRIVER_NAME])
@@ -461,36 +461,35 @@ DEBUG_WRITE = 1
 DEBUG_DECODE = 0
 
 # map the station data to the default database schema, plus extensions
-DEFAULT_OBSERVATION_MAP = {
-    'link_wind': 'windLinkStatus',
-    'bat_wind': 'windBatteryStatus',
-    'link_rain': 'rainLinkStatus',
-    'bat_rain': 'rainBatteryStatus',
-    'link_uv': 'uvLinkStatus',
-    'bat_uv': 'uvBatteryStatus',
-    'uv': 'UV',
-    't_in': 'inTemp',
-    'h_in': 'inHumidity',
-    't_1': 'outTemp',
-    'h_1': 'outHumidity',
-    'bat_1': 'outTempBatteryStatus',
-    'link_1': 'outLinkStatus',
-    't_2': 'extraTemp1',
-    'h_2': 'extraHumid1',
-    'bat_2': 'extraBatteryStatus1',
-    'link_2': 'extraLinkStatus1',
-    't_3': 'extraTemp2',
-    'h_3': 'extraHumid2',
-    'bat_3': 'extraBatteryStatus2',
-    'link_3': 'extraLinkStatus2',
-    't_4': 'extraTemp3',
-    'h_4': 'extraHumid3',
-    'bat_4': 'extraBatteryStatus3',
-    'link_4': 'extraLinkStatus3',
-    't_5': 'extraTemp4',
-    'h_5': 'extraHumid4',
-    'bat_5': 'extraBatteryStatus4',
-    'link_5': 'extraLinkStatus4',
+DEFAULT_MAP = {
+    'windLinkStatus': 'link_wind',
+    'windBatteryStatus': 'bat_wind',
+    'rainLinkStatus': 'link_rain',
+    'rainBatteryStatus': 'bat_rain',
+    'uvLinkStatus': 'link_uv',
+    'uvBatteryStatus': 'bat_uv',
+    'inTemp': 't_in',
+    'inHumidity': 'h_in',
+    'outTemp': 't_1',
+    'outHumidity': 'h_1',
+    'outTempBatteryStatus': 'bat_1',
+    'outLinkStatus': 'link_1',
+    'extraTemp1': 't_2',
+    'extraHumid1': 'h_2',
+    'extraBatteryStatus1': 'bat_2',
+    'extraLinkStatus1': 'link_2',
+    'extraTemp2': 't_3',
+    'extraHumid2': 'h_3',
+    'extraBatteryStatus2': 'bat_3',
+    'extraLinkStatus2': 'link_3',
+    'extraTemp3': 't_4',
+    'extraHumid3': 'h_4',
+    'extraBatteryStatus3': 'bat_4',
+    'extraLinkStatus3': 'link_4',
+    'extraTemp4': 't_5',
+    'extraHumid4': 'h_5',
+    'extraBatteryStatus4': 'bat_5',
+    'extraLinkStatus4': 'link_5'
 }
 
 def logmsg(dst, msg):
@@ -525,9 +524,9 @@ class TE923ConfEditor(weewx.drivers.AbstractConfEditor):
     # The default configuration associates the channel 1 sensor with outTemp
     # and outHumidity.  To change this, or to associate other channels with
     # specific columns in the database schema, use the following map.
-    [[map]]
+    #[[sensor_map]]
 %s
-""" % "\n".join(["        %s = %s" % (x, DEFAULT_OBSERVATION_MAP[x]) for x in DEFAULT_OBSERVATION_MAP])
+""" % "\n".join(["    #   %s = %s" % (x, DEFAULT_MAP[x]) for x in DEFAULT_MAP])
 
 
 class TE923Configurator(weewx.drivers.AbstractConfigurator):
@@ -1137,8 +1136,10 @@ class TE923Driver(weewx.drivers.AbstractDevice):
         self.read_timeout = int(stn_dict.get('read_timeout', 10))
         self.polling_interval = int(stn_dict.get('polling_interval', 10))
         loginf('polling interval is %s' % str(self.polling_interval))
-        self.obs_map = stn_dict.get('map', DEFAULT_OBSERVATION_MAP)
-        loginf('observation map is %s' % self.obs_map)
+        self.sensor_map = dict(DEFAULT_MAP)
+        if 'sensor_map' in stn_dict:
+            self.sensor_map.update(stn_dict['sensor_map'])
+        loginf('sensor map is %s' % self.sensor_map)
 
         self.station = TE923Station(max_tries=self.max_tries,
                                     retry_wait=self.retry_wait,
@@ -1168,7 +1169,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
             status = self.station.get_status()
             packet = self.data_to_packet(data, status=status,
                                          last_rain=self._last_rain_loop,
-                                         obs_map=self.obs_map)
+                                         sensor_map=self.sensor_map)
             self._last_rain_loop = packet['rainTotal']
             yield packet
             time.sleep(self.polling_interval)
@@ -1181,7 +1182,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
 #            # FIXME: insert battery status on the last record
 #            packet = self.data_to_packet(data, status=None,
 #                                         last_rain=self._last_rain_archive,
-#                                         obs_map=self.obs_map)
+#                                         sensor_map=self.sensor_map)
 #            self._last_rain_archive = packet['rainTotal']
 #            if self._last_ts:
 #                packet['interval'] = (packet['dateTime'] - self._last_ts) / 60
@@ -1195,7 +1196,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
         for data in self.station.gen_records(since_ts):
             packet = self.data_to_packet(data, status=None,
                                          last_rain=self._last_rain_archive,
-                                         obs_map=self.obs_map)
+                                         sensor_map=self.sensor_map)
             self._last_rain_archive = packet['rainTotal']
             if self._last_ts:
                 packet['interval'] = (packet['dateTime'] - self._last_ts) / 60
@@ -1210,8 +1211,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
         loginf("read %s records from logger" % cnt)
 
     @staticmethod
-    def data_to_packet(data, status=None, last_rain=None,
-                       obs_map=DEFAULT_OBSERVATION_MAP):
+    def data_to_packet(data, status, last_rain, sensor_map):
         """convert raw data to format and units required by weewx
 
                     station      weewx (metric)
@@ -1230,26 +1230,24 @@ class TE923Driver(weewx.drivers.AbstractDevice):
         packet['usUnits'] = weewx.METRIC
         packet['dateTime'] = data['dateTime']
 
-        # insert values for T/H sensors based on observation map
-        for label in obs_map:
-            packet[obs_map[label]] = data.get(label)
-
-        # insert values for battery status if they are available
-        if status is not None:
-            for label in obs_map:
-                if label in status:
-                    packet[obs_map[label]] = int(status[label])
-
         # include the link status - 0 indicates ok, 1 indicates no link
-        packet['link_wind'] = 0 if data['windspeed_state'] == STATE_OK else 1
-        packet['link_rain'] = 0 if data['rain_state'] == STATE_OK else 1
-        packet['link_uv'] = 0 if data['uv_state'] == STATE_OK else 1
-        packet['link_1'] = 0 if data['t_1_state'] == STATE_OK else 1
-        packet['link_2'] = 0 if data['t_2_state'] == STATE_OK else 1
-        packet['link_3'] = 0 if data['t_3_state'] == STATE_OK else 1
-        packet['link_4'] = 0 if data['t_4_state'] == STATE_OK else 1
-        packet['link_5'] = 0 if data['t_5_state'] == STATE_OK else 1
+        data['link_wind'] = 0 if data['windspeed_state'] == STATE_OK else 1
+        data['link_rain'] = 0 if data['rain_state'] == STATE_OK else 1
+        data['link_uv'] = 0 if data['uv_state'] == STATE_OK else 1
+        data['link_1'] = 0 if data['t_1_state'] == STATE_OK else 1
+        data['link_2'] = 0 if data['t_2_state'] == STATE_OK else 1
+        data['link_3'] = 0 if data['t_3_state'] == STATE_OK else 1
+        data['link_4'] = 0 if data['t_4_state'] == STATE_OK else 1
+        data['link_5'] = 0 if data['t_5_state'] == STATE_OK else 1
 
+        # map extensible sensors to database fields
+        for label in sensor_map:
+            if sensor_map[label] in data:
+                packet[label] = data[sensor_map[label]]
+            elif status is not None and sensor_map[label] in status:
+                packet[label] = int(status[sensor_map[label]])
+
+        # handle unit converstions
         packet['windSpeed'] = data.get('windspeed')
         if packet['windSpeed'] is not None:
             packet['windSpeed'] *= 1.60934 # speed is mph; weewx wants km/h
@@ -1260,9 +1258,6 @@ class TE923Driver(weewx.drivers.AbstractDevice):
         packet['windGust'] = data.get('windgust')
         if packet['windGust'] is not None:
             packet['windGust'] *= 1.60934 # speed is mph; weewx wants km/h
-        packet['windGustDir'] = data.get('winddir')
-        if packet['windGustDir'] is not None:
-            packet['windGustDir'] *= 22.5 # weewx wants degrees
 
         packet['rainTotal'] = data['rain']
         if packet['rainTotal'] is not None:
@@ -1560,7 +1555,7 @@ class TE923Station(object):
         try:
             self.devh.claimInterface(interface)
             self.devh.setAltInterface(interface)
-        except usb.USBError, e:
+        except usb.USBError as e:
             self.close()
             logcrt("Unable to claim USB interface %s: %s" % (interface, e))
             raise weewx.WeeWxIOError(e)
@@ -1574,7 +1569,7 @@ class TE923Station(object):
     def close(self):
         try:
             self.devh.releaseInterface()
-        except (ValueError, usb.USBError), e:
+        except (ValueError, usb.USBError) as e:
             logerr("release interface failed: %s" % e)
         self.devh = None
 
@@ -1619,7 +1614,7 @@ class TE923Station(object):
                     rbuf.extend(buf[1:1 + nbytes])
                 if len(rbuf) >= 34:
                     break
-            except usb.USBError, e:
+            except usb.USBError as e:
                 errmsg = repr(e)
                 if not ('No data available' in errmsg or 'No error' in errmsg):
                     raise
@@ -1709,7 +1704,7 @@ class TE923Station(object):
                     rbuf.extend(tmpbuf[1:1 + nbytes])
                 if len(rbuf) >= 1:
                     break
-            except usb.USBError, e:
+            except usb.USBError as e:
                 errmsg = repr(e)
                 if not ('No data available' in errmsg or 'No error' in errmsg):
                     raise
@@ -1738,7 +1733,7 @@ class TE923Station(object):
                 if DEBUG_READ:
                     logdbg("read: %s" % _fmt(buf))
                 return buf
-            except (BadRead, BadHeader, usb.USBError), e:
+            except (BadRead, BadHeader, usb.USBError) as e:
                 logerr("Failed attempt %d of %d to read data: %s" %
                        (cnt + 1, self.max_tries, e))
                 logdbg("Waiting %d seconds before retry" % self.retry_wait)
@@ -1754,7 +1749,7 @@ class TE923Station(object):
             try:
                 self._raw_write(addr, buf)
                 return
-            except (BadWrite, BadHeader, usb.USBError), e:
+            except (BadWrite, BadHeader, usb.USBError) as e:
                 logerr("Failed attempt %d of %d to write data: %s" %
                        (cnt + 1, self.max_tries, e))
                 logdbg("Waiting %d seconds before retry" % self.retry_wait)

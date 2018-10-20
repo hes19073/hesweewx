@@ -6,13 +6,13 @@
 """Package weewx, containing modules specific to the weewx runtime engine."""
 import time
 
-__version__="3.8.0"
+__version__="3.9.0a3"
 
 # Holds the program launch time in unix epoch seconds:
 # Useful for calculating 'uptime.'
-#launchtime_ts = time.time()
+launchtime_ts = time.time()
 #launchtime_ts = 915145200
-launchtime_ts = 1383254340
+#launchtime_ts = 1383254340
 
 # Set to true for extra debug information:
 debug = False
@@ -46,33 +46,33 @@ class CRCError(WeeWxIOError):
 class RetriesExceeded(WeeWxIOError):
     """Exception thrown when max retries exceeded."""
 
-class HardwareError(StandardError):
+class HardwareError(Exception):
     """Exception thrown when an error is detected in the hardware."""
     
 class UnknownArchiveType(HardwareError):
     """Exception thrown after reading an unrecognized archive type."""
 
-class UnsupportedFeature(StandardError):
+class UnsupportedFeature(Exception):
     """Exception thrown when attempting to access a feature that is not
     supported (yet)."""
     
-class ViolatedPrecondition(StandardError):
+class ViolatedPrecondition(Exception):
     """Exception thrown when a function is called with violated
     preconditions."""
     
-class StopNow(StandardError):
+class StopNow(Exception):
     """Exception thrown to stop the engine."""
     
-class UninitializedDatabase(StandardError):
+class UninitializedDatabase(Exception):
     """Exception thrown when attempting to use an uninitialized database."""
     
-class UnknownDatabase(StandardError):
+class UnknownDatabase(Exception):
     """Exception thrown when attempting to use an unknown database."""
 
-class UnknownDatabaseType(StandardError):
+class UnknownDatabaseType(Exception):
     """Exception thrown when attempting to use an unknown database type."""
 
-class UnknownBinding(StandardError):
+class UnknownBinding(Exception):
     """Exception thrown when attempting to use an unknown data binding."""
 
 class UnitError(ValueError):

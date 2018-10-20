@@ -95,3 +95,31 @@ function setOnMouseOut(elem) {
     elem.onmouseout = function() { hideGraphPopup(); }
 }
 
+function toggle(control, id) {
+  elem = document.getElementById(id + '.hours');
+  if(elem) {
+    if(elem.style.display != 'none') {
+      elem.style.display = 'none';
+      control.src = 'xicons/triangle-right.png'
+    } else {
+      elem.style.display = 'inline';
+      control.src = 'xicons/triangle-down.png'
+    }
+  }
+}
+
+// When the user clicks on <div>, open the popup
+function myFunction() {
+    var popup = document.getElementById("myPopup");
+    popup.classList.toggle("show");
+}
+
+function myFunction2() {
+    var popup = document.getElementById("myPopup1");
+    popup.classList.toggle("show");
+}
+
+function myFunction2() {
+    var popup = document.getElementById("myPopup2");
+    popup.classList.toggle("show");
+}

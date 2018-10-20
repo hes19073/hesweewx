@@ -57,47 +57,12 @@ function topFunction() {
       <div id="content">
         <div id="plots">
           <img src="dayGDD6.png" alt="Wachstum Basis 6 Tag" /><br />
-          <img src="yearGDD6.png" alt="Wachstum Basis 6   Jahr" />
+          <img src="Cydia/C_growth6.png" alt="Wachstum Basis 6   Jahr" />
         </div>
-
-
         <p style="text-align:center">... die Wachstum-Grad-Tage = ((tägliche maximale Temperatur + tägliche minimale Temperatur) /
-        2.0) - 6°C.</p>
-        <p style="text-align:center">
-<b>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD</b><br>
-Mit dem GDD-Modell lässt sich das Wachstum der Gräser recht gut vorhersagen. 
-Es ist jedoch zu berücksichtigen, dass neben der Temperatur auch die übrigen Wachstumsfaktoren 
-(wie z.B. Lichtniveau, Bodenfeuchte, Düngung, Bodenart, Grasart…) einen entsprechenden Einfluss auf die Gräserentwicklung ausüben.
-Die Berechnung der Growing Degree Days (GDD) berücksichtigt die Tagesmitteltemperatur in Grad C aus der Maximum- und Minimum-Lufttemperatur. 
-Außerdem bezieht man sich auf eine feste Basistemperatur, ab der die jeweilige Kultur mit dem Wachstum beginnt. 
-Bei den Rasengräsern geht man hier von 6 °C aus.
-</p>
-<p style="text-align:center">
-<b>Formel:</b>
-GDD = (Temperatur max + Temperatur min) – Basistemperatur (6 °C) / 2 <br />
-
-<i>Beispiel:</i>
-Lufttemperatur-Maximum: 15 °C
-Lufttemperatur-Minimum: 9 °C
-GDD = (15 °C + 9 °C) – 6 °C (Basis) = 6,0 °C  (Growing Degree Days)
-                        2     
-</p>
-<p style="text-align:center">
-Ergibt sich bei der Berechnung der GDD eine negative Zahl, 
-so wird diese wie 0 °C (also kein/kaum Wachstum) behandelt. 
-Für die Anwendung aller Modelle ist es selbstverständlich unerlässlich, 
-dass täglich verwertbare Wetterdaten erfasst werden (eigene Wetterstation).
-<br />
-Die ermittelten Daten für GDD spiegeln das aktuelle Wachstumspotenzial  wider. 
-Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorhersagen. 
-</p>
-<p style="text-align:center">
-Vergleicht man die GDD-Daten mehrerer Jahre für verschiedene Standorte, 
-so stellt man fest, dass das Wachstumspotenzial für die Gräser je nach Jahr, 
-Standort und topographischer Lage stark variiert. 
-Es ist daher sehr nützlich, das Wachstum mittels GDD für seinen Standort zu quantifizieren.
-</p>
-
+        2.0 ) - 6°C.</p>
+        <h3>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD </h3>
+        <h2>Rasen</h2>
         <table>
           <tr style="vertical-align:top">
             <th style="text-align:left">Datum</th>
@@ -117,7 +82,7 @@ Es ist daher sehr nützlich, das Wachstum mittels GDD für seinen Standort zu qu
             <td style="text-align:right">$day.outTemp.max</td>
 
 #if $day.outTemp.min.raw < 6.0
-        #if $day.outTemp.max.raw < 25.0
+        #if $day.outTemp.max.raw < 30.0
              #if $day.outTemp.max.raw < 6.0
                  #set $GDD = 0.0
              #else
@@ -125,15 +90,15 @@ Es ist daher sehr nützlich, das Wachstum mittels GDD für seinen Standort zu qu
              #end if
         #else
 
-        #set $GDD = 20.0
+        #set $GDD =(30.0 + $day.outTemp.min.raw)/2.0 - 6.0
         #end if
 #else
 
-        #if $day.outTemp.max.raw < 25.0
+        #if $day.outTemp.max.raw < 30.0
                 #set $GDD=($day.outTemp.max.raw + $day.outTemp.min.raw)/2.0 - 6.0
 
         #else
-                #set $GDD=(25.0 + $day.outTemp.min.raw)/2.0 - 6.0
+                #set $GDD=(30.0 + $day.outTemp.min.raw)/2.0 - 6.0
         #end if
 #end if
             <td style="text-align:right">$round1($GDD)</td>

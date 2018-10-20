@@ -360,55 +360,6 @@
 </div> <!-- ende ET -->
 
  <div class="hes">
-  <div class='hesbox'>
-   <table>
-  <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_growth.html'>Wachstums-</a><br />gradtage (WGT)</td></tr>
-  <tr>    
-     <td>Wachstums Tage im Monat (Basis 10°C)</td>
-     <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
-  </tr>
-  <tr>
-     <td>Wachstums Tage im Jahr (Basis 10°C)</td>
-     <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
-   </tr>
-  </table>
-   <hr />
-   <img src="Cydia/C_growth.png" alt="WGT Basis 10" style="width:300px; height:175px;" />
- </div>
-</div> <!-- ende ggd -->
-
- <div class="hes">
-   <div class='hesbox'>
-    <table>
-     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_green.html'>Grünland-</a><br />temperatursumme (GLT)</td></tr>
-    #set $greenT_sum = '%.2f' % $green_sum
-    #if $green_sum <= 200.0
-    <tr><td>Summe aktuell</td><td>$greenT_sum</td></tr>
-    <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-    #else
-    <tr><td>Summe aktuell</td><td>$greenT_sum</td></tr>
-    <tr><td>200 wurde erreicht am:</td><td>$green_day.format("%d.%m.%Y")</td></tr>
-    #end if
-   </table>
-   <hr />
-    <img src="Cydia/C_green.png" alt="Gruenland" style="width:300px; height:175px;" />
-   </div>
-  </div> <!-- gruenlandtempsum -->
-
- <div class="hes">
-   <div class='hesbox'>
-    <table>
-     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_pomonella.html'>Apfelwickler</a><br>(Cydia pomonella)</td></tr>
-     <tr><td>Werte aktuell</td><td>mit Entwicklung</td></tr>
-   </table>
-   <hr />
-    <img src="Cydia/C_pomonella.png" alt="Apfelwickler" style="width:300px; height:175px;" />
-   <hr />
-    <a href='https://de.wikipedia.org/wiki/Apfelwickler'>Infos bei Wikipedia</a>
-   </div>
-  </div> <!-- Apfelwickler entwicklung -->
-
- <div class="hes">
    <div class='hesbox'>
     <table>
      <tr><td class='hes1_kopfa' colspan = '2'>Kältesumme</td></tr>
@@ -459,20 +410,20 @@
          #set $warmTem = '%.2f' % $warmT_sum
      <tr><td>aktuell</td><td>$warmTem</td></tr>
     #if $warmT_sum < 100
-     <tr><td style="background-color: #23ff9e;">Summe &lt; 100</td>
-         <td style="background-color: #23ff9e;">nass kalter Sommer</td>
+     <tr><td style="background-color: #33ff33;">Summe &lt; 100</td>
+         <td style="background-color: #33ff33;">nass kalter Sommer</td>
     #elif $warmT_sum > 100 and $warmT_sum <= 200
-     <tr><td style="background-color: #4b84ff;"> 100 - 200 </td>
-         <td style="background-color: #4b84ff;">kühler Sommer</td>
-    #elif $warmT_sum > 200 and $warT_sum <= 300
-     <tr><td style="background-color: rgb(7,206,243);"> 200 - 300 </td>
-         <td style="background-color: rgb(7,206,243);">normaler Sommer</td>
+     <tr><td style="background-color: #ffac4b;"> 100 - 200 </td>
+         <td style="background-color: #ffac4b;">kühler Sommer</td>
+    #elif $warmT_sum > 200 and $warmT_sum <= 300
+     <tr><td style="background-color: #ff8c5f;"> 200 - 300 </td>
+         <td style="background-color: #ff8c5f;">normaler Sommer</td>
     #elif $warmT_sum > 300 and $warmT_sum <= 400
-     <tr><td style="background-color: rgb(12,107,246);"> 300 - 400 </td>
-         <td style="background-color: rgb(12,107,246);">guter Sommer</td>
+     <tr><td style="background-color: #ff6969;"> 300 - 400 </td>
+         <td style="background-color: #ff6969;">guter Sommer</td>
     #elif $warmT_sum > 400
-     <tr><td style="background-color: rgb(70,7,249);">Summe &gt; 400</td>
-         <td style="background-color: rgb(70,7,249);">sehr guter Sommer</td>
+     <tr><td style="background-color: #ff4949;">Summe &gt; 400</td>
+         <td style="background-color: #ff4949;">sehr guter Sommer</td>
     #end if
     </tr>
     </table>
@@ -567,6 +518,9 @@
      #include $Extras.footer
 
  </div> 
+
+#include $Extras.cookie
+
 </body>
 
 </html>

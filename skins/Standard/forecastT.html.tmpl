@@ -160,7 +160,8 @@ function topFunction() {
 
    <div id="about">
     <div class="header">
-          Vorschaudaten für Station Klein Rogahn
+          <h2>Wetterprognose und Wettervorhersage</h2>
+          <p>für den Ort Klein Rogahn und die Region</p>
     </div>
    </div> <!-- ende about -->
 
@@ -240,6 +241,9 @@ function topFunction() {
         <img src="http://www.yr.no/place/Germany/Mecklenburg-Vorpommern/Klein_Rogahn/avansert_meteogram.png" alt='wetter' />
         <p><a target="_top" href="http://yr.no">Quelle:  yr.no</a></p>
     </div> 
+    <div>
+     $forecastHTML
+    </div>
    </div> <!-- end CMP -->
 
    <div id='fc_pane_ico' class='fc_pane'>
@@ -257,5 +261,9 @@ function topFunction() {
 
 </div> <!-- hes11 -->
 </div>
+
+#include $Extras.cookie
+
 </body>
+
 </html>

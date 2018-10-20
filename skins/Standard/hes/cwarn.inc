@@ -4,7 +4,7 @@
 <p>&nbsp;</p>
 
 #if $current.outTemp.raw > 26.7
- <div id="fzei">
+ <div id="fzeie">
  #if $current.heatindex.raw > 26.7 and $current.heatindex.raw < 33
   <p style="background-color: gold"><strong>Vorsicht!!!</strong><br />Erschöpfung möglich bei längerer Aktivität.</p>
  #elif $current.heatindex.raw > 32 and $current.heatindex.raw < 42

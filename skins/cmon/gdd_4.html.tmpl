@@ -57,38 +57,11 @@ function topFunction() {
       <div id="content">
         <div id="plots">
           <img src="dayGDD4.png" alt="Wachstum Basis 4 Tag" /><br>
-          <img src="yearGDD4.png" alt="Wachstum Basis 4  Jahr" />
+          <img src="Cydia/C_growth4.png" alt="Wachstum Basis 4  Jahr" />
         </div>
-
-
         <p style="text-align:center">... die Wachstum-Grad-Tage = ((tägliche maximale Temperatur + tägliche minimale Temperatur) /
         2.0) - 4°C.</p>
-        <p style="text-align:center">
-<b>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD</b><br>
-Mit dem GDD-Modell lässt sich das Wachstum der Gräser recht gut vorhersagen. 
-Es ist jedoch zu berücksichtigen, dass neben der Temperatur auch die übrigen Wachstumsfaktoren 
-(wie z.B. Lichtniveau, Bodenfeuchte, Düngung, Bodenart, Grasart…) einen entsprechenden Einfluss auf die Gräserentwicklung ausüben.
-Die Berechnung der Growing Degree Days (GDD) berücksichtigt die Tagesmitteltemperatur in Grad C aus der Maximum- und Minimum-Lufttemperatur. 
-Außerdem bezieht man sich auf eine feste Basistemperatur, ab der die jeweilige Kultur mit dem Wachstum beginnt. 
-Bei den <b>Tulpen</b> geht man hier von 4°C aus.
-
-Formel:
-GDD = (Temperatur max + Temperatur min) – Basistemperatur (4 °C) / 2
-Beispiel:
-Lufttemperatur-Maximum: 15 °C
-Lufttemperatur-Minimum: 9 °C
-GDD = (15 °C + 9 °C) – 6 °C (Basis) = 4,0 °C  (Growing Degree Days)
-</p>                        2     
-<p style="text-align:center">
-Ergibt sich bei der Berechnung der GDD eine negative Zahl, 
-so wird diese wie 0 °C (also kein/kaum Wachstum) behandelt. <br />
-Für die Anwendung aller Modelle ist es selbstverständlich unerlässlich, 
-dass täglich verwertbare Wetterdaten erfasst werden (eigene Wetterstation). <br />
-<br />
-Die ermittelten Daten für GDD spiegeln das aktuelle Wachstumspotenzial wider. <br />
-Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorhersagen. 
-        </p>        
-
+         <h3>Berechnung Wachstumsgradtage bzw. Growing Degree Days GDD </h3>
         <table>
           <tr style="vertical-align:top">
             <th style="text-align:left">Datum</th>
@@ -116,7 +89,7 @@ Mit der Addition der Tageswerte lassen sich bestimmte Entwicklungsstadien vorher
              #end if
         #else
 
-        #set $GDD = 20.0
+        #set $GDD = (25.0 + $day.outTemp.min.raw)/2.0 - 4.0
         #end if
 #else
 

@@ -10,6 +10,11 @@
   <h3>Station</h3>
   <table class="about">
     <tr>
+      <td class="label">Weewx seit:</td>
+      <td class="data">$year00</td>
+    </tr>
+
+    <tr>
       <td class="label">Hardware</td>
       <td class="data">$station.hardware</td>
     </tr>
@@ -26,8 +31,20 @@
       <td class="data">GQ GMC-300E</td>
     </tr>
     <tr>
+      <td class="label">Hardware</td>
+      <td class="data">Blitz AS3935</td>
+    </tr>
+    <tr>
       <td class="label">Software</td>
       <td class="data">WeeWX $station.version</td>
+    </tr>
+    <tr>
+      <td class="label">Start:</td>
+      <td class="data">$start_time</td>
+    </tr>
+    <tr>
+      <td class="label">Start DB:</td>
+      <td class="data">$station.db_uptime</td>
     </tr>
     <tr>
       <td class="label">WeeWx uptime:</td>

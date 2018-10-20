@@ -127,13 +127,13 @@ class GeigerMonitor(StdService):
 
     def get_data(self, now_ts, last_ts):
         record = {}
-        record['dateTime'] = now_ts                       # required
-        record['usUnits'] = weewx.METRIC                  # required
-        record['interval'] = int((now_ts - last_ts) / 60) # required
+        record['dateTime'] = now_ts
+        record['usUnits'] = weewx.METRIC
+        record['interval'] = int((now_ts - last_ts) / 60)
 
 
         try:
- 
+
             ser = serial.Serial()
             ser.port = "/dev/geiger"
             ser.baudrate = 9600
@@ -144,7 +144,7 @@ class GeigerMonitor(StdService):
 
             read_full = False
             #data = []
-            loginf("Serial device initialized")
+            loginf("Serial device initialized for Geiger")
 
             while not read_full:
 
@@ -159,10 +159,6 @@ class GeigerMonitor(StdService):
 
 
             ser.close()
-            #record['rad_cpm'] = rad_cpm
-            #record['rad_nsvh'] = rad_cpm * 6.5
-
-            #return record
 
         except serial.SerialException as e:
             loginf.critical(e)

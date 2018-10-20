@@ -107,4 +107,5 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('SVP',                  'REAL'),
           ('SVPin',                'REAL'),
           ('AVP',                  'REAL'),
-          ('AVPin',                'REAL')]
+          ('AVPin',                'REAL'),
+          ('densityA',             'REAL')]

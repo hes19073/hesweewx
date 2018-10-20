@@ -1,0 +1,58 @@
+## Copyright 2009-2017 Tom Keffer, Matthew Wall
+## Distributed under terms of GPLv3.  See LICENSE.txt for your rights.
+#errorCatcher Echo
+## Specifying an encoding of UTF-8 is usually safe, but if the text is actually
+## in Latin-1, then you should replace the string "UTF-8" with "latin-1".  If
+## you do this, you should also change the charset in 'Content-Type' as well.
+#encoding UTF-8
+## php inclusion to create wxobs.php.tmpl by glenn.mckechnie@gmail.com
+## available at https://github.com/glennmckechnie/weewx-wxobs
+## 06-09-2017 # version 0.01
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!-- meta http-equiv="refresh" content="900" -->
+    <title>$station.location Wetter Beobachtungen, Archive der Tage</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <!-- including both the skins css files, most users would have weewx.css. -->
+    <!-- seasons.css is what the template was sourced from. -->
+    <link rel="stylesheet" type="text/css" href="css/weewx.css"/>
+    <link rel="stylesheet" type="text/css" href="css/seasons.css"/>
+    <!-- while this one is for the actual php report page -->
+    <link rel="stylesheet" href="css/wxobs.css"/>
+    <script src="js/seasons.js"></script>
+    <script src="js/standard.js"></script>
+    <!-- Date picker -->
+    <link rel="stylesheet" type="text/css" href="css/datepicker.css"/>
+    <script src="js/datepicker.js"></script>
+  </head>
+
+  <body onload="setup();">
+    <div id="contents">
+      <div id="title_bar">
+       <div id="title">
+        <h1 class="page_title">$station.location</h1>
+        <p class="lastupdate">$current.dateTime</p>
+       </div>
+      </div>
+ </div>
+      <p><a href="index.html">&#10096; Aktuell / Heute / Zur&uuml;ck</a></p>
+      <!-- the following section is redundant as it calls itself. It's a working example for inclusion in the season skins index.html.tmpl file -->
+      <!--
+      <div id="widget_group">
+        hash-include "links.inc"
+      </div>
+      -->
+      <!-- the above section is redundant as it calls itself. It's a working example for inclusion in the seasons skins index.html.tmpl file -->
+      <!-- wxobs php code starts here -->
+        #include "wxobs.inc"
+      <!-- wxobs php code finishes here -->
+    <p class="footnote">
+      This extension is available at github as <a href="https://github.com/glennmckechnie/weewx-wxobs">weewx-wxobs</a> : This is version $wxobs_version<br>
+      Diese Erweiterung ist unter <a href="https://github.com/glennmckechnie/weewx-wxobs">weewx-wxobs</a> zu finden : In der Version $wxobs_version<br>
+    </p>
+
+  </body>
+</html>

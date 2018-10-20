@@ -1,0 +1,139 @@
+@font-face {
+font-family: 'Open Sans';
+    src: url('font/OpenSans.woff') format('woff'),
+    url('font/OpenSans.woff2') format('woff2');
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: 'Open Sans', arial, sans-serif;
+    background-color: #ffffff;
+}
+
+
+tr.wxhint {
+    /*http://htmlcolorcodes.com/color-picker/
+    background-color: #c0cdcd;
+    background-color: #e7ecf1;*/
+    background-color: #d8e0e8;
+    /*background-color: #dac0cd; /*gray red*/
+}
+tr.wxwht {
+    background-color: #fff;
+}
+
+tr.wxheadr {
+    background-color: #c0cdda;
+    border:1px solid #C0CDDA; 
+}
+
+tr:hover {
+    background-color: #c2c2c2;
+}
+
+th.wxheadr {
+    background-color: #c0cdda;
+    border:1px solid #C0CDDA; 
+}
+
+table.wxdata {
+    width:90%;
+    margin: 0 auto;
+    border:1px;
+}
+
+table.wxdata td {
+    text-align: center;
+    font-family:Arial, sans-serif;
+    font-size:90%;
+    padding:2px;
+    margin:1;
+    border:1px solid #C0CDDA;
+    border-left-color:#fff; border-top-color: #fff;
+    empty-cells:show;
+}
+
+div.wxdata {
+    /*width:400px;*/
+    /*width:90%;*/
+    width:100%;
+    text-align: center;
+    /*background-color:#dac0cd;*/
+}
+
+div.alert {
+    margin: 0 auto;
+    width:60%;
+    text-align: center;
+    background-color:#dac0cd;
+}
+
+div.info {
+    margin: 0 auto;
+    width:60%;
+    text-align: center;
+    background-color:#c0cdda;
+}
+
+div.wxobs {
+    text-align: center;
+}
+
+p.debug {
+    text-align: left;
+    background-color: #e7ecf1;*/
+}
+
+p.alert {
+    text-align: center;
+    background-color:#dac0cd;
+}
+
+p.footnote {
+    font-size: 80%;
+    font-style: italic;
+    clear: both;
+    padding-left: 20px;
+}
+
+/* www.w3schools.com/css/css_tooltip.asp */
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 550px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 2%;
+    margin-left: -60px;
+}
+
+.tooltip .tooltiptext::after {
+    content: " ";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}

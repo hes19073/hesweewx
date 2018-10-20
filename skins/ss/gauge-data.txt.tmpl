@@ -12,7 +12,7 @@
 ## cloudbaseunit - defined in this template as ft
 
 
-#import math
+##import math
 #import time
 
 ## get the time in formats that we need later
@@ -21,131 +21,6 @@
 
 ## see if the station has contact with the sensor
 #set $sensorContactLost = 0
-#set $rxchk = $getVar('current.rxCheckPercent.raw', 100)
-#if $rxchk is not None and $rxchk == 0
-#set $sensorContactLost = 1
-#end if
-
-## calculate humidex
-## http://www.physlink.com/reference/weather.cfm
-#if $varExists('current.outTemp') and $current.outTemp is not None and $varExists('current.dewpoint') and $current.dewpoint is not None
-#set $oT_C = $current.outTemp.degree_C.raw
-#set $dp = $current.dewpoint.raw
-  #if $oT_C is not None and $dp is not None
-#set $e = 6.11 * math.exp(5417.7530 * ((1/273.16) - 1/$dp))
-#set $h = 0.5555 * math.exp($e - 10.0)
-    #if $h > 0
-#set $humidex = $oT_C + $h
-    #else
-#set $humidex = $oT_C
-    #end if
-    #if $unit.unit_type.outTemp == 'degree_F'
-#set $humidex = 32.0 + 1.8 * $humidex
-    #end if
-  #else
-#set $humidex = 'N/A'
-  #end if
-#else
-#set $humidex = 'N/A'
-#end if
-
-## calculate apparent temperature
-##
-## http://www.bom.gov.au/info/thermal_stress/#atapproximation
-## AT = Ta + 0.33*e - 0.70*ws - 4.00
-##   where AT and Ta (air temperature) are deg-C,
-##   e is water vapor pressure
-##   ws is wind speed (m/s) at elevation of 10 meters
-## e = rh / 100 * 6.105 * exp(17.27 * Ta / (237.7 + Ta))
-##   rh is relative humidity
-##
-## http://www.ncdc.noaa.gov/societal-impacts/apparent-temp/
-## AT = -2.7 + 1.04*T + 2.0*e -0.65*v
-##   where AT and T (air temperature) are deg-C,
-##   e is vapor pressure in kPa,
-##   and v is 10m wind speed in m/sec
-##
-#if $varExists('current.outTemp') and $current.outTemp is not None and $varExists('current.outHumidity') and $current.outHumidity is not None and $varExists('current.windSpeed') and $current.windSpeed is not None
-#set $oT_C = $current.outTemp.degree_C.raw
-#set $rh = $current.outHumidity.raw
-#set $ws = $current.windSpeed.meter_per_second.raw
-  #if $oT_C is not None and $rh is not None and $ws is not None
-#set $e = ($rh / 100) * 6.105 * math.exp(17.27 * $oT_C / (237.7 + $oT_C))
-#set $apptemp = $oT_C + 0.33 * $e - 0.7 * $ws - 4.0
-    #if $unit.unit_type.outTemp == 'degree_F'
-#set $apptemp = 32.0 + 1.8 * $apptemp
-    #end if
-  #else
-#set $apptemp = 'N/A'
-  #end if
-#else
-#set $apptemp = 'N/A'
-#end if
-
-## calculate the cloud base in feet
-#if $varExists('current.outTemp') and $current.outTemp is not None and $varExists('current.dewpoint') and $current.dewpoint is not None
-#set $oT_F = $current.outTemp.degree_F.raw
-#set $dp_F = $current.dewpoint.degree_F.raw
-#set $a_f = $station.altitude.foot.raw
-#set $cloudbase = (($oT_F - $dp_F) / 4.4 * 1000) + $a_f
-#else
-#set $cloudbase = 'N/A'
-#end if
-
-## calculate the wind run for the day
-## FIXME: this is an approximation since averages are per-hour
-#set $t = time.localtime($ts)
-#set $windrun = 0
-#for $n in range($t[3])
-#set $ago = $hours_ago(hours_ago=$n).windSpeed.avg.raw
-#if $ago is not None
-#set $windrun = $windrun + $ago
-#end if
-#end for
-#if $unit.unit_type.windSpeed == 'mile_per_hour'
-#set $windrununit = 'mile'
-#elif $unit.unit_type.windSpeed == 'km_per_hour'
-#set $windrununit = 'kilometer'
-#elif $unit.unit_type.windSpeed == 'meter_per_second'
-#set $windrununit = 'kilometer'
-#set $windrun = $windrun / 3.6
-#elif $unit.unit_type.windSpeed == 'knot'
-#set $windrununit = 'mile'
-#set $windrun = $windrun / 0.8689762
-#else
-#set $windrununit = ''
-#end if
-
-## calulate solar max
-## Ryan-Stolzenbach, MIT 1972 formula
-## http://www.ecy.wa.gov/programs/eap/models.html
-##
-##       el - solar elevation in decimal degrees
-##        R - distance from earth to sun in AU
-##      atc - atmospheric transmission coefficient (0.70-0.91)
-##        z - elevation in meters
-##
-#if $almanac.hasExtras
-#set $rs_el = $almanac.sun.alt
-#set $rs_R = $almanac.sun.earth_distance
-#set $rs_atc = 0.8
-#set $rs_z = $station.altitude.meter.raw
-#set $rs_nrel = 1367.0
-#set $rs_sinel = math.sin($rs_el * math.pi / 180.0)
-  #if $rs_z is not None and $rs_R is not None
-    #if $rs_sinel < 0
-#set $solarMax = 0
-    #else
-#set $rs_rm = math.pow((288.0-0.0065*$rs_z)/288.0,5.256)/($rs_sinel+0.15*math.pow($rs_el+3.885,-1.253))
-#set $rs_toa = $rs_nrel * $rs_sinel / ($rs_R * $rs_R)
-#set $solarMax = $rs_toa * math.pow($rs_atc, $rs_rm)
-    #end if
-  #else
-#set $solarMax = 'N/A'
-  #end if
-#else
-#set $solarMax = 'N/A'
-#end if
 
 ## calculate today's highest beaufort based on wind speed in knots
 #if $varExists('day.windSpeed') and $day.windSpeed is not None
@@ -192,66 +67,68 @@
 #end if
 
 ## if forecasting is installed, report the Zambretti forecast
+#set $fc = $latest($data_binding='wdsupp_binding').vantageForecastRule.raw
 
-#set $fc = $latest($data_binding = 'wdsupp_binding').vantageForecastRule.raw
-
-#set $t_trend = $trend(time_delta=3600).outTemp.raw
+#set $t_trend = $trend(time_delta=3600).outTemp.formatted
 #if $t_trend is None
 #set $t_trend = 0
 #end if
 
-#set $p_trend = $trend(time_delta=10800).barometer.raw
+#set $p_trend = $trend(time_delta=10800).barometer.formatted
 #if $p_trend is None
 #set $p_trend = 0
 #end if
+
+#set $rainold = $lastrain_day.format('%Y-%m-%d %H:%M')
+
 ##set $windrosedata = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
 
 {
            "timeUTC":"$timeutc",
               "date":"$current.dateTime.format('%Y.%m.%d %H:%M')",
         "dateFormat":"y.m.d h:m",
- "SensorContactLost":"$sensorContactLost",
+ "SensorContactLost":"0",
           "tempunit":"$unit.label.outTemp",
           "windunit":"$unit.label.windSpeed",
          "pressunit":"$unit.label.barometer",
           "rainunit":"$unit.label.rain",
-       "windrununit":"$windrununit",
-     "cloudbaseunit":" ft",
-              "temp":"$current.outTemp.raw",
-            "tempTL":"$day.outTemp.min.raw",
-            "tempTH":"$day.outTemp.max.raw",
+       "windrununit":" km",
+     "cloudbaseunit":" m",
+              "temp":"$current.outTemp.formatted",
+            "tempTL":"$day.outTemp.min.formatted",
+            "tempTH":"$day.outTemp.max.formatted",
            "TtempTL":"$day.outTemp.mintime",
            "TtempTH":"$day.outTemp.maxtime",
          "temptrend":"$t_trend",
-            "intemp":"$current.inTemp.raw",
-               "hum":"$current.outHumidity.raw",
-             "humTL":"$day.outHumidity.min.raw",
-             "humTH":"$day.outHumidity.max.raw",
+            "intemp":"$current.inTemp.formatted",
+               "hum":"$current.outHumidity.formatted",
+             "humTL":"$day.outHumidity.min.formatted",
+             "humTH":"$day.outHumidity.max.formatted",
             "ThumTL":"$day.outHumidity.mintime",
             "ThumTH":"$day.outHumidity.maxtime",
-             "inhum":"$current.inHumidity.raw",
-               "dew":"$current.dewpoint.raw",
-        "dewpointTL":"$day.dewpoint.min.raw",
-        "dewpointTH":"$day.dewpoint.max.raw",
+             "inhum":"$current.inHumidity.formatted",
+               "dew":"$current.dewpoint.formatted",
+        "dewpointTL":"$day.dewpoint.min.formatted",
+        "dewpointTH":"$day.dewpoint.max.formatted",
        "TdewpointTL":"$day.dewpoint.mintime",
        "TdewpointTH":"$day.dewpoint.maxtime",
-            "wchill":"$current.windchill.raw",
-          "wchillTL":"$day.windchill.min.raw",
+            "wchill":"$current.windchill.formatted",
+          "wchillTL":"$day.windchill.min.formatted",
          "TwchillTL":"$day.windchill.mintime",
-         "heatindex":"$current.heatindex.raw",
-       "heatindexTH":"$day.heatindex.max.raw",
+         "heatindex":"$current.heatindex.formatted",
+       "heatindexTH":"$day.heatindex.max.formatted",
       "TheatindexTH":"$day.heatindex.maxtime",
-           "apptemp":"$current.appTemp.raw",
-         "apptempTL":"$day.appTemp.min.raw",
-         "apptempTH":"$day.appTemp.max.raw",
+           "apptemp":"$current.appTemp.formatted",
+         "apptempTL":"$day.appTemp.min.formatted",
+         "apptempTH":"$day.appTemp.max.formatted",
         "TapptempTL":"$day.appTemp.mintime",
         "TapptempTH":"$day.appTemp.maxtime",
-           "humidex":"$current.humidex.raw",
-             "press":"$current.barometer.raw",
-            "pressL":"$year.barometer.min.raw",
-            "pressH":"$year.barometer.max.raw",
-           "pressTL":"$day.barometer.min.raw",
-           "pressTH":"$day.barometer.max.raw",
+           "humidex":"$current.humidex.formatted",
+             "press":"$current.barometer.formatted",
+            "pressL":"$year.barometer.min.formatted",
+            "pressH":"$year.barometer.max.formatted",
+           "pressTL":"$day.barometer.min.formatted",
+           "pressTH":"$day.barometer.max.formatted",
           "TpressTL":"$day.barometer.mintime",
           "TpressTH":"$day.barometer.maxtime",
      "presstrendval":"$p_trend",
@@ -261,28 +138,28 @@
           "TrrateTM":"$day.rainRate.maxtime",
       "hourlyrainTH":"$hour.rain.max.raw",
      "ThourlyrainTH":"$hour.rain.maxtime",
-    "LastRainTipISO":"2000-01-01 00:00",
-           "wlatest":"$current.windSpeed.raw",
-            "wspeed":"$hour.windSpeed.avg.raw",
-            "windTM":"$day.windGust.max.raw",
-             "wgust":"$current.windGust.raw",
-           "wgustTM":"$hour.windGust.max.raw",
+    "LastRainTipISO":"$rainold",
+           "wlatest":"$current.windSpeed.formatted",
+            "wspeed":"$hour.windSpeed.avg.formatted",
+            "windTM":"$day.windGust.max.formatted",
+             "wgust":"$current.windGust.formatted",
+           "wgustTM":"$hour.windGust.max.formatted",
           "TwgustTM":"$day.windGust.maxtime",
-           "bearing":"$current.windDir.raw",
-        "avgbearing":"$day.wind.vecdir.raw",
-         "bearingTM":"$day.wind.gustdir.raw",
-"BearingRangeFrom10":"000",
-  "BearingRangeTo10":"000",
+           "bearing":"$current.windDir.formatted",
+        "avgbearing":"$day.wind.vecdir.formatted",
+         "bearingTM":"$day.wind.gustdir.formatted",
+"BearingRangeFrom10":"$current.windDir.formatted",
+  "BearingRangeTo10":"$current.windGustDir.formatted",
         "domwinddir":"$day.wind.vecdir.ordinal_compass",
       "WindRoseData":$windrosedata,
-           "windrun":"$current.windrun.raw",
+           "windrun":"$day.windrun.sum.formatted",
          "Tbeaufort":"F$beaufort",
                 "UV":"$current.UV",
-              "UVTH":"$day.UV.max.raw",
-          "SolarRad":"$current.radiation.raw",
-           "SolarTM":"$day.radiation.max.raw",
-   "CurrentSolarMax":"$solarMax",
-    "cloudbasevalue":"$current.cloudbase.raw",
+              "UVTH":"$day.UV.max.formatted",
+          "SolarRad":"$current.radiation.formatted",
+           "SolarTM":"$day.radiation.max.formatted",
+   "CurrentSolarMax":"$current.maxSolarRad.formatted",
+    "cloudbasevalue":"$current.cloudbase.formatted",
           "forecast":"$fc",
            "version":"$station.version",
              "build":"hes",

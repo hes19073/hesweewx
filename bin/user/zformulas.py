@@ -587,6 +587,36 @@ def gddx_F(Tmax, Tmin, xx):
 
     return gddx_F
 
+
+def da_Metric(t_C, p_mbar):
+    # Density altitude calculations
+    #  t_C = outTemp
+    #  p_mbar =  pressure
+
+    if t_C is None or p_mbar is None:
+         return None
+
+    t_F = CtoF(t_C)
+    p_inHg = p_mbar * INHG_PER_MBAR
+    da_fo = da_US(t_F, p_inHg)
+
+    da_me = da_fo * 0.3048
+
+    return da_me if da_me is not None else None
+
+def da_US(t_F, p_inHg):
+    #  Density altitude calculations
+    #  t_F = temperatur degree F
+    #  p_inHg = pressure
+
+    if t_F is None or p_inHg is None:
+         return None
+
+    daIn = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
+    daI_x = round(daIn, 1)
+    
+    return daI_x if daI_x is not None else None
+
 if __name__ == "__main__":
     
     import doctest

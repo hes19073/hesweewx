@@ -1,0 +1,292 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## Alt_Air.html.tmpl  2017-11-04 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Boden Sensoren - Daten</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    ##include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="section">
+
+<h2>Bodentemperatursensoren</h2>
+<p>Die Bodentemperatursensoren sind DS18B20 (wasserdichte Ausführung) werden per OWFS ermittelt.</p>
+<hr /> 
+<h3>Bodentemperatur (°C)</h3>
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum +5 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.extraTemp5.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.extraTemp5.max.raw)">$month.extraTemp5.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel +5 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.extraTemp5.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.extraTemp5.avg.raw)">$month.extraTemp5.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum +5 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.extraTemp5.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.extraTemp5.min.raw)">$month.extraTemp5.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+</table>
+<hr />
+
+<h3>Bodentemperatur OWFS</h3>
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum -10 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO2.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO2.max.raw)">$month.soilTempO2.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel -10 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO2.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO2.avg.raw)">$month.soilTempO2.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum -10 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO2.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO2.min.raw)">$month.soilTempO2.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+<hr />
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum -20 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO3.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO3.max.raw)">$month.soilTempO3.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel -20 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO3.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO3.avg.raw)">$month.soilTempO3.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum -20 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO3.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO3.min.raw)">$month.soilTempO3.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+<hr />
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum -50 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO4.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO4.max.raw)">$month.soilTempO4.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel -50 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO4.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO4.avg.raw)">$month.soilTempO4.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum -50 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO4.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO4.min.raw)">$month.soilTempO4.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+<hr />
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum -100 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO5.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO5.max.raw)">$month.soilTempO5.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel -100 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO5.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO5.avg.raw)">$month.soilTempO5.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum -100 cm </td></tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+         #if $month.soilTempO5.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.soilTempO5.min.raw)">$month.soilTempO5.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+<hr />
+
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+ </div> 
+
+  #include $Extras.footer
+
+</div>
+</body>
+
+</html>

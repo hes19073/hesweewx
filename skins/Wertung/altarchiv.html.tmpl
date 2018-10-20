@@ -1,0 +1,336 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: altarchiv.html.tmpl 743 2017-08-03 13:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Klein Rogahn, M-V, Deutschland, Wetterdatenarchiv</title>
+
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script src='js/hesweewx.js'></script>
+    
+  </head>
+<body>
+ <button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
+<div id='hes11'>
+
+  #include $Extras.header
+
+ <div id="stats_group">
+  #set global $period1 = $yesterday
+  #set global $period2 = $day
+  #set global $period1Name = "Gestern"
+  #set global $period2Name = "Heute"
+
+  #include $Extras.chart
+
+ </div> <!--End class "stats_group" -->
+ <div id="content">
+  <div id="hes">  <!-- align="center"> -->
+    <h2>Historische Wetterdaten</h2>
+    <p>Datenquelle: DWD</p>
+    <h3>Jahresarchive 1970 bis 1998</h3>
+     <p>Datenquelle: DWD</p>
+      <input type="button" value="hist. Temperatur" onclick="openURL('historisch.html')" />
+      <input type="button" value="hist. Regen" onclick="openURL('histrain.html')" />
+      <input type="button" value="hist. Schnee" onclick="openURL('histsnow.html')" />
+      <input type="button" value="hist. Wind" onclick="openURL('histwind.html')" />
+     <hr />
+     <h2>Jahresarchive 1970 bis 1998</h2>
+     <p>Datenquelle: DWD </p>
+      <input type="button" value="1970" onclick="openURL('AltArchiv/KR-1970-table.html')" />
+      <input type="button" value="1971" onclick="openURL('AltArchiv/KR-1971-table.html')" />
+      <input type="button" value="1972" onclick="openURL('AltArchiv/KR-1972-table.html')" />
+      <input type="button" value="1973" onclick="openURL('AltArchiv/KR-1973-table.html')" />
+      <input type="button" value="1974" onclick="openURL('AltArchiv/KR-1974-table.html')" />
+      <input type="button" value="1975" onclick="openURL('AltArchiv/KR-1975-table.html')" />
+      <input type="button" value="1976" onclick="openURL('AltArchiv/KR-1976-table.html')" />
+      <input type="button" value="1977" onclick="openURL('AltArchiv/KR-1977-table.html')" />
+      <input type="button" value="1978" onclick="openURL('AltArchiv/KR-1978-table.html')" />
+      <input type="button" value="1979" onclick="openURL('AltArchiv/KR-1979-table.html')" /><br />
+      <input type="button" value="1980" onclick="openURL('AltArchiv/KR-1980-table.html')" />
+      <input type="button" value="1981" onclick="openURL('AltArchiv/KR-1981-table.html')" />
+      <input type="button" value="1982" onclick="openURL('AltArchiv/KR-1982-table.html')" />
+      <input type="button" value="1983" onclick="openURL('AltArchiv/KR-1983-table.html')" />
+      <input type="button" value="1984" onclick="openURL('AltArchiv/KR-1984-table.html')" />
+      <input type="button" value="1985" onclick="openURL('AltArchiv/KR-1985-table.html')" />
+      <input type="button" value="1986" onclick="openURL('AltArchiv/KR-1986-table.html')" />
+      <input type="button" value="1987" onclick="openURL('AltArchiv/KR-1987-table.html')" />
+      <input type="button" value="1988" onclick="openURL('AltArchiv/KR-1988-table.html')" />
+      <input type="button" value="1989" onclick="openURL('AltArchiv/KR-1989-table.html')" /><br />
+      <input type="button" value="1990" onclick="openURL('AltArchiv/KR-1990-table.html')" />
+      <input type="button" value="1991" onclick="openURL('AltArchiv/KR-1991-table.html')" />
+      <input type="button" value="1992" onclick="openURL('AltArchiv/KR-1992-table.html')" />
+      <input type="button" value="1993" onclick="openURL('AltArchiv/KR-1993-table.html')" />
+      <input type="button" value="1994" onclick="openURL('AltArchiv/KR-1994-table.html')" />
+      <input type="button" value="1995" onclick="openURL('AltArchiv/KR-1995-table.html')" />
+      <input type="button" value="1996" onclick="openURL('AltArchiv/KR-1996-table.html')" />
+      <input type="button" value="1997" onclick="openURL('AltArchiv/KR-1997-table.html')" />
+      <input type="button" value="1998" onclick="openURL('AltArchiv/KR-1998-table.html')" />
+      <input type="button" value="1999" onclick="openURL('AltArchiv/KR-1999-table.html')" />
+     <hr />
+     <h2>Monatsarchive 1999 bis 2012</h2>
+     <p>Datenquelle: eigene Aufzeichnungen und DWD</p>
+     <table>
+    <tr>
+     <td>1999</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-1999-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-1999-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-1999-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-1999-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-1999-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-1999-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-1999-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-1999-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-1999-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-1999-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-1999-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-1999-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2000</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2000-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2000-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2000-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2000-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2000-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2000-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2000-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2000-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2000-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2000-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2000-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2000-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2001</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2001-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2001-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2001-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2001-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2001-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2001-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2001-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2001-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2001-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2001-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2001-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2001-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2002</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2002-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2002-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2002-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2002-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2002-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2002-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2002-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2002-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2002-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2002-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2002-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2002-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2003</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2003-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2003-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2003-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2003-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2003-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2003-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2003-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2003-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2003-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2003-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2003-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2003-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2004</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2004-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2004-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2004-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2004-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2004-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2004-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2004-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2004-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2004-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2004-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2004-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2004-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2005</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2005-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2005-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2005-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2005-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2005-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2005-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2005-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2005-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2005-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2005-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2005-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2005-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2006</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2006-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2006-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2006-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2006-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2006-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2006-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2006-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2006-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2006-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2006-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2006-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2006-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2007</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2007-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2007-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2007-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2007-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2007-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2007-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2007-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2007-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2007-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2007-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2007-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2007-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2008</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2008-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2008-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2008-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2008-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2008-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2008-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2008-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2008-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2008-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2008-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2008-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2008-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2009</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2009-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2009-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2009-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2009-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2009-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2009-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2009-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2009-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2009-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2009-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2009-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2009-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2010</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2010-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2010-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2010-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2010-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2010-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2010-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2010-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2010-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2010-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2010-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2010-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2010-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2011</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2011-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2011-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2011-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2011-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2011-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2011-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2011-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2011-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2011-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2011-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2011-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2011-12-table.html')" /></td>
+     </tr>
+    <tr>
+     <td>2012</td>
+           <td><input type="button" value="Jan" onclick="openURL('AltArchiv/KR-2012-01-table.html')" /></td>
+           <td><input type="button" value="Feb" onclick="openURL('AltArchiv/KR-2012-02-table.html')" /></td>
+           <td><input type="button" value="Mär" onclick="openURL('AltArchiv/KR-2012-03-table.html')" /></td>
+           <td><input type="button" value="Apr" onclick="openURL('AltArchiv/KR-2012-04-table.html')" /></td>
+           <td><input type="button" value="Mai" onclick="openURL('AltArchiv/KR-2012-05-table.html')" /></td>
+           <td><input type="button" value="Jun" onclick="openURL('AltArchiv/KR-2012-06-table.html')" /></td>
+           <td><input type="button" value="Jul" onclick="openURL('AltArchiv/KR-2012-07-table.html')" /></td>
+           <td><input type="button" value="Aug" onclick="openURL('AltArchiv/KR-2012-08-table.html')" /></td>
+           <td><input type="button" value="Sep" onclick="openURL('AltArchiv/KR-2012-09-table.html')" /></td>
+           <td><input type="button" value="Okt" onclick="openURL('AltArchiv/KR-2012-10-table.html')" /></td>
+           <td><input type="button" value="Nov" onclick="openURL('AltArchiv/KR-2012-11-table.html')" /></td>
+           <td><input type="button" value="Dez" onclick="openURL('AltArchiv/KR-2012-12-table.html')" /></td>
+     </tr>
+     </table>
+
+     <hr />
+<p>Die Auswertung der Daten als graphischer Darstellung ist gegenwärtig in der Erarbeitung</p>
+
+<hr />
+
+<p><input type="button" value=" Historische Wetterdaten  " onclick="openURL('historisch.html')" /> <br /><br />aus dem Jahr 1889 ff. 
+   stammen aus dem Wetterarchiv des Deutschen Wetterdienstes (DWD) für Schwerin.<br /> 
+   Sie werden zur Information dargestellt. 
+   Die historischen Daten des Deutschen Wetterdienstes sind weitgehend, vom DWD, qualitätsgeprüft. (Tageswerte)</p>
+
+<p>Im&nbsp;<input type="button" value=" Archiv   " onclick="openURL('archiv.html')" />&nbsp; sind eigene Aufzeichnungen und Beobachtungen,<br />
+   sowie ausgewählte Daten des Deutschen Wetterdienstes aus den Jahren  1999 bis 2013 
+              für den Standort Schwerin, ca. 4,8 Km Luftlinie Nordöstlich der Station Klein Rogahn enthalten.<br />
+      DWD Stations_id: 4625 | geogr.Breite 53.6426; geogr. Länge 11.3871| Höhe: 59.00 <br /><br />
+Die hier dargestellten Werte wurden aus Datenaufzeichnungen im Stundenrhythmus erstellt.</p>
+<p>Wetterdaten meiner Wetterstation werden seit dem 31.Okt 2013, im fünf Minuten Intervall aufgezeichnet und dargestellt.</p> 
+<p>Quelle :&nbsp;<a href="http://www.dwd.de">DWD</a>&nbsp;Neu durch&nbsp;<a href=https://opendata.dwd.de>opendata DWD</a></p>
+
+   </div> <!-- ende mittetab -->
+ </div>  <!-- ende hes_data -->
+
+ #include $Extras.footer
+
+</div>
+
+</body>
+</html>

@@ -15,11 +15,14 @@
 </div>
 
 <div style="background-color:yellow">
+     Start-Wetteraufzeichnung: $start_time &nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Datenbanklaufzeit:&nbsp; $station.db_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      weewx  Version:&nbsp; $station.version<br />
      Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
-     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus
+     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus<br />
+     Weewx Zeit: $year00&nbsp;.
 </div>
 
 <p>
@@ -31,20 +34,20 @@
 
 <div class="navbar">
   <p> 
-   <input type="button" value=" SteelGauge  " onclick="openURL('ss/index.html')" />
    <input type="button" value="   Aktuell   " onclick="openURL('index.html')" />
-   <input type="button" value="    OWFS     " onclick="openURL('indexOWFS.html')" />
-   <input type="button" value=" Boden/Blatt " onclick="openURL('index1.html')" />
-   <input type="button" value=" Air-Sensoren " onclick="openURL('indexAir.html')" />
-   <input type="button" value=" Rad " onclick="openURL('indexRad.html')" />
+   <input type="button" value=" OWFS  " onclick="openURL('indexOWFS.html')" />
+   <input type="button" value=" Boden " onclick="openURL('index1.html')" />
+   <input type="button" value=" Air   " onclick="openURL('indexAir.html')" />
+   <input type="button" value=" Rad   " onclick="openURL('indexRad.html')" />
+   <input type="button" value=" GDD   " onclick="openURL('index3.html')" />
    <input type="button" value=" Tag /Heute  " onclick="openURL('day.html')" />
-   <input type="button" value="  Prognose   " onclick="openURL('forecastT.html')" />
+   <input type="button" value="  Prognose   " onclick="openURL('forecast.html')" />
    <input type="button" value="  Statistik  " onclick="openURL('statistik.html')" />
    <input type="button" value="    Woche    " onclick="openURL('week.html')" />
    <input type="button" value="    Monat    " onclick="openURL('month.html')" />
    <input type="button" value="    Jahr     " onclick="openURL('year.html')" />
-   <!-- <input type="button" value=" ISS " onclick="openURL('indexISS.html')" /> -->
-   <input type="button" value="   Archiv    " onclick="openURL('archiv.html')" />
+   <input type="button" value=" ISS " onclick="openURL('indexISS.html')" />
+   <input type="button" value=" Archiv " onclick="openURL('archiv.html')" />
 
   </p>
    <select NAME=noaaselect onchange="openNoaaFile(value)">
@@ -79,7 +82,7 @@
 <div class="mit"><a href="http://blog.hes61.de/?page_id=111">&raquo; Impressum &laquo;</a>
                  <a href="http://blog.hes61.de/datenschutz/">&raquo; Datenschutz &laquo;</a>
 
-</div>
+ </div>
 </div>
 
 ## Include the Google Analytics code if there is an ID available:
@@ -97,3 +100,4 @@
 #end if
 
 </footer></div><!-- end id "footer" -->
+

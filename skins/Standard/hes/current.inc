@@ -13,21 +13,16 @@
      &nbsp;&nbsp; $decorator_text('tempO', $current.outTemp.raw)</td>
    </tr>
    <tr>
+    #set $deltaT = $current.outTemp.raw - $current.wetBulb.raw
+    #set $DeltaT = "%.1f" % $deltaT + " &deg;C"
+    <td class="stats_label">DeltaT<br />Luft Temperaturdifferenz</td>
+    <td class="stats_data" style="$decorator_color('tempO', $deltaT)">$DeltaT</td>
+   </tr>
+   <tr>
     <td class="stats_label">scheinbare<br />Temperatur</td>
     <!-- <td class="stats_data"><b>$current.appTemp</b></td> -->
     <td class="stats_data" style="$decorator_color('heattemp', $current.appTemp.raw)">$current.appTemp 
      &nbsp;&nbsp; $decorator_text('heattemp', $current.appTemp.raw)</td>
-   </tr>
-   <tr>
-    <td class="stats_label">Summer-Simmer-Index
-     <div class="popup" onclick="myFunction()"> <sup>( Info )</sup>
-      <span class="popuptext" id="myPopup">Der Summer-Simmer-Index bezieht sich im Vergleich zum Hitzeindex auf die gefühlte Hitze<br />
-                                           in der Nacht und stellt einen Fraktor für das Unwohlsein dar. <br />
-                                           Er findet ab 22 C° Anwendung.</span></div>
-    <br />&nbsp;</td>
-    <!-- <td class="stats_data"><b>$current.summersimmerIndex</b></td> -->
-    <td class="stats_data" style="$decorator_color('sumsimIndex', $current.summersimmerIndex.raw)">$current.summersimmerIndex
-     &nbsp;&nbsp; $decorator_text('sumsimIndex', $current.summersimmerIndex.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Windchill
@@ -96,13 +91,26 @@
    </tr>
    <tr>
     <td class="stats_label">Wind<br />&nbsp;</td>
-    <td class="stats_data" style="$decorator_color('windBof', $current.windSpeed.raw)"><b>$current.windSpeed</b> aus 
-        <b>$current.windDir ($current.windDir.ordinal_compass)</b></td>
+    <td class="stats_data" style="$decorator_color('windBof', $current.windSpeed.raw)"><b>$current.windSpeed</b> 
+    #if $current.windSpeed.raw == 0.0
+        <b>&nbsp;Windstill</b>
+    #else
+        <b>aus&nbsp;$current.windDir ($current.windDir.ordinal_compass)</b></td>
+    #end if
    </tr>
    <tr>
     <td class="stats_label">Wind in Beaufort<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('windBof', $current.windSpeed.raw)">
      &nbsp; $decorator_text('windBof', $current.windSpeed.raw)</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Wind<br />Böen</td>
+    <td class="stats_data" style="$decorator_color('windBof', $current.windGust.raw)"><b>$current.windGust</b>
+    #if $current.windGust.raw == 0.0
+        <b>&nbsp;Windstill</b>
+    #else
+        <b>aus&nbsp;$current.windDir ($current.windDir.ordinal_compass)</b></td>
+    #end if
    </tr>
    <tr>
     <td class="stats_label">Winddruck<br />&nbsp;</td>
@@ -148,6 +156,10 @@
     <td class="stats_label">Schneedecke<br />aktuell bei ca.</td>
     <td class="stats_data">$current.snowTotal</td>
   </tr>
+  <tr>
+    <td class="stats_label">Letzte Schneedecke<br />&nbsp;</td>
+    <td class="stats_data">$lastsnowT_day <br /> $lastsnowT_delta_time</td>
+  </tr>
    <tr>
     <td class="stats_label">ET am Tag<br />Evapotranspiration</td>
     <td class="stats_data">$day.ET.sum</td>
@@ -171,7 +183,7 @@
    <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp8.raw)">$current.extraTemp8</td>
   </tr>
   #end if
-  <tr><td>1-Wire OWFS USB<br/>Wassertemperatur</td><td>Info</td></tr>
+  <tr><td>1-Wire OWFS USB<br/>Wassertemperatur</td><td>Seit dem 10.08.2015</td></tr>
   #if $day.extraTemp6.has_data
   <tr>
    <td class="stats_label">Gartenteich <br />Goldfisch</td>
@@ -196,7 +208,7 @@
    <td class="stats_data">$current.extraTemp3</td>
   </tr>
   #end if
-  <tr><td>Sonne<br />&nbsp;</td><td>Info</td></tr>
+  <tr><td>Sonne<br />&nbsp;</td><td>Seit dem 03.02.2017</td></tr>
   <tr>
    <td class="stats_label">Beleuchtungsstärke<br />(Illuminance)</td>
    <td class="stats_data">$current.lighting</td>
@@ -221,7 +233,7 @@
     <td class="stats_label">Sonnestunden am Tag<br />Berechnung&nbsp;</td>
     <td class="stats_data">$day.sunshineS.sum.hour</td>
    </tr>
-   <tr><td>1-Wire OWFS USB<br />Bodentemperatur</td><td>Info</td></tr>
+   <tr><td>1-Wire OWFS USB<br />Bodentemperatur</td><td>Seit dem 10.08.2015</td></tr>
   #if $day.extraTemp7.has_data
    <tr>
     <td class="stats_label">Boden +100cm<br />&nbsp;</td>
@@ -332,7 +344,7 @@
      &nbsp; $decorator_text('leafwet', $current.leafWet2.raw)</td>
    </tr>
    <tr>
-    <td>Station<br /> Büro</td><td>Info</td>
+    <td>Station<br /> Büro</td><td>Server</td>
    </tr>
    <tr>
     <td class="stats_label">Temperatur <sup>(innen)</sup><br />&nbsp;</td>
@@ -359,7 +371,7 @@
    <tr>
      <td class="stats_label">Zerfall je Minute<br />&nbsp;</td>
      <td class="stats_data" style="$decorator_color('cpm', $latest($data_binding='geiger_binding').rad_cpm.raw)">
-      $latest($data_binding='geiger_binding').rad_cpm.format("%.0f")&nbsp;CPM
+      $latest($data_binding='geiger_binding').rad_cpm.format("%.1f")
       &nbsp;&nbsp; $decorator_text('cpm', $latest($data_binding='geiger_binding').rad_cpm.raw)</td>
      <!-- <td class="stats_data">$latest($data_binding='geiger_binding').rad_cpm.format("%.0f")&nbsp;CPM</td> -->
    </tr>
@@ -372,15 +384,36 @@
    </tr>
    <tr><td>Berechnungen<br />weewx</td><td>Info</td></tr>
    <tr>
-    <td class="stats_label">Wachtumstage Monat<br />&nbsp;</td>
-    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+    <td class="stats_label">Density altitude<br />Dichtehöhe</td>
+    <td>$current.densityA</td>
+   </tr>
    <tr>
-    <td class="stats_label">Wachtumstage Jahr<br />&nbsp;</td>
+    <td class="stats_label">Wolkenuntergrenze<br />&nbsp;</td>
+    <td>$current.cloudbase</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Summer-Simmer-Index
+     <div class="popup" onclick="myFunction()"> <sup>( Info )</sup>
+      <span class="popuptext" id="myPopup">Der Summer-Simmer-Index bezieht sich im Vergleich zum Hitzeindex auf die gefühlte Hitze<br />
+                                           in der Nacht und stellt einen Fraktor für das Unwohlsein dar. <br />
+                                           Er findet ab 22°C Anwendung.</span></div>
+    <br />&nbsp;</td>
+    <!-- <td class="stats_data"><b>$current.summersimmerIndex</b></td> -->
+    <td class="stats_data" style="$decorator_color('sumsimIndex', $current.summersimmerIndex.raw)">$current.summersimmerIndex
+     &nbsp; $decorator_text('sumsimIndex', $current.summersimmerIndex.raw)</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Wachstumstage Monat<br />&nbsp;</td>
+    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Wachstumstage Jahr<br />&nbsp;</td>
     <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
    </tr>
    <tr>
     <td class="stats_label">Heiztage im Monat<br />&nbsp;</td>
     <td>$month.outTemp.max_le((15.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
    <tr>
     <td class="stats_label">Heiztage im Jahr<br />&nbsp;</td>
     <td>$year.outTemp.max_le((15.0, "degree_C", "group_temperature")).format("%.0f")</td>

@@ -557,22 +557,22 @@ function topFunction() {
             <tr>
              <td>Spannung OWFS:&nbsp;</td>
              <td></td>
-             <td><img src="dayVoltK.png" alt="Spannung OWFS" /></td>
+             <td><img src="dayVolt.png" alt="Spannung OWFS" /></td>
             </tr>
             <tr>
              <td>Spannung USB:&nbsp;</td>
              <td></td>
-             <td><img src="daybatteryK.png" alt="Spannung USB/OWFS" /></td>
+             <td><img src="daybattery.png" alt="Spannung USB/OWFS" /></td>
             </tr>
             <tr>
              <td>Spannung Vantage:&nbsp;</td>
              <td></td>
-             <td><img src="dayBateK.png" alt="Station Voltage" /></td>
+             <td><img src="dayBate.png" alt="Station Voltage" /></td>
             </tr>
             <tr>
              <td>Signalqualität Vantage:&nbsp;</td>
              <td></td>
-             <td><img src="dayStatK.png" alt="Signal Voltage" /></td>
+             <td><img src="dayStat.png" alt="Signal Voltage" /></td>
             </tr>
           <tr><td>Geiger Müller Counter</td><td>&nbsp;</td><td>GMC-300E Plus </td></tr>
             <tr>
@@ -587,7 +587,21 @@ function topFunction() {
              <td></td>
              <td><img src="dayGeigerSK.png" alt="Geige Signal " /></td>
             </tr>
-
+            <tr>
+             <td>Heiz Grad Tag</td>
+             <td>Basis 18,3°C</td>
+             <td><img src="daySheat_deg.png" alt="Heiz degree day" /></td>
+            </tr>
+            <tr>
+             <td>Kühl Grad Tag</td>
+             <td>Basis 18,3°C</td>         
+             <td><img src="dayScool_deg.png" alt="Huehl degree day" /></td>
+            </tr>
+            <tr>
+             <td>Haus Grad Tag</td>
+             <td>Basis 15°C</td>
+             <td><img src="dayShome_deg.png" alt="Home degree day" /></td>
+            <tr>
          </table>
         </div> <!-- End id "plots" -->
       </div> <!-- End id "content" -->
@@ -758,6 +772,9 @@ function topFunction() {
 </script>
 
 </div>
+
+#include $Extras.cookie
+
 </body>
 
 </html>

@@ -7,8 +7,10 @@
 """Main engine for the weewx weather system."""
 
 # Python imports
+from __future__ import print_function
 import gc
 import locale
+import os
 import os.path
 import platform
 import signal
@@ -16,7 +18,7 @@ import socket
 import sys
 import syslog
 import time
-import thread
+import threading
 
 # 3rd party imports:
 import configobj
@@ -28,7 +30,6 @@ import weewx.accum
 import weewx.manager
 import weewx.qc
 import weewx.station
-import weewx.reportengine
 import weeutil.weeutil
 from weeutil.weeutil import to_bool, to_int, to_sorted_string
 from weewx import all_service_groups
@@ -104,7 +105,7 @@ class StdEngine(object):
             loader_function = getattr(driver_module, 'loader')
             # Call it with the configuration dictionary as the only argument:
             self.console = loader_function(config_dict, self)
-        except Exception, ex:
+        except Exception as ex:
             syslog.syslog(syslog.LOG_ERR,
                           "import of driver failed: %s (%s)" % (ex, type(ex)))
             # Signal that we have an initialization error:
@@ -160,16 +161,16 @@ class StdEngine(object):
             
             syslog.syslog(syslog.LOG_INFO, "engine: Starting main packet loop.")
 
-            last_gc = int(time.time())
+            last_gc = time.time()
 
             # This is the outer loop. 
             while True:
 
                 # See if garbage collection is scheduled:
-                if int(time.time()) - last_gc > self.gc_interval:
+                if time.time() - last_gc > self.gc_interval:
                     ngc = gc.collect()
-                    syslog.syslog(syslog.LOG_INFO, "engine: garbage collected %d objects" % ngc)
-                    last_gc = int(time.time())
+                    syslog.syslog(syslog.LOG_INFO, "engine: Garbage collected %d objects" % ngc)
+                    last_gc = time.time()
 
                 # First, let any interested services know the packet LOOP is
                 # about to start
@@ -374,9 +375,9 @@ class StdCalibrate(StdService):
             if obs_type == 'foo': continue
             try:
                 event.packet[obs_type] = eval(self.corrections[obs_type], None, event.packet)
-            except (TypeError, NameError), e:
+            except (TypeError, NameError) as e:
                 pass
-            except ValueError, e:
+            except ValueError as e:
                 syslog.syslog(syslog.LOG_ERR, "engine: StdCalibration loop error %s" % e)
 
     def new_archive_record(self, event):
@@ -388,9 +389,9 @@ class StdCalibrate(StdService):
                 if obs_type == 'foo': continue
                 try:
                     event.record[obs_type] = eval(self.corrections[obs_type], None, event.record)
-                except (TypeError, NameError), e:
+                except (TypeError, NameError) as e:
                     pass
-                except ValueError, e:
+                except ValueError as e:
                     syslog.syslog(syslog.LOG_ERR, "engine: StdCalibration archive error %s" % e)
 
 #==============================================================================
@@ -518,6 +519,7 @@ class StdArchive(StdService):
             self.end_archive_period_ts = \
                 (int(self.engine._get_console_time() / self.archive_interval) + 1) * self.archive_interval
             self.end_archive_delay_ts  =  self.end_archive_period_ts + self.archive_delay
+        self.old_accumulator = None
 
     def new_loop_packet(self, event):
         """Called when A new LOOP record has arrived."""
@@ -620,7 +622,7 @@ class StdArchive(StdService):
                 self.engine.dispatchEvent(weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                                                       record=record,
                                                       origin='hardware'))
-        except weewx.HardwareError, e:
+        except weewx.HardwareError as e:
             syslog.syslog(syslog.LOG_ERR, "engine: Internal error detected. Catchup abandoned")
             syslog.syslog(syslog.LOG_ERR, "**** %s" % e)
         
@@ -707,11 +709,11 @@ class StdPrint(StdService):
         
     def new_loop_packet(self, event):
         """Print out the new LOOP packet"""
-        print "LOOP:  ", weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet)
+        print("LOOP:  ", weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet))
     
     def new_archive_record(self, event):
         """Print out the new archive record."""
-        print "REC:   ", weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record)
+        print("REC:   ", weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record))
 
 
 #==============================================================================
@@ -737,6 +739,7 @@ class StdReport(StdService):
     
     def launch_report_thread(self, event):  # @UnusedVariable
         """Called after the packet LOOP. Processes any new data."""
+        import weewx.reportengine
         # Do not launch the reporting thread if an old one is still alive.
         # To guard against a zombie thread (alive, but doing nothing) launch
         # anyway if enough time has passed.
@@ -760,7 +763,7 @@ class StdReport(StdService):
                                                              first_run=not self.launch_time)
             self.thread.start()
             self.launch_time = time.time()
-        except thread.error:
+        except threading.ThreadError:
             syslog.syslog(syslog.LOG_ERR, "Unable to launch report thread.")
             self.thread = None
 
@@ -819,20 +822,26 @@ def main(options, args, engine_class=StdEngine):
     # change it. In case of a restart, we need to change it back.
     cwd = os.getcwd()
 
+    # Get the path to the configuration file
+    config_path = os.path.abspath(args[0])
+
     if options.daemon:
         syslog.syslog(syslog.LOG_INFO, "engine: pid file is %s" % options.pidfile)
         daemon.daemonize(pidfile=options.pidfile)
 
-    # for backward compatibility, recognize loop_on_init from command-line
+    # For backward compatibility, recognize loop_on_init from command-line
     loop_on_init = options.loop_on_init
 
-    # be sure that the system has a reasonable time (at least 1 jan 2000).
-    # log any problems every minute.  start db = 915145200
+    # Make sure the system time is not out of date (a common problem with the Raspberry Pi).
+    # Do this by making sure the system time is later than the creation time of the config file
+    sane = os.stat(config_path).st_ctime
+
     n = 0
-    while weewx.launchtime_ts < 946684800:
+    while weewx.launchtime_ts < sane:
+        # Log any problems every minute.
         if n % 120 == 0:
             syslog.syslog(syslog.LOG_INFO,
-                          "engine: waiting for sane time.  current time is %s"
+                          "engine: Waiting for sane time. Current time is %s"
                           % weeutil.weeutil.timestamp_to_string(weewx.launchtime_ts))
         n += 1
         time.sleep(0.5)
@@ -842,7 +851,6 @@ def main(options, args, engine_class=StdEngine):
 
         os.chdir(cwd)
 
-        config_path = os.path.abspath(args[0])
         config_dict = getConfiguration(config_path)
 
         # Look for the debug flag. If set, ask for extra logging
@@ -851,7 +859,7 @@ def main(options, args, engine_class=StdEngine):
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
         else:
             syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
-        syslog.syslog(syslog.LOG_DEBUG, "engine: debug is %s" % weewx.debug)
+        syslog.syslog(syslog.LOG_DEBUG, "engine: Debug is %s" % weewx.debug)
 
         # See if there is a loop_on_init directive in the configuration, but
         # use it only if nothing was specified via command-line.
@@ -872,7 +880,7 @@ def main(options, args, engine_class=StdEngine):
             syslog.syslog(syslog.LOG_CRIT, "engine: Unexpected exit from main loop. Program exiting.")
     
         # Catch any console initialization error:
-        except InitializationError, e:
+        except InitializationError as e:
             # Log it:
             syslog.syslog(syslog.LOG_CRIT, "engine: Unable to load driver: %s" % e)
             # See if we should loop, waiting for the console to be ready.
@@ -886,7 +894,7 @@ def main(options, args, engine_class=StdEngine):
                 sys.exit(weewx.IO_ERROR)
 
         # Catch any recoverable weewx I/O errors:
-        except weewx.WeeWxIOError, e:
+        except weewx.WeeWxIOError as e:
             # Caught an I/O error. Log it, wait 60 seconds, then try again
             syslog.syslog(syslog.LOG_CRIT, "engine: Caught WeeWxIOError: %s" % e)
             if options.exit:
@@ -895,8 +903,18 @@ def main(options, args, engine_class=StdEngine):
             syslog.syslog(syslog.LOG_CRIT, "    ****  Waiting 60 seconds then retrying...")
             time.sleep(60)
             syslog.syslog(syslog.LOG_NOTICE, "engine: retrying...")
-            
-        except weedb.OperationalError, e:
+
+        except (weedb.CannotConnect, weedb.DisconnectError) as e:
+            # No connection to the database server. Log it, wait 120 seconds, then try again
+            syslog.syslog(syslog.LOG_CRIT, "engine: Database connection exception: %s" % e)
+            if options.exit:
+                syslog.syslog(syslog.LOG_CRIT, "    ****  Exiting...")
+                sys.exit(weewx.DB_ERROR)
+            syslog.syslog(syslog.LOG_CRIT, "    ****  Waiting 2 minutes then retrying...")
+            time.sleep(120)
+            syslog.syslog(syslog.LOG_NOTICE, "engine: retrying...")
+
+        except weedb.OperationalError as e:
             # Caught a database error. Log it, wait 120 seconds, then try again
             syslog.syslog(syslog.LOG_CRIT, "engine: Database OperationalError exception: %s" % e)
             if options.exit:
@@ -906,17 +924,7 @@ def main(options, args, engine_class=StdEngine):
             time.sleep(120)
             syslog.syslog(syslog.LOG_NOTICE, "engine: retrying...")
             
-        except weedb.CannotConnect, e:
-            # Unable to connect to the database server. Log it, wait 120 seconds, then try again
-            syslog.syslog(syslog.LOG_CRIT, "engine: Database CannotConnect exception: %s" % e)
-            if options.exit:
-                syslog.syslog(syslog.LOG_CRIT, "    ****  Exiting...")
-                sys.exit(weewx.DB_ERROR)
-            syslog.syslog(syslog.LOG_CRIT, "    ****  Waiting 2 minutes then retrying...")
-            time.sleep(120)
-            syslog.syslog(syslog.LOG_NOTICE, "engine: retrying...")
-            
-        except OSError, e:
+        except OSError as e:
             # Caught an OS error. Log it, wait 10 seconds, then try again
             syslog.syslog(syslog.LOG_CRIT, "engine: Caught OSError: %s" % e)
             weeutil.weeutil.log_traceback("    ****  ", syslog.LOG_DEBUG)
@@ -940,7 +948,7 @@ def main(options, args, engine_class=StdEngine):
             raise
     
         # Catch any non-recoverable errors. Log them, exit
-        except Exception, ex:
+        except Exception as ex:
             # Caught unrecoverable error. Log it, exit
             syslog.syslog(syslog.LOG_CRIT, "engine: Caught unrecoverable exception in engine:")
             syslog.syslog(syslog.LOG_CRIT, "    ****  %s" % ex)
@@ -961,7 +969,7 @@ def getConfiguration(config_path):
         syslog.syslog(syslog.LOG_CRIT, "engine: Unable to open configuration file %s" % config_path)
         # Reraise the exception (this should cause the program to exit)
         raise
-    except configobj.ConfigObjError, e:
+    except configobj.ConfigObjError as e:
         syslog.syslog(syslog.LOG_CRIT, "engine: Error while parsing configuration file %s" % config_path)
         syslog.syslog(syslog.LOG_CRIT, "****    Reason: '%s'" % e)
         raise

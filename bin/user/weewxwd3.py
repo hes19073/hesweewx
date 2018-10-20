@@ -429,6 +429,12 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['GDD10'] = None
 
+        if 'outTemp' in event.packet and 'pressure' in event.packet:
+            data_x['densityA'] = weewx.wxformulas.da_Metric(event.packet['outTemp'], event.packet['pressure'])
+        else:
+            data_x['densityA'] = None
+
+
 
 
         event.packet.update(data_x)
@@ -444,6 +450,11 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['summersimmerIndex'] = weewx.wxformulas.sumsimIndex_C(event.record['outTemp'], event.record['outHumidity'])
         else:
             data_x['summersimmerIndex'] = None
+
+        if 'outTemp' in event.record and 'pressure' in event.record:
+            data_x['densityA'] = weewx.wxformulas.da_Metric(event.record['outTemp'], event.record['pressure'])
+        else:
+            data_x['densityA'] = None
 
         if 'outTemp' in event.record:
             data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 18.333)
@@ -538,6 +549,7 @@ class WdArchive(weewx.engine.StdService):
         obs_group_dict["summersimmerIndex"] = "group_temperature"
         obs_group_dict["outTempDay"] = "group_temperature"
         obs_group_dict["outTempNight"] = "group_temperature"
+        obs_group_dict['densityA'] = "group_altitude"
 
         # bind ourselves to NEW_ARCHIVE_RECORD event
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -676,6 +688,11 @@ class WdGenerateDerived(object):
             _rec_mwx['wdd_deg'] = weewx.wxformulas.heating_degrees(_rec_mwx['outTemp'], 10.0)
         else:
             _rec_mwx['wdd_deg'] = None
+
+        if 'outTemp' in _rec_mwx:
+            _rec_mwx['densityA'] = weewx.wxformulas.da_Metric(_rec_mwx['outTemp'], _rec_mwx['pressure'])
+        else:
+            _rec_mwx['densityA'] = None
 
 
         # 'calculate' Green DayDegrees 4 6 10

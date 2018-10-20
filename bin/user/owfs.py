@@ -372,9 +372,9 @@ def humhes(key, path, last_data, ts):
     if dhu > 100.0:
        d = 99
     else:
-       d = dhu     
+       d = dhu
     return  d
-    
+
 def lighes(key, path, last_data, ts):
     li1 = get_float('%s%s' % (path, '/vis'))
     vdd = get_float('%s%s' % (path, '/VDD'))
@@ -426,7 +426,7 @@ def loader(config_dict, engine):
 
 class OWFSDriver(weewx.drivers.AbstractDevice):
     """Driver for one-wire sensors via owfs."""
-    
+
     def __init__(self, **stn_dict) :
         """Initialize the driver.
 
@@ -463,10 +463,6 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
         loginf('polling interval is %s' % str(self.polling_interval))
         loginf('sensor unit system is %s' % self.unit_system)
         ow.init(self.interface)
-
-        # open all 1-wire channels on a Hobby Boards 4-channel hub.  see:
-        #   http://owfs.org/index.php?page=4-channel-hub
-#        ow.owfs_put("%s/hub/branch.BYTE" % hubpath, 15)
 
     @property
     def hardware_name(self):
@@ -505,9 +501,9 @@ class OWFSService(weewx.engine.StdService):
     """Collect data from one-wire devices via owfs."""
 
     def __init__(self, engine, config_dict):
-        """
-        interface: Where to find the one-wire sensors.  Options include
-        u, /dev/ttyS0
+
+        """interface: Where to find the one-wire sensors.
+        Options include  u, /dev/ttyS0
         [Required. Default is u (usb)]
 
         sensor_map: Associate sensor values with database fields.

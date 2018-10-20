@@ -1,5 +1,8 @@
 data=http://wetter.hes61.de/data.txt
+radtype=image
 radar=https://www.niederschlagsradar.de/image.ashx?type=regioloop&regio=ros&j=&m=&d=&mi=&uhr=&bliksem=0&voor=&srt=loop1stunde&tijdid=20183231322
 webcam=http://wetter.hes61.de/xicons/wet/snapshot.jpg
+custom=http://wetter.hes61.de/smartphone/index.html
+fctype=Yahoo
 forecast=Klein Rogahn, MV, DE
 

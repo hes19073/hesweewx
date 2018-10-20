@@ -1,0 +1,205 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## Alt_Temp.html.tmpl  2015-03-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Temperatur - Daten</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    ##include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="section">
+
+<h2>Außentemperatur</h2>
+<p>Nach Weather Underground (Archiv) wurde im Jahr 
+  <b>$latest($data_binding='wdsupp_binding').tempRecordHighYear.raw</b> 
+ eine Rekordtemperatur von <b>$latest($data_binding='wdsupp_binding').tempRecordHigh</b> gemessen, 
+ die normale Tagestemperatur lag sonst bei  $latest($data_binding='wdsupp_binding').tempNormalHigh. <br />
+ Die tiefste Temperatur wurde im Jahr <b>$latest($data_binding='wdsupp_binding').tempRecordLowYear.raw</b> 
+ mit  $latest($data_binding='wdsupp_binding').tempRecordLow festgestellt, 
+ die normale  Tiefsttemperatur lag bei  $latest($data_binding='wdsupp_binding').tempNormalLow.</p>
+<hr /> 
+
+<h3>Tagestemperatur in °C (1998 bis 2013)</h3>
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum Tagestemperatur</td></tr>
+#for $year in $alltime.years($data_binding='wxAlt_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wxAlt_binding')
+         #if $month.outTemp.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTemp.max.raw)">$month.outTemp.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel Tagestemperatur</td></tr>
+#for $year in $alltime.years($data_binding='wxAlt_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wxAlt_binding')
+         #if $month.outTemp.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTemp.avg.raw)">$month.outTemp.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum Tagestemperatur</td></tr>
+#for $year in $alltime.years($data_binding='wxAlt_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wxAlt_binding')
+         #if $month.outTemp.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTemp.min.raw)">$month.outTemp.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+</table>
+<hr />
+
+<h3>Tagestemperatur in °C (Maximal und Minimal)</h3>
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum Tagestemperatur in der Zeit von 06:00 Uhr bis 18:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempDay.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempDay.max.raw)">$month.outTempDay.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel Tagestemperatur in der Zeit von 06:00 Uhr bis 18:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempDay.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempDay.avg.raw)">$month.outTempDay.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum Tagestemperatur in der Zeit von 06:00 Uhr bis 18:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempDay.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempDay.min.raw)">$month.outTempDay.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+<hr />
+<h3>Nachttemperatur in °C (Maximal und Minimal)</h3>
+<table>
+    <tr>
+     <td>&nbsp;</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td><td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td><td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>Maximum Nachtemperatur in der Zeit von 18:00 Uhr bis 06:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempNight.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempNight.max.raw)">$month.outTempNight.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Mittel Nachtemperatur in der Zeit von 18:00 Uhr bis 06:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempNight.avg.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempNight.avg.raw)">$month.outTempNight.avg.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>Minimum Nachtemperatur in der Zeit von 18:00 Uhr bis 06:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempNight.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempNight.min.raw)">$month.outTempNight.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+</table>
+
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+ </div> 
+
+  #include $Extras.footer
+
+</div>
+</body>
+
+</html>

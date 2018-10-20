@@ -39,7 +39,7 @@
                         },
 
                         title: {
-                                text: '2013-17 Monat Temperatur'
+                                text: '2014-18 Monat Temperatur'
                         },
 
                         subtitle: {
@@ -74,18 +74,18 @@
                                 }
                         },
                   
-                        series: [{ name: '2013', pointPadding: 0.25 },
-                                 { name: '2014', pointPadding: 0.25 },
+                        series: [{ name: '2014', pointPadding: 0.25 },
                                  { name: '2015', pointPadding: 0.25 },
                                  { name: '2016', pointPadding: 0.25 },
-                                 { name: '2017', pointPadding: 0.26 }]
+                                 { name: '2017', pointPadding: 0.25 },
+                                 { name: '2018', pointPadding: 0.26 }]
                 };
 
-                $.getJSON('Data/Data-2013.json', function(data) {options.series[0].data = data; 
-                           $.getJSON('Data/Data-2014.json', function(data) { options.series[1].data = data;
-                                      $.getJSON('Data/Data-2015.json', function(data) { options.series[2].data = data; 
-                                                 $.getJSON('Data/Data-2016.json', function(data) {options.series[3].data = data; 
-                                                            $.getJSON('Data/Data-2017.json', function(data) {options.series[4].data = data;
+                $.getJSON('Data/Data-2014.json', function(data) {options.series[0].data = data; 
+                           $.getJSON('Data/Data-2015.json', function(data) { options.series[1].data = data;
+                                      $.getJSON('Data/Data-2016.json', function(data) { options.series[2].data = data; 
+                                                 $.getJSON('Data/Data-2017.json', function(data) {options.series[3].data = data; 
+                                                            $.getJSON('Data/Data-2018.json', function(data) {options.series[4].data = data;
                                                                        var chart = new Highcharts.Chart(options); 
                                                             });
                                                  }); 
@@ -353,44 +353,6 @@
 </div>
 <hr />
 
-<h3>Tagestemperatur in °C (Tag oder Nacht)</h3>
-
-<table>
-    <tr>
-      <td>&nbsp;</td>
-      <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
-    <tr><td colspan='13'>minimale Tagestemperatur in der Zeit von 06:00 Uhr bis 18:00 Uhr</td></tr>
-#for $year in $alltime.years($data_binding='wd_binding')
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-     #for $month in $year.months($data_binding='wd_binding')
-         #if $month.outTempDay.min.raw is not None:
-            <td class="stats_data" style="$decorator_color('tempO', $month.outTempDay.min.raw)">$month.outTempDay.min.formatted</td>
-         #else
-            <td>-</td>
-         #end if
-     #end for
-    </tr>
-#end for
-    <tr><td colspan='13'>maximale Nachttemperatur in der Zeit von 18:00 Uhr bis 06:00 Uhr</td></tr>
-#for $year in $alltime.years($data_binding='wd_binding')
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-     #for $month in $year.months($data_binding='wd_binding')
-         #if $month.outTempNight.max.raw is not None:
-            <td class="stats_data" style="$decorator_color('tempO', $month.outTempNight.max.raw)">$month.outTempNight.max.formatted</td>
-         #else
-            <td>-</td>
-         #end if
-     #end for
-    </tr>
-#end for
- </table>
- <hr />
    </div> <!-- end id "about" -->
   </div>  <!-- end id "content" -->
  </div> 

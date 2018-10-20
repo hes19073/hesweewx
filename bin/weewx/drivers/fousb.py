@@ -585,7 +585,6 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
 # map between the pywws keys and the weewx keys
 # 'weewx-key' : ( 'pywws-key', multiplier )
 # rain is total measure so must split into per-period and calculate rate
-# station has no separate windgustdir so use wind_dir
 keymap = {
     'inHumidity'  : ('hum_in',       1.0),
     'inTemp'      : ('temp_in',      1.0), # station is C
@@ -595,7 +594,6 @@ keymap = {
     'windSpeed'   : ('wind_ave',     3.6), # station is m/s, weewx wants km/h
     'windGust'    : ('wind_gust',    3.6), # station is m/s, weewx wants km/h
     'windDir'     : ('wind_dir',    22.5), # station is 0-15, weewx wants deg
-    'windGustDir' : ('wind_dir',    22.5), # station is 0-15, weewx wants deg
     'rain'        : ('rain',         0.1), # station is mm, weewx wants cm
     'radiation'   : ('illuminance',  0.01075), # lux, weewx wants W/m^2
     'UV'          : ('uv',           1.0),
@@ -1016,7 +1014,7 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
             try:
                 ival = self.get_fixed_block(['read_period'])
                 break
-            except usb.USBError, e:
+            except usb.USBError as e:
                 logcrt("get archive interval failed attempt %d of %d: %s"
                        % (i+1, self.max_tries, e))
         else:
@@ -1047,7 +1045,7 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
         # attempt to claim the interface
         try:
             self.devh.claimInterface(self.usb_interface)
-        except usb.USBError, e:
+        except usb.USBError as e:
             self.closePort()
             logcrt("Unable to claim USB interface %s: %s" %
                    (self.usb_interface, e))
@@ -1167,7 +1165,7 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
                 else:
                     raise Exception("unknown polling mode '%s'" % self.polling_mode)
 
-            except (IndexError, usb.USBError, ObservationError), e:
+            except (IndexError, usb.USBError, ObservationError) as e:
                 logerr('get_observations failed: %s' % e)
                 nerr += 1
                 if nerr > self.max_tries:
@@ -1336,7 +1334,7 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
                         dts -= datetime.timedelta(minutes=data['delay'])
                     ptr = self.dec_ptr(ptr)
                 return records
-            except (IndexError, usb.USBError, ObservationError), e:
+            except (IndexError, usb.USBError, ObservationError) as e:
                 logerr('get_records failed: %s' % e)
                 nerr += 1
                 if nerr > self.max_tries:

@@ -15,24 +15,13 @@ from math import sin
 from datetime import datetime
 
 
-from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH 
+from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
 from weewx.units import CtoK, CtoF, FtoC
 
 INHG_PER_MBAR = 0.0295299830714
 METER_PER_FOOT = 0.3048
 METER_PER_MILE = 1609.34
 MM_PER_INCH = 25.4
-
-""" 
-def CtoK(x):
-    return x + 273.15
-
-def CtoF(x):
-    return (x * 1.8 + 32.0)
-
-def FtoC(x):
-    return (x - 32.0) * 5.0 / 9.0
-"""
 
 def mps_to_mph(x):
     return x * 3600.0 / METER_PER_MILE
@@ -44,15 +33,15 @@ def degtorad(x):
     return x * math.pi / 180.0
 
 def dewpointF(T, R):
-    """Calculate dew point. 
-    
+    """Calculate dew point.
+
     T: Temperature in Fahrenheit
-    
+
     R: Relative humidity in percent.
-    
+
     Returns: Dewpoint in Fahrenheit
     Examples:
-    
+
     >>> print "%.1f" % dewpointF(68, 50)
     48.7
     >>> print "%.1f" % dewpointF(32, 50)
@@ -71,11 +60,11 @@ def dewpointF(T, R):
 def dewpointC(T, R):
     """Calculate dew point.
     http://en.wikipedia.org/wiki/Dew_point
-    
+
     T: Temperature in Celsius
-    
+
     R: Relative humidity in percent.
-    
+
     Returns: Dewpoint in Celsius
     """
 
@@ -92,55 +81,55 @@ def dewpointC(T, R):
 def windchillF(T_F, V_mph):
     """Calculate wind chill.
     http://www.nws.noaa.gov/om/cold/windchill.shtml
-    
+
     T_F: Temperature in Fahrenheit
-    
+
     V_mph: Wind speed in mph
-    
+
     Returns Wind Chill in Fahrenheit
     """
-    
+
     if T_F is None or V_mph is None:
         return None
 
     # only valid for temperatures below 50F and wind speeds over 3.0 mph
-    if T_F >= 50.0 or V_mph <= 3.0: 
+    if T_F >= 50.0 or V_mph <= 3.0:
         return T_F
 
-    WcF = 35.74 + 0.6215 * T_F + (-35.75 + 0.4275 * T_F) * math.pow(V_mph, 0.16) 
+    WcF = 35.74 + 0.6215 * T_F + (-35.75 + 0.4275 * T_F) * math.pow(V_mph, 0.16)
     return WcF
 
 def windchillC(T_C, V_kph):
     """Wind chill, metric version.
-    
+
     T: Temperature in Celsius
-    
+
     V: Wind speed in kph
-    
+
     Returns wind chill in Celsius"""
-    
+
     if T_C is None or V_kph is None:
         return None
-    
+
     T_F = CtoF(T_C)
     V_mph = 0.621371192 * V_kph
-    
+
     WcF = windchillF(T_F, V_mph)
-    
+
     return FtoC(WcF) if WcF is not None else None
-    
+
 def heatindexF(T, R):
     """Calculate heat index.
     http://www.nws.noaa.gov/om/heat/heat_index.shtml
-    
+
     T: Temperature in Fahrenheit
-    
+
     R: Relative humidity in percent
-    
+
     Returns heat index in Fahrenheit
-    
+
     Examples:
-    
+
     >>> print heatindexF(75.0, 50.0)
     75.0
     >>> print heatindexF(80.0, 50.0)
@@ -155,7 +144,7 @@ def heatindexF(T, R):
     """
     if T is None or R is None:
         return None
-    
+
     # Formula only valid for temperatures over 80F:
     if T < 80.0 or R < 40.0:
         return T
@@ -182,7 +171,7 @@ def cooling_degrees(t, base):
 def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     """Calculate the altimeter pressure, given the raw, station pressure in
     inHg and the altitude in feet.
-        
+
     Examples:
     >>> print "%.2f" % altimeter_pressure_US(28.0, 0.0)
     28.00
@@ -273,7 +262,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     Example:
 
     >>> for t in range(0,24):
-    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471) 
+    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471)
     0.00
     0.00
     0.00
@@ -547,7 +536,7 @@ def beaufort(ws_kts):
 
 def equation_of_time(doy):
     """Equation of time in minutes. Plus means sun leads local time.
-    
+
     Example (1 October):
     >>> print "%.4f" % equation_of_time(274)
     0.1889
@@ -557,13 +546,13 @@ def equation_of_time(doy):
 
 def hour_angle(t_utc, longitude, doy):
     """Solar hour angle at a given time in radians.
-    
+
     t_utc: The time in UTC.
     longitude: the longitude in degrees
     doy: The day of year
-        
+
     Returns hour angle in radians. 0 <= omega < 2*pi
-        
+
     Example:
     >>> print "%.4f radians" % hour_angle(15.5, -16.25, 274)
     0.6821 radians
@@ -619,7 +608,7 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
 
     part1 = (stop_omega - start_omega) * math.sin(latitude_radians) * math.sin(delta)
     part2 = math.cos(latitude_radians) * math.cos(delta) * (math.sin(stop_omega) - math.sin(start_omega))
-    
+
     # http://www.fao.org/docrep/x0490e/x0490e00.htm Eqn 28
     Ra = (12.0 / math.pi) * Gsc * earth_distance * (part1 + part2)
 
@@ -730,24 +719,24 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     if None in (Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2, ws_mps,
                 latitude_deg, longitude_deg, timestamp):
         return None
-       
+
     if wind_height_m is None:
         wind_height_m = 2.0
     if altitude_m is None:
         altitude_m = 0.0
-    
+
     # Numerator and denominator terms for the reference crop type
     cn = 37
     cd = 0.34
     # Albedo. for grass reference crop
     albedo = 0.23
-    
+
     # figure out the day of year [1-366] from the timestamp
     doy = time.localtime(timestamp)[7] - 1
     # Calculate the UTC time-of-day in hours
     time_tt_utc = time.gmtime(timestamp)
     tod_utc = time_tt_utc.tm_hour + time_tt_utc.tm_min / 60.0 + time_tt_utc.tm_sec / 3600.0
-    
+
     # Calculate mean temperature
     tavg_C = (Tmax_C + Tmin_C) / 2.0
 
@@ -756,7 +745,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
 
     # Adjust windspeed for height
     u2 = 4.87 * ws_mps / math.log(67.8 * wind_height_m - 5.42)
-    
+
     # Calculate the atmospheric pressure in kPa
     p = 101.3 * math.pow((293.0 - 0.0065 * altitude_m) / 293.0, 5.26)
     # Calculate the psychrometric constant in kPa/C (Eqn 8)
@@ -871,10 +860,10 @@ def density_Metric(dp_C, t_C, p_mbar):
 
     dp = dp_C
     Tk = (t_C) + 273.15
-    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 + 
-        dp * (-0.61117958E-6 + dp * (0.43884187E-8 + 
-        dp * (-0.29883885E-10 + dp * (0.21874425E-12 + 
-        dp * (-0.17892321E-14 + dp * (0.11112018E-16 + 
+    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 +
+        dp * (-0.61117958E-6 + dp * (0.43884187E-8 +
+        dp * (-0.29883885E-10 + dp * (0.21874425E-12 +
+        dp * (-0.17892321E-14 + dp * (0.11112018E-16 +
         dp * (-0.30994571E-19))))))))))
     Pv = 100 * 6.1078 / (p**8)
     Pd = p_mbar * 100 - Pv
@@ -954,10 +943,10 @@ def winddruck_Metric(dp_C, t_C, p_mbar, vms):
     elif vms >= 117:
         vms = vms * 0.277777778
 
-    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 + 
-        dp * (-0.61117958E-6 + dp * (0.43884187E-8 + 
-        dp * (-0.29883885E-10 + dp * (0.21874425E-12 + 
-        dp * (-0.17892321E-14 + dp * (0.11112018E-16 + 
+    p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 +
+        dp * (-0.61117958E-6 + dp * (0.43884187E-8 +
+        dp * (-0.29883885E-10 + dp * (0.21874425E-12 +
+        dp * (-0.17892321E-14 + dp * (0.11112018E-16 +
         dp * (-0.30994571E-19))))))))))
 
     Pv = 100 * 6.1078 / (p**8)
@@ -1023,23 +1012,53 @@ def wetbulb_US(t_F, RH, p_inHg):
 
     return CtoF(wb_C) if wb_C is not None else None
 
+def deltaT_Metric(t_C, RH, PP):
+    #  deltaT Aenderung Lufttemperatur
+    #  t_C = outTemp
+    #  RH = outHumidity
+    #  PP = pressure
+
+    if t_C is None or RH is None or PP is None:
+         return None
+
+    Tdc = ((t_C - (14.55 + 0.114 * t_C) * (1 - (0.01 * RH)) - ((2.5 + 0.007 * t_C) * (1 - (0.01 * RH))) ** 3 - (15.9 + 0.117 * t_C) * (1 - (0.01 * RH)) ** 14))
+    E = (6.11 * 10 ** (7.5 * Tdc / (237.7 + Tdc)))
+    WBc = (((0.00066 * PP) * t_C) + ((4098 * E) / ((Tdc + 237.7) ** 2) * Tdc)) / ((0.00066 * PP) + (4098 * E) / ((Tdc + 237.7) ** 2))
+    deltaT_C = t_C - WBc
+
+    return deltaT_C if deltaT_C is not None else None
+
+def deltaT_US(t_F, RH, p_inHg):
+    #  deltaT calculations == delta Lufttemperatur
+    #  t_F = temperatur degree F
+    #  RH = outHumidity
+    #  p_inHg = pressure in inHg
+
+    if t_F is None or RH is None or p_inHg is None:
+         return None
+
+    t_C = FtoC(t_F)
+    p_mbar = p_inHg / INHG_PER_MBAR
+    deltaT_C = deltaT_Metric(t_C, RH, p_mbar)
+
+    return CtoF(deltaT_C) if deltaT_C is not None else None
 
 def cbindex_Metric(t_C, RH):
     # Chandler Burning Index calculations
-    #  t_C = outTemp 
+    #  t_C = outTemp
     #  RH = outHumidity
 
     if t_C is None or RH is None:
          return None
 
-    cdIn = ((((110 - 1.373 * RH) - 0.54 * (10.20 - t_C)) * (124 * 10**(-0.0142 * RH)))/60.1)
-    cbIndex = round(cdIn, 1)
+    cbIndex = max(0.0, round((((110 - 1.373 * RH) - 0.54 * (10.20 - t_C)) * (124 * 10**(-0.0142 * RH)))/60, 1))
+    #cbIndex = round(cdIn, 1)
 
     return cbIndex if cbIndex is not None else None
 
 def cbindex_US(t_F, RH):
     # Chandler Burning Index calculations
-    #  t_F = temperatur degree F 
+    #  t_F = temperatur degree F
     #  RH = outHumidity
 
     if t_F is None or RH is None:
@@ -1157,7 +1176,7 @@ def dampfD_F(t_F):
 
 def sumsimIndex_F(t_F, RH):
     # Summer Simmer Index-Berechnung
-    # rel. Luftfeuchte RH 
+    # rel. Luftfeuchte RH
     # temperatur in degree F
 
     if t_F is None or RH is None:
@@ -1169,7 +1188,7 @@ def sumsimIndex_F(t_F, RH):
 
 def sumsimIndex_C(t_C, RH):
     # Summer Simmer Index-Berechnung
-    # rel. Luftfeuchte RH 
+    # rel. Luftfeuchte RH
     # temperatur in degree C
 
     if t_C is None or RH is None:
@@ -1183,10 +1202,41 @@ def sumsimIndex_C(t_C, RH):
 
     return ssI_C if ssI_C is not None else None
 
+def da_Metric(t_C, p_mbar):
+    # Density altitude calculations
+    #  t_C = outTemp
+    #  p_mbar =  pressure
+
+    if t_C is None or p_mbar is None:
+         return None
+
+    t_F = CtoF(t_C)
+    p_inHg = p_mbar * INHG_PER_MBAR
+
+    da_fo = da_US(t_F, p_inHg)
+
+    da_me = da_fo * 0.3048
+
+    return da_me if da_me is not None else None
+
+def da_US(t_F, p_inHg):
+    #  Density altitude calculations
+    #  t_F = temperatur degree F
+    #  p_inHg = pressure
+
+    if t_F is None or p_inHg is None:
+         return None
+
+    da_fo = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
+
+    da_fo = round(da_fo, 1)
+
+    return da_fo if da_fo is not None else None
+
 
 
 if __name__ == "__main__":
-    
+
     import doctest
 
     if not doctest.testmod().failed:

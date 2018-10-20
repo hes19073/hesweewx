@@ -19,8 +19,8 @@ from weewx.units import FtoC, CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
 class StdWXCalculate(weewx.engine.StdService):
     """Wrapper class for WXCalculate.
 
-    A StdService wrapper for a WXCalculate object so it may be called as a 
-    service. This also allows the WXCalculate class to be used elsewhere 
+    A StdService wrapper for a WXCalculate object so it may be called as a
+    service. This also allows the WXCalculate class to be used elsewhere
     without the overheads of running it as a weewx service.
     """
 
@@ -31,9 +31,9 @@ class StdWXCalculate(weewx.engine.StdService):
         """
         super(StdWXCalculate, self).__init__(engine, config_dict)
 
-        self.calc = WXCalculate(config_dict, 
-                                engine.stn_info.altitude_vt, 
-                                engine.stn_info.latitude_f, 
+        self.calc = WXCalculate(config_dict,
+                                engine.stn_info.altitude_vt,
+                                engine.stn_info.latitude_f,
                                 engine.stn_info.longitude_f,
                                 engine.db_binder)
 
@@ -78,7 +78,7 @@ class WXCalculate(object):
         'humidex',
         'appTemp',
         'beaufort',
-        #'ET',
+        'ET',
         #'windrun',
         'windDruck',
         'density',
@@ -88,6 +88,8 @@ class WXCalculate(object):
         'absolutF',
         'dampfDruck',
         'sumsimIndex',
+        'deltaT',
+        'densityA',
         ]
 
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
@@ -112,7 +114,7 @@ class WXCalculate(object):
                 altimeter = aaASOS
                 maxSolarRad = RS
         """
-        
+
         # get any configuration settings
         svc_dict = config_dict.get('StdWXCalculate', {'Calculations':{}})
         # if there is no Calculations section, then make an empty one
@@ -209,9 +211,9 @@ class WXCalculate(object):
     def adjust_winddir(self, data):
         """If wind speed is zero, then the wind direction is undefined.
         If there is no wind speed, then there is no wind direction."""
-        if not data.get('windSpeed'):
+        if 'windSpeed' in data and not data.get('windSpeed'):
             data['windDir'] = None
-        if not data.get('windGust'):
+        if 'windGust' in data and not data.get('windGust'):
             data['windGustDir'] = None
 
     def calc_dewpoint(self, data, data_type):  # @UnusedVariable
@@ -421,11 +423,11 @@ class WXCalculate(object):
             ET_rate = weewx.wxformulas.evapotranspiration_US(
                 T_min, T_max, rh_min, rh_max, rad_avg, wind_avg, height_ft,
                 self.latitude, self.longitude, self.altitude_ft, end_ts)
-            # The formula returns inches/hour. We need the total ET over the 
+            # The formula returns inches/hour. We need the total ET over the
             # archive
             # interval, so multiply by the length of the archive interval in hours.
             data['ET'] = ET_rate * interval / 3600.0 if ET_rate is not None else None
-        except ValueError, e:
+        except ValueError as e:
             weeutil.weeutil.log_traceback()
             syslog.syslog(syslog.LOG_ERR, "wxservices: Calculation of evapotranspiration failed: %s" % e)
         except weedb.DatabaseError:
@@ -439,22 +441,25 @@ class WXCalculate(object):
             return
         ets = data['dateTime']
         sts = weeutil.weeutil.startOfDay(ets)
+        run = 0.0
         try:
-            run = 0.0
             dbmanager = self.db_binder.get_manager(self.binding)
             for row in dbmanager.genSql("SELECT `interval`,windSpeed,usUnits"
                                         " FROM %s"
                                         " WHERE dateTime>? AND dateTime<=?" %
                                         dbmanager.table_name, (sts, ets)):
                 if row and None not in row:
-                    vals_us = weewx.units.to_US({'interval' : row[0], 
-                                                 'windSpeed' : row[1], 
+                    vals_us = weewx.units.to_US({'interval' : row[0],
+                                                 'windSpeed' : row[1],
                                                  'usUnits' : row[2]})
                     run += vals_us['windSpeed'] * vals_us['interval'] / 60.0
-            data['windrun'] = run
         except weedb.DatabaseError:
-            pass
-
+            data['windrun'] = None
+        else:
+            # Include the "current" record
+            if data.get('windSpeed') is not None:
+                run += data['windSpeed'] * data['interval'] / 60.0
+            data['windrun'] = run
 
     def calc_density(self, data, data_type):
         if 'dewpoint' in data and 'outTemp' in data and 'pressure' in data:
@@ -473,6 +478,12 @@ class WXCalculate(object):
              data['wetBulb'] = weewx.wxformulas.wetbulb_US(data['outTemp'], data['outHumidity'], data['pressure'])
         else:
              data['wetBulb'] = None
+
+    def calc_deltaT(self, data, data_type):
+        if 'outTemp' in data and 'outHumidity' in data and 'pressure' in data:
+             data['deltaT'] = weewx.wxformulas.deltaT_US(data['outTemp'], data['outHumidity'], data['pressure'])
+        else:
+             data['deltaT'] = None
 
     def calc_cbIndex(self, data, data_type):
         if 'outTemp' in data and 'outHumidity' in data:
@@ -504,6 +515,11 @@ class WXCalculate(object):
         else:
              data['summersimmerIndex'] = None
 
+    def calc_densityA(self, data, data_type):
+        if 'outTemp' in data and 'pressure' in data:
+             data['densityA'] = weewx.wxformulas.da_US(data['outTemp'], data['pressure'])
+        else:
+             data['densityA'] = None
 
 
     def _get_archive_interval(self, data):
