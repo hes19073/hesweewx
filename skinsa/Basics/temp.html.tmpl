@@ -1,0 +1,405 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## temp.html.tmpl  2015-03-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Wind - Daten</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+   <script src='js/hesweewx.js'></script>
+   <script src="js/jquery-1.8.2.min.js"></script>
+   <script src="js/highcharts.js"></script>
+   <script src="js/highcharts-more.js"></script>
+   <script src="js/themes/grid.js"></script>
+   <script>
+     $(document).ready(function() {
+
+          var options = {
+                 chart: {
+                         renderTo: 'Chart1',
+                         type: 'boxplot'
+                        },
+
+                        title: {
+                                text: '2014-18 Monat Temperatur'
+                        },
+
+                        subtitle: {
+                                text: '(Max, ∅Tag-Max, ∅Tag, ∅Tag-Min, Min)'
+                        },
+
+                        legend: {
+                                enabled: true
+                        },
+
+                        xAxis: {
+                                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+                        },
+
+                        yAxis: {
+                                minorTickInterval: 'auto',
+                                minorTickLength: 0,
+                                title:  {
+                                        text: 'Grad C'
+                                }
+                        },
+
+                        plotOptions: {
+                                boxplot: {
+                                        fillColor: 'LightSteelBlue',
+                                        groupPadding: 0.1,
+                                        lineWidth: 2.5,
+                                        medianWidth: 2.5,
+                                        stemWidth: 2.5,
+                                        whiskerLength: '75%',
+                                        whiskerWidth: 2.5
+                                }
+                        },
+                  
+                        series: [{ name: '2014', pointPadding: 0.25 },
+                                 { name: '2015', pointPadding: 0.25 },
+                                 { name: '2016', pointPadding: 0.25 },
+                                 { name: '2017', pointPadding: 0.25 },
+                                 { name: '2018', pointPadding: 0.26 }]
+                };
+
+                $.getJSON('Data/Data-2014.json', function(data) {options.series[0].data = data; 
+                           $.getJSON('Data/Data-2015.json', function(data) { options.series[1].data = data;
+                                      $.getJSON('Data/Data-2016.json', function(data) { options.series[2].data = data; 
+                                                 $.getJSON('Data/Data-2017.json', function(data) {options.series[3].data = data; 
+                                                            $.getJSON('Data/Data-2018.json', function(data) {options.series[4].data = data;
+                                                                       var chart = new Highcharts.Chart(options); 
+                                                            });
+                                                 }); 
+                                      }); 
+                           }); 
+               });
+
+        });
+</script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    #include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="section">
+
+<h2>Außentemperatur</h2>
+<p>Nach Weather Underground (Archiv) wurde im Jahr 
+  <b>$latest($data_binding='wdsupp_binding').tempRecordHighYear.raw</b> 
+ eine Rekordtemperatur von <b>$latest($data_binding='wdsupp_binding').tempRecordHigh</b> gemessen, 
+ die normale Tagestemperatur lag sonst bei  $latest($data_binding='wdsupp_binding').tempNormalHigh. <br />
+ Die tiefste Temperatur wurde im Jahr <b>$latest($data_binding='wdsupp_binding').tempRecordLowYear.raw</b> 
+ mit  $latest($data_binding='wdsupp_binding').tempRecordLow festgestellt, 
+ die normale  Tiefsttemperatur lag bei  $latest($data_binding='wdsupp_binding').tempNormalLow.</p>
+<hr /> 
+ <h3>Perioden von Frost- und Eistagen</h3>
+  <ul>
+   <li><b>Frosttag</b> ist ein Tag an dem das Minimum der Lufttemperatur &lt; 0,0°C ist.</li>
+   <li>Längste Frostperiode in diesem Jahr,&nbsp;<b>$year_frost_minE_days</b>&nbsp;Tage, vom $year_frost_minS_days_time.format("%d.%m.%Y")
+      bis zum  $year_frost_minE_days_time.format("%d.%m.%Y")</li>
+   <li>und</li>
+   <li>Längste Frostperiode bisher,&nbsp;<b>$alltime_frost_minE_days</b>&nbsp;Tage, vom $alltime_frost_minS_days_time.format("%d.%m.%Y")
+       bis zum  $alltime_frost_minE_days_time.format("%d.%m.%Y")</li>
+   <li>&nbsp;</li>
+   <li>Letzter Frosttag am&nbsp;<b>$lastfrost_day.format("%d.%m.%Y")</b>,
+       das war vor&nbsp;<b>$lastfrost_delta_time</b>.</li>
+   <li>Dieses Jahr gab es bisher $year.outTemp.min_le((0.0, "degree_C", "group_temperature")).format("%.0f") Frosttage</li>
+   <li>&nbsp;</li>
+   <li>&nbsp;</li>
+   <li><b>Eistag</b> ist ein Tag an dem das Maximum der Lufttemperatur &lt; 0,0°C ist.</li>
+   <li>Die längste Eistag-Periode in diesem Jahr,&nbsp;<b>$year_frost_maxE_days</b>&nbsp;Tage, vom $year_frost_maxS_days_time.format("%d.%m.%Y")
+      bis zum  $year_frost_maxE_days_time.format("%d.%m.%Y")</li>
+   <li>und</li>
+   <li>die längste Eistag-Periode mit&nbsp;<b>$alltime_frost_maxE_days</b>&nbsp;Tage, vom $alltime_frost_maxS_days_time.format("%d.%m.%Y")
+      bis zum  $alltime_frost_maxE_days_time.format("%d.%m.%Y")</li>
+   <li>&nbsp;</li>
+   <li>Letzter Eistag (Temperatur MAX &lt; 0,0°C) am&nbsp;<b>$lasteis_day.format("%d.%m.%Y")</b>,
+       das war vor&nbsp;<b>$lasteis_delta_time</b>.</li>
+   <li>Dieses Jahr gab es bisher $year.outTemp.max_le((0.0, "degree_C", "group_temperature")).format("%.0f") Eistage</li>
+  </ul>
+ <hr />
+<h3>Anzahl der Tage in den Jahren nach </h3>
+<table>
+    <tr>
+     <td>Anzahl der <br />nach Jahren</td>
+     <td style="background-color: #FF4949;">Wüstentag        <br />T<sub>max</sub> &gt;= 35°C</td>
+     <td style="background-color: #FF6969;">Heißer Tag         <br />T<sub>max</sub> &gt;= 30°C</td>
+     <td style="background-color: #FF8C5F;">Tropennacht     <br />T<sub>min</sub> &gt;= 20°C</td>
+     <td style="background-color: #FFAC4B;">Sommertag      <br />T<sub>max</sub> &gt;= 25°C</td>
+     <td style="background-color: #33FF33;">Vegetationstag<br />T<sub>min</sub> &gt;= 5°C</td>
+     <td style="background-color: #23FF9E;">Frosttag            <br />T<sub>min</sub> &lt;&nbsp;0°C</td>
+     <td style="background-color: #4B84FF;">Eistag                <br />T<sub>max</sub> &lt;&nbsp;0 °C</td>
+     <td style="background-color: #4B84FF;">Kalter Tag        <br />T<sub>min</sub> &lt;&nbsp;-10 °C</td>
+     <td style="background-color: #4B84FF;">Sehr kalter Tag<br />T<sub>min</sub> &lt;&nbsp;-15 °C</td>
+    </tr>
+
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      <td style="background-color: #FF4949;">$year.outTemp.max_ge((35.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #FF6969;">$year.outTemp.max_ge((30.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #FF8C5F;">$year.outTemp.min_ge((20.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #FFAC4B;">$year.outTemp.max_ge((25.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #33FF33;">$year.outTemp.max_ge((5.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #23FF9E;">$year.outTemp.min_le((0.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.outTemp.max_le((0.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.outTemp.min_le((-10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+      <td style="background-color: #4B84FF;">$year.outTemp.min_le((-15.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   </tr>
+#end for
+</table>
+<hr />
+
+<h3>Durchschnittliche Tagestemperatur in °C</h3>
+ <p> Die durchschnittliche Tagestemperatur ist nicht identisch mit der Tagesmitteltemperatur, auch Tagesdurchschnittstemperatur entsprechend den Festlegungen des Deutschen Wetterdienstes. Die hier dargestellten durchschnittlichen Tagestemperaturen sind das arithmetische Mittel aus den aufgezeichneten Werten. Die Außentemperaturwerte werden in der Regel alle fünf Minuten, in 2 m Höhe über Grund, elektronisch ermittelt und gespeichert.</p>
+
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months
+          #if $month.outTemp.avg.raw is not None:
+             #if $month.outTemp.avg.raw < -30
+                 <td class="hest01">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < -25
+                 <td class="hest02">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < -20
+                 <td class="hest03">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < -15
+                 <td class="hest04">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < -10
+                 <td class="hest05">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < -5
+                 <td class="hest06">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 0
+                 <td class="hest07">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 5
+                 <td class="hest08">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 10
+                 <td class="hest09">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 15
+                 <td class="hest10">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 20
+                 <td class="hest11">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 25
+                 <td class="hest12">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 30
+                 <td class="hest13">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 35
+                 <td class="hest14">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw < 40
+                 <td class="hest15">$month.outTemp.avg.formatted</td>
+             #elif $month.outTemp.avg.raw > 39.9 
+                 <td class="hest16">$month.outTemp.avg.formatted</td>
+             #end if
+          #else
+                 <td class="hest00">-</td>
+          #end if
+      #end for
+    </tr>
+#end for
+ </table>
+<hr />
+
+<h3>Höchste Außentemperatur in °C</h3>
+<p>Tageshöchsttemperatur je Monat, mit der Angabe des Tages und der Uhrzeit</p>
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.outTemp.max.raw is not None:
+             #if $month.outTemp.max.raw < -30
+                 <td class="hest01">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < -25
+                 <td class="hest02">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < -20
+                 <td class="hest03">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < -15
+                 <td class="hest04">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < -10
+                 <td class="hest05">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < -5
+                 <td class="hest06">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 0
+                 <td class="hest07">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 5
+                 <td class="hest08">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 10
+                 <td class="hest09">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 15
+                 <td class="hest10">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 20
+                 <td class="hest11">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 25
+                 <td class="hest12">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 30
+                 <td class="hest13">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 35
+                 <td class="hest14">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw < 40
+                 <td class="hest15">$month.outTemp.max.formatted<br /><small>$month.outTemp.maxtime</small></td>
+             #elif $month.outTemp.max.raw > 39.9 
+                 <td class="hest16">$month.outTemp.max.formatted</td>
+             #end if
+          #else
+                 <td class="hest00">-</td>
+          #end if
+      #end for
+    </tr>
+#end for
+ </table>
+<hr />
+
+<h3>Tiefste Außentemperatur in °C</h3>
+<p>Tagestiefsttemperatur je Monat, mit der Angabe des Tages und der Uhrzeit</p>
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+#for $year in $alltime.years
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #for $month in $year.months
+          #if $month.outTemp.min.raw is not None:
+             #if $month.outTemp.min.raw < -30
+                 <td class="hest01">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < -25
+                 <td class="hest02">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < -20
+                 <td class="hest03">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < -15
+                 <td class="hest04">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < -10
+                 <td class="hest05">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < -5
+                 <td class="hest06">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 0
+                 <td class="hest07">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 5
+                 <td class="hest08">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 10
+                 <td class="hest09">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 15
+                 <td class="hest10">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 20
+                 <td class="hest11">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 25
+                 <td class="hest12">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 30
+                 <td class="hest13">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 35
+                 <td class="hest14">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw < 40
+                 <td class="hest15">$month.outTemp.min.formatted<br /><small>$month.outTemp.mintime</small></td>
+             #elif $month.outTemp.min.raw > 39.9 
+                 <td class="hest16">$month.outTemp.min.formatted</td>
+             #end if
+          #else
+                 <td class="hest00">-</td>
+          #end if
+       #end for
+    </tr>
+#end for
+ </table>
+<hr />
+<div id="Report">
+       <div id="Chart1">
+        Chart 1
+      </div>  <!-- End id "Chart1" -->
+</div>
+<hr />
+
+<h3>Tagestemperatur in °C (Tag oder Nacht)</h3>
+
+<table>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+    <tr><td colspan='13'>minimale Tagestemperatur in der Zeit von 06:00 Uhr bis 18:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempDay.min.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempDay.min.raw)">$month.outTempDay.min.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+    <tr><td colspan='13'>maximale Nachttemperatur in der Zeit von 18:00 Uhr bis 06:00 Uhr</td></tr>
+#for $year in $alltime.years($data_binding='wd_binding')
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+     #for $month in $year.months($data_binding='wd_binding')
+         #if $month.outTempNight.max.raw is not None:
+            <td class="stats_data" style="$decorator_color('tempO', $month.outTempNight.max.raw)">$month.outTempNight.max.formatted</td>
+         #else
+            <td>-</td>
+         #end if
+     #end for
+    </tr>
+#end for
+ </table>
+ <hr />
+
+
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+ </div> 
+
+  #include $Extras.footer
+
+</div>
+</body>
+
+</html>

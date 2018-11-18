@@ -1,0 +1,796 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: indexOWFS.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 min" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location OWFS Sensoren</title>
+
+     <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script src='js/hesweewx.js'></script>
+     <script>
+       window.onload = function() { applypopups(); }
+     </script>
+ </head>
+
+<body>
+
+#set $sunrise_ts = $almanac.sun.rise.raw
+#set $sunset_ts = $almanac.sun.set.raw
+#set $daylight_s = $sunset_ts - $sunrise_ts
+#set $daylight_hours = int($daylight_s / 3600)
+#set $daylight_minutes = int(($daylight_s % 3600) / 60)
+#set $daylight_h_str = "%02d" % $daylight_hours
+#set $daylight_m_str = "%02d" % $daylight_minutes
+
+ <div id='hes11'>
+    #include $Extras.header
+    #include $Extras.cwarn
+#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
+
+#set $summary = $forecast.weather_summary($Extras.forecast_service)
+
+#set $dd = $forecast.label('Weather', $summary.windDir)
+#set $wind_text = $windT_dir_dict.get($dd)
+
+  <div id='hescontainer'>
+    <div id='popupanchor' style='float:left'></div>
+       <!-- <div id='popupanchor' style='position:absolute; left:350px; top:80px;'></div> -->
+
+    <div class='hes'>
+         <div class='hesbox'>
+             <table class="hes_prog">
+                 <tr>
+                     <td class='hes1_wol'>
+   #if $summary.clouds is not None
+        #set $simg = 'xicons/' + $summary.clouds + '.png'
+                         <a href='forecastT.html'><img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
+   #end if
+                     </td>
+                     <td class='hes1_wol'>
+   #for $k in $summary.precip
+        #set $precip_img = 'xicons/' + $k + '.png'
+                         <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+   #end for
+                     </td>
+                     <td class='hes1_wol'>
+   #for $k in $summary.obvis
+        #set $obvis_img = 'xicons/' + $k + '.png'
+                         <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
+   #end for
+                     </td>
+                 </tr>
+             </table>
+             <b>Zambretti:</b> $forecast.label('Zambretti', $forecast.zambretti.code)<br />
+             Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
+             <hr />      
+             <p><b>Weather Underground: </b>
+             Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
+             Wind aus<b>&nbsp;$wind_text&nbsp;</b>mit&nbsp;$forecast.label('Weather', $summary.windSpeed).&nbsp;
+             Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp; und&nbsp;
+             $forecast.label('Weather', $summary.tempMax).&nbsp;
+             Luftfeuchtigkeit von ca.&nbsp;$forecast.label('Weather', $summary.humidity).&nbsp;
+             </p>
+             <hr />
+             <p><b>Vantage Pro2:</b>
+             $latest($data_binding='wdsupp_binding').vantageForecastRule.raw
+			 </p>
+             <hr />
+             <p>Wetter-Cam Blick SW</p>
+             <img src="xicons/wet/snapshot.jpg" alt="Wetterstation" style="width:300px; height:175px;" />
+         </div>
+     </div> <!-- ende Prognose -->
+
+#if $day.extraTemp9.has_data
+     <div class="hes">
+         <div class='hesbox'>
+             <table class='hes_temp'>
+             <tr><td class='hes1_kopfa'>Carport<br /> bei 200cm</td>
+                 <td class='hes1_kopf' colspan='2'>Aktuell</td>
+                 <td class='hes1_kopf' colspan="2">Trend</td></tr>
+             <tr>
+                 <td class='hes1_bigval' colspan='3'><a href='dayCarport.png' class='popup'>$current.extraTemp9</a></td>
+    #if $trend.extraTemp9.raw < 0
+                 <td class="hes1_trendlo"> &#8681;</td>
+                 <td class='hes1_vallo'>$trend.extraTemp9.formatted</td>
+    #elif $trend.extraTemp9.raw == 0
+                 <td class="hes1_trendhi">=</td>
+                 <td class="hes1_valhi">$trend.extraTemp9.formatted</td>
+    #elif $trend.extraTemp9.raw > 0
+                 <td class="hes1_trendhi"> &#8679;</td>
+                 <td class='hes1_valhi'>$trend.extraTemp9.formatted</td>
+    #end if
+             </tr>
+             <tr>
+                 <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+                 <td><span class='hes1_m'>max</span></td>
+                 <td><span class='hes1_valhi'> $day.extraTemp9.max.formatted</span></td>
+                 <td><span class="hes1_m">min</span></td>
+                 <td><span class='hes1_vallo'>$day.extraTemp9.min.formatted</span></td>
+             </tr>
+             <tr>
+                 <td class='hes1_kopfb'>Werte<br />Gestern</td>
+                 <td><span class='hes1_m'>max</span></td>
+                 <td><span class='hes1_valhi'> $yesterday.extraTemp9.max.formatted</span></td>
+                 <td><span class="hes1_m">min</span></td>
+                 <td><span class='hes1_vallo'>$yesterday.extraTemp9.min.formatted</span></td>
+             </tr>
+             </table>
+			 <hr />
+             <img src="dayCarport.png" alt="carport-temp" style="width:300px; height:175px;" />
+         </div>
+     </div><!-- ende extraTemp9 carport kombi -->
+#end if
+
+#if $day.extraTemp4.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Garten<br /> bei 200cm</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayGartenTemp.png' class='popup'>$current.extraTemp4</a></td>
+    #if $trend.extraTemp4.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp4.formatted</td>
+    #elif $trend.extraTemp4.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp4.formatted</td>
+    #elif $trend.extraTemp4.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp4.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp4.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp4.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp4.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp4.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayGartenTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div><!-- ende extraTemp4 -->
+#end if
+
+#if $day.extraTemp7.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Garten<br /> bei 100cm</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayGartenTemp.png' class='popup'>$current.extraTemp7</a></td>
+    #if $trend.extraTemp7.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp7.formatted</td>
+    #elif $trend.extraTemp7.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp7.formatted</td>
+    #elif $trend.extraTemp7.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp7.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp7.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp7.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp7.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp7.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayGartenTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div><!-- ende extraTemp7 1m über Grund -->
+#end if
+
+#if $day.extraTemp5.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Garten<br /> bei 5 cm</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayBoden5.png' class='popup'>$current.extraTemp5</a></td>
+    #if $trend.extraTemp5.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp5.formatted</td>
+    #elif $trend.extraTemp5.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp5.formatted</td>
+    #elif $trend.extraTemp5.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp5.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp5.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp5.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+   <img src="dayBoden5.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div><!-- ende extraTemp5 5 cm über Grund -->
+#end if
+
+#if $day.extraTemp1.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Teich 0,75m³<br />bei 20cm</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayTeichTemp.png' class='popup'>$current.extraTemp1</a></td>
+    #if $trend.extraTemp1.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp1.formatted</td>
+    #elif $trend.extraTemp1.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp1</td>
+    #elif $trend.extraTemp1.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp1.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp1.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp1.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+   <img src="dayTeichTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp1 -->
+
+#if $day.extraTemp6.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Teich 22m³<br />bei 50cm</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayFischTemp.png' class='popup'>$current.extraTemp6</a></td>
+    #if $trend.extraTemp6.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp6.formatted</td>
+    #elif $trend.extraTemp6.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp6.formatted</td>
+    #elif $trend.extraTemp6.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp6.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp6.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'> $day.extraTemp6.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp6.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'> $yesterday.extraTemp6.min.formatted</span></td>
+    </tr>
+   </table>
+  <hr />
+             <img src="dayFischTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp6 -->
+
+#if $day.extraTemp2.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Teich 96m³<br />bei 50cm</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayBadTemp.png' class='popup'>$current.extraTemp2</a></td>
+    #if $trend.extraTemp2.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp2.formatted</td>
+    #elif $trend.extraTemp2.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp2.formatted</td>
+    #elif $trend.extraTemp2.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp2.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp2.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp2.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayBadTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp2 -->
+
+#if $day.extraTemp3.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Teich 96m³<br />bei 180cm</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayBadTemp.png' class='popup'>$current.extraTemp3</a></td>
+    #if $trend.extraTemp3.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.extraTemp3.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp3.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp3.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayBadTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extra temp3 -->
+
+#if $day.lighting.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Helligkeit<br />&nbsp;</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daylighting.png' class='popup'>$current.lighting</a></td>
+    #if $trend.lighting.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.lighting.formatted</td>
+    #elif $trend.lighting.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend.lighting.formatted</td>
+    #elif $trend.lighting.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.lighting.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi' colspan='2'>$day.lighting.max.formatted</td>
+     <td class='hes1_vallo'>&nbsp;</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi' colspan='2'>$yesterday.lighting.max.formatted</td>
+     <td class='hes1_vallo'>&nbsp;</td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daylighting.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div> 
+#end if
+<!-- ende lighting -->
+
+
+#if $day.soilTempO1.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur<br />5 cm im Boden</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daysoilT.png' class='popup'>$current.soilTempO1</a></td>
+    #if $trend.soilTempO1.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.soilTempO1.formatted</td>
+    #elif $trend.soilTempO1.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.soilTempO1.formatted</td>
+    #elif $trend.soilTempO1.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.soilTempO1.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.soilTempO1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.soilTempO1.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.soilTempO1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.soilTempO1.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysoilT.png" alt="Boden-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende soil temp O1 -->
+
+#if $day.soilTempO2.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur<br />10 cm im Boden</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daysoilT.png' class='popup'>$current.soilTempO2</a></td>
+    #if $trend.soilTempO2.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.soilTempO2.formatted</td>
+    #elif $trend.soilTempO2.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.soilTempO2.formatted</td>
+    #elif $trend.soilTempO2.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.soilTempO2.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.soilTempO2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.soilTempO2.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.soilTempO2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.soilTempO2.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysoilT.png" alt="Boden-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende soilTempO2 -->
+
+#if $day.soilTempO3.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur<br />20 cm im Boden</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daysoilT.png' class='popup'>$current.soilTempO3</a></td>
+    #if $trend.soilTempO3.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.soilTempO3.formatted</td>
+    #elif $trend.soilTempO3.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.soilTempO3.formatted</td>
+    #elif $trend.soilTempO3.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.soilTempO3.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.soilTempO3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.soilTempO3.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.soilTempO3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.soilTempO3.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysoilT.png" alt="Boden-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende soilTempO3 -->
+
+#if $day.soilTempO4.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur<br />50 cm im Boden</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daysoilT.png' class='popup'>$current.soilTempO4</a></td>
+    #if $trend.soilTempO4.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.soilTempO4.formatted</td>
+    #elif $trend.soilTempO4.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.soilTempO4.formatted</td>
+    #elif $trend.soilTempO4.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.soilTempO4.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.soilTempO4.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.soilTempO4.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.soilTempO4.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.soilTempO4.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysoilT.png" alt="Boden-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende soilTempO4 -->
+
+#if $day.soilTempO5.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Temperatur<br />1 m im Boden</td><td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daysoilT.png' class='popup'>$current.soilTempO5</a></td>
+    #if $trend.soilTempO5.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.soilTempO5.formatted</td>
+    #elif $trend.soilTempO5.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.soilTempO5.formatted</td>
+    #elif $trend.soilTempO5.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.soilTempO5.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day.soilTempO5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.soilTempO5.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday.soilTempO5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.soilTempO5.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysoilT.png" alt="Boden-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende soilTempO5 -->
+
+     <div class="hes">
+         <div class='hesbox'>
+             <table class='hes_temp'>
+                 <tr>
+		     <td class='hes1_kopfa'>Boden-<br /><a href='daysoilT.png' class='popup'>temperatur</a></td>
+                     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+                     <td class='hes1_kopf' colspan="2">Trend</td>
+				 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>5 cm über Grund</td>
+					 <td>$current.extraTemp5</td>
+   #if $trend.extraTemp5.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.extraTemp5.formatted</td>
+   #elif $trend.extraTemp5.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.extraTemp5.formatted</td>
+   #elif $trend.extraTemp5.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.extraTemp5.formatted</td>
+   #end if
+                 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>5 cm im Boden</td>
+					 <td>$current.soilTempO1</td>
+   #if $trend.soilTempO1.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.soilTempO1.formatted</td>
+   #elif $trend.soilTempO1.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.soilTempO1.formatted</td>
+   #elif $trend.soilTempO1.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.soilTempO1.formatted</td>
+   #end if
+                 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>10 cm im Boden</td>
+					 <td>$current.soilTempO2</td>
+   #if $trend.soilTempO2.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.soilTempO2.formatted</td>
+   #elif $trend.soilTempO2.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.soilTempO2.formatted</td>
+   #elif $trend.soilTempO2.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.soilTempO2.formatted</td>
+   #end if
+                 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>20 cm im Boden</td>
+					 <td>$current.soilTempO3</td>
+   #if $trend.soilTempO3.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.soilTempO3.formatted</td>
+   #elif $trend.soilTempO3.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.soilTempO3.formatted</td>
+   #elif $trend.soilTempO3.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.soilTempO3.formatted</td>
+   #end if
+                 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>50 cm im Boden</td>
+					 <td>$current.soilTempO4</td>
+   #if $trend.soilTempO4.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.soilTempO4.formatted</td>
+   #elif $trend.soilTempO4.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.soilTempO4.formatted</td>
+   #elif $trend.soilTempO4.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.soilTempO4.formatted</td>
+   #end if
+                 </tr>
+                 <tr>
+                     <td class='hes1_kopfc' colspan='2'>100 cm im Boden</td>
+					 <td>$current.soilTempO5</td>
+   #if $trend.soilTempO5.raw < 0
+                     <td class="hes1_trendlo"> &#8681;</td>
+                     <td class="hes1_vallo">$trend.soilTempO5.formatted</td>
+   #elif $trend.soilTempO5.raw == 0
+                     <td class="hes1_trendhi"><b>=</b></td>
+                     <td class="hes1_valhi">$trend.soilTempO5.formatted</td>
+   #elif $trend.soilTempO5.raw > 0
+                     <td class="hes1_trendhi"> &#8679;</td>
+                     <td class="hes1_valhi">$trend.soilTempO5.formatted</td>
+   #end if
+                     </tr>
+                 </table>
+             </div>
+         </div> <!-- end Boden Temperatur -->
+
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Boden/Blatt<br /> 
+                              Sensoren Davis</td></tr>
+   <tr><td><a href='index1.html'> weiter</a></td></tr>
+  </table>
+ </div>
+</div> <!-- end owfs -->
+
+
+</div> <!-- ende container -->
+
+     #include $Extras.footer
+
+ </div> 
+</body>
+
+</html>
+
+

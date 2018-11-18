@@ -1,0 +1,151 @@
+#errorCatcher Echo
+##    $Revision: 731 $
+##    $Author: tkeffer $
+##    $Date: 2012-11-03 12:11:50 -0700 (Sat, 03 Nov 2012) $
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>$station.location Jährliche Zusammenstellung</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+   <div id="container">
+
+    #include $Extras.header
+
+      <div id="stats_group">
+
+        #set global $werte = $year
+        #set global $wertename = 'Kalenderjahr'
+        #set global $wertum = ' am'
+        #include $Extras.cwerte
+
+        <p>&nbsp;</p>
+
+        <div class="stats">
+          <div class="stats_header">
+            Regen im Jahr seit (1. $station.rain_year_str Start)
+          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td class="stats_label">
+                  Regen Total<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rain.sum
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label"> 
+                  Regenintensität (max)<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rainRate.max &nbsp;&nbsp; am &nbsp;&nbsp; $rainyear.rainRate.maxtime
+                </td>
+              </tr>
+            </tbody>
+          </table>
+    </div> <!-- End class "stats" -->
+
+   </div> <!-- End class "stats_group" -->
+
+   <div id="content">
+    <div class="header">
+     <h3>J&auml;hrliche Statistik und Diagramme  <a href="year-table.html">/ Tabelle</a></h3>
+    </div>
+    <div id="plots">
+     <img src="yeartemp.png" alt="temperatures" />
+     <img src="yearapptemp.png" alt="gefuehlt" />
+     <img src="yearwindchill.png" alt="windchill" />
+     <img src="yearheatindex.png" alt="heatindex" />
+     <img src="yearhumid.png"     alt="humidity" />
+     <img src="yearabsF.png" alt="absoluteFeuchtigkeit" />
+     <img src="yearbarometer.png" alt="barometer"/>
+     <hr />
+     <img src="yearrain.png" alt="rain" />
+     <img src="yearsnow.png" alt="Schnee" />
+     <img src="yearET.png" alt="ET" />
+     <hr />
+     <img src="yearwind.png" alt="wind" />
+     <img src="yearwinddir.png" alt="Hi Wind" />
+     <img src="yearwindvec.png" alt="Wind Vector" />
+     <hr />
+     <img src="yearGartenTemp.png" alt="Carport/Garten" />
+     <img src="yearTeichTemp.png" alt="GartenTeich" />
+     <img src="yearBadTemp.png" alt="Schwimmteich" />
+     <hr />
+     <img src="yearlighting.png" alt="Helligkeit" />
+     <img src="yearradiation.png" alt="Radiation" />
+     <img src="yearsun.png" alt="Sonnenstunden" />
+     <img src="yearuv.png" alt="UV-Index" />
+     <hr />
+     <img src="yearBoden5.png" alt="Bodentemperatur" />
+     <img src="yearsoilT.png" alt="OWFS Boden" />
+     <img src="yearsoilD.png" alt="Davis Boden" />
+     <img src="yearsoilF.png" alt="Bodenfeuchte" />
+     <hr />
+     <img src="yearleafW.png" alt="Blatt Feuchte" />
+     <img src="yearleafT.png" alt="Blatt Temperatur" />
+     <hr />
+     <img src="yearAir.png" alt="LuftGuete" />
+     <img src="yearHCHO.png" alt="Luft hcho" />
+     <img src="yearGas.png" alt="Luft gas" />
+     <img src="yearGasC.png" alt="Luft gas C" />
+     <img src="yearPM10.png" alt="Luft 10ppm" />
+     <img src="yearPM25.png" alt="Luft 2,5ppm" />
+     <hr />
+     <img src="yearinTemp.png" alt="Inside TEmp" />
+     <img src="yearinHumid.png" alt="InsideHumid" />
+     <img src="yearindew.png" alt="Inside dewpoint" />
+     <hr />
+     <img src="yearSound.png" alt="Sound" />
+     <hr />
+     <img src="yearcloudbase.png" alt="Wolkenunterkante" />
+     <img src="yearwindrun.png" alt="Windrun" />
+     <img src="yearwindB.png" alt="Wind in Beaufort" />
+     <img src="yearDensity.png" alt="Luftdichte" />
+     <img src="yearWindDruck.png" alt="Winddruck" />
+     <hr />
+     <img src="yearBlitz.png" alt="Blitz" />
+     <hr />
+     <img src="yearVolt.png" alt="OWFS-Spannung" />
+     <img src="yearBate.png" alt="Spannung" />
+     <img src="yearStat.png" alt="ISS-Signal" />
+     <hr />
+     <img src="yearGeiger.png" alt="CPM Signal" />
+     <img src="yearGeigerS.png" alt="h Signal" />
+    </div>
+   </div> <!-- End id "content" -->
+  </div> <!-- End id "container" -->
+
+  #include $Extras.footer
+
+</body>
+</html>

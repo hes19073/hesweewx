@@ -1,0 +1,409 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015- Hartmut Schweidler
+## $Id: index.html.tmpl 743 2015-05-16 12:40:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+   <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+   <meta name='viewport' content='width=device-width' />
+   <meta name="robots" content="all" />
+   <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+   <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
+                mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+   <meta name="author"           content="Hartmut Schweidler" />
+   <meta name="revisit-after"    content="65 minutes" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+   <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+   </script>
+
+   <title>$station.location Aktuelles Wetter</title>
+   <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+   <link rel='icon' type='image/png' href='favicon.ico' />
+   <script type='text/javascript' src='js/hesweewx.js'></script>
+   <script>
+       window.onload = function() { applypopups(); }
+   </script>
+
+   <script src="js/jquery-1.8.2.min.js"></script> 
+   <script src="js/highcharts.js"></script>
+   <script src="js/highcharts-more.js"></script>
+   <script src="js/themes/grid.js"></script>
+   <script>
+	$(document).ready(function() {
+
+             var options = {
+                 chart: {
+                         renderTo: 'Chart1',
+                         type: 'boxplot'
+			},
+			
+			title: {
+				text: '2013-16 Monat Temperatur Statistik'
+			},
+			
+			subtitle: {
+				text: '(Max, ∅Tag Max, Tag Mean, ∅Tag Min, Min)'
+			},
+			
+			legend: {
+				enabled: true
+			},
+		
+			xAxis: {
+				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+			},
+			
+			yAxis: {
+				minorTickInterval: 'auto',
+				minorTickLength: 0,
+				title:  {
+					text: 'Grad C'
+				}
+			},
+			
+			plotOptions: {
+				boxplot: {
+					fillColor: 'LightSteelBlue',
+					groupPadding: 0.1,
+					lineWidth: 2.5,
+					medianWidth: 2.5,
+					stemWidth: 2.5,
+					whiskerLength: '75%',
+					whiskerWidth: 2.5 
+				}
+			},
+			
+			tooltip: {
+				shared: true,
+				useHTML: true,
+				headerFormat: '<small>{point.key}</small><table cellspacing="0">',
+				pointFormat: '<tr><td style="color: {series.color}; text-align: left">{series.name} Max: </td>' + '<td><b>{point.high}&#176;C</b></td></tr>'
+				+ '<tr><td style="color: {series.color}; text-align: left">{series.name} Avg Max: </td>' + '<td><b>{point.q3}&#176;C</b></td></tr>'
+				+ '<tr><td style="color: {series.color}; text-align: left">{series.name} Mean: </td>' + '<td><b>{point.median}&#176;C</b></td></tr>'
+				+ '<tr><td style="color: {series.color}; text-align: left">{series.name} Avg Min: </td>' + '<td><b>{point.q1}&#176;C</b></td></tr>'
+				+ '<tr><td style="color: {series.color}; text-align: left">{series.name} Min: </td>' + '<td><b>{point.low}&#176;C</b></td></tr>',
+				footerFormat: '</table>',
+				valueDecimals: 1
+			},
+			
+			series: [{ name: '2013', pointPadding: 0.25 }, 
+                                 { name: '2014', pointPadding: 0.25 },
+                                 { name: '2015', pointPadding: 0.25 },
+                                 { name: '2016', pointPadding: 0.25 }]
+		};
+
+		$.getJSON('Data/Data-2013.json', function(data) {options.series[0].data = data; $.getJSON('Data/Data-2014.json', function(data) { options.series[1].data = data; $.getJSON('Data/Data-2015.json', function(data) { options.series[2].data = data; $.getJSON('Data/Data-2016.json', function(data) {options.series[3].data = data; var chart = new Highcharts.Chart(options); }); }); }); });
+
+	});	
+</script>
+<script>
+	$(document).ready(function() {
+
+		var options = {
+			chart: {
+				renderTo: 'Chart2',
+				type: 'column'
+			},
+			
+			title: {
+				text: '2014-16 Monatliche Regenmengen'
+			},
+			
+			legend: {
+				enabled: true
+			},
+		
+			xAxis: {
+				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+			},
+			
+			yAxis: {
+				minorTickInterval: 'auto',
+				minorTickLength: 0,
+				title:  {
+					text: 'mm'
+				}
+			},
+			
+			tooltip: {
+				shared: true,
+				valueDecimals: 0,
+				valueSuffix: 'mm'
+			},
+			
+			
+			series: [{
+				name: '2014'
+			}, {
+				name: '2015'
+			}, {    
+                                name: '2016'
+                        }]
+		};
+
+		$.getJSON('Data/Rain-2014.json', function(data) {
+			options.series[0].data = data;
+			$.getJSON('Data/Rain-2015.json', function(data) {
+				options.series[1].data = data;
+				$.getJSON('Data/Rain-2016.json', function(data) {
+					options.series[2].data = data;
+                       					var chart = new Highcharts.Chart(options);
+				});
+			});
+		});
+
+	});	
+</script>
+<script>
+	$(document).ready(function() {
+			
+		var options = {
+			colors: ['#82C6E3', '#058DC7', '#024664', '#A8DA98', '#50B432', '#204814', '#F49A76', '#ED561B', '#A63C11'],
+			
+			chart: {
+				renderTo: 'Chart3',
+				type: 'column'
+			},
+			
+			title: {
+				text: '2014-16 Monatliche Regentage'
+			},
+			
+			legend: {
+				width: 345,
+				itemWidth: 115
+			},
+		
+			xAxis: {
+				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+			},
+			
+			yAxis: {
+				minorTickInterval: 'auto',
+				minorTickLength: 0,
+				title:  {
+					text: 'Anzahl der Tage'
+				}
+			},
+			
+			tooltip: {
+				shared: true,
+				valueSuffix: ' Tage'
+			},
+			
+			 plotOptions: {
+                column: {
+					grouping: false,
+					shadow: false,
+					borderwidth: 0
+				}
+            },
+			
+			series: [{
+				name: '2014 Regen',
+				pointPadding: 0.35,
+				pointPlacement: -0.25
+			}, {
+				name: '2014 > 2.5mm ',
+				pointPadding: 0.35,
+				pointPlacement: -0.25
+			}, {
+				name: '2014 > 25.0mm',
+				pointPadding: 0.35,
+				pointPlacement: -0.25
+			}, {
+				name: '2015 Regen',
+				pointPadding: 0.35,
+				pointPlacement: 0
+			}, {
+				name: '2015 > 2.5mm ',
+				pointPadding: 0.35,
+				pointPlacement: 0
+			}, {
+				name: '2015 > 25.0mm',
+				pointPadding: 0.35,
+				pointPlacement: 0
+			}, {
+				name: '2016 Regen',
+				pointPadding: 0.35,
+				pointPlacement: 0.25
+			}, {
+				name: '2016 > 2.5mm ',
+				pointPadding: 0.35,
+				pointPlacement: 0.25
+			}, {
+				name: '2016 > 25.0mm',
+				pointPadding: 0.35,
+				pointPlacement: 0.25
+                        }]
+		};
+
+		$.getJSON('Data/RainTraceDay-2014.json', function(data) {
+			options.series[0].data = data;
+			$.getJSON('Data/RainDay-2014.json', function(data) {
+				options.series[1].data = data;
+				$.getJSON('Data/RainSoakDay-2014.json', function(data) {
+					options.series[2].data = data;
+					$.getJSON('Data/RainTraceDay-2015.json', function(data) {
+						options.series[3].data = data;
+						$.getJSON('Data/RainDay-2015.json', function(data) {
+							options.series[4].data = data;
+							$.getJSON('Data/RainSoakDay-2015.json', function(data) {
+								options.series[5].data = data;
+								$.getJSON('Data/RainTraceDay-2016.json', function(data) {
+									options.series[6].data = data;
+									$.getJSON('Data/RainDay-2016.json', function(data) {
+										options.series[7].data = data;
+										$.getJSON('Data/RainSoakDay-2016.json', function(data) {
+											options.series[8].data = data;
+                											var chart = new Highcharts.Chart(options);
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+
+	});	
+</script>
+<script>
+	$(document).ready(function() {
+
+		var options = {
+			chart: {
+				renderTo: 'Chart4',
+				type: 'column'
+			},
+			
+			title: {
+				text: '2014-16 Monatlich Sonnenstrahlung'
+			},
+			
+			legend: {
+				enabled: true
+			},
+		
+			xAxis: {
+				categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez']
+			},
+			
+			yAxis: {
+				minorTickInterval: 'auto',
+				minorTickLength: 0,
+				title:  {
+					text: 'Watt/m²'
+				}
+			},
+			
+			
+			tooltip: {
+				shared: true,
+				valueDecimals: 0,
+				valueSuffix: "W/m²"
+			},
+			
+			series: [{
+				name: '2014',
+			}, {
+				name: '2015',
+                        }, {
+                                name: '2016',
+			}]
+		};
+
+		$.getJSON('Data/Sun-2014.json', function(data) {
+			options.series[0].data = data;
+			$.getJSON('Data/Sun-2015.json', function(data) {
+				options.series[1].data = data;
+				$.getJSON('Data/Sun-2016.json', function(data) {
+					options.series[2].data = data;
+ 	         			var chart = new Highcharts.Chart(options);
+				});
+			});
+		});
+
+	});	
+</script>
+
+
+ </head>
+
+<body>
+ <div id='hes11'>
+
+ #include $Extras.header
+ #include $Extras.cwarn
+
+      <div id="stats_group">
+        
+        #set global $werte = $year
+        #set global $wertename = 'Kalenderjahr'
+        #set global $wertum = ' am'
+        #include $Extras.cwerte
+          
+        <p>&nbsp;</p>
+          
+        <div class="stats">
+          <div class="stats_header">
+            Regen im Jahr seit (1. $station.rain_year_str Start)
+          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td class="stats_label">
+                  Regen Total<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rain.sum
+                </td>
+              </tr>
+              <tr>
+                <td class="stats_label">
+                  Regenintensität (max)<br />&nbsp;
+                </td>
+                <td class="stats_data">
+                  $rainyear.rainRate.max &nbsp;&nbsp; am &nbsp;&nbsp; $rainyear.rainRate.maxtime
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div> <!-- End class "stats" -->
+      </div> <!-- End class "stats_group" -->
+
+
+
+    <div id="content">
+      <div id="Chart1">
+        Chart 1
+      </div>  <!-- End id "Chart1" -->
+      
+      <div id="Chart2">
+        Chart 2
+      </div>  <!-- End id "Chart2" -->			
+
+      <div id="Chart3">
+        Chart 3
+      </div>  <!-- End id "Chart3" -->
+
+      <div id="Chart4">
+        Chart 4
+      </div>  <!-- End id "Chart4" -->
+    </div> <!-- ende content -->
+   </div> <!-- ende container -->
+
+     #include $Extras.footer
+ </div> 
+</body>
+
+</html>

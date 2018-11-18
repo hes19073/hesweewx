@@ -1,0 +1,167 @@
+## template for json data to feed the steel series gauges
+## $Id: gauge-data.txt.tmpl 1279 2015-03-01 15:49:03Z mwall $
+## by Matthew Wall on flight 868 ;)
+## 31dec2014
+## Updated 25jan2015 by M Crossley, changed cloudbase: to cloudbasevalue:
+
+## definitions for the tags can be found here:
+## http://wiki.sandaysoft.com/a/Webtags
+##
+## the following fields are not directly available from weewx:
+##
+## cloudbaseunit - defined in this template as ft
+
+
+##import math
+#import time
+
+## get the time in formats that we need later
+#set $ts=float($current.dateTime.raw)
+#set $timeutc=time.strftime("%Y,%m,%d,%H,%M,%S", time.gmtime($ts))
+
+## see if the station has contact with the sensor
+#set $sensorContactLost = 0
+
+## calculate today's highest beaufort based on wind speed in knots
+#if $varExists('day.windSpeed') and $day.windSpeed is not None
+#if $unit.unit_type.windSpeed == 'mile_per_hour'
+#set $kts = $day.windSpeed.max.raw * 0.8689762
+#elif $unit.unit_type.windSpeed == 'km_per_hour'
+#set $kts = $day.windSpeed.max.raw * 0.539956
+#elif $unit.unit_type.windSpeed == 'meter_per_second'
+#set $kts = $day.windSpeed.max.raw * 1.943844
+#elif $unit.unit_type.windSpeed == 'knot'
+#set $kts = $day.windSpeed.max.raw
+#else
+#set $kts = 0
+#end if
+#if $kts < 1
+#set $beaufort = 0
+#elif $kts < 4
+#set $beaufort = 1
+#elif $kts < 7
+#set $beaufort = 2
+#elif $kts < 11
+#set $beaufort = 3
+#elif $kts < 17
+#set $beaufort = 4
+#elif $kts < 22
+#set $beaufort = 5
+#elif $kts < 28
+#set $beaufort = 6
+#elif $kts < 34
+#set $beaufort = 7
+#elif $kts < 41
+#set $beaufort = 8
+#elif $kts < 48
+#set $beaufort = 9
+#elif $kts < 56
+#set $beaufort = 10
+#elif $kts < 64
+#set $beaufort = 11
+#else
+#set $beaufort = 12
+#end if
+#else
+#set $beaufort = 'N/A'
+#end if
+
+## if forecasting is installed, report the Zambretti forecast
+#set $fc = $latest($data_binding='wdsupp_binding').vantageForecastRule.raw
+
+#set $t_trend = $trend(time_delta=3600).outTemp.formatted
+#if $t_trend is None
+#set $t_trend = 0
+#end if
+
+#set $p_trend = $trend(time_delta=10800).barometer.formatted
+#if $p_trend is None
+#set $p_trend = 0
+#end if
+
+#set $rainold = $lastrain_day.format('%Y-%m-%d %H:%M')
+
+##set $windrosedata = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+
+{
+           "timeUTC":"$timeutc",
+              "date":"$current.dateTime.format('%Y.%m.%d %H:%M')",
+        "dateFormat":"y.m.d h:m",
+ "SensorContactLost":"0",
+          "tempunit":"$unit.label.outTemp",
+          "windunit":"$unit.label.windSpeed",
+         "pressunit":"$unit.label.barometer",
+          "rainunit":"$unit.label.rain",
+       "windrununit":" km",
+     "cloudbaseunit":" m",
+              "temp":"$current.outTemp.formatted",
+            "tempTL":"$day.outTemp.min.formatted",
+            "tempTH":"$day.outTemp.max.formatted",
+           "TtempTL":"$day.outTemp.mintime",
+           "TtempTH":"$day.outTemp.maxtime",
+         "temptrend":"$t_trend",
+            "intemp":"$current.inTemp.formatted",
+               "hum":"$current.outHumidity.formatted",
+             "humTL":"$day.outHumidity.min.formatted",
+             "humTH":"$day.outHumidity.max.formatted",
+            "ThumTL":"$day.outHumidity.mintime",
+            "ThumTH":"$day.outHumidity.maxtime",
+             "inhum":"$current.inHumidity.formatted",
+               "dew":"$current.dewpoint.formatted",
+        "dewpointTL":"$day.dewpoint.min.formatted",
+        "dewpointTH":"$day.dewpoint.max.formatted",
+       "TdewpointTL":"$day.dewpoint.mintime",
+       "TdewpointTH":"$day.dewpoint.maxtime",
+            "wchill":"$current.windchill.formatted",
+          "wchillTL":"$day.windchill.min.formatted",
+         "TwchillTL":"$day.windchill.mintime",
+         "heatindex":"$current.heatindex.formatted",
+       "heatindexTH":"$day.heatindex.max.formatted",
+      "TheatindexTH":"$day.heatindex.maxtime",
+           "apptemp":"$current.appTemp.formatted",
+         "apptempTL":"$day.appTemp.min.formatted",
+         "apptempTH":"$day.appTemp.max.formatted",
+        "TapptempTL":"$day.appTemp.mintime",
+        "TapptempTH":"$day.appTemp.maxtime",
+           "humidex":"$current.humidex.formatted",
+             "press":"$current.barometer.formatted",
+            "pressL":"$year.barometer.min.formatted",
+            "pressH":"$year.barometer.max.formatted",
+           "pressTL":"$day.barometer.min.formatted",
+           "pressTH":"$day.barometer.max.formatted",
+          "TpressTL":"$day.barometer.mintime",
+          "TpressTH":"$day.barometer.maxtime",
+     "presstrendval":"$p_trend",
+             "rfall":"$day.rain.sum.raw",
+             "rrate":"$current.rainRate.raw",
+           "rrateTM":"$day.rainRate.max.raw",
+          "TrrateTM":"$day.rainRate.maxtime",
+      "hourlyrainTH":"$hour.rain.max.raw",
+     "ThourlyrainTH":"$hour.rain.maxtime",
+    "LastRainTipISO":"$rainold",
+           "wlatest":"$current.windSpeed.formatted",
+            "wspeed":"$hour.windSpeed.avg.formatted",
+            "windTM":"$day.windGust.max.formatted",
+             "wgust":"$current.windGust.formatted",
+           "wgustTM":"$hour.windGust.max.formatted",
+          "TwgustTM":"$day.windGust.maxtime",
+           "bearing":"$current.windDir.formatted",
+        "avgbearing":"$day.wind.vecdir.formatted",
+         "bearingTM":"$day.wind.gustdir.formatted",
+"BearingRangeFrom10":"$current.windDir.formatted",
+  "BearingRangeTo10":"$current.windGustDir.formatted",
+        "domwinddir":"$day.wind.vecdir.ordinal_compass",
+      "WindRoseData":$windrosedata,
+           "windrun":"$day.windrun.sum.formatted",
+         "Tbeaufort":"F$beaufort",
+                "UV":"$current.UV",
+              "UVTH":"$day.UV.max.formatted",
+          "SolarRad":"$current.radiation.formatted",
+           "SolarTM":"$day.radiation.max.formatted",
+   "CurrentSolarMax":"$current.maxSolarRad.formatted",
+    "cloudbasevalue":"$current.cloudbase.formatted",
+          "forecast":"$fc",
+           "version":"$station.version",
+             "build":"hes",
+               "ver":"12"
+}

@@ -1,0 +1,187 @@
+#errorCatcher Echo
+## $Id: wetter.html.tmpl  2015-03-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Wetterbilder</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+
+  </head>
+
+<body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
+ <div id="hes11"> 
+
+  #include $Extras.header
+
+  <div id="stats_group">
+
+   #set global $period1 = $yesterday($data_binding="weewx_binding")
+   #set global $period2 = $day($data_binding="weewx_binding")
+   #set global $period1Name = "Gestern"
+   #set global $period2Name = "Heute"
+
+   #include $Extras.chart
+
+  </div> <!--End class "stats_group" -->  
+
+ <div id="content">        
+  <div id="about">
+   <div class="header">Wetterbilder der letzten sieben Tage</div>
+   <p>Wetterbilder von 04:00 Uhr bis 23:00 Uhr im 1 min Abstand aufgenommen, 
+      als Video im mp4 und ogv-Format zusammengefasst (ca. 45 s Laufzeit). 
+      <br />Bildformat 640px x 368px aufgenommen mit einer IP-Kamera.</p>
+   <table id='all'>
+    <tbody>
+     <tr>
+      <td>Datum</td>
+      <td class="allstats_label">06:00</td>
+      <td class="allstats_label">09:00</td>
+      <td class="allstats_label">12:00</td>
+      <td class="allstats_label">15:00</td>
+      <td class="allstats_label">18:00</td>
+      <td class="allstats_label">21:00</td>
+     </tr>
+
+#for $day in $seven_day.days
+
+     #set $bild1 = "06-00"
+     #set $bild2 = "09-00"
+     #set $bild3 = "12-00"
+     #set $bild4 = "15-00"
+     #set $bild5 = "18-00"
+     #set $bild6 = "21-00"
+     #set $video = $day.dateTime.format("%Y%m%d")
+     #set $bild0 = $day.dateTime.format("%Y%m%d")
+     #set $wetter = $current.dateTime.format("%Y%m%d%H%M%S")
+
+    <tr>
+     <td>$day.dateTime.format("%d.%m.%Y") <br />
+      #if $current.dateTime.format("%d.%m.%Y") == $day.dateTime.format("%d.%m.%Y")
+          kein Video
+      #else
+          #set $vimg = 'wetter/video/wetter_' + $video + '.ogv'
+          #set $vimg1 = 'wetter/video/wetter_' + $video + '.mp4'
+          <a href='$vimg' >Video ogv </a>  <br />
+          <a href='$vimg1' >Video mp4 </a>
+      #end if
+     </td>
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild1
+     #if $ansicht < $wetter
+          #set $bimg1 = 'wetter/wetter_' + $bild0 + '_' + $bild1 + '.jpg'
+          <a href='$bimg1'>
+          <img src='$bimg1' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>
+
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild2
+     #if $ansicht < $wetter
+          #set $bimg2 = 'wetter/wetter_' + $bild0 + '_' + $bild2 + '.jpg'
+          <a href='$bimg2'>
+          <img src='$bimg2' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>                
+
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild3
+     #if $ansicht < $wetter
+          #set $bimg3 = 'wetter/wetter_' + $bild0 + '_' + $bild3 + '.jpg'
+          <a href='$bimg3'>
+          <img src='$bimg3' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>
+
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild4
+     #if $ansicht < $wetter
+          #set $bimg4 = 'wetter/wetter_' + $bild0 + '_' + $bild4 + '.jpg'
+          <a href='$bimg4'>
+          <img src='$bimg4' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>
+
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild5
+     #if $ansicht < $wetter
+          #set $bimg5 = 'wetter/wetter_' + $bild0 + '_' + $bild5 + '.jpg'  
+          <a href='$bimg5'>
+          <img src='$bimg5' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>
+
+     <td class="allstats_data">
+     #set $ansicht = $bild0 + $bild6
+     #if $ansicht < $wetter
+          #set $bimg6 = 'wetter/wetter_' + $bild0 + '_' + $bild6 + '.jpg'
+          <a href='$bimg6'>
+          <img src='$bimg6' width="120" height="90" alt="Wetter"></a>
+     #else
+         noch kein Bild<br />verfügbar
+     #end if
+     </td>
+    </tr>
+#end for
+   </tbody>
+  </table>
+
+ </div>
+ <p>&nbsp;</p>
+ </div> <!-- end id "about" -->
+
+  #include $Extras.footer
+
+</div>
+</body>
+
+</html>

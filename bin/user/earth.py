@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # $Id: earth.py 1651 2018-09-01 12:10:37Z hes $
+#
+# original by Pat O'Brien, August 19, 2018
+#
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
 

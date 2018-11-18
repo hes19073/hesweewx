@@ -1,0 +1,116 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2015 Hartmut Schweidler
+## $Id: tagundnacht.html.tmpl  2015-03-12 23:24:18Z hes $
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+ <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <meta name="robots" content="all" />
+    <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+    <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+    <meta name="author"           content="Hartmut Schweidler" />
+    <meta name="revisit-after"    content="5 min" />
+    <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+    <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+     <script>
+        document.createElement("header");
+        document.createElement("nav");
+        document.createElement("section");
+        document.createElement("footer");
+     </script>
+
+    <title>$station.location Tag und Nacht</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script src='hesweewx.js'></script>
+
+  </head>
+
+<body>
+ <div id="hes11"> 
+   #include $Extras.header
+  <div id="stats_group">
+    #include $Extras.current
+  </div> <!--End class "stats_group" -->  
+  <div id="content">        
+   <div id="about">
+    <div class="header">Regen Kalender</div>
+     <table>
+      <tr>
+       <td>Regen letzte Messung</td><td>$current.rain</td>
+       <td>Regen letzte 5 Minuten</td><td>$ago5rain</td>
+      </tr>
+      <tr>
+       <td>Regen letzte 10 Minuten</td><td>$ago10rain</td>
+       <td>Regen letzte 15 Minuten</td><td>$ago15rain</td>
+      </tr>
+      <tr>
+       <td>Regen letzte 20 Minuten</td><td>$ago20rain</td>
+       <td>Regen letzte 30 Minuten</td><td>$ago30rain</td>
+      </tr>
+      <tr>
+       <td>Regen letzte 45 Minuten</td><td>$ago45rain</td>
+       <td>Regen letzten Stunde</td><td>$ago60rain</td>
+      </tr>
+      <tr>
+       <td>Regen letzten 1.5 Stunden</td><td>$ago90rain</td>
+       <td>Regen letzten 1.45 Stunden</td><td>$ago105rain</td>
+      </tr>
+      <tr>
+       <td>Regen letzten 2 Stunden</td><td>$ago120rain</td>
+       <td>letzter Regen am</td><td>$last_rain</td>
+      </tr>
+      <tr>
+       <td>Regentage im Monat</td><td>$month_rainy_days</td>
+       <td>letzter Regen am</td><td>$last_rain</td>
+      </tr>
+      <tr>
+       <td>Monat Trocken</td><td>$month_con_dry_days</td>
+       <td>Start am</td><td>$month_con_dry_days_time</td>
+      </tr>
+      <tr>
+       <td>Monat Feucht</td><td>$month_con_wet_days</td>
+       <td>Start am</td><td>$month_con_wet_days_time</td>
+      </tr>
+      <tr>
+       <td>Jahr Trocken</td><td>$year_con_dry_days</td>
+       <td>Start am</td><td>$year_con_dry_days_time</td>
+      </tr>
+      <tr>
+       <td>Jahr Feucht</td><td>$year_con_wet_days</td>
+       <td>Start am</td><td>$year_con_wet_days_time</td>
+      </tr>
+      <tr>
+       <td>Allzeit Trocken</td><td>$alltime_con_dry_days</td>
+       <td>Start am</td><td>$alltime_con_dry_days_time</td>
+      </tr>
+      <tr>
+       <td>Allzeit Feucht</td><td>$alltime_con_wet_days</td>
+       <td>Start am</td><td>$alltime_con_wet_days_time</td>
+      </tr>
+      <tr>
+       <td>Vorjahr Monat </td><td>$rain_this_time_last_month</td>
+       <td>Vorjahr</td><td>$rain_this_time_last_year</td>
+      </tr>
+      <tr>
+       <td>1 Stunde Regen</td><td>$maxHourRainToday</td>
+       <td>Start am</td><td>$maxHourRainTodayTime</td>
+      </tr>
+
+
+
+
+
+    </table>
+   </div> <!-- end id "about" -->
+  </div>  <!-- end id "content" -->
+<!-- </div> -->
+
+  #include $Extras.footer
+
+
+</body>
+
+</html>

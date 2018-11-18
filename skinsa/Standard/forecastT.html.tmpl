@@ -1,0 +1,269 @@
+## forecast for weewx - Copyright 2012-2013 Matthew Wall
+## forecast.html.tmpl 674 2013-10-12 03:48:37Z mwall $
+#errorCatcher Echo
+#encoding UTF-8
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width' />
+    <title>$station.location Vorschau</title>
+    <link rel='stylesheet' type='text/css' href='css/hesweewx.css'/>
+    <link rel='stylesheet' type='text/css' href='css/forecast.css'/>
+    <link rel='stylesheet' type='text/css' href='css/forecast_iconic.css'/>
+    <link rel='icon' type='image/png' href='favicon.ico' />
+    <script src='js/cookies.js'></script>
+    <script src='js/hesweewx.js'></script>
+    <script>
+      window.onload = function() { applypopups(); }
+    </script>
+
+<style>
+.navigation {
+  padding-bottom: 15px;
+  float: right;
+}
+.fc_select {
+  padding-top: 15px;
+  padding-bottom: 10px;
+}
+.fc_pane {
+  display: none;
+}
+.fc_table {
+  display: none;
+}
+.fc_strip {
+}
+#graphPopup {
+  margin: 0px;
+  padding: 0px;
+  border: 1px solid #dddddd;
+}
+
+.btn {
+  font-size: 85%;
+  color: #207020;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background-color: #f0f0f0;
+  border: 1px solid #c0c0c0;
+  cursor: pointer;
+}
+.btn_selected {
+  font-size: 85%;
+  color: #207020;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background-color: #b0d0d0;
+  border: 1px solid #c0c0c0;
+  cursor: pointer;
+}
+</style>
+
+<script>
+var forecasts = [
+  'WU',
+  'OWM',
+];
+
+var fc_panes = ['dwd', 'table', 'strip', 'cmp', 'ico'];
+
+function choose_pane(id) {
+  set_cookie('weather.forecast.pane', id);
+  for(var i=0; i<fc_panes.length; i++) {
+    var c = document.getElementById('btn_'+fc_panes[i]);
+    if(c) c.className = (fc_panes[i] == id) ? 'btn_selected' : 'btn';
+    var g = document.getElementById('fc_pane_'+fc_panes[i]);
+    if(g) g.style.display = (fc_panes[i] == id) ? 'block' : 'none';
+  }
+}
+
+function choose_forecast_strip(fcID) {
+  set_cookie('weather.forecast.source', fcID);
+  populate_strip('forecast_strip', fcID);
+}
+
+function choose_forecast_table(fcID) {
+  set_cookie('weather.forecast.source', fcID);
+  for(var i=0; i<forecasts.length; i++) {
+    elem = document.getElementById(forecasts[i]);
+    if(elem) {
+      if(forecasts[i] == fcID) {
+        elem.style.display = 'inline';
+      } else {
+        elem.style.display = 'none';
+      }
+    }
+  }
+}
+
+function setup() {
+  var pane = get_cookie('weather.forecast.pane', 'dwd');
+  choose_pane(pane);
+  var source = get_cookie('weather.forecast.source', 'WU');
+  choose_forecast_strip(source);
+  var e = document.getElementById('strip_selector');
+  if(e) { e.value = source; }
+  choose_forecast_table(source);
+  var e = document.getElementById('table_selector');
+  if(e) { e.value = source; }
+}
+
+</script>
+
+</head>
+
+<body onload='setup();'>
+
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
+<div id="hes11">
+ <div id="container">
+   
+ #include $Extras.header
+            
+  <div id="stats_group">
+    #set global $period1 = $yesterday
+    #set global $period2 = $day
+    #set global $period1Name = "Gestern"
+    #set global $period2Name = "Heute"
+
+    #include $Extras.chart
+
+  </div> <!--End id "stats_group" -->
+
+  <div id="content">
+
+   <div id="about">
+    <div class="header">
+          <h2>Wetterprognose und Wettervorhersage</h2>
+          <p>für den Ort Klein Rogahn und die Region</p>
+    </div>
+   </div> <!-- ende about -->
+
+   <div class='navigation'>
+     <span class='btn' id='btn_dwd' href="#" onclick="choose_pane('dwd')">DWD</span>
+     <span class='btn' id='btn_table' href="#" onclick="choose_pane('table')">Tabelle</span>
+     <span class='btn' id='btn_strip' href="#" onclick="choose_pane('strip')">Zeile</span>
+     <span class='btn' id='btn_cmp' href="#" onclick="choose_pane('cmp')">weitere</span>
+     <span class='btn' id='btn_ico' href="#" onclick="choose_pane('ico')">ICON</span>
+   </div> <!-- ende navigation -->
+
+   <div id='fc_pane_dwd' class='fc_pane'>
+    <p>&nbsp;</p>
+     <h3>Vom Deutschen Wetterdienst DWD</h3>
+     <hr />
+    #include $Extras.tag0
+     <hr />
+    #include $Extras.tag1
+     <hr />
+    #include $Extras.tag2
+     <hr />
+    #include $Extras.tag3
+     <hr />
+    #include $Extras.tag4
+   </div> <!-- Text DWD -->
+
+   <div id='fc_pane_table' class='fc_pane'>
+    <p class='fc_select'>
+    <select id='table_selector' onchange='choose_forecast_table(value)'>
+     <option value="WU">Weather Underground</option>
+     <option value="OWM">Open WeatherMap</option>
+    </select>
+    </p>
+    <div id="WU" class='fc_table'>
+    #include $Extras.forecastWUT
+     <p>Stündliche Wettervorhersage</p>
+    #include $Extras.forecastWU
+     <hr />
+    </div>
+
+    <div id="OWM" class='fc_table'>
+    #include $Extras.forecastOWMT
+     <p>Stündliche Wettervorhersage</p>
+    #include $Extras.forecastOWM
+     <hr />
+    </div>
+   </div> <!-- tabelle -->
+
+   <div id='fc_pane_strip' class='fc_pane'>
+
+   #include "wu_strip.inc"
+   #include "owm_strip.inc"
+
+    <div class='fc_select'>
+     <select id='strip_selector' onchange='choose_forecast_strip(value)'>
+      <option value="WU">Weather Underground</option>
+      <option value="OWM">Open WeatherMap</option>
+     </select>
+    </div>
+
+    <div id='forecast_strip' class='fc_strip'></div>
+
+   </div> <!-- Strip -->
+
+   <div id='fc_pane_cmp' class='fc_pane'>
+    <p>Meteoblue &nbsp;</p>
+    <div>
+     <iframe src="https://www.meteoblue.com/de/wetter/widget/daily/klein-rogahn_deutschland_2888316?geoloc=fixed&days=7&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&coloured=coloured&pictoicon=1&maxtemperature=1&mintemperature=1&windspeed=1&windgust=1&winddirection=1&uv=1&humidity=1&precipitation=1&precipitationprobability=1&spot=1&layout=light" style="width: 378px;height: 442px"> </iframe>
+     <div> 
+     <!-- DO NOT REMOVE THIS LINK -->
+      <a href="https://www.meteoblue.com/de/wetter/vorhersage/woche/klein-rogahn_deutschland_2888316?utm_source=weather_widget&utm_medium=linkus&utm_content=daily&utm_campaign=Weather%2BWidget" target="_blank">meteoblue</a>
+     </div> 
+    </div>
+    <hr /> 
+    <p>yr.no</p>
+    <div style='width:100%; height:420px;'>
+        <img src="http://www.yr.no/place/Germany/Mecklenburg-Vorpommern/Klein_Rogahn/avansert_meteogram.png" alt='wetter' />
+        <p><a target="_top" href="http://yr.no">Quelle:  yr.no</a></p>
+    </div> 
+    <div>
+     $forecastHTML
+    </div>
+   </div> <!-- end CMP -->
+
+   <div id='fc_pane_ico' class='fc_pane'>
+    <p>&nbsp;</p>
+    <div>
+    <h3>Vorschau nach Weather Underground</h3>
+    #include $Extras.forecast_iconic
+    </div>
+   </div> <!-- ICON Ende -->
+
+  </div><!-- Ende containt -->
+ <!-- </div> --><!-- end container -->
+
+    #include $Extras.footer
+
+</div> <!-- hes11 -->
+</div>
+
+#include $Extras.cookie
+
+</body>
+
+</html>

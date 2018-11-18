@@ -1,0 +1,1066 @@
+## week-table.html.tmpl 662 2015-06-03 13:01:24Z hes $
+#errorCatcher Echo
+#encoding UTF-8
+<!doctype html>
+<html lang = "de">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>$station.location wöchentliche Wetterdaten</title>
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css" />
+    <link rel="stylesheet" type="text/css" href="css/weereport.css" />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <script type='text/javascript' src='js/hesweewx.js'></script>
+    
+  </head>
+
+<body>
+    
+#include $Extras.header
+
+      <div id="stats_group">
+        #set global $werte = $month
+        #set global $wertename = 'Aktueller Monat'
+        #set global $wertum = 'am'
+        #include $Extras.cwerte
+
+     </div> <!-- end stats_group -->
+
+<div id="contentwe">
+  <div class="mittetab">
+   <h3>Maximal-, Minimal- und Durchschnittswerten der letzten 30 Tage</h3>
+     <table id='report'>
+        <tr>
+          <td></td>
+          <td colspan='3' style="background-image: -moz-linear-gradient(left, #FC4D0D 0%, #0029E5 100%)">Lufttemperatur&nbsp;$unit.label.outTemp</td>
+          <td colspan='3' style="background-image: -moz-linear-gradient(left, #DDDBE1 0%, #794BD5 100%)">Luftfeuchte&nbsp;$unit.label.outHumidity</td>
+          <td colspan='3' style="background-image: -moz-linear-gradient(left, #F4FA58 0%, #A5DF00 100%)">Luftdruck&nbsp;$unit.label.barometer</td>
+          <td colspan='2' style="background-image: -moz-linear-gradient(left, #84ebff 0%, #001c5b 100%)">Regen&nbsp;$unit.label.rain</td>
+          <td colspan='3' style="background-image: -moz-linear-gradient(left, #D4D4FA 0%, #4646EB 100%)">Wind&nbsp;$unit.label.wind</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>&Oslash;</td><td>max</td><td>min</td>
+          <td>&Oslash;</td><td>max</td><td>min</td>
+          <td>&Oslash;</td><td>max</td><td>min</td>
+          <td>Summe</td><td>pro Stunde</td>
+          <td>max</td><td>&Oslash;</td><td>Richtung</td>
+        </tr>
+#for $day in $thirty_day.days
+  <tr>
+   <td>$day.dateTime.format("%d.%m.%Y")</td>
+  #if $day.outTemp.avg.raw is not None:
+   <td class="tab_data">$day.outTemp.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.outTemp.max.raw is not None:
+   #if $day.outTemp.max.raw < -51
+    <td class="hest1">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > -50 and $day.outTemp.max.raw < -15
+    <td class="hest2">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > -15 and $day.outTemp.max.raw < -11
+    <td class="hest3">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > -10 and $day.outTemp.max.raw < 1
+    <td class="hest4">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 0 and $day.outTemp.max.raw < 6
+    <td class="hest5">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 5 and $day.outTemp.max.raw < 11
+    <td class="hest6">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 10 and $day.outTemp.max.raw < 16
+    <td class="hest7">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 15 and $day.outTemp.max.raw < 21
+    <td class="hest8">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 20 and $day.outTemp.max.raw < 26
+    <td class="hest9">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 25 and $day.outTemp.max.raw < 31
+    <td class="hest10">$day.outTemp.max.formatted</td>
+   #else if $day.outTemp.max.raw > 30 and $day.outTemp.max.raw < 36
+    <td class="hest11">$day.outTemp.max.formatted</td>
+   #else
+    <td class="hest12">$day.outTemp.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+             
+  #if $day.outTemp.min.raw is not None:
+   #if $day.outTemp.min.raw < -51
+    <td class="hest1">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > -50 and $day.outTemp.min.raw < -15
+    <td class="hest2">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > -15 and $day.outTemp.min.raw < -11
+    <td class="hest3">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > -10 and $day.outTemp.min.raw < -6
+    <td class="hest4">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > -5 and $day.outTemp.min.raw < 1
+    <td class="hest5">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 0 and $day.outTemp.min.raw < 6
+    <td class="hest6">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 5 and $day.outTemp.min.raw < 11
+    <td class="hest7">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 10 and $day.outTemp.min.raw < 16
+    <td class="hest8">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 15 and $day.outTemp.min.raw < 21
+    <td class="hest9">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 20 and $day.outTemp.min.raw < 26
+    <td class="hest10">$day.outTemp.min.formatted</td>
+   #else if $day.outTemp.min.raw > 25 and $day.outTemp.min.raw < 36
+    <td class="hest11">$day.outTemp.min.formatted</td>
+   #else 
+    <td class="hest12">$day.outTemp.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.outHumidity.avg.raw is not None:
+      <td class="hest0">$day.outHumidity.avg.formatted</td>
+  #else
+      <td class="hest0">-</td>
+  #end if
+
+  #if $day.outHumidity.max.raw is not None:
+    #if $day.outHumidity.max.raw < 31
+      <td class="hest3">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 30 and $day.outHumidity.max.raw < 41
+      <td class="hest4">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 40 and $day.outHumidity.max.raw < 51
+      <td class="hest5">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 50 and $day.outHumidity.max.raw < 61
+      <td class="hest6">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 60 and $day.outHumidity.max.raw < 71
+      <td class="hest7">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 70 and $day.outHumidity.max.raw < 81
+      <td class="hest8">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 80 and $day.outHumidity.max.raw < 91
+      <td class="hest9">$day.outHumidity.max.formatted</td>
+    #else if $day.outHumidity.max.raw > 90 and $day.outHumidity.max.raw < 101
+      <td class="hest10">$day.outHumidity.max.formatted</td>
+    #else
+      <td class="hest0">$day.outHumidity.max.formatted</td>
+    #end if
+   #else
+      <td class="hest0">-</td>
+   #end if
+
+   #if $day.outHumidity.min.raw is not None:
+    #if $day.outHumidity.min.raw < 31
+      <td class="hest3">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 30 and $day.outHumidity.min.raw < 41
+      <td class="hest4">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 40 and $day.outHumidity.min.raw < 51
+      <td class="hest5">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 50 and $day.outHumidity.min.raw < 61
+      <td class="hest6">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 60 and $day.outHumidity.min.raw < 71
+      <td class="hest7">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 70 and $day.outHumidity.min.raw < 81
+      <td class="hest8">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 80 and $day.outHumidity.min.raw < 91
+      <td class="hest9">$day.outHumidity.min.formatted</td>
+    #else if $day.outHumidity.min.raw > 90 and $day.outHumidity.min.raw < 101
+      <td class="hest10">$day.outHumidity.min.formatted</td>
+    #else 
+      <td class="hest0">$day.outHumidity.min.formatted</td>
+    #end if
+   #else
+      <td class="hest0">-</td>
+   #end if
+##############
+
+ #if $day.barometer.avg.raw is not None:
+   <td class="hest0">$day.barometer.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.barometer.max.raw is not None:
+   #if $day.barometer.max.raw < 980
+    <td class="hest1">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 980 and $day.barometer.max.raw < 986
+    <td class="hest2">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 985 and $day.barometer.max.raw < 991
+    <td class="hest3">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 990 and $day.barometer.max.raw < 996
+    <td class="hest4">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 995 and $day.barometer.max.raw < 1001
+    <td class="hest5">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1000 and $day.barometer.max.raw < 1006
+    <td class="hest6">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1005 and $day.barometer.max.raw < 1011
+    <td class="hest7">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1010 and $day.barometer.max.raw < 1016
+    <td class="hest8">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1015 and $day.barometer.max.raw < 1021
+    <td class="hest9">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1020 and $day.barometer.max.raw < 1026
+    <td class="hest10">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1025 and $day.barometer.max.raw < 1031
+    <td class="hest11">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1030 and $day.barometer.max.raw < 1036
+    <td class="hest12">$day.barometer.max.formatted</td>
+   #else if $day.barometer.max.raw > 1035 and $day.barometer.max.raw < 1041
+    <td class="hest13">$day.barometer.max.formatted</td>
+   #else
+    <td class="hest14">$day.barometer.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.barometer.min.raw is not None:
+   #if $day.barometer.min.raw < 980
+    <td class="hest1">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 980 and $day.barometer.min.raw < 986
+    <td class="hest2">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 985 and $day.barometer.min.raw < 991
+    <td class="hest3">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 990 and $day.barometer.min.raw < 996
+    <td class="hest4">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 995 and $day.barometer.min.raw < 1001
+    <td class="hest5">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1000 and $day.barometer.min.raw < 1006
+    <td class="hest6">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1005 and $day.barometer.min.raw < 1011
+    <td class="hest7">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1010 and $day.barometer.min.raw < 1016
+    <td class="hest8">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1015 and $day.barometer.min.raw < 1021
+    <td class="hest9">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1020 and $day.barometer.min.raw < 1026
+    <td class="hest10">$day.barometer.min.formatted</td>
+   #else if $day.barometer.min.raw > 1025 and $day.barometer.min.raw < 1031
+    <td class="hest11">$day.barometer.min.formatted</td>
+   #else
+    <td class="hest12">$day.barometer.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.rain.sum.raw is not None:
+   #if $day.rain.sum.raw  > 0.1
+    <td class="hest1">$day.rain.sum.formatted</td>
+   #else if $day.rain.sum.raw < 0.1 and $day.rain.sum.raw < 2
+    <td class="hest2">$day.rain.sum.formatted</td>
+   #else if $day.rain.sum.raw < 2.1 and $day.rain.sum.raw < 4 
+    <td class="hest3">$day.rain.sum.formatted</td>
+   #else if $day.rain.sum.raw < 4.1 and $day.rain.sum.raw < 6 
+    <td class="hest4">$day.rain.sum.formatted</td>
+   #else if $day.rain.sum.raw < 6.1 and $day.rain.sum.raw < 8 
+    <td class="hest5">$day.rain.sum.formatted</td>
+   #else
+    <td class="hest6">$day.rain.sum.formatted</td>
+   #end if
+  #else
+    <td calss="hest0">-</td>
+  #end if
+ 
+  #if $day.rainRate.max.raw is not None:
+   #if $day.rainRate.max.raw  > 2
+    <td class="hest1">$day.rainRate.max.formatted</td>
+   #else if $day.rainRate.max.raw < 2.1 and $day.rainRate.max.raw < 12 
+    <td class="hest2">$day.rainRate.max.formatted</td>
+   #else if $day.rainRate.max.raw < 12.1 and $day.rainRate.max.raw < 22 
+    <td class="hest3">$day.rainRate.max.formatted</td>
+   #else if $day.rainRate.raw.raw < 22.1 and $day.rainRate.max.raw < 32 
+    <td class="hest4">$day.rainRate.max.formatted</td>
+   #else
+    <td class="hest5">$day.rainRate.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+ 
+  #if $day.wind.max.raw is not None: 
+    #if $day.wind.max.raw < 2
+      <td class="beaufort0">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 1 and $day.wind.max.raw < 6
+      <td class="beaufort1">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 5 and $day.wind.max.raw < 12
+      <td class="beaufort2">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 11 and $day.wind.max.raw < 20
+      <td class="beaufort3">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 19 and $day.wind.max.raw < 29
+      <td class="beaufort4">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 28 and $day.wind.max.raw < 39
+      <td class="beaufort5">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 38 and $day.wind.max.raw < 50
+      <td class="beaufort6">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 49 and $day.wind.max.raw < 62
+      <td class="beaufort7">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 61 and $day.wind.max.raw < 75
+      <td class="beaufort8">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 74 and $day.wind.max.raw < 89
+      <td class="beaufort9">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 88 and $day.wind.max.raw < 103
+      <td class="beaufort10">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 102 and $day.wind.max.raw < 118
+      <td class="beaufort11">$day.wind.max.formatted</td>
+    #else if $day.wind.max.raw > 117
+      <td class="beaufort12">$day.wind.max.formatted</td>
+    #end if
+   #else
+      <td class="hest0">-</td>
+   #end if
+   
+   #if $day.wind.avg.raw is not None:
+    #if $day.wind.avg.raw < 2
+      <td class="beaufort0">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 1 and $day.wind.avg.raw < 6
+      <td class="beaufort1">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 5 and $day.wind.avg.raw < 12
+      <td class="beaufort2">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 11 and $day.wind.avg.raw < 20
+      <td class="beaufort3">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 19 and $day.wind.avg.raw < 29
+      <td class="beaufort4">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 28 and $day.wind.avg.raw < 39
+      <td class="beaufort5">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 38 and $day.wind.avg.raw < 50
+      <td class="beaufort6">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 49 and $day.wind.avg.raw < 62
+      <td class="beaufort7">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 61 and $day.wind.avg.raw < 75
+      <td class="beaufort8">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 74 and $day.wind.avg.raw < 89
+      <td class="beaufort9">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 88 and $day.wind.avg.raw < 103
+      <td class="beaufort10">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 102 and $day.wind.avg.raw < 118
+      <td class="beaufort11">$day.wind.avg.formatted</td>
+    #else if $day.wind.avg.raw > 117
+      <td class="beaufort12">$day.wind.avg.formatted</td>
+    #end if
+   #else
+      <td class="hest0">-</td>
+   #end if
+   #if $day.wind.vecdir.raw is not None:
+      <td class="hest0">$day.wind.vecdir</td>
+   #else
+      <td>-</td>
+   #end if
+    </tr>
+#end for
+</table>
+
+<h4>Wassertemperatur der Teiche </h4>
+ <table id="reportteich">
+  <tr>
+   <td></td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Teich $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Schwimmteich $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Schwimmteich -1m $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">Gartenteich $unit.label.outTemp</td>
+  </tr>
+  <tr>
+   <td></td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+  </tr>
+#for $day in $thirty_day.days
+  <tr>
+   <td>$day.dateTime.format("%d.%m.%Y")</td>
+  #if $day.extraTemp1.avg.raw is not None:
+   <td class="tab_data">$day.extraTemp1.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp1.max.raw is not None:
+   #if $day.extraTemp1.max.raw < -51
+    <td class="hest1">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > -50 and $day.extraTemp1.max.raw < -15
+    <td class="hest2">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > -15 and $day.extraTemp1.max.raw < -11
+    <td class="hest3">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > -10 and $day.extraTemp1.max.raw < 1
+    <td class="hest4">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 0 and $day.extraTemp1.max.raw < 6
+    <td class="hest5">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 5 and $day.extraTemp1.max.raw < 11
+    <td class="hest6">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 10 and $day.extraTemp1.max.raw < 16
+    <td class="hest7">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 15 and $day.extraTemp1.max.raw < 21
+    <td class="hest8">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 20 and $day.extraTemp1.max.raw < 26
+    <td class="hest9">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 25 and $day.extraTemp1.max.raw < 31
+    <td class="hest10">$day.extraTemp1.max.formatted</td>
+   #else if $day.extraTemp1.max.raw > 30 and $day.extraTemp1.max.raw < 36
+    <td class="hest11">$day.extraTemp1.max.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp1.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+  #if $day.extraTemp1.min.raw is not None:
+   #if $day.extraTemp1.min.raw < -51
+    <td class="hest1">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > -50 and $day.extraTemp1.min.raw < -15
+    <td class="hest2">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > -15 and $day.extraTemp1.min.raw < -11
+    <td class="hest3">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > -10 and $day.extraTemp1.min.raw < -6
+    <td class="hest4">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > -5 and $day.extraTemp1.min.raw < 1
+    <td class="hest5">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 0 and $day.extraTemp1.min.raw < 6
+    <td class="hest6">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 5 and $day.extraTemp1.min.raw < 11
+    <td class="hest7">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 10 and $day.extraTemp1.min.raw < 16
+    <td class="hest8">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 15 and $day.extraTemp1.min.raw < 21
+    <td class="hest9">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 20 and $day.extraTemp1.min.raw < 26
+    <td class="hest10">$day.extraTemp1.min.formatted</td>
+   #else if $day.extraTemp1.min.raw > 25 and $day.extraTemp1.min.raw < 36
+    <td class="hest11">$day.extraTemp1.min.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp1.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+################# 1 ###############
+  #if $day.extraTemp2.avg.raw is not None:
+   <td class="tab_data">$day.extraTemp2.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+   
+  #if $day.extraTemp2.max.raw is not None:
+   #if $day.extraTemp2.max.raw < -51
+    <td class="hest1">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > -50 and $day.extraTemp2.max.raw < -15
+    <td class="hest2">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > -15 and $day.extraTemp2.max.raw < -11
+    <td class="hest3">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > -10 and $day.extraTemp2.max.raw < 1
+    <td class="hest4">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 0 and $day.extraTemp2.max.raw < 6
+    <td class="hest5">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 5 and $day.extraTemp2.max.raw < 11
+    <td class="hest6">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 10 and $day.extraTemp2.max.raw < 16
+    <td class="hest7">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 15 and $day.extraTemp2.max.raw < 21
+    <td class="hest8">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 20 and $day.extraTemp2.max.raw < 26
+    <td class="hest9">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 25 and $day.extraTemp2.max.raw < 31
+    <td class="hest10">$day.extraTemp2.max.formatted</td>
+   #else if $day.extraTemp2.max.raw > 30 and $day.extraTemp2.max.raw < 36
+    <td class="hest11">$day.extraTemp2.max.formatted</td>
+   #else 
+    <td class="hest12">$day.extraTemp2.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp2.min.raw is not None:
+   #if $day.extraTemp2.min.raw < -51
+    <td class="hest1">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > -50 and $day.extraTemp2.min.raw < -15
+    <td class="hest2">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > -15 and $day.extraTemp2.min.raw < -11
+    <td class="hest3">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > -10 and $day.extraTemp2.min.raw < -6
+    <td class="hest4">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > -5 and $day.extraTemp2.min.raw < 1
+    <td class="hest5">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 0 and $day.extraTemp2.min.raw < 6
+    <td class="hest6">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 5 and $day.extraTemp2.min.raw < 11
+    <td class="hest7">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 10 and $day.extraTemp2.min.raw < 16
+    <td class="hest8">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 15 and $day.extraTemp2.min.raw < 21
+    <td class="hest9">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 20 and $day.extraTemp2.min.raw < 26
+    <td class="hest10">$day.extraTemp2.min.formatted</td>
+   #else if $day.extraTemp2.min.raw > 25 and $day.extraTemp2.min.raw < 36
+    <td class="hest11">$day.extraTemp2.min.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp2.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+  #if $day.extraTemp3.avg.raw is not None:
+   <td class="tab_data">$day.extraTemp3.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+   
+  #if $day.extraTemp3.max.raw is not None:
+   #if $day.extraTemp3.max.raw < -51
+    <td class="hest1">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > -50 and $day.extraTemp3.max.raw < -15
+    <td class="hest2">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > -15 and $day.extraTemp3.max.raw < -11
+    <td class="hest3">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > -10 and $day.extraTemp3.max.raw < 1
+    <td class="hest4">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 0 and $day.extraTemp3.max.raw < 6
+    <td class="hest5">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 5 and $day.extraTemp3.max.raw < 11
+    <td class="hest6">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 10 and $day.extraTemp3.max.raw < 16
+    <td class="hest7">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 15 and $day.extraTemp3.max.raw < 21
+    <td class="hest8">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 20 and $day.extraTemp3.max.raw < 26
+    <td class="hest9">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 25 and $day.extraTemp3.max.raw < 31
+    <td class="hest10">$day.extraTemp3.max.formatted</td>
+   #else if $day.extraTemp3.max.raw > 30 and $day.extraTemp3.max.raw < 36
+    <td class="hest11">$day.extraTemp3.max.formatted</td>
+   #else 
+    <td class="hest12">$day.extraTemp3.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp3.min.raw is not None:
+   #if $day.extraTemp3.min.raw < -51
+    <td class="hest1">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > -50 and $day.extraTemp3.min.raw < -15
+    <td class="hest2">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > -15 and $day.extraTemp3.min.raw < -11
+    <td class="hest3">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > -10 and $day.extraTemp3.min.raw < -6
+    <td class="hest4">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > -5 and $day.extraTemp3.min.raw < 1
+    <td class="hest5">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 0 and $day.extraTemp3.min.raw < 6
+    <td class="hest6">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 5 and $day.extraTemp3.min.raw < 11
+    <td class="hest7">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 10 and $day.extraTemp3.min.raw < 16
+    <td class="hest8">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 15 and $day.extraTemp3.min.raw < 21
+    <td class="hest9">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 20 and $day.extraTemp3.min.raw < 26
+    <td class="hest10">$day.extraTemp3.min.formatted</td>
+   #else if $day.extraTemp3.min.raw > 25 and $day.extraTemp3.min.raw < 36
+    <td class="hest11">$day.extraTemp3.min.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp3.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+  #if $day.outTemp.avg.raw is not None:
+   <td class="tab_data">$day.outTemp.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+  #if $day.extraTemp6.max.raw is not None:
+   #if $day.extraTemp6.max.raw < -51
+    <td class="hest1">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > -50 and $day.extraTemp6.max.raw < -15
+    <td class="hest2">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > -15 and $day.extraTemp6.max.raw < -11
+    <td class="hest3">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > -10 and $day.extraTemp6.max.raw < 1
+    <td class="hest4">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 0 and $day.extraTemp6.max.raw < 6
+    <td class="hest5">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 5 and $day.extraTemp6.max.raw < 11
+    <td class="hest6">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 10 and $day.extraTemp6.max.raw < 16
+    <td class="hest7">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 15 and $day.extraTemp6.max.raw < 21
+    <td class="hest8">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 20 and $day.extraTemp6.max.raw < 26
+    <td class="hest9">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 25 and $day.extraTemp6.max.raw < 31
+    <td class="hest10">$day.extraTemp6.max.formatted</td>
+   #else if $day.extraTemp6.max.raw > 30 and $day.extraTemp6.max.raw < 36
+    <td class="hest11">$day.extraTemp6.max.formatted</td>
+   #else 
+    <td class="hest12">$day.extraTemp6.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp6.min.raw is not None:
+   #if $day.extraTemp6.min.raw < -51
+    <td class="hest1">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > -50 and $day.extraTemp6.min.raw < -15
+    <td class="hest2">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > -15 and $day.extraTemp6.min.raw < -11
+    <td class="hest3">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > -10 and $day.extraTemp6.min.raw < -6
+    <td class="hest4">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > -5 and $day.extraTemp6.min.raw < 1
+    <td class="hest5">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 0 and $day.extraTemp6.min.raw < 6
+    <td class="hest6">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 5 and $day.extraTemp6.min.raw < 11
+    <td class="hest7">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 10 and $day.extraTemp6.min.raw < 16
+    <td class="hest8">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 15 and $day.extraTemp6.min.raw < 21
+    <td class="hest9">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 20 and $day.extraTemp6.min.raw < 26
+    <td class="hest10">$day.extraTemp6.min.formatted</td>
+   #else if $day.extraTemp6.min.raw > 25 and $day.extraTemp6.min.raw < 36
+    <td class="hest11">$day.extraTemp6.min.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp6.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+  </tr>        
+#end for
+ </table>
+
+<h4> Bodentemperaturen</h4>
+
+ <table id="reportboden">
+<tr>
+   <td></td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei +5cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -5cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -10cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -20cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -50cm $unit.label.outTemp</td>
+   <td colspan='3' style="background-image: -moz-linear-gradient(left, #0099CC 0%, #FF6666 100%)">bei -100cm $unit.label.outTemp</td>
+  </tr>
+  <tr>
+   <td></td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+   <td>&Oslash;</td><td>max</td><td>min</td>
+  </tr>
+#for $day in $thirty_day.days
+  <tr>
+   <td>$day.dateTime.format("%d.%m.%Y")</td>
+
+  #if $day.extraTemp5.avg.raw is not None:
+   <td class="tab_data">$day.extraTemp5.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp5.max.raw is not None:
+   #if $day.extraTemp5.max.raw < -51
+    <td class="hest1">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > -50 and $day.extraTemp5.max.raw < -15
+    <td class="hest2">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > -15 and $day.extraTemp5.max.raw < -11
+    <td class="hest3">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > -10 and $day.extraTemp5.max.raw < 1
+    <td class="hest4">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 0 and $day.extraTemp5.max.raw < 6
+    <td class="hest5">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 5 and $day.extraTemp5.max.raw < 11
+    <td class="hest6">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 10 and $day.extraTemp5.max.raw < 16
+    <td class="hest7">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 15 and $day.extraTemp5.max.raw < 21
+    <td class="hest8">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 20 and $day.extraTemp5.max.raw < 26
+    <td class="hest9">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 25 and $day.extraTemp5.max.raw < 31
+    <td class="hest10">$day.extraTemp5.max.formatted</td>
+   #else if $day.extraTemp5.max.raw > 30 and $day.extraTemp5.max.raw < 36
+    <td class="hest11">$day.extraTemp5.max.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp5.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.extraTemp5.min.raw is not None:
+   #if $day.extraTemp5.min.raw < -51
+    <td class="hest1">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > -50 and $day.extraTemp5.min.raw < -15
+    <td class="hest2">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > -15 and $day.extraTemp5.min.raw < -11
+    <td class="hest3">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > -10 and $day.extraTemp5.min.raw < -6
+    <td class="hest4">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > -5 and $day.extraTemp5.min.raw < 1
+    <td class="hest5">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 0 and $day.extraTemp5.min.raw < 6
+    <td class="hest6">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 5 and $day.extraTemp5.min.raw < 11
+    <td class="hest7">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 10 and $day.extraTemp5.min.raw < 16
+    <td class="hest8">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 15 and $day.extraTemp5.min.raw < 21
+    <td class="hest9">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 20 and $day.extraTemp5.min.raw < 26
+    <td class="hest10">$day.extraTemp5.min.formatted</td>
+   #else if $day.extraTemp5.min.raw > 25 and $day.extraTemp5.min.raw < 36
+    <td class="hest11">$day.extraTemp5.min.formatted</td>
+   #else
+    <td class="hest12">$day.extraTemp5.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO1.avg.raw is not None:
+   <td class="tab_data">$day.soilTempO1.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO1.max.raw is not None:
+   #if $day.soilTempO1.max.raw < -51
+    <td class="hest1">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > -50 and $day.soilTempO1.max.raw < -15
+    <td class="hest2">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > -15 and $day.soilTempO1.max.raw < -11
+    <td class="hest3">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > -10 and $day.soilTempO1.max.raw < 1
+    <td class="hest4">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 0 and $day.soilTempO1.max.raw < 6
+    <td class="hest5">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 5 and $day.soilTempO1.max.raw < 11
+    <td class="hest6">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 10 and $day.soilTempO1.max.raw < 16
+    <td class="hest7">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 15 and $day.soilTempO1.max.raw < 21
+    <td class="hest8">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 20 and $day.soilTempO1.max.raw < 26
+    <td class="hest9">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 25 and $day.soilTempO1.max.raw < 31
+    <td class="hest10">$day.soilTempO1.max.formatted</td>
+   #else if $day.soilTempO1.max.raw > 30 and $day.soilTempO1.max.raw < 36
+    <td class="hest11">$day.soilTempO1.max.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO1.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO1.min.raw is not None:
+   #if $day.soilTempO1.min.raw < -51
+    <td class="hest1">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > -50 and $day.soilTempO1.min.raw < -15
+    <td class="hest2">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > -15 and $day.soilTempO1.min.raw < -11
+    <td class="hest3">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > -10 and $day.soilTempO1.min.raw < -6
+    <td class="hest4">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > -5 and $day.soilTempO1.min.raw < 1
+    <td class="hest5">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 0 and $day.soilTempO1.min.raw < 6
+    <td class="hest6">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 5 and $day.soilTempO1.min.raw < 11
+    <td class="hest7">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 10 and $day.soilTempO1.min.raw < 16
+    <td class="hest8">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 15 and $day.soilTempO1.min.raw < 21
+    <td class="hest9">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 20 and $day.soilTempO1.min.raw < 26
+    <td class="hest10">$day.soilTempO1.min.formatted</td>
+   #else if $day.soilTempO1.min.raw > 25 and $day.soilTempO1.min.raw < 36
+    <td class="hest11">$day.soilTempO1.min.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO1.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO2.avg.raw is not None:
+   <td class="tab_data">$day.soilTempO2.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO2.max.raw is not None:
+   #if $day.soilTempO2.max.raw < -51
+    <td class="hest1">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > -50 and $day.soilTempO2.max.raw < -15
+    <td class="hest2">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > -15 and $day.soilTempO2.max.raw < -11
+    <td class="hest3">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > -10 and $day.soilTempO2.max.raw < 1
+    <td class="hest4">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 0 and $day.soilTempO2.max.raw < 6
+    <td class="hest5">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 5 and $day.soilTempO2.max.raw < 11
+    <td class="hest6">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 10 and $day.soilTempO2.max.raw < 16
+    <td class="hest7">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 15 and $day.soilTempO2.max.raw < 21
+    <td class="hest8">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 20 and $day.soilTempO2.max.raw < 26
+    <td class="hest9">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 25 and $day.soilTempO2.max.raw < 31
+    <td class="hest10">$day.soilTempO2.max.formatted</td>
+   #else if $day.soilTempO2.max.raw > 30 and $day.soilTempO2.max.raw < 36
+    <td class="hest11">$day.soilTempO2.max.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO2.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO2.min.raw is not None:
+   #if $day.soilTempO2.min.raw < -51
+    <td class="hest1">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > -50 and $day.soilTempO2.min.raw < -15
+    <td class="hest2">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > -15 and $day.soilTempO2.min.raw < -11
+    <td class="hest3">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > -10 and $day.soilTempO2.min.raw < -6
+    <td class="hest4">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > -5 and $day.soilTempO2.min.raw < 1
+    <td class="hest5">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 0 and $day.soilTempO2.min.raw < 6
+    <td class="hest6">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 5 and $day.soilTempO2.min.raw < 11
+    <td class="hest7">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 10 and $day.soilTempO2.min.raw < 16
+    <td class="hest8">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 15 and $day.soilTempO2.min.raw < 21
+    <td class="hest9">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 20 and $day.soilTempO2.min.raw < 26
+    <td class="hest10">$day.soilTempO2.min.formatted</td>
+   #else if $day.soilTempO2.min.raw > 25 and $day.soilTempO2.min.raw < 36
+    <td class="hest11">$day.soilTempO2.min.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO2.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO3.avg.raw is not None:
+   <td class="tab_data">$day.soilTempO3.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO3.max.raw is not None:
+   #if $day.soilTempO3.max.raw < -51
+    <td class="hest1">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > -50 and $day.soilTempO3.max.raw < -15
+    <td class="hest2">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > -15 and $day.soilTempO3.max.raw < -11
+    <td class="hest3">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > -10 and $day.soilTempO3.max.raw < 1
+    <td class="hest4">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 0 and $day.soilTempO3.max.raw < 6
+    <td class="hest5">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 5 and $day.soilTempO3.max.raw < 11
+    <td class="hest6">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 10 and $day.soilTempO3.max.raw < 16
+    <td class="hest7">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 15 and $day.soilTempO3.max.raw < 21
+    <td class="hest8">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 20 and $day.soilTempO3.max.raw < 26
+    <td class="hest9">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 25 and $day.soilTempO3.max.raw < 31
+    <td class="hest10">$day.soilTempO3.max.formatted</td>
+   #else if $day.soilTempO3.max.raw > 30 and $day.soilTempO3.max.raw < 36
+    <td class="hest11">$day.soilTempO3.max.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO3.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO3.min.raw is not None:
+   #if $day.soilTempO3.min.raw < -51
+    <td class="hest1">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > -50 and $day.soilTempO3.min.raw < -15
+    <td class="hest2">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > -15 and $day.soilTempO3.min.raw < -11
+    <td class="hest3">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > -10 and $day.soilTempO3.min.raw < -6
+    <td class="hest4">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > -5 and $day.soilTempO3.min.raw < 1
+    <td class="hest5">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 0 and $day.soilTempO3.min.raw < 6
+    <td class="hest6">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 5 and $day.soilTempO3.min.raw < 11
+    <td class="hest7">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 10 and $day.soilTempO3.min.raw < 16
+    <td class="hest8">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 15 and $day.soilTempO3.min.raw < 21
+    <td class="hest9">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 20 and $day.soilTempO3.min.raw < 26
+    <td class="hest10">$day.soilTempO3.min.formatted</td>
+   #else if $day.soilTempO3.min.raw > 25 and $day.soilTempO3.min.raw < 36
+    <td class="hest11">$day.soilTempO3.min.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO3.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO4.avg.raw is not None:
+   <td class="tab_data">$day.soilTempO4.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO4.max.raw is not None:
+   #if $day.soilTempO4.max.raw < -51
+    <td class="hest1">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > -50 and $day.soilTempO4.max.raw < -15
+    <td class="hest2">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > -15 and $day.soilTempO4.max.raw < -11
+    <td class="hest3">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > -10 and $day.soilTempO4.max.raw < 1
+    <td class="hest4">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 0 and $day.soilTempO4.max.raw < 6
+    <td class="hest5">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 5 and $day.soilTempO4.max.raw < 11
+    <td class="hest6">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 10 and $day.soilTempO4.max.raw < 16
+    <td class="hest7">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 15 and $day.soilTempO4.max.raw < 21
+    <td class="hest8">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 20 and $day.soilTempO4.max.raw < 26
+    <td class="hest9">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 25 and $day.soilTempO4.max.raw < 31
+    <td class="hest10">$day.soilTempO4.max.formatted</td>
+   #else if $day.soilTempO4.max.raw > 30 and $day.soilTempO4.max.raw < 36
+    <td class="hest11">$day.soilTempO4.max.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO4.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO4.min.raw is not None:
+   #if $day.soilTempO4.min.raw < -51
+    <td class="hest1">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > -50 and $day.soilTempO4.min.raw < -15
+    <td class="hest2">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > -15 and $day.soilTempO4.min.raw < -11
+    <td class="hest3">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > -10 and $day.soilTempO4.min.raw < -6
+    <td class="hest4">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > -5 and $day.soilTempO4.min.raw < 1
+    <td class="hest5">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 0 and $day.soilTempO4.min.raw < 6
+    <td class="hest6">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 5 and $day.soilTempO4.min.raw < 11
+    <td class="hest7">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 10 and $day.soilTempO4.min.raw < 16
+    <td class="hest8">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 15 and $day.soilTempO4.min.raw < 21
+    <td class="hest9">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 20 and $day.soilTempO4.min.raw < 26
+    <td class="hest10">$day.soilTempO4.min.formatted</td>
+   #else if $day.soilTempO4.min.raw > 25 and $day.soilTempO4.min.raw < 36
+    <td class="hest11">$day.soilTempO4.min.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO4.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO5.avg.raw is not None:
+   <td class="tab_data">$day.soilTempO5.avg.formatted</td>
+  #else
+   <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO5.max.raw is not None:
+   #if $day.soilTempO5.max.raw < -51
+    <td class="hest1">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > -50 and $day.soilTempO5.max.raw < -15
+    <td class="hest2">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > -15 and $day.soilTempO5.max.raw < -11
+    <td class="hest3">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > -10 and $day.soilTempO5.max.raw < 1
+    <td class="hest4">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 0 and $day.soilTempO5.max.raw < 6
+    <td class="hest5">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 5 and $day.soilTempO5.max.raw < 11
+    <td class="hest6">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 10 and $day.soilTempO5.max.raw < 16
+    <td class="hest7">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 15 and $day.soilTempO5.max.raw < 21
+    <td class="hest8">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 20 and $day.soilTempO5.max.raw < 26
+    <td class="hest9">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 25 and $day.soilTempO5.max.raw < 31
+    <td class="hest10">$day.soilTempO5.max.formatted</td>
+   #else if $day.soilTempO5.max.raw > 30 and $day.soilTempO5.max.raw < 36
+    <td class="hest11">$day.soilTempO5.max.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO5.max.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+  #if $day.soilTempO5.min.raw is not None:
+   #if $day.soilTempO5.min.raw < -51
+    <td class="hest1">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > -50 and $day.soilTempO5.min.raw < -15
+    <td class="hest2">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > -15 and $day.soilTempO5.min.raw < -11
+    <td class="hest3">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > -10 and $day.soilTempO5.min.raw < -6
+    <td class="hest4">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > -5 and $day.soilTempO5.min.raw < 1
+    <td class="hest5">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 0 and $day.soilTempO5.min.raw < 6
+    <td class="hest6">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 5 and $day.soilTempO5.min.raw < 11
+    <td class="hest7">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 10 and $day.soilTempO5.min.raw < 16
+    <td class="hest8">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 15 and $day.soilTempO5.min.raw < 21
+    <td class="hest9">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 20 and $day.soilTempO5.min.raw < 26
+    <td class="hest10">$day.soilTempO5.min.formatted</td>
+   #else if $day.soilTempO5.min.raw > 25 and $day.soilTempO5.min.raw < 36
+    <td class="hest11">$day.soilTempO5.min.formatted</td>
+   #else
+    <td class="hest12">$day.soilTempO5.min.formatted</td>
+   #end if
+  #else
+    <td class="hest0">-</td>
+  #end if
+
+ </tr>
+#end for
+ </table>
+
+
+
+
+   </div> <!-- ende mittetab -->
+
+ </div>  <!-- ende hes_data -->
+
+    #include $Extras.footer
+
+</body>
+</html>
+
