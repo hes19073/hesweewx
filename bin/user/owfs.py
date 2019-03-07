@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf-8
 # owfs.py 1396 2016-01-21 05:08:45Z mwall $
 #
 # Copyright 2013 Matthew Wall
@@ -166,11 +167,14 @@ import time
 import ow
 
 import weewx
+
 from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
+
 DRIVER_NAME = 'OWFS'
-DRIVER_VERSION = "0.18"
+DRIVER_VERSION = "0.21"
+
 
 def logmsg(level, msg):
     syslog.syslog(level, 'owfs: %s' % msg)
@@ -483,19 +487,17 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
                         func = SENSOR_TYPES[st]
                         p[s] = func(s, self.sensor_map[s],
                                     last_data, p['dateTime'])
-                    except ow.exError, e:
-                        logerr("Failed to get sensor data: %s" % e)
+                    except (ow.exError, ValueError) as e:
+                        logerr("Failed to get sensor data for %s (%s): %s" %
+                               (s, st, e))
                 else:
                     logerr("unknown sensor type '%s' for %s" % (st, s))
             self.last_data.update(last_data)
-            self.calculate_derived(p)
             yield p
             time.sleep(self.polling_interval)
 
-    def calculate_derived(self, data):
-        if 'windSpeed' in data:
-            if data['windSpeed'] is None or data['windSpeed'] == 0:
-                data['windDir'] = None
+    def closePort(self):
+        ow.finish()
 
 class OWFSService(weewx.engine.StdService):
     """Collect data from one-wire devices via owfs."""
@@ -536,6 +538,9 @@ class OWFSService(weewx.engine.StdService):
         else:
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.handle_new_archive)
 
+    def shutDown(self):
+        ow.finish()
+
     def handle_new_loop(self, event):
         data = self.getData(event.packet)
         event.packet.update(data)
@@ -564,8 +569,10 @@ class OWFSService(weewx.engine.StdService):
                 try:
                     p[s] = func(s, self.sensor_map[s],
                                 last_data, packet['dateTime'])
-                except ow.exError, e:
-                    logerr("Failed to get onewire data: %s" % e)
+
+                except (ow.exError, ValueError) as e:
+                    logerr("Failed to get onewire data for %s (%s): %s" %
+                           (s, st, e))
             else:
                 logerr("unknown sensor type '%s' for %s" % (st, s))
         self.last_data.update(last_data)
@@ -604,7 +611,7 @@ if __name__ == '__main__':
         (options, args) = parser.parse_args()
 
         if options.version:
-            print "owfs version %s" % DRIVER_VERSION
+            print("owfs version %s" % DRIVER_VERSION)
             exit(1)
 
         # default to usb for the interface
@@ -623,13 +630,13 @@ if __name__ == '__main__':
             traverse(ow.Sensor('/'), display_sensor_info)
         elif options.reading:
             ow.init(iface)
-            print '%s: %s' % (options.reading, ow.owfs_get(options.reading))
+            print('%s: %s' % (options.reading, ow.owfs_get(options.reading)))
 
     def identify_sensor(s):
-        print '%s: %s %s' % (s.id, s._path, s._type)
+        print('%s: %s %s' % (s.id, s._path, s._type))
 
     def display_sensor_info(s):
-        print s.id
+        print(s.id)
         display_dict(s.__dict__)
 
     def display_dict(d, level=0):
@@ -639,14 +646,14 @@ if __name__ == '__main__':
             elif k == 'alias':
                 pass
             elif k.startswith('_'):
-                print '%s%s: %s' % ('  '*level, k, d[k])
+                print('%s%s: %s' % ('  '*level, k, d[k]))
             else:
                 v = 'UNKNOWN'
                 try:
                     v = ow.owfs_get(d[k])
-                except ow.exError, e:
+                except ow.exError as e:
                     v = 'FAIL: %s' % e
-                print '%s%s: %s' % ('  '*level, d[k], v)
+                print('%s%s: %s' % ('  '*level, d[k], v))
 
     def traverse(device, func):
         for s in device.sensors():

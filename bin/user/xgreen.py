@@ -123,7 +123,7 @@ class xGreenDay(SearchList):
                      tavg_ts = f.read()
                      tavg_ts = float(tavg_ts)
 
-             except Exception, e:
+             except Exception as e:
                  syslog.syslog(syslog.LOG_ERR, "greenDay: SYSLOG ERR cannot read green: %s" % e)
 
          else:
@@ -202,7 +202,7 @@ class xGreenDay(SearchList):
                  with open(self.filename) as f:
                      warmS = f.read()
                      warmS = float(warmS)
-             except Exception, e:
+             except Exception as e:
                  syslog.syslog(syslog.LOG_ERR, "warmSum: SYSLOG ERR cannot read xzwarmSum: %s" % e)
 
          # call coolT_sum as sum of day.outTemp.avg less than 0 degree C
@@ -213,7 +213,7 @@ class xGreenDay(SearchList):
                  with open(self.filename) as f:
                      coolS = f.read()
                      coolS = float(coolS)
-             except Exception, e:
+             except Exception as e:
                  syslog.syslog(syslog.LOG_ERR, "collSum: SYSLOG ERR cannot read xzcoolSum: %s" % e)
 
          else:

@@ -7,11 +7,15 @@
 
 """Data structures and functions for dealing with units."""
 
-import json
+from __future__ import absolute_import
+from __future__ import print_function
+
 import locale
 import time
 import datetime
 import syslog
+
+import six
 
 import weewx
 import weeutil.weeutil
@@ -34,8 +38,6 @@ def CtoF(x):
 def FtoC(x):
     return (x - 32.0) * 5.0 / 9.0
 
-# Conversions to and from Felsius.
-# For the definition of Felsius, see https://xkcd.com/1923/
 def FtoE(x):
     return (7.0 * x - 80.0) / 9.0
 
@@ -53,6 +55,8 @@ def mps_to_mph(x):
 
 def kph_to_mph(x):
     return x * 1000.0 / METER_PER_MILE
+
+
 
 class UnknownType(object):
     """Indicates that the observation type is unknown."""
@@ -126,8 +130,11 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "windSpeed10"        : "group_speed",
                               "windgustvec"        : "group_speed",
                               "windvec"            : "group_speed",
+                              "current_wind"       : "group_speed",
                               "rms"                : "group_speed2",
                               "vecavg"             : "group_speed2",
+                              "current_temp"       : "group_temperature",
+                              "current_apptemp"    : "group_temperature",
                               "appTemp"            : "group_temperature",
                               "humidex"            : "group_temperature",
                               "dewpoint"           : "group_temperature",
@@ -178,6 +185,8 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "soilTempO5"         : "group_temperature",
                               "windchill"          : "group_temperature",
                               "wetBulb"            : "group_temperature",
+                              "thwIndex"           : "group_temperature",
+                              "thswIndex"          : "group_temperature",
                               "temp"               : "group_temperature",
                               "tempMin"            : "group_temperature",
                               "tempMax"            : "group_temperature",
@@ -241,16 +250,16 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
                               "gasO_sensor"        : "group_ppm",
                               "gasN_sensor"        : "group_ppm",
                               "gasx_sensor"        : "group_ppm",
-                              "mem_total"          : "group_data",
-                              "mem_free"           : "group_data",
-                              "mem_used"           : "group_data",
+                              "mem_total"          : "group_datamem",
+                              "mem_free"           : "group_datamem",
+                              "mem_used"           : "group_datamem",
                               "swap_total"         : "group_data",
                               "swap_free"          : "group_data",
                               "swap_used"          : "group_data",
-                              "net_eth0_rbytes"    : "group_data",
-                              "net_eth0_tbytes"    : "group_data",
-                              "disk_root_total"    : "group_data",
-                              "disk_root_used"     : "group_data",
+                              "net_eth0_rbytes"    : "group_datanet",
+                              "net_eth0_tbytes"    : "group_datanet",
+                              "disk_root_total"    : "group_datadisk",
+                              "disk_root_used"     : "group_datadisk",
                               "rad_nsvh"           : "group_radio"})
 
 # Some aggregations when applied to a type result in a different unit
@@ -260,6 +269,7 @@ agg_group = {'mintime'    : "group_time",
              'maxtime'    : "group_time",
              'minmaxtime' : "group_time",
              "maxsumtime" : "group_time",
+             "minsumtime" : "group_time",
              "lasttime"   : "group_time",
              'count'      : "group_count",
              'max_ge'     : "group_count",
@@ -267,6 +277,7 @@ agg_group = {'mintime'    : "group_time",
              'min_ge'     : "group_count",
              'min_le'     : "group_count",
              'sum_ge'     : "group_count",
+             'sum_le'     : "grpou_count",
              'vecdir'     : "group_direction",
              'gustdir'    : "group_direction"}
 
@@ -300,6 +311,9 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_energy"      : "watt_hour",
                        "group_volume"      : "gallon",
                        "group_data"        : "byte",
+                       "group_datadisk"    : "kilobyte",
+                       "group_datanet"     : "megabyte",
+                       "group_datamem"     : "megabyte",
                        "group_distance"    : "mile",
                        "group_ppm"         : "ppm",
                        "group_druck2"      : "N_per_meter_squared",
@@ -339,6 +353,9 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_energy"      : "watt_hour",
                            "group_volume"      : "litre",
                            "group_data"        : "byte",
+                           "group_datadisk"    : "kilobyte",
+                           "group_datanet"     : "megabyte",
+                           "group_datamem"     : "megabyte",
                            "group_distance"    : "km",
                            "group_ppm"         : "ppm",
                            "group_druck2"      : "N_per_meter_squared",
@@ -473,6 +490,7 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "cm_per_hour"        : "%.2f",
                             "cubic_foot"         : "%.1f",
                             "cpm"                : "%.1f",
+                            "count"              : "%.1f",
                             "day"                : "%.1f",
                             "degree_C"           : "%.1f",
                             "degree_C_day"       : "%.1f",
@@ -511,6 +529,10 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "watt_hour"          : "%.1f",
                             "anzahl"             : "%.0f",
                             "ppm"                : "%.1f",
+                            "kilobyte"           : "%.2f",
+                            "megebyte"           : "%.2f",
+                            "gigabyte"           : "%.2f",
+                            "treabyte"           : "%.2f",
                             "watt_per_meter_squared" : "%.0f",
                             "lume_per_meter_squared" : "%.0f",
                             "N_per_meter_squared"    : "%.3f",
@@ -521,62 +543,65 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "NONE"                   : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
-default_unit_label_dict = { "amp"               : " A",
-                            "bit"               : " b",
-                            "byte"              : " B",
-                            "centibar"          : " cb",
-                            "cm"                : " cm",
-                            "cm_per_hour"       : " cm/hr",
-                            "cubic_foot"        : " ft\xc2\xb3",
-                            "cpm"               : " CPM",
-                            "day"               : (" day", " days"),
-                            "degree_C"          : " \xc2\xb0C",
-                            "degree_C_day"      : " \xc2\xb0C-day",
-                            "degree_E"          : " \xc2\xb0E",
-                            "degree_F"          : " \xc2\xb0F",
-                            "degree_F_day"      : " \xc2\xb0F-day",
-                            "degree_compass"    : " \xc2\xb0",
-                            "foot"              : " feet",
-                            "gallon"            : " gal",
-                            "hPa"               : " hPa",
-                            "inHg"              : " inHg",
-                            "hour"              : (" hour", " hours"),
-                            "inch"              : " in",
-                            "inch_per_hour"     : " in/hr",
-                            "km"                : " km",
-                            "km_per_hour"       : " kph",
-                            "km_per_hour2"      : " kph",
-                            "knot"              : " knots",
-                            "knot2"             : " knots",
-                            "litre"             : " l",
-                            "mbar"              : " mbar",
-                            "meter"             : " meters",
-                            "meter_per_second"  : " m/s",
-                            "meter_per_second2" : " m/s",
-                            "mile"              : " mile",
-                            "mile_per_hour"     : " mph",
-                            "mile_per_hour2"    : " mph",
-                            "minute"            : (" minute", " minutes"),
-                            "mm"                : " mm",
-                            "mmHg"              : " mmHg",
-                            "mm_per_hour"       : " mm/hr",
-                            "percent"           : " %",
-                            "second"            : (" second", " seconds"),
-                            "uv_index"          : " ",
-                            "volt"              : " V",
-                            "watt"              : " W",
-                            "watt_hour"         : " Wh",
-                            "anzahl"            : "   ",
-                            "kilobyte"          : " KB",
-                            "ppm"               : " ppm",
-                            "watt_per_meter_squared" : " W/m\xc2\xb2",
-                            "lume_per_meter_squared" : " lm/m\xc2\xb2",
-                            "N_per_meter_squared"    : " N/m\xc2\xb2",
-                            "kg_per_meter_qubic"     : " kg/m\xc2\xb3",
-                            "g_per_meter_qubic"      : " g/m\xc2\xb3",
-                            "nSv_per_hour"           : " nSv/h",
-                            "mSv_per_hour"           : " \xc2\xb5Sv/h",
-                            "NONE"                   : " " }
+default_unit_label_dict = { "amp"               : u" A",
+                            "bit"               : u" b",
+                            "byte"              : u" B",
+                            "centibar"          : u" cb",
+                            "cm"                : u" cm",
+                            "cm_per_hour"       : u" cm/h",
+                            "cubic_foot"        : u" ft³",
+                            "cpm"               : u" CPM",
+                            "day"               : (u" day", u" days"),
+                            "degree_C"          : u" °C",
+                            "degree_C_day"      : u" °C-day",
+                            "degree_E"          : u" °E",
+                            "degree_F"          : u" °F",
+                            "degree_F_day"      : u" °F-day",
+                            "degree_compass"    : u" °",
+                            "foot"              : u" feet",
+                            "gallon"            : u" gal",
+                            "hPa"               : u" hPa",
+                            "inHg"              : u" inHg",
+                            "hour"              : (u" hour", u" hours"),
+                            "inch"              : u" in",
+                            "inch_per_hour"     : u" in/hr",
+                            "km"                : u" km",
+                            "km_per_hour"       : u" km/h",
+                            "km_per_hour2"      : u" km/h",
+                            "knot"              : u" knots",
+                            "knot2"             : u" knots",
+                            "litre"             : u" l",
+                            "mbar"              : u" mbar",
+                            "meter"             : u" m",
+                            "meter_per_second"  : u" m/s",
+                            "meter_per_second2" : u" m/s",
+                            "mile"              : u" mile",
+                            "mile_per_hour"     : u" mph",
+                            "mile_per_hour2"    : u" mph",
+                            "minute"            : (u" minute", u" minutes"),
+                            "mm"                : u" mm",
+                            "mmHg"              : u" mmHg",
+                            "mm_per_hour"       : u" mm/h",
+                            "percent"           : u" %",
+                            "second"            : (u" second", u" seconds"),
+                            "uv_index"          : u" ",
+                            "volt"              : u" V",
+                            "watt"              : u" W",
+                            "watt_hour"         : u" Wh",
+                            "anzahl"            : u"   ",
+                            "kilobyte"          : u" KB",
+                            "megabyte"          : u" MB",
+                            "gigabyte"          : u" GB",
+                            "Terabyte"          : u" TB",
+                            "ppm"               : u" ppm",
+                            "watt_per_meter_squared" : u" W/m³",  #\xc2\xb2",
+                            "lume_per_meter_squared" : u" lm/m²", #\xc2\xb2",
+                            "N_per_meter_squared"    : u" N/m²",  # \xc2\xb2",
+                            "kg_per_meter_qubic"     : u" kg/m³", #\xc2\xb3",
+                            "g_per_meter_qubic"      : u" g/m³",  #\xc2\xb3",
+                            "nSv_per_hour"           : u" nSv/h",
+                            "mSv_per_hour"           : u" µSv/h", #\xc2\xb5Sv/h",
+                            "NONE"                   : u" " }
 
 # Default strftime formatting to be used in the absence of a skin
 # configuration file. The entry for delta_time uses a special
@@ -651,19 +676,19 @@ class Formatter(object):
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> f = Formatter()
     >>> print f.toString((20.0, "degree_C", "group_temperature"))
-    20.0�C
+    20.0°C
     >>> print f.toString((83.2, "degree_F", "group_temperature"))
-    83.2�F
+    83.2°F
     >>> # Try the Spanish locale, which will use comma decimal separators.
     >>> # For this to work, the Spanish locale must have been installed.
     >>> # You can do this with the command:
     >>> #     sudo locale-gen es_ES.UTF-8 && sudo update-locale
     >>> x = locale.setlocale(locale.LC_NUMERIC, 'es_ES.utf-8')
     >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=True)
-    83,2�F
+    83,2°F
     >>> # Try it again, but overriding the localization:
     >>> print f.toString((83.2, "degree_F", "group_temperature"), localize=False)
-    83.2�F
+    83.2°F
     >>> # Set locale back to default
     >>> x = locale.setlocale(locale.LC_NUMERIC, '')
     >>> print f.toString((123456789,  "unix_epoch", "group_time"))
@@ -752,7 +777,7 @@ class Formatter(object):
 
     def get_label_string(self, unit, plural=True):
         """Return a suitable label.
-        
+
         This function looks up a suitable label in the unit_label_dict. If the
         associated value is a string, it returns it. If it is a tuple or a list,
         then it is assumed the first value is a singular version of the label
@@ -771,7 +796,7 @@ class Formatter(object):
             # Can't find a label. Just return an empty string:
             return u''
 
-        # Is the label a tuple or list?
+        # Is the label a simple string? If so, return it
         if isinstance(label, (tuple, list)):
             # Yes. Return the singular or plural version as requested
             return label[1] if plural else label[0]
@@ -917,8 +942,8 @@ class Converter(object):
         Examples:
         >>> p_m = (1016.5, 'mbar', 'group_pressure')
         >>> c = Converter()
-        >>> print "%.3f %s %s" % c.convert(p_m)
-        30.017 inHg group_pressure
+        >>> print c.convert(p_m)
+        (30.020673360897813, 'inHg', 'group_pressure')
         
         Try an unspecified unit type:
         >>> p2 = (1016.5, None, None)
@@ -968,12 +993,10 @@ class Converter(object):
         >>> c = Converter()
         >>> # Source dictionary is in metric units
         >>> source_dict = {'dateTime': 194758100, 'outTemp': 20.0,\
-            'usUnits': weewx.METRIC, 'barometer':1015.9166, 'interval':15}
+            'usUnits': weewx.METRIC, 'barometer':1015.8, 'interval':15}
         >>> target_dict = c.convertDict(source_dict)
-        >>> print "dateTime: %d, interval: %d, barometer: %.3f, outTemp: %.3f" %\
-        (target_dict['dateTime'], target_dict['interval'], \
-         target_dict['barometer'], target_dict['outTemp'])
-        dateTime: 194758100, interval: 15, barometer: 30.000, outTemp: 68.000
+        >>> print target_dict
+        {'outTemp': 68.0, 'interval': 15, 'barometer': 30.0, 'dateTime': 194758100}
         """
         target_dict = {}
         for obs_type in obs_dict:
@@ -1041,16 +1064,16 @@ class ValueHelper(object):
     >>> # Use the default converter and formatter:
     >>> vh = ValueHelper(value_t)
     >>> print vh
-    68.0�F
+    68.0°F
 
     Try explicit unit conversion:
     >>> print vh.degree_C
-    20.0�C
+    20.0°C
 
     Do it again, but using a converter:
     >>> vh = ValueHelper(value_t, converter=Converter(MetricUnits))
     >>> print vh
-    20.0�C
+    20.0°C
 
     Extract just the raw value:
     >>> print "%.1f" % vh.raw
@@ -1076,12 +1099,35 @@ class ValueHelper(object):
         self.formatter = formatter
         self.converter = converter
 
-    def toString(self, addLabel=True, useThisFormat=None, None_string=None, localize=True):
+
+    def toString(self,
+                 addLabel=True,
+                 useThisFormat=None,
+                 None_string=None,
+                 localize=True,
+                 NONE_string=None):
         """Convert my internally held ValueTuple to a string, using the supplied
-        converter and formatter."""
+        converter and formatter.
+
+        Parameters:
+            addLabel: If True, add a unit label
+
+            useThisFormat: String with a format to be used when formatting the value. If None,
+            then a format will be supplied. Default is None.
+
+            None_string: If the value is None, then this string will be used. If None, then a default string
+            from skin.conf will be used. Default is None.
+
+            localize: If True, localize the results. Default is True
+
+            NONE_string: Supplied for backwards compatibility. Identical semantics to None_string.
+        """
         # If the type is unknown, then just return an error string:
         if isinstance(self.value_t, UnknownType):
             return "?'%s'?" % self.value_t.obs_type
+        # Check NONE_string for backwards compatibility:
+        if None_string is None and NONE_string is not None:
+            None_string = NONE_string
         # Get the value tuple in the target units:
         vtx = self._raw_value_tuple
         # Then do the format conversion:
@@ -1212,13 +1258,15 @@ class UnitInfoHelper(object):
     def unit_type_dict(self):
         return self.group_unit_dict
 
+
 class ObsInfoHelper(object):
     """Helper class to implement the $obs template tag."""
     def __init__(self, skin_dict):
         try:
-            self.label = dict(skin_dict['Labels']['Generic'])
+            d = skin_dict['Labels']['Generic']
         except KeyError:
-            self.label = {}
+            d = {}
+        self.label = weeutil.weeutil.KeyDict(d)
 
 #==============================================================================
 #                             Helper functions
@@ -1273,7 +1321,7 @@ def convert(val_t, target_unit_type):
     # Try converting a sequence first. A TypeError exception will occur if
     # the value is actually a scalar:
     try:
-        new_val = map(lambda x : conversion_func(x) if x is not None else None, val_t[0])
+        new_val = list([conversion_func(x) if x is not None else None for x in val_t[0]])
     except TypeError:
         new_val = conversion_func(val_t[0]) if val_t[0] is not None else None
     # Add on the unit type and the group type and return the results:
@@ -1383,13 +1431,15 @@ class GenWithConvert(object):
     def __iter__(self):
         return self
 
-    def next(self):
-        _record = self.input_generator.next()
-        if self.target_unit_system is None or _record['usUnits'] == self.target_unit_system:
+    def __next__(self):
+        _record = nest(self.input_generator)
+        if self.target_unit_system is None:
             return _record
-        _record_c = StdUnitConverters[self.target_unit_system].convertDict(_record)
-        _record_c['usUnits'] = self.target_unit_system
-        return _record_c
+        else:
+            return to_std_system(_record, self.target_unit_system)
+
+    #For Python 2:
+    next = __next__
 
 def to_US(datadict):
     """Convert the units used in a dictionary to US Customary."""

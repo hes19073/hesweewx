@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#! /usr/bin/env python
 # snow.py 1396 2017-01-01 09:08:45Z hes $
 #
 # Copyright 2017 Hartmut Schweidler
@@ -26,9 +25,12 @@ To use as a service:
 [Engine]
     [[Service]]
         data_services = user.snowhes.SnowDepth
-""" 
+"""
+from __future__ import absolute_import
+
 import syslog
 import weewx
+
 from weewx.engine import StdService
 from weewx.units import ValueTuple, convertStd
 
@@ -58,7 +60,6 @@ class SnowDepth(StdService):
 
             event.record['snowTotal'] = float(self._last_snow)
             event.record['snow'] = float(delta)
-        except Exception, e:
+        except Exception as e:
             syslog.syslog(syslog.LOG_ERR, "snowdepth: SYSLOG ERR cannot read value: %s" % e)
-
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 # extended stats based on the xsearch example
 # $Id: xstats.py 2749 2014-11-29 18:15:24Z tkeffer $
 # Copyright 2013 Matthew Wall, all rights reserved
@@ -6,7 +7,7 @@
 
   'alltime':    All time statistics.
 
-  'seven_day':  Statistics for the last seven days. 
+  'seven_day':  Statistics for the last seven days.
 
   'thirty_day': Statistics for the last thirty days.
 
@@ -22,6 +23,7 @@ from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
+
 
 class ExtendedStatistics(SearchList):
 
@@ -113,11 +115,19 @@ class ExtendedStatistics(SearchList):
                                    formatter=self.generator.formatter,
                                    converter=self.generator.converter)
 
+        """Lazy evaluation of weewx uptime."""
+        delta_time = time.time() -  1383254340
+
+        db_sta_end = ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
+                                       formatter=self.generator.formatter,
+                                       converter=self.generator.converter)
+
         return [{'alltime': all_stats,
                  'seven_day': seven_day_stats,
                  'thirty_day': thirty_day_stats,
                  'last_month': last_month_stats,
                  'start_time': starttime_vh,
+                 'db_uptime': db_sta_end,
                  'last_year': last_year_stats,
                  'last_year_today': last_year_todate_stats,
                }]

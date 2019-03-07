@@ -5,14 +5,13 @@
 #
 """Engine for generating reports"""
 
-# 3rd party imports:
-import configobj
+from __future__ import absolute_import
+
 # System imports:
 import datetime
 import ftplib
 import glob
 import os.path
-import shutil
 import socket
 import sys
 import syslog
@@ -20,10 +19,15 @@ import threading
 import time
 import traceback
 
+# 3rd party imports
+from six.moves import zip
+import configobj
+
 # WeeWX imports:
 import weeutil.weeutil
 import weewx.defaults
 import weewx.manager
+from weeutil.config import search_up
 from weeutil.weeutil import to_bool
 
 # spans of valid values for each CRON like field
@@ -177,46 +181,50 @@ class StdReportEngine(threading.Thread):
                                       "running report anyway" % report)
                         syslog.syslog(syslog.LOG_DEBUG, "        ****  %s" % timing.validation_error)
 
-            for generator in weeutil.weeutil.option_as_list(skin_dict['Generators'].get('generator_list')):
+            if 'Generators' in skin_dict and 'generator_list' in skin_dict['Generators']:
+                for generator in weeutil.weeutil.option_as_list(skin_dict['Generators']['generator_list']):
 
-                try:
-                    # Instantiate an instance of the class.
-                    obj = weeutil.weeutil._get_object(generator)(
-                        self.config_dict,
-                        skin_dict,
-                        self.gen_ts,
-                        self.first_run,
-                        self.stn_info,
-                        self.record)
-                except Exception, e:
-                    syslog.syslog(
-                        syslog.LOG_CRIT, "reportengine: "
-                                         "Unable to instantiate generator '%s'" % generator)
-                    syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % e)
-                    weeutil.weeutil.log_traceback("        ****  ")
-                    syslog.syslog(syslog.LOG_CRIT, "        ****  Generator ignored")
-                    traceback.print_exc()
-                    continue
+                    try:
+                        # Instantiate an instance of the class.
+                        obj = weeutil.weeutil._get_object(generator)(
+                            self.config_dict,
+                            skin_dict,
+                            self.gen_ts,
+                            self.first_run,
+                            self.stn_info,
+                            self.record)
+                    except Exception as e:
+                        syslog.syslog(
+                            syslog.LOG_CRIT, "reportengine: "
+                                             "Unable to instantiate generator '%s'" % generator)
+                        syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % e)
+                        weeutil.weeutil.log_traceback("        ****  ")
+                        syslog.syslog(syslog.LOG_CRIT, "        ****  Generator ignored")
+                        traceback.print_exc()
+                        continue
 
-                try:
-                    # Call its start() method
-                    obj.start()
+                    try:
+                        # Call its start() method
+                        obj.start()
 
-                except Exception as e:
-                    # Caught unrecoverable error. Log it, continue on to the
-                    # next generator.
-                    syslog.syslog(
-                        syslog.LOG_CRIT, "reportengine: "
-                                         "Caught unrecoverable exception in generator '%s'"
-                                         % generator)
-                    syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % str(e))
-                    weeutil.weeutil.log_traceback("        ****  ")
-                    syslog.syslog(syslog.LOG_CRIT, "        ****  Generator terminated")
-                    traceback.print_exc()
-                    continue
+                    except Exception as e:
+                        # Caught unrecoverable error. Log it, continue on to the
+                        # next generator.
+                        syslog.syslog(
+                            syslog.LOG_CRIT, "reportengine: "
+                                             "Caught unrecoverable exception in generator '%s'"
+                                             % generator)
+                        syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % e)
+                        weeutil.weeutil.log_traceback("        ****  ")
+                        syslog.syslog(syslog.LOG_CRIT, "        ****  Generator terminated")
+                        traceback.print_exc()
+                        continue
 
-                finally:
-                    obj.finalize()
+                    finally:
+                        obj.finalize()
+            else:
+                syslog.syslog(syslog.LOG_DEBUG, "reportengine: "
+                                                "No generators specified for report '%s'" % report)
 
     def _build_skin_dict(self, report):
         """Find and build the skin_dict for the given report"""
@@ -240,7 +248,7 @@ class StdReportEngine(threading.Thread):
         # Now retrieve the configuration dictionary for the skin. Wrap it in a try block in case we fail.  It is ok if
         # there is no file - everything for a skin might be defined in the weewx configuration.
         try:
-            merge_dict = configobj.ConfigObj(skin_config_path, file_error=True)
+            merge_dict = configobj.ConfigObj(skin_config_path, file_error=True, encoding='utf-8')
             syslog.syslog(syslog.LOG_DEBUG,
                           "reportengine: "
                           "Found configuration file %s for report '%s'"
@@ -315,7 +323,7 @@ class FtpGenerator(ReportGenerator):
         import weeutil.ftpupload
 
         # determine how much logging is desired
-        log_success = to_bool(self.skin_dict.get('log_success', True))
+        log_success = to_bool(search_up(self.skin_dict, 'log_success', True))
 
         t1 = time.time()
         try:
@@ -380,7 +388,7 @@ class RsyncGenerator(ReportGenerator):
                 ssh_options=self.skin_dict.get('ssh_options'),
                 compress=to_bool(self.skin_dict.get('compress', False)),
                 delete=to_bool(self.skin_dict.get('delete', False)),
-                log_success=to_bool(self.skin_dict.get('log_success', True)))
+                log_success=to_bool(search_up(self.skin_dict, 'log_success', True)))
         except KeyError:
             syslog.syslog(syslog.LOG_DEBUG,
                           "rsyncgenerator: rsync upload not requested. Skipped.")
@@ -407,7 +415,7 @@ class CopyGenerator(ReportGenerator):
     def run(self):
         copy_dict = self.skin_dict['CopyGenerator']
         # determine how much logging is desired
-        log_success = to_bool(copy_dict.get('log_success', True))
+        log_success = to_bool(search_up(copy_dict, 'log_success', True))
 
         copy_list = []
 
@@ -439,23 +447,9 @@ class CopyGenerator(ReportGenerator):
         # list globbing any character expansions
         ncopy = 0
         for pattern in copy_list:
-            # Glob this pattern; then go through each resultant filename:
-            for _file in glob.glob(pattern):
-                # Final destination is the join of the html destination
-                # directory and any relative subdirectory on the filename:
-                dest_dir = os.path.join(html_dest_dir, os.path.dirname(_file))
-                # Make the destination directory, wrapping it in a try block in
-                # case it already exists:
-                try:
-                    os.makedirs(dest_dir)
-                except OSError:
-                    pass
-                # This version of copy does not copy over modification time,
-                # so it will look like a new file, causing it to be (for
-                # example) ftp'd to the server:
-                shutil.copy(_file, dest_dir)
-                ncopy += 1
-
+            # Glob this pattern; then go through each resultant path:
+            for path in glob.glob(pattern):
+                ncopy += weeutil.weeutil.deep_copy_path(path, html_dest_dir)
         if log_success:
             syslog.syslog(syslog.LOG_INFO, "copygenerator: "
                                            "copied %d files to %s" % (ncopy, html_dest_dir))

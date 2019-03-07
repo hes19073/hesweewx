@@ -1,7 +1,7 @@
 # $Id: wcloud.py 1156 2014-12-03 19:44:45Z mwall $
 # Copyright 2014 Matthew Wall
 
-"""
+""" 
 This is a weewx extension that uploads data to WeatherCloud.
 
 http://weather.weathercloud.com

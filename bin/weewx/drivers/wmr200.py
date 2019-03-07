@@ -37,18 +37,20 @@ Bronberg Weather Station
 The WMR200 does not report wind gust direction. 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import select
 import socket
-import syslog
 import threading
 import time
 import usb
 
 import weewx.drivers
 import weeutil.weeutil
+from weeutil.log import logdbg, loginf, logwar, logerr, logcrt
 
 DRIVER_NAME = 'WMR200'
-DRIVER_VERSION = "3.3.5"
+DRIVER_VERSION = "3.4.0"
 
 
 def loader(config_dict, engine):  # @UnusedVariable
@@ -116,32 +118,6 @@ DEBUG_READS = 0
 DEBUG_CHECKSUM = 0
 # Print mapping from sensors to database fields
 DEBUG_MAPPING = 0
-
-def logmsg(dst, msg):
-    """Base syslog helper"""
-    syslog.syslog(dst, ('%s: %s: %s' %
-                        (_WMR200_DRIVER_NAME,
-                         threading.currentThread().getName(), msg)))
-
-def logdbg(msg):
-    """Debug syslog helper"""
-    logmsg(syslog.LOG_DEBUG, 'D ' + msg)
-
-def loginf(msg):
-    """Info syslog helper"""
-    logmsg(syslog.LOG_INFO, 'I ' + msg)
-
-def logwar(msg):
-    """Warning syslog helper"""
-    logmsg(syslog.LOG_WARNING, 'W ' + msg)
-
-def logerr(msg):
-    """Error syslog helper"""
-    logmsg(syslog.LOG_ERR, 'E ' + msg)
-
-def logcrt(msg):
-    """Critical syslog helper"""
-    logmsg(syslog.LOG_CRIT, 'C ' + msg)
 
 
 class WMR200PacketParsingError(Exception):
@@ -706,7 +682,7 @@ class PacketArchiveData(PacketArchive):
             # Number of sensors starting at zero inclusive.
             num_sensors = self._pkt_data[32]
 
-            for i in xrange(0, num_sensors + 1):
+            for i in range(num_sensors + 1):
                 base = 33 + i * 7
                 self._record.update(decode_temp(self,
                                                 self._pkt_data[base:base + 7]))
@@ -1943,7 +1919,7 @@ class WMR200(weewx.drivers.AbstractDevice):
                 timestamp_packet_interval = timestamp_packet_current \
                         - timestamp_packet_previous
 
-                if timestamp_packet_interval < 0:
+                if timestamp_packet_interval < 1:
                     loginf(('genStartup() Discarding received archive record that presented out-of-order; '
                             'current timestamp:%s; previous timestamp:%s')
                            % (weeutil.weeutil.timestamp_to_string(timestamp_packet_current),
@@ -2080,8 +2056,8 @@ class WMR200ConfEditor(weewx.drivers.AbstractConfEditor):
 """
 
     def modify_config(self, config_dict):
-        print """
-Setting rainRate and windchill calculations to hardware."""
+        print("""
+Setting rainRate and windchill calculations to hardware.""")
         config_dict.setdefault('StdWXCalculate', {})
         config_dict['StdWXCalculate'].setdefault('Calculations', {})
         config_dict['StdWXCalculate']['Calculations']['rainRate'] = 'hardware'

@@ -53,6 +53,7 @@ weewxwd_schema = [
     ('GDD4',         'REAL'),
     ('GDD6',         'REAL'),
     ('GDD10',        'REAL'),
+    ('densityA',     'REAL'),
     ]
 
 # Define schema for supp table

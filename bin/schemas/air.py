@@ -27,5 +27,7 @@ schema = [
     ('temp','INTEGER'),
     ('pressure','INTEGER'),
     ('altitude','INTEGER'),
+    ('pm_25','INTEGER'),
+    ('pm_10','INTEGER'),
     ]
 

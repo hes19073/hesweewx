@@ -6,14 +6,19 @@
 
 """Various weather related formulas and utilities."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+import collections
+
 import math
 import syslog
 import time
 import ephem
 import weewx.uwxutils
+
 from math import sin
 from datetime import datetime
-
 
 from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
 from weewx.units import CtoK, CtoF, FtoC
@@ -894,7 +899,7 @@ def density_US(dp_F, t_F, p_inHg):
     return aden_C if aden_C is not None else None
 
 
-def winddruck_Metric(dp_C, t_C, p_mbar, vms):
+def winddruck_Metric(dp_C, t_C, p_mbar, ws_kph):
     """Calculate the windDruck in N per m2
 
     dp_C - dewpoint in degree Celsius
@@ -903,45 +908,46 @@ def winddruck_Metric(dp_C, t_C, p_mbar, vms):
 
     p_mbar - pressure in hPa or mbar
 
-    vms - windSpeed in m per second
+    vms - windSpeed in km per hour
+          must in  m per second
 
     wd = cp * airdensity / 2 * vms2
     wd - winddruck
     cp - Druckbeiwert (dimensionslos) = 1
     """
 
-    if dp_C is None or t_C is None or p_mbar is None or vms is None:
+    if dp_C is None or t_C is None or p_mbar is None or ws_kph is None:
         return None
 
     dp = dp_C
     Tk = t_C + 273.15
 
-    if vms < 1:
+    if ws_kph < 1:
         vms = 0.2
-    elif vms < 6:
+    elif ws_kph < 6:
         vms = 1.5
-    elif vms < 12:
+    elif ws_kph < 12:
         vms = 3.3
-    elif vms < 20:
+    elif ws_kph < 20:
         vms = 5.4
-    elif vms < 29:
+    elif ws_kph < 29:
         vms = 7.9
-    elif vms < 39:
+    elif ws_kph < 39:
         vms = 10.7
-    elif vms < 50:
+    elif ws_kph < 50:
         vms = 13.8
-    elif vms < 62:
+    elif ws_kph < 62:
         vms = 17.1
-    elif vms < 75:
+    elif ws_kph < 75:
         vms = 20.7
-    elif vms < 89:
+    elif ws_kph < 89:
         vms = 24.7
-    elif vms < 103:
+    elif ws_kph < 103:
         vms = 28.5
-    elif vms < 117:
+    elif ws_kph < 117:
         vms = 32.7
-    elif vms >= 117:
-        vms = vms * 0.277777778
+    elif ws_kph >= 117:
+        vms = ws_kph * 0.277777778
 
     p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 +
         dp * (-0.61117958E-6 + dp * (0.43884187E-8 +
@@ -975,9 +981,9 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     t_C = FtoC(t_F)
     dp_C = FtoC(dp_F)
     p_mbar = p_inHg / INHG_PER_MBAR
-    vms = ws_mph * METER_PER_MILE / 3600.0
+    ws_kph = ws_mph * 1.609344
 
-    wdru_C = winddruck_Metric(dp_C, t_C, p_mbar, vms)
+    wdru_C = winddruck_Metric(dp_C, t_C, p_mbar, ws_kph)
 
     return wdru_C if wdru_C is not None else None
 
@@ -1113,8 +1119,8 @@ def absF_C(t_C, RH):
         a = 7.6
         b = 240.7
 
-        # bei Temp unter Null und ueber Eis,    a = 9.5  b = 265.5
-        # bei Temp unter Null und ueber Wasser, a = 7.6 and b = 240.7
+    # bei Temp unter Null und ueber Eis,    a = 9.5  b = 265.5
+    # bei Temp unter Null und ueber Wasser, a = 7.6 and b = 240.7
 
     mw = 18.016
     RG = 8314.3
@@ -1210,12 +1216,8 @@ def da_Metric(t_C, p_mbar):
     if t_C is None or p_mbar is None:
          return None
 
-    t_F = CtoF(t_C)
-    p_inHg = p_mbar * INHG_PER_MBAR
-
-    da_fo = da_US(t_F, p_inHg)
-
-    da_me = da_fo * 0.3048
+    da_fo = 1.24 * p_mbar + 120 * t_C - 33.48 * p_mbar + 32115.24
+    da_me = da_fo / 3.28084
 
     return da_me if da_me is not None else None
 
@@ -1227,13 +1229,103 @@ def da_US(t_F, p_inHg):
     if t_F is None or p_inHg is None:
          return None
 
-    da_fo = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
+    #da_fo = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
+    #da_fo = round(da_fo, 1)
 
-    da_fo = round(da_fo, 1)
+    t_C = FtoC(t_F)
+    p_mbar = p_inHg / INHG_PER_MBAR
+    da_m = da_Metric(t_C, p_mbar)
+    da_fo = da_m * 3.28084
 
     return da_fo if da_fo is not None else None
 
+def thw_Metric(t_C, RH, ws_kph):
+    """ Uses the air temperature, relative humidity, and wind speed 
+    (THW = temperature-humidity-wind) to calculate a
+    potentially more accurate "felt-air temperature." This is not as accurate, however, as the THSW index, which
+    can only be calculated when solar radiation information is available. It uses `calculate_heat_index` and then
+    applies additional calculations to it using the wind speed. As such, it returns `None` for input temperatures below
+    70 degrees Fahrenheit. The additional calculations come from web forums rumored to contain the proprietary
+    Davis Instruments THW index formulas.
+    hi is the heat index as calculated by `calculate_heat_index`
+    WS is the wind speed in miles per hour
+    :param temperature: The temperature in degrees Fahrenheit
+    :type temperature: int | long | decimal.Decimal
+    :param relative_humidity: The relative humidity as a percentage (88.2 instead of 0.882)
+    :type relative_humidity: int | long | decimal.Decimal
+    :param wind_speed: The wind speed in miles per hour
+    :type wind_speed: int | long | decimal.Decimal
+    :return: The THW index temperature in degrees Fahrenheit to one decimal place, or `None` if the temperature is
+     less than 70F
+    :rtype: decimal.Decimal
+    """
+    t_F = CtoF(t_C)
+    hi_F = heatindexF(t_F, RH)
+    WS = kph_to_mph(ws_kph)
 
+    if not hi_F:
+        return None
+
+    hi = hi_F - (1.072 * WS)
+    thw_C = FtoC(hi)
+
+    return round(thw_C, 1) if thw_C is not None else None
+
+
+def thw_US(t_F, RH, ws_mph):
+
+    if t_F is None or ws_mph is None or RH is None:
+         return None
+
+    hi_F = heatindexF(t_F, RH)
+
+    thw_F = hi_F - (1.072 * ws_mph)
+
+    return round(thw_F, 1) if thw_F is not None else None
+
+def thsw_Metric(t_C, RH, ws_kph, rahes):
+    """ Tc is the temperature in degrees Celsius
+        RH is the relative humidity percentage
+        QD is the direct thermal radiation in watts absorbed per square meter of surface area
+        Qd is the diffuse thermal radiation in watts absorbed per square meter of surface area
+        Q1 is the thermal radiation in watts absorbed per square meter of surface area as measured by a pyranometer;
+                it represents "global radiation" (QD + Qd)
+        Q2 is the direct and diffuse radiation in watts absorbed per square meter of surface on the human body
+        Q3 is the ground-reflected radiation in watts absorbed per square meter of surface on the human body
+        Q is total thermal radiation that affects apparent temperature
+        WS is the wind speed in meters per second
+        E is the water vapor pressure
+        Thsw is the THSW index temperature """
+
+    if t_C is None or ws_kph is None or RH is None or rahes is None:
+         return None
+
+
+    Qd = rahes * 0.25
+    Q2 = Qd / 7
+    Q3 = rahes / 28
+    Q = Q2 + Q3
+    WS = ws_kph * 0.277777778
+
+    E = RH / 100 * 6.105 * math.exp(17.27 * t_C / (237.7 + t_C))
+    thsw_C = t_C + (0.348 * E) - (0.70 * WS) + ((0.70 * Q) / (WS + 10)) - 4.25
+
+
+    return round(thsw_C, 1) if thsw_C is not None else None
+
+def thsw_US(t_F, RH, ws_mph, rahes):
+
+    if t_F is None or ws_mph is None or RH is None or rahes is None:
+         return None
+
+    t_C = FtoC(t_F)
+    ws_kph = ws_mph * 1.609344
+
+    thsw_C = thsw_Metric(t_C, RH, ws_kph, rahes)
+
+    thsw_F = CtoF(thsw_C)
+
+    return round(thsw_F, 1) if thsw_F is not None else None
 
 if __name__ == "__main__":
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 # extended stats based on the xsearch example
 # $Id: xstats.py 2749 2014-11-29 18:15:24Z tkeffer $
 # Copyright 2013 Matthew Wall, all rights reserved
@@ -20,10 +21,10 @@ from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
 
 class MyXLastrain(SearchList):
-    
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-  
+
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with additions.
 
@@ -59,12 +60,9 @@ class MyXLastrain(SearchList):
         # Wrap our ts in a ValueHelper
         delta_time_vt = (delta_time, 'second', 'group_deltatime')
         delta_time_vh = ValueHelper(delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
-        
 
-        
         return [{'lastrain_day': lastrain_vh,
                  'lastrain_delta_time': delta_time_vh}]
-
 
 class MyXLastsnow(SearchList):
 

@@ -6,6 +6,7 @@
 """Statistical accumulators. They accumulate the highs, lows, averages,
 etc., of a sequence of records."""
 
+from __future__ import absolute_import
 import math
 
 import configobj
@@ -468,7 +469,7 @@ extract_functions = {'avg'  : Accum.extract_avg,
 # Default mappings from observation types to accumulator classes and functions
 #
 
-defaults_ini = """
+defaults_ini = u"""
 [Accumulator]
     [[dateTime]]
         adder = noop
@@ -512,13 +513,8 @@ defaults_ini = """
     [[windGustDir]]
         extractor = noop
 """
-try:
-    # Python 2
-    from StringIO import StringIO
-except ImportError:
-    # Python 3
-    from io import StringIO
-defaults = configobj.ConfigObj(StringIO(defaults_ini))
+from six.moves import StringIO
+defaults = configobj.ConfigObj(StringIO(defaults_ini), encoding='utf-8')
 del StringIO
 
 accum_type_dict = None

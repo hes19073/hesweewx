@@ -40,16 +40,21 @@
 ##  20 July 2013        v0.1        -Initial implementation
 ##
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import syslog
 import threading
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import math
 import os
 import time
 import ephem
+
 from math import sin
 from datetime import datetime
+#from urllib import urlopen
 
 import weewx
 import weewx.engine
@@ -57,11 +62,12 @@ import weewx.manager
 import weewx.wxformulas
 import weewx.almanac
 import user.zformulas
+
 from weewx.units import convert, obs_group_dict
 from weeutil.weeutil import to_bool, accumulateLeaves
 from weewx.units import CtoF, CtoK, mps_to_mph, kph_to_mph
 
-WEEWXWD_VERSION = '1.2.0b1'
+WEEWXWD_VERSION = '1.2.1'
 
 # Define a dictionary with our API call query details
 WU_queries = [
@@ -330,7 +336,7 @@ davis_fr_dict= {
         193 : 'FORECAST REQUIRES 3 HOURS OF RECENT DATA',
         194 : 'Meist heiter und kälter.',
         195 : 'Meist heiter und kälter.',
-        196 : 'Meist heiter und kälter.',        
+        196 : 'Meist heiter und kälter.',
         }
 
 def logmsg(level, src, msg):
@@ -591,6 +597,49 @@ class WdArchive(weewx.engine.StdService):
             loginf("WdArchive:", "Daily summaries up to date.")
 
 #===============================================================================
+#                              Class WeeArchive
+#===============================================================================
+
+class WeeArchive(weewx.engine.StdService):
+    """ Service to store Weewx-WEE specific archive data. """
+
+    def __init__(self, engine, config_dict):
+        super(WeeArchive, self).__init__(engine, config_dict)
+
+        # Extract our binding from the Weewx-WEE section of the config file. If
+        # it's missing, fill with a default
+        if 'WeewxArchive' in config_dict:
+            self.data_binding = config_dict['WeewxArchive'].get('data_binding', 'wee_binding')
+        else:
+            self.data_binding = 'wee_binding'
+
+        loginf("Weewx-Archive:", "Weewx-Archive will use data binding %s" % self.data_binding)
+
+        # setup our database if needed
+        self.setup_database(config_dict)
+
+        # bind ourselves to NEW_ARCHIVE_RECORD event
+        self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+
+
+    def new_archive_record(self, event):
+        """Called when a new archive record has arrived. """
+
+        # get our manager
+        dbmanager = self.engine.db_binder.get_manager(self.data_binding)
+        # now put the record in the archive
+        dbmanager.addRecord(event.record)
+
+    def setup_database(self, config_dict):
+        """Setup the main database archive"""
+
+        # This will create the database if it doesn't exist, then return an
+        # opened instance of the database manager.
+        dbmanager = self.engine.db_binder.get_manager(self.data_binding, initialize=True)
+        loginf("Weewx-Archive:", "Using binding '%s' to database '%s'" % (self.data_binding, dbmanager.database_name))
+
+
+#===============================================================================
 #                           Class WdGenerateDerived
 #===============================================================================
 
@@ -609,9 +658,110 @@ class WdGenerateDerived(object):
     def __iter__(self):
         return self
 
+    """ Initialize copy weewx.
     def next(self):
         # get our next record
         _rec = self.input_generator.next()
+        _re_wee = weewx.units.to_METRICWX(_rec)
+
+        _re_wee['dateTime'] = _re_wee['dateTime']
+        _re_wee['usUnits'] = _re_wee['usUnits']
+        _re_wee['interval'] = _re_wee['interval']
+        _re_wee['barometer'] = _re_wee['barometer']
+        _re_wee['pressure'] = _re_wee['pressure']
+        _re_wee['altimeter'] = _re_wee['altimeter']
+        _re_wee['inTemp'] = _re_wee['inTemp']
+        _re_wee['outTemp'] = _re_wee['outTemp']
+        _re_wee['inHumidity'] = _re_wee['inHumidity']
+        _re_wee['outHumidity'] = _re_wee['outHumidity']
+        _re_wee['windSpeed'] = _re_wee['windSpeed']
+        _re_wee['windDir'] = _re_wee['windDir']
+        _re_wee['windGust'] = _re_wee['windGust']
+        _re_wee['windGustDir'] = _re_wee['windGustDir']
+        _re_wee['rainRate'] = _re_wee['rainRate']
+        _re_wee['rain'] = _re_wee['rain']
+        _re_wee['stormRain'] = _re_wee['stormRain']
+        _re_wee['dewpoint'] = _re_wee['dewpoint']
+        _re_wee['windchill'] = _re_wee['windchill']
+        _re_wee['heatindex'] = _re_wee['heatindex']
+        _re_wee['ET'] = _re_wee['ET']
+        _re_wee['radiation'] = _re_wee['radiation']
+        _re_wee['UV'] = _re_wee['UV']
+        _re_wee['extraTemp1'] = _re_wee['extraTemp1']
+        _re_wee['extraTemp2'] = _re_wee['extraTemp2']
+        _re_wee['extraTemp3'] = _re_wee['extraTemp3']
+        _re_wee['soilTempO1'] = _re_wee['soilTempO1']
+        _re_wee['soilTempO2'] = _re_wee['soilTempO2']
+        _re_wee['soilTempO3'] = _re_wee['soilTempO3']
+        _re_wee['soilTempO4'] = _re_wee['soilTempO4']
+        _re_wee['soilTempO5'] = _re_wee['soilTempO5']
+        _re_wee['leafTemp1'] = _re_wee['leafTemp1']
+        _re_wee['leafTemp2'] = _re_wee['leafTemp2']
+        _re_wee['extraHumid1'] = _re_wee['extraHumid1']
+        _re_wee['extraHumid2'] = _re_wee['extraHumid2']
+        _re_wee['soilMoist1'] = _re_wee['soilMoist1']
+        _re_wee['soilMoist2'] = _re_wee['soilMoist2']
+        _re_wee['soilMoist3'] = _re_wee['soilMoist3']
+        _re_wee['soilMoist4'] = _re_wee['soilMoist4']
+        _re_wee['leafWet1'] = _re_wee['leafWet1']
+        _re_wee['leafWet2'] = _re_wee['leafWet2']
+        _re_wee['rxCheckPercent'] = _re_wee['rxCheckPercent']
+        _re_wee['txBatteryStatus'] = _re_wee['txBatteryStatus']
+        _re_wee['consBatteryVoltage'] = _re_wee['consBatteryVoltage']
+        _re_wee['hail'] = _re_wee['hail']
+        _re_wee['hailRate'] = _re_wee['hailRate']
+        _re_wee['heatingTemp'] = _re_wee['heatingTemp']
+        _re_wee['heatingVoltage'] = _re_wee['heatingVoltage']
+        _re_wee['supplyVoltage'] = _re_wee['supplyVoltage']
+        _re_wee['referenceVoltage'] = _re_wee['referenceVoltage']
+        _re_wee['windBatteryStatus'] = _re_wee['windBatteryStatus']
+        _re_wee['rainBatteryStatus'] = _re_wee['rainBatteryStatus']
+        _re_wee['outTempBatteryStatus'] = _re_wee['outTempBatteryStatus']
+        _re_wee['lighting'] = _re_wee['lighting']
+        _re_wee['extraTemp4'] = _re_wee['extraTemp4']
+        _re_wee['extraTemp5'] = _re_wee['extraTemp5']
+        _re_wee['extraTemp6'] = _re_wee['extraTemp6']
+        _re_wee['extraTemp7'] = _re_wee['extraTemp7']
+        _re_wee['extraTemp8'] = _re_wee['extraTemp8']
+        _re_wee['extraTemp9'] = _re_wee['extraTemp9']
+        _re_wee['maxSolarRad'] = _re_wee['maxSolarRad']
+        _re_wee['cloudbase'] = _re_wee['cloudbase']
+        _re_wee['humidex'] = _re_wee['humidex']
+        _re_wee['appTemp'] = _re_wee['appTemp']
+        _re_wee['windrun'] = _re_wee['windrun']
+        _re_wee['beaufort'] = _re_wee['beaufort']
+        _re_wee['inDewpoint'] = _re_wee['inDewpoint']
+        _re_wee['inTempBatteryStatus'] = _re_wee['inTempBatteryStatus']
+        _re_wee['absolutF'] = _re_wee['absolutF']
+        _re_wee['sunshineS'] = _re_wee['sunshineS']
+        _re_wee['snow'] = _re_wee['snow']
+        _re_wee['snowRate'] = _re_wee['snowRate']
+        _re_wee['snowTotal'] = _re_wee['snowTotal']
+        _re_wee['wetBulb'] = _re_wee['wetBulb']
+        _re_wee['cbIndex'] = _re_wee['cbIndex']
+        _re_wee['airDensity'] = _re_wee['airDensity']
+        _re_wee['windDruck'] = _re_wee['windDruck']
+        _re_wee['soilTemp1'] = _re_wee['soilTemp1']
+        _re_wee['soilTemp2'] = _re_wee['soilTemp2']
+        _re_wee['soilTemp3'] = _re_wee['soilTemp3']
+        _re_wee['soilTemp4'] = _re_wee['soilTemp4']
+        _re_wee['soilTemp5'] = _re_wee['soilTemp5']
+        _re_wee['dampfDruck'] = _re_wee['dampfDruck']
+        _re_wee['summersimmerIndex'] = _re_wee['summersimmerIndex']
+        _re_wee['SVP'] = _re_wee['SVP']
+        _re_wee['SVPin'] = _re_wee['SVPin']
+        _re_wee['AVP'] = _re_wee['AVP']
+        _re_wee['AVPin'] = _re_wee['AVPin']
+        _re_wee['densityA'] = _re_wee['densityA']
+
+        data_x = weewx.units.to_std_system(_re_wee, _rec['usUnits'])
+        # return our modified record
+        return data_x
+        """ 
+
+    def __next__(self):
+        # get our next record
+        _rec = next(self.input_generator)
         _rec_mwx = weewx.units.to_METRICWX(_rec)
 
         # get our historical humidex, if not available then calculate it
@@ -945,7 +1095,7 @@ class WdSuppArchive(weewx.engine.StdService):
                                                          self.max_WU_tries)
                         logdbg2("WdSuppArchive:", "Downloaded updated Weather Underground information for %s" % (_features,))
                         loginf("WdSuppArchive:", "Downloaded updated Weather Underground information for %s" % (_features,))
-                    except Exception, e:
+                    except Exception as e:
                         loginf("WdSuppArchive:", "Weather Underground API query failure: %s" % (e, ))
                     self.last_WU_query = max(q['last'] for q in self.WU_queries)
                 else:
@@ -1018,11 +1168,12 @@ class WdSuppArchive(weewx.engine.StdService):
         for count in range(max_WU_tries):
             # attempt the call
             try:
-                w = urllib2.urlopen(WU_URL)
+                #w = urllib.request.urlopen(WU_URL)
+                w = urlopen(WU_URL)
                 _WUresponse = w.read()
                 w.close()
                 return _WUresponse
-            except Exception, e:
+            except Exception as e:
                 loginf("WdSuppArchive:", "Failed to get Weather Underground API response on attempt %d: %s" % (count + 1, e))
         else:
             loginf("WdSuppArchive:", "Failed to get Weather Underground API response")
@@ -1136,7 +1287,7 @@ class WdSuppArchive(weewx.engine.StdService):
                 # save our data to the database
                 dbm.addRecord(_data_record)
                 break
-            except Exception, e:
+            except Exception as e:
                 logerr("WdSuppArchive:", 'save failed (attempt %d of %d): %s' %
                        ((count + 1), max_tries, e))
                 logerr("WdSuppArchive:", 'waiting %d seconds before retry' % (retry_wait, ))
@@ -1154,7 +1305,7 @@ class WdSuppArchive(weewx.engine.StdService):
             try:
                 dbm.getSql(sql)
                 break
-            except Exception, e:
+            except Exception as e:
                 logerr("WdSuppArchive:", 'prune failed (attempt %d of %d): %s' % ((count+1), max_tries, e))
                 logerr("WdSuppArchive:", 'waiting %d seconds before retry' % (retry_wait, ))
                 time.sleep(retry_wait)
@@ -1178,7 +1329,7 @@ class WdSuppArchive(weewx.engine.StdService):
         t1 = time.time()
         try:
             dbm.getSql('vacuum')
-        except Exception, e:
+        except Exception as e:
             logerr("WdSuppArchive:", 'Vacuuming database % failed: %s' % (dbm.database_name, e))
 
         t2 = time.time()
@@ -1256,7 +1407,7 @@ def toint(label, value_tbc, default_value):
     if value_tbc is not None:
         try:
             value_tbc = int(value_tbc)
-        except Exception, e:
+        except Exception as e:
             logerr("weewxwd3:toint:", "bad value '%s' for %s" % (value_tbc, label))
             value_tbc = default_value
     return value_tbc
@@ -1308,7 +1459,7 @@ def check_enable(cfg_dict, service, *args):
         for option in args:
             if wdsupp_dict[option] == 'replace_me':
                 raise KeyError(option)
-    except KeyError, e:
+    except KeyError as e:
         logdbg2("weewxwd3:check_enable:", "%s: Missing option %s" % (service, e))
         return None
 

@@ -14,14 +14,19 @@ Thanks to Jay Nugent (WB8TKL) and KRK6 for weather-2.kr6k-V2.1
 """
 
 from __future__ import with_statement
-import syslog
+from __future__ import absolute_import
+from __future__ import print_function
+
 import time
 
-from weewx.units import INHG_PER_MBAR, MILE_PER_KM
+from six import byte2int
+
 import weewx.drivers
+from weewx.units import INHG_PER_MBAR, MILE_PER_KM
+from weeutil.log import logdbg, loginf, logerr
 
 DRIVER_NAME = 'WS1'
-DRIVER_VERSION = '0.25'
+DRIVER_VERSION = '0.30'
 
 
 def loader(config_dict, _):
@@ -37,18 +42,6 @@ DEFAULT_TCP_PORT = 3000
 PACKET_SIZE = 50
 DEBUG_READ = 0
 
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'ws1: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 class WS1Driver(weewx.drivers.AbstractDevice):
     """weewx driver that communicates with an ADS-WS1 station
@@ -250,13 +243,13 @@ class StationSerial(object):
     def get_readings(self):
         buf = self.serial_port.readline()
         if DEBUG_READ >= 2:
-            logdbg("bytes: '%s'" % ' '.join(["%0.2X" % ord(c) for c in buf]))
+            logdbg("bytes: '%s'" % ' '.join(["%0.2X" % byte2int(c) for c in buf]))
         buf = buf.strip()
         return buf
 
     def get_readings_with_retry(self, max_tries=5, wait_before_retry=10):
         import serial
-        for ntries in range(0, max_tries):
+        for ntries in range(max_tries):
             try:
                 buf = self.get_readings()
                 StationData.validate_string(buf)
@@ -402,7 +395,7 @@ class StationSocket(object):
                         raise weewx.WeeWxIOError(ex)
                     if DEBUG_READ >= 2:
                             logdbg("buf: %s" % ' '.join(
-                                   ['%02X' % ord(bc) for bc in buf]))
+                                   ['%02X' % byte2int(bc) for bc in buf]))
             try:
                 buf += self.net_socket.recv(
                     PACKET_SIZE - len(buf), socket.MSG_WAITALL)
@@ -415,7 +408,7 @@ class StationSocket(object):
         return buf
 
     def get_readings_with_retry(self, max_tries=5, wait_before_retry=10):
-        for _ in range(0, max_tries):
+        for _ in range(max_tries):
             buf = ''
             try:
                 buf = self.get_readings()
@@ -464,20 +457,20 @@ class WS1ConfEditor(weewx.drivers.AbstractConfEditor):
 """
 
     def prompt_for_settings(self):
-        print "How is the station connected? tcp, udp, or serial."
+        print("How is the station connected? tcp, udp, or serial.")
         con_mode = self._prompt('mode', 'serial')
         con_mode = con_mode.lower()
 
         if con_mode == 'serial':
-            print "Specify the serial port on which the station is connected, "
+            print("Specify the serial port on which the station is connected, ")
             "for example: /dev/ttyUSB0 or /dev/ttyS0."
             port = self._prompt('port', '/dev/ttyUSB0')
         elif con_mode == 'tcp' or con_mode == 'udp':
-            print "Specify the IP address and port of the station. For "
+            print("Specify the IP address and port of the station. For ")
             "example: 192.168.36.40:3000."
             port = self._prompt('port', '192.168.36.40:3000')
 
-        print "Specify how long to wait for a response, in seconds."
+        print("Specify how long to wait for a response, in seconds.")
         timeout = self._prompt('timeout', 3)
 
         return {'mode': con_mode, 'port': port, 'timeout': timeout}
@@ -489,6 +482,7 @@ class WS1ConfEditor(weewx.drivers.AbstractConfEditor):
 # PYTHONPATH=bin python bin/weewx/drivers/ws1.py
 
 if __name__ == '__main__':
+    import syslog
     import optparse
 
     usage = """%prog [options] [--help]"""
@@ -504,9 +498,9 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
-        print "ADS WS1 driver version %s" % DRIVER_VERSION
+        print("ADS WS1 driver version %s" % DRIVER_VERSION)
         exit(0)
 
     with StationSerial(options.port) as s:
         while True:
-            print time.time(), s.get_readings()
+            print(time.time(), s.get_readings())

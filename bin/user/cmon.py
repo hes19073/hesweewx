@@ -112,7 +112,8 @@ then load it using this configuration:
 # FIXME: deal with MB/GB in memory sizes
 # FIXME: save the counts or save the differences?  for now the differences
 
-from __future__ import with_statement
+from __future__ import print_function
+
 import os
 import math
 import platform
@@ -237,16 +238,6 @@ schema = [
     ('powerG', 'REAL'),      # Watt Gesamt
     ('energyR', 'REAL'),      # Watt/ h Prozessor
     ('energyG', 'REAL'),      # Watt/ h Gesamt
-    #('rxCheckPercent', 'REAL'),
-    #('windBatteryStatus', 'REAL'),
-    #('rainBatteryStatus', 'REAL'),
-    #('outTempBatteryStatus', 'REAL'),
-    #('inTempBatteryStatus', 'REAL'),
-    #('txBatteryStatus', 'REAL'),
-    #('consBatteryVoltage', 'REAL'),
-    #('heatingVoltage',       'REAL'),
-    #('supplyVoltage',        'REAL'),
-    #('referenceVoltage',     'REAL'),
     ]
 
 
@@ -335,7 +326,7 @@ class Collector(object):
                     m = Collector._DIGITS.search(line)
                     if m:
                         record['ups_time'] = float(m.group())
-        except (ValueError, IOError, KeyError), e:
+        except (ValueError, IOError, KeyError) as e:
             logerr('apcups_info failed: %s' % e)
         return record
 
@@ -351,7 +342,7 @@ class Collector(object):
             cmd = '%s measure_temp' % Collector._RPI_VCGENCMD
             p = Popen(cmd, shell=True, stdout=PIPE)
             o = p.communicate()[0]
-            record['core_temp'] = float(o.replace("'C\n",'').partition('=')[2])
+            record['core_temp'] = float(o.replace("'C\n", '').partition('=')[2])
             cmd = '%s measure_volts' % Collector._RPI_VCGENCMD
             p = Popen(cmd, shell=True, stdout=PIPE)
             o = p.communicate()[0]
@@ -366,7 +357,7 @@ class Collector(object):
                 m = Collector._RPI_MEM.search(line)
                 if m:
                     record[m.group(1) + '_mem'] = float(m.group(2))
-        except (ValueError, IOError, KeyError), e:
+        except (ValueError, IOError, KeyError) as e:
             logerr('rpi_info failed: %s' % e)
         return record
 
@@ -397,7 +388,6 @@ class Collector(object):
             o = p.communicate()[0]
             record['cpu_ampere'] = float(o.replace("'C\n",'').partition('=')[2])
 
-            
             cmd = '%s measure_mem' % Collector._BPI_VCGENCMD
             p = Popen(cmd, shell=True, stdout=PIPE)
             o = p.communicate()[0]
@@ -422,7 +412,7 @@ class LinuxCollector(Collector):
             cpuinfo = self._readproc_dict(fn)
             for key in cpuinfo:
                 loginf('cpuinfo: %s: %s' % (key, cpuinfo[key]))
-        except Exception, e:
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
 
         self.ignored_mounts = ignored_mounts
@@ -487,7 +477,7 @@ class LinuxCollector(Collector):
                 record['swap_total'] = int(meminfo['SwapTotal'].split()[0]) # kB
                 record['swap_free'] = int(meminfo['SwapFree'].split()[0]) # kB
                 record['swap_used'] = record['swap_total'] - record['swap_free']
-        except Exception, e:
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
 
         # get cpu usage
@@ -496,11 +486,11 @@ class LinuxCollector(Collector):
             cpuinfo = self._readproc_lines(fn)
             if cpuinfo:
                 values = cpuinfo['cpu'].split()[0:7]
-                for i,key in enumerate(self._CPU_KEYS):
-                    if self.last_cpu.has_key(key):
-                        record['cpu_'+key] = int(values[i]) - self.last_cpu[key]
-                    self.last_cpu[key] = int(values[i])
-        except Exception, e:
+                for i, k in enumerate(self._CPU_KEYS):
+                    if k in self.last_cpu:
+                        record['cpu_' + k] = int(values[i]) - self.last_cpu[k]
+                    self.last_cpu[k] = int(values[i])
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
 
         # get network usage
@@ -510,18 +500,19 @@ class LinuxCollector(Collector):
             if netinfo:
                 for iface in netinfo:
                     values = netinfo[iface].split()
-                    for i, key in enumerate(self._NET_KEYS):
-                        if not self.last_net.has_key(iface):
+                    for i, k in enumerate(self._NET_KEYS):
+                        if iface not in self.last_net:
                             self.last_net[iface] = {}
-                        if self.last_net[iface].has_key(key):
-                            record['net_'+iface+'_'+key] = int(values[i]) - self.last_net[iface][key]
-                            if record['net_'+iface+'_'+key] < 0:
+                        if k in self.last_net[iface]:
+                            x = int(values[i]) - self.last_net[iface][k]
+                            if x < 0:
                                 maxcnt = 0x100000000 # 32-bit counter
-                                if record['net_'+iface+'_'+key] + maxcnt < 0:
+                                if x + maxcnt < 0:
                                     maxcnt = 0x10000000000000000 # 64-bit counter
-                                record['net_'+iface+'_'+key] += maxcnt
-                        self.last_net[iface][key] = int(values[i])
-        except Exception, e:
+                                x += maxcnt
+                            record['net_' + iface + '_' + k] = x
+                        self.last_net[iface][k] = int(values[i])
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
 
 #        uptimestr = _readproc_line('/proc/uptime')
@@ -532,38 +523,45 @@ class LinuxCollector(Collector):
         try:
             loadstr = self._readproc_line(fn)
             if loadstr:
-                (load1,load5,load15,nproc) = loadstr.split()[0:4]
+                (load1, load5, load15, nproc) = loadstr.split()[0:4]
                 record['load1'] = float(load1)
                 record['load5'] = float(load5)
                 record['load15'] = float(load15)
-                (num_proc,tot_proc) = nproc.split('/')
+                (num_proc, tot_proc) = nproc.split('/')
                 record['proc_active'] = int(num_proc)
                 record['proc_total'] = int(tot_proc)
-        except Exception, e:
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
 
         # read cpu temperature
-        tdir = '/sys/class/hwmon/hwmon0/device'
+        tdir = '/sys/class/hwmon/hwmon0'
         # rpi keeps cpu temperature in a different location
         tfile = '/sys/class/thermal/thermal_zone0/temp'
         if os.path.exists(tdir):
             try:
                 for f in os.listdir(tdir):
                     if f.endswith('_input'):
-                        s = self._readproc_line(os.path.join(tdir,f))
+                        s = self._readproc_line(os.path.join(tdir, f))
                         if s and len(s):
-                            n = f.replace('_input','')
-                            tC = int(s) / 1000. # degree C
-                            tF = 32.0 + tC * 9.0 / 5.0
-                            record['cpu_' + n] = tC
-            except Exception, e:
+                            n = f.replace('_input', '')
+                            t_C = int(s) / 1000.0 # degree C
+                            record['cpu_' + n] = t_C
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (tdir, e))
-        elif os.path.exists(tfile):
+        #elif os.path.exists(tfile):
+        #    try:
+        #        s = self._readproc_line(tfile)
+        #        t_C = int(s) / 1000 # degree C
+        #        record['cpu_temp'] = t_C
+        #    except Exception, e:
+        #        logdbg("read failed for %s: %s" % (tfile, e))
+
+        if os.path.exists(tfile):
             try:
                 s = self._readproc_line(tfile)
-                tC = int(s) / 1000. # degree C
-                record['cpu_temp'] = tC
-            except Exception, e:
+                t_C = int(s) / 1000.0 # degree C
+                record['cpu_temp'] = t_C
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (tfile, e))
 
 
@@ -581,49 +579,49 @@ class LinuxCollector(Collector):
                 s = self._readproc_line(c1_dir)
                 t_kern1 = float(s) / 1000. # takt cpu 0 kHz
                 record['cpu_kern1'] = t_kern1
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (c1_dir, e))
         if os.path.exists(c2_dir):
             try:
                 s = self._readproc_line(c2_dir)
                 t_kern2 = float(s) / 1000. # takt cpu 2 kHz
                 record['cpu_kern2'] = t_kern2
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (c2_dir, e))
         if os.path.exists(t_bpi):
             try:
                 s = self._readproc_line(t_bpi)
                 tC = float(s) / 1000. # degree C
                 record['cpu_temp'] = tC
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (t_bpi, e))
         if os.path.exists(v_bpi):
             try:
                 s = self._readproc_line(v_bpi)
                 tVolt = float(s) / 1000000. # Volt / 1.000.000
                 record['cpu_volt'] = tVolt
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (v_bpi, e))
         if os.path.exists(a_bpi):
             try:
                 s = self._readproc_line(a_bpi)
                 tAmpere = float(s) / 1000. # mA / 1.000 
                 record['cpu_ampere'] = tAmpere
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (a_bpi, e))
         if os.path.exists(v1_bpi):
             try:
                 s = self._readproc_line(v1_bpi)
                 t_Volt = float(s) / 1000000. # Volt / 1.000.00
                 record['usb_volt'] = t_Volt
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (v1_bpi, e))
         if os.path.exists(a1_bpi):
             try:
                 s = self._readproc_line(a1_bpi)
                 t_Ampere = float(s) / 1000. # mA / 1.000
                 record['usb_ampere'] = t_Ampere
-            except Exception, e:
+            except Exception as e:
                 logdbg("read failed for %s: %s" % (a1_bpi, e))
 
         if os.path.exists(a1_bpi):
@@ -649,7 +647,7 @@ class LinuxCollector(Collector):
                             break
                     if not ignore:
                         disks.append(mntpt)
-        except Exception, e:
+        except Exception as e:
             logdbg("read failed for %s: %s" % (fn, e))
         for disk in disks:
             label = disk.replace('/', '_')
@@ -756,14 +754,14 @@ class ComputerMonitor(StdService):
         try:
             # sqlite databases need some help to stay small
             self.dbm.getSql('vacuum')
-        except Exception, e:
+        except Exception:
             pass
 
     def get_data(self, now_ts, last_ts):
         record = self.collector.get_data(now_ts)
-        record['interval'] = int((now_ts - last_ts) / 60)
+        record['interval'] = max(1, int((now_ts - last_ts) / 60))
+
         return record
-        
 
 
 # To test this extension, do the following:
@@ -771,7 +769,7 @@ class ComputerMonitor(StdService):
 # cd /home/weewx
 # PYTHONPATH=bin python bin/user/cmon.py
 #
-if __name__=="__main__":
+if __name__ == "__main__":
     usage = """%prog [options] [--help] [--debug]"""
 
     def main():
@@ -824,7 +822,7 @@ if __name__=="__main__":
         else:
             s = mgr_dict['schema']
         if 'interval' in s:
-            print "Column 'interval' already exists, update not necessary"
+            print("Column 'interval' already exists, update not necessary")
             return
 
         # make a copy of the database dict
@@ -837,11 +835,11 @@ if __name__=="__main__":
         except weedb.DatabaseExists:
             ans = None
             while ans not in ['y', 'n']:
-                ans = raw_input("New database '%s' already exists. Delete it (y/n)? " % (new_db_dict['database_name'],))
+                ans = input("New database '%s' already exists. Delete it (y/n)? " % (new_db_dict['database_name'],))
                 if ans == 'y':
                     weedb.drop(new_db_dict)
                 elif ans == 'n':
-                    print "update aborted"
+                    print("update aborted")
                     return
         except sqlite3.OperationalError:
             pass
@@ -849,11 +847,11 @@ if __name__=="__main__":
         # see if we really should do this
         ans = None
         while ans not in ['y', 'n']:
-            ans = raw_input("Create new database %s (y/n)? " % new_db_dict['database_name'])
+            ans = input("Create new database %s (y/n)? " % new_db_dict['database_name'])
             if ans == 'y':
                 break
             elif ans == 'n':
-                print "update aborted"
+                print("update aborted")
                 return
 
         # copy the data over
@@ -863,23 +861,23 @@ if __name__=="__main__":
                 last_ts = None
                 for r in old_mgr.genBatchRecords():
                     cnt += 1
-                    print "record %d\r" % cnt,
+                    print("record %d\r" % cnt, end=' ')
                     ival = r['dateTime'] - last_ts if last_ts else 0
                     r['interval'] = ival
                     new_mgr.addRecord(r)
                     last_ts = r['dateTime']
-        print "copied %d records\n" % cnt
+        print("copied %d records\n" % cnt)
 
     def test_collector():
         c = get_collector()
         while True:
-            print c.get_data()
+            print(c.get_data())
             time.sleep(5)
 
     def test_driver():
         driver = ComputerMonitorDriver()
         for p in driver.genLoopPackets():
-            print p
+            print(p)
 
     def test_service():
         from weewx.engine import StdEngine
@@ -915,7 +913,7 @@ if __name__=="__main__":
         for _ in range(4):
             if last_ts is not None:
                 record = svc.get_data(now_ts, last_ts)
-                print record
+                print(record)
             last_ts = now_ts
             time.sleep(5)
         os.remove('/tmp/cmon.sdb')

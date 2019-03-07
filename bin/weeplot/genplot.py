@@ -1,14 +1,19 @@
 #
-#    Copyright (c) 2009-2016 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 """Routines for generating image plots.
 """
+from __future__ import absolute_import
 import colorsys
 import locale
 import os
 import time
+
+import six
+from six.moves import zip
+
 try:
     from PIL import Image, ImageDraw
 except ImportError:
@@ -16,7 +21,7 @@ except ImportError:
 
 import weeplot.utilities
 import weeutil.weeutil
-from weeutil.weeutil import to_unicode
+import weewx
 
 # NB: All labels passed in should be in UTF-8. They are then converted to Unicode, which
 # some fonts support, others don't. If the chosen font does not support Unicode, then the label
@@ -32,7 +37,7 @@ class GeneralPlot(object):
         config_dict: an instance of ConfigObj, or something that looks like it.
         
         """
-        
+
         self.line_list = []
         
         self.xscale = (None, None, None)
@@ -63,7 +68,7 @@ class GeneralPlot(object):
         self.unit_label_font_size   = int(config_dict.get('unit_label_font_size', 10)) * self.anti_alias
         self.unit_label_position    = (10 * self.anti_alias, 0)
 
-        self.bottom_label           = ""
+        self.bottom_label           = u""
         self.bottom_label_font_path = config_dict.get('bottom_label_font_path')
         self.bottom_label_font_color= weeplot.utilities.tobgr(config_dict.get('bottom_label_font_color', '0x000000'))
         self.bottom_label_font_size = int(config_dict.get('bottom_label_font_size', 10)) * self.anti_alias
@@ -73,8 +78,8 @@ class GeneralPlot(object):
         self.axis_label_font_color  = weeplot.utilities.tobgr(config_dict.get('axis_label_font_color', '0x000000'))
         self.axis_label_font_size   = int(config_dict.get('axis_label_font_size', 10)) * self.anti_alias
 
-        self.x_label_format         = to_unicode(config_dict.get('x_label_format'))
-        self.y_label_format         = to_unicode(config_dict.get('y_label_format'))
+        self.x_label_format         = config_dict.get('x_label_format')
+        self.y_label_format         = config_dict.get('y_label_format')
         
         self.x_nticks               = int(config_dict.get('x_nticks', 10))
         self.y_nticks               = int(config_dict.get('y_nticks', 10))
@@ -96,7 +101,7 @@ class GeneralPlot(object):
         self.rose_diameter          = int(config_dict.get('rose_diameter', 10))
         self.rose_position          = (self.lmargin + self.padding + 5, self.image_height - self.bmargin - self.padding - self.rose_height)
         self.rose_rotation          = None
-        self.rose_label             = to_unicode(config_dict.get('rose_label', 'N'))
+        self.rose_label             = config_dict.get('rose_label', 'N')
         self.rose_label_font_path   = config_dict.get('rose_label_font_path', self.bottom_label_font_path)
         self.rose_label_font_size   = int(config_dict.get('rose_label_font_size', 10))  
         self.rose_label_font_color  = weeplot.utilities.tobgr(config_dict.get('rose_label_font_color', '0x000000'))
@@ -129,23 +134,30 @@ class GeneralPlot(object):
         self.rose_label_font_path = self.normalize_path(
             skin_dir, self.rose_label_font_path)
 
+        if weewx.debug:
+            assert(self.x_label_format is None or isinstance(self.x_label_format, six.text_type))
+            assert(self.y_label_format is None or isinstance(self.y_label_format, six.text_type))
+            assert(self.rose_label is None or isinstance(self.rose_label, six.text_type))
+            assert(self.bottom_label is None or isinstance(self.bottom_label, six.text_type))
+            assert(self.unit_label is None or isinstance(self.unit_label, six.text_type))
+
     @staticmethod
     def normalize_path(skin_dir, path):
-        if os.path.isabs(path):
-            return path
+        if path is None:
+            return None
         return os.path.join(skin_dir, path)
 
     def setBottomLabel(self, bottom_label):
         """Set the label to be put at the bottom of the plot.
         
         """
-        self.bottom_label = to_unicode(bottom_label)
+        self.bottom_label = bottom_label
         
     def setUnitLabel(self, unit_label):
         """Set the label to be used to show the units of the plot.
         
         """
-        self.unit_label = to_unicode(unit_label)
+        self.unit_label = unit_label
         
     def setXScaling(self, xscale):
         """Set the X scaling.
@@ -168,7 +180,7 @@ class GeneralPlot(object):
         
         """
         if None in line.x:
-            raise weeplot.ViolatedPrecondition, "X vector cannot have any values 'None' "
+            raise weeplot.ViolatedPrecondition("X vector cannot have any values 'None' ")
         self.line_list.append(line)
 
     def setLocation(self, lat, lon):
@@ -321,7 +333,7 @@ class GeneralPlot(object):
                                                                 self.axis_label_font_size)
         
         # Draw the (constant y) grid lines 
-        for i in xrange(nygridlines) :
+        for i in range(nygridlines) :
             y = self.yscale[0] + i * self.yscale[2]
             sdraw.line((self.xscale[0], self.xscale[1]), (y, y), fill=self.chart_gridline_color,
                        width=self.anti_alias)
@@ -501,7 +513,7 @@ class GeneralPlot(object):
             if line.plot_type == 'vector':
                 try:
                     # For progressive vector plots, we want the magnitude of the complex vector
-                    yline_max = max(abs(c) for c in filter(lambda v : v is not None, line.y))
+                    yline_max = max(abs(c) for c in [v for v in line.y if v is not None])
                 except ValueError:
                     yline_max = None
                 yline_min = - yline_max if yline_max is not None else None
@@ -572,11 +584,15 @@ class TimePlot(GeneralPlot) :
         if self.x_label_format is None:
             return ''
         time_tuple = time.localtime(x)
-        # The function time.strftime() still does not support Unicode, so we have to explicitly
-        # convert it to UTF8, then back again:
-        xlabel = to_unicode(time.strftime(self.x_label_format.encode('utf8'), time_tuple))
+        # There are still some strftimes out there that don't support Unicode.
+        try:
+            xlabel = time.strftime(self.x_label_format, time_tuple)
+        except UnicodeEncodeError:
+            # Convert it to UTF8, then back again:
+            xlabel = time.strftime(self.x_label_format.encode('utf-8'), time_tuple).decode('utf-8')
         return xlabel
-    
+
+
 class PlotLine(object):
     """Represents a single line (or bar) in a plot.
     
@@ -586,7 +602,7 @@ class PlotLine(object):
                  bar_width=None, vector_rotate = None, gap_fraction=None):
         self.x               = x
         self.y               = y
-        self.label           = to_unicode(label)
+        self.label           = label
         self.plot_type       = plot_type
         self.line_type       = line_type
         self.marker_type     = marker_type
@@ -609,13 +625,13 @@ class UniDraw(ImageDraw.ImageDraw):
         try:
             return ImageDraw.ImageDraw.text(self, position, string, **options)
         except UnicodeEncodeError:
-            return ImageDraw.ImageDraw.text(self, position, string.encode('utf8'), **options)
+            return ImageDraw.ImageDraw.text(self, position, string.encode('utf-8'), **options)
         
     def textsize(self, string, **options):
         try:
             return ImageDraw.ImageDraw.textsize(self, string, **options)
         except UnicodeEncodeError:
-            return ImageDraw.ImageDraw.textsize(self, string.encode('utf8'), **options)
+            return ImageDraw.ImageDraw.textsize(self, string.encode('utf-8'), **options)
             
             
 def blend_hls(c, bg, alpha):

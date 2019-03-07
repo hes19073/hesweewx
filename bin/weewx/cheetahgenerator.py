@@ -55,14 +55,14 @@ Example:
 
 """
 
-from __future__ import with_statement
+from __future__ import absolute_import
 import os.path
-import syslog
 import time
 import datetime
 
 import configobj
 
+import six
 import Cheetah.Template
 import Cheetah.Filters
 
@@ -75,6 +75,7 @@ import weewx.units
 import weewx.tags
 from weeutil.weeutil import to_bool, to_int, timestamp_to_string
 from weeutil.config import search_up
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 # The default search list includes standard information sources that should be
 # useful in most templates.
@@ -86,20 +87,6 @@ default_search_list = [
     "weewx.cheetahgenerator.UnitInfo",
     "weewx.cheetahgenerator.Extras"]
 
-def logmsg(lvl, msg):
-    syslog.syslog(lvl, 'cheetahgenerator: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
-def logcrt(msg):
-    logmsg(syslog.LOG_CRIT, msg)
 
 # =============================================================================
 # CheetahGenerator
@@ -126,7 +113,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
     generator_dict = {'SummaryByDay'  : weeutil.weeutil.genDaySpans,
                       'SummaryByMonth': weeutil.weeutil.genMonthSpans,
                       'SummaryByYear' : weeutil.weeutil.genYearSpans}
-    
+
     format_dict = {'SummaryByDay'  : "%Y-%m-%d",
                    'SummaryByMonth': "%Y-%m",
                    'SummaryByYear' : "%Y"}
@@ -137,16 +124,16 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         t1 = time.time()
 
         self.setup()
-        
+
         # Make a copy of the skin dictionary (we will be modifying it):
         gen_dict = configobj.ConfigObj(self.skin_dict.dict())
-        
+
         # Look for options in [CheetahGenerator],
         section_name = "CheetahGenerator"
         # but accept options from [FileGenerator] for backward compatibility.
         if "FileGenerator" in gen_dict and "CheetahGenerator" not in gen_dict:
             section_name = "FileGenerator"
-        
+
         # The default summary time span is 'None'.
         gen_dict[section_name]['summarize_by'] = 'None'
 
@@ -170,7 +157,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         # This dictionary will hold the formatted dates of all generated files
         self.outputted_dict = {}
         for k in CheetahGenerator.generator_dict:
-            self.outputted_dict[k] = []; 
+            self.outputted_dict[k] = [];
 
         self.formatter = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter = weewx.units.Converter.fromSkinDict(self.skin_dict)
@@ -199,13 +186,13 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                 class_ = weeutil.weeutil._get_object(x)
                 # Then instantiate the class, passing self as the sole argument
                 self.search_list_objs.append(class_(self))
-                
+
     def teardown(self):
         """Delete any extension objects we created to prevent back references
         from slowing garbage collection"""
         while len(self.search_list_objs):
             del self.search_list_objs[-1]
-            
+
     def generate(self, section, gen_ts):
         """Generate one or more reports for the indicated section.  Each
         section in a period is a report.  A report has one or more templates.
@@ -216,14 +203,14 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         
         gen_ts: The report will be current to this time.
         """
-        
+
         ngen = 0
         # Go through each subsection (if any) of this section,
         # generating from any templates they may contain
         for subsection in section.sections:
             # Sections 'SummaryByMonth' and 'SummaryByYear' imply summarize_by
             # certain time spans
-            if not section[subsection].has_key('summarize_by'):
+            if 'summarize_by' not in section[subsection]:
                 if subsection == 'SummaryByDay':
                     section[subsection]['summarize_by'] = 'SummaryByDay'
                 elif subsection == 'SummaryByMonth':
@@ -236,9 +223,9 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         # We have finished recursively processing any subsections in this
         # section. Time to do the section itself. If there is no option
         # 'template', then there isn't anything to do. Return.
-        if not section.has_key('template'):
+        if 'template' not in section:
             return ngen
-        
+
         # Change directory to the skin subdirectory.  We use absolute paths
         # for cheetah, so the directory change is not necessary for generating
         # files.  However, changing to the skin directory provides a known
@@ -249,7 +236,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                               self.skin_dict.get('skin', '')))
 
         report_dict = weeutil.weeutil.accumulateLeaves(section)
-        
+
         (template, dest_dir, encoding, default_binding) = self._prepGen(report_dict)
 
         # Get start and stop times        
@@ -265,23 +252,24 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             if record:
                 stop_ts = record['dateTime']
             else:
-                loginf('Skipping template %s: generate time %s not in database' % (section['template'], timestamp_to_string(gen_ts)) )
+                loginf('Skipping template %s: generate time %s not in database'
+                       % (section['template'], timestamp_to_string(gen_ts)))
                 return ngen
         else:
             stop_ts = default_archive.lastGoodStamp()
-        
+
         # Get an appropriate generator function
         summarize_by = report_dict['summarize_by']
         if summarize_by in CheetahGenerator.generator_dict:
             _spangen = CheetahGenerator.generator_dict[summarize_by]
         else:
             # Just a single timespan to generate. Use a lambda expression.
-            _spangen = lambda start_ts, stop_ts : [weeutil.weeutil.TimeSpan(start_ts, stop_ts)]
+            _spangen = lambda start_ts, stop_ts: [weeutil.weeutil.TimeSpan(start_ts, stop_ts)]
 
         # Use the generator function
         for timespan in _spangen(start_ts, stop_ts):
             start_tt = time.localtime(timespan.start)
-            stop_tt  = time.localtime(timespan.stop)
+            stop_tt = time.localtime(timespan.stop)
 
             if summarize_by in CheetahGenerator.format_dict:
                 # This is a "SummaryBy" type generation. If it hasn't been done already, save the
@@ -323,14 +311,36 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             tmpname = _fullname + '.tmp'
 
             try:
-                compiled_template = Cheetah.Template.Template(
-                    file=template,
-                    searchList=searchList,
-                    filter=encoding,
-                    filtersLib=weewx.cheetahgenerator)
-                with open(tmpname, mode='w') as fd:
-                    fd.write(str(compiled_template))
+                # Cheetah V2 will crash if given a template file name in Unicode. So,
+                # be prepared to catch the exception and convert to ascii:
+                try:
+                    # TODO: Look into cacheing the compiled template.
+                    compiled_template = Cheetah.Template.Template(
+                        file=template,
+                        searchList=searchList,
+                        filter='assure_unicode',
+                        filtersLib=weewx.cheetahgenerator)
+                except TypeError:
+                    compiled_template = Cheetah.Template.Template(
+                        file=template.encode('ascii', 'ignore'),
+                        searchList=searchList,
+                        filter='assure_unicode',
+                        filtersLib=weewx.cheetahgenerator)
+
+                unicode_string = compiled_template.respond()
+
+                if encoding == 'html_entities':
+                    byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
+                elif encoding == 'strict_ascii':
+                    byte_string = unicode_string.encode('ascii', 'ignore')
+                else:
+                    byte_string = unicode_string.encode('utf8')
+
+                # Open in binary mode. We are writing a byte-string, not a string
+                with open(tmpname, mode='wb') as fd:
+                    fd.write(byte_string)
                 os.rename(tmpname, _fullname)
+
             except Exception as e:
                 # We would like to get better feedback when there are cheetah
                 # compiler failures, but there seem to be no hooks for this.
@@ -365,10 +375,10 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                        'year_name'  : timespan_start_tt[0],
                        'encoding'   : encoding},
                       self.outputted_dict]
-        
+
         # Bind to the default_binding:
         db_lookup = self.db_binder.bind_default(default_binding)
-        
+
         # Then add the V3.X style search list extensions
         for obj in self.search_list_objs:
             searchList += obj.get_extension_list(timespan, db_lookup)
@@ -385,10 +395,10 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         # If the filename contains YYYY, MM, DD or WW, then do the replacement
         if 'YYYY' in _filename or 'MM' in _filename or 'DD' in _filename or 'WW' in _filename:
             # Get strings representing year, month, and day
-            _yr_str  = "%4d"  % ref_tt[0]
-            _mo_str  = "%02d" % ref_tt[1]
-            _day_str = "%02d"  % ref_tt[2]
-            _week_str = "%02d"  % datetime.date( ref_tt[0], ref_tt[1], ref_tt[2] ).isocalendar()[1];
+            _yr_str = "%4d" % ref_tt[0]
+            _mo_str = "%02d" % ref_tt[1]
+            _day_str = "%02d" % ref_tt[2]
+            _week_str = "%02d" % datetime.date(ref_tt[0], ref_tt[1], ref_tt[2]).isocalendar()[1];
             # Replace any instances of 'YYYY' with the year string
             _filename = _filename.replace('YYYY', _yr_str)
             # Do the same thing with the month...
@@ -405,13 +415,11 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         binding."""
 
         # -------- Template ---------
-        # Cheetah will crash if given a template file name in Unicode. So,
-        # convert to ascii, ignoring all characters that cannot be converted:
         template = os.path.join(self.config_dict['WEEWX_ROOT'],
                                 self.config_dict['StdReport']['SKIN_ROOT'],
                                 report_dict['skin'],
-                                report_dict['template']).encode('ascii', 'ignore')
-        
+                                report_dict['template'])
+
         # ------ Destination directory --------
         destination_dir = os.path.join(self.config_dict['WEEWX_ROOT'],
                                        report_dict['HTML_ROOT'],
@@ -426,6 +434,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
 
         # ------ Encoding ------
         encoding = report_dict.get('encoding', 'html_entities').strip().lower()
+        # Convert to 'utf8'. This is because 'utf-8' cannot be a class name
         if encoding == 'utf-8':
             encoding = 'utf8'
 
@@ -433,6 +442,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         default_binding = report_dict['data_binding']
 
         return (template, destination_dir, encoding, default_binding)
+
 
 # =============================================================================
 # Classes used to implement the Search list
@@ -461,6 +471,7 @@ class SearchList(object):
                    binding will be used.
         """
         return [self]
+
 
 class Almanac(SearchList):
     """Class that implements the '$almanac' tag."""
@@ -503,7 +514,7 @@ class Almanac(SearchList):
                         temperature_C = weewx.units.convert(weewx.units.as_value_tuple(rec, 'outTemp'), "degree_C")[0]
                     if 'barometer' in rec:
                         pressure_mbar = weewx.units.convert(weewx.units.as_value_tuple(rec, 'barometer'), "mbar")[0]
-        
+
         self.moonphases = generator.skin_dict.get('Almanac', {}).get('moon_phases', weeutil.Moon.moon_phases)
 
         altitude_vt = weewx.units.convert(generator.stn_info.altitude_vt, "meter")
@@ -517,6 +528,7 @@ class Almanac(SearchList):
                                              moon_phases=self.moonphases,
                                              formatter=generator.formatter)
 
+
 class Station(SearchList):
     """Class that implements the $station tag."""
 
@@ -526,27 +538,28 @@ class Station(SearchList):
                                              generator.formatter,
                                              generator.converter,
                                              generator.skin_dict)
-        
+
+
 class Current(SearchList):
     """Class that implements the $current tag"""
-     
+
     def get_extension_list(self, timespan, db_lookup):
         record_binder = weewx.tags.RecordBinder(db_lookup, timespan.stop,
-                                                self.generator.formatter, self.generator.converter, 
+                                                self.generator.formatter, self.generator.converter,
                                                 record=self.generator.record)
         return [record_binder]
-    
+
+
 class Stats(SearchList):
     """Class that implements the time-based statistical tags, such
     as $day.outTemp.max"""
-
 
     def get_extension_list(self, timespan, db_lookup):
         try:
             trend_dict = self.generator.skin_dict['Units']['Trend']
         except KeyError:
-            trend_dict = {'time_delta' : 10800,
-                          'time_grace' : 300}
+            trend_dict = {'time_delta': 10800,
+                          'time_grace': 300}
 
         stats = weewx.tags.TimeBinder(
             db_lookup,
@@ -560,6 +573,7 @@ class Stats(SearchList):
 
         return [stats]
 
+
 class UnitInfo(SearchList):
     """Class that implements the $unit and $obs tags."""
 
@@ -571,6 +585,19 @@ class UnitInfo(SearchList):
         # This implements the $obs tag:
         self.obs = weewx.units.ObsInfoHelper(generator.skin_dict)
 
+
+if six.PY3:
+    # Dictionaries in Python 3 no longer have the "has_key()" function.
+    # This will break a lot of skins. Use a wrapper to provide it
+    class ExtraDict(dict):
+
+        def has_key(self, key):
+            return key in self
+else:
+    # Not necessary in Python 2
+    ExtraDict = dict
+
+
 class Extras(SearchList):
     """Class for exposing the [Extras] section in the skin config dictionary
     as tag $Extras."""
@@ -580,48 +607,31 @@ class Extras(SearchList):
         # If the user has supplied an '[Extras]' section in the skin
         # dictionary, include it in the search list. Otherwise, just include
         # an empty dictionary.
-        self.Extras = generator.skin_dict['Extras'] if generator.skin_dict.has_key('Extras') else {}
-    
+        self.Extras = ExtraDict(generator.skin_dict['Extras'] if 'Extras' in generator.skin_dict else {})
+
+
 # =============================================================================
-# Filters used for encoding
+# Filter
 # =============================================================================
 
-class html_entities(Cheetah.Filters.Filter):
 
-    def filter(self, val, **dummy_kw): #@ReservedAssignment
-        """Filter incoming strings so they use HTML entity characters"""
-        if isinstance(val, unicode):
-            filtered = val.encode('ascii', 'xmlcharrefreplace')
-        elif val is None:
-            filtered = ''
-        elif isinstance(val, str):
-            filtered = val.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+class assure_unicode(Cheetah.Filters.Filter):
+    """Assures that whatever a search list extension might return, it will be converted into
+    Unicode. """
+
+    def filter(self, val, **dummy_kw):
+        if val is None:
+            filtered = u''
+        elif isinstance(val, six.text_type):
+            # It's already Unicode. Just return it.
+            filtered = val
+        elif isinstance(val, six.binary_type):
+            # It's a byte-sequence. Decode into Unicode.
+            filtered = val.decode('utf-8')
         else:
-            filtered = self.filter(str(val))
-        return filtered
-
-class strict_ascii(Cheetah.Filters.Filter):
-
-    def filter(self, val, **dummy_kw): #@ReservedAssignment
-        """Filter incoming strings to strip out any non-ascii characters"""
-        if isinstance(val, unicode):
-            filtered = val.encode('ascii', 'ignore')
-        elif val is None:
-            filtered = ''
-        elif isinstance(val, str):
-            filtered = val.decode('utf-8').encode('ascii', 'ignore')
-        else:
-            filtered = self.filter(str(val))
-        return filtered
-    
-class utf8(Cheetah.Filters.Filter):
-
-    def filter(self, val, **dummy_kw): #@ReservedAssignment
-        """Filter incoming strings, converting to UTF-8"""
-        if isinstance(val, unicode):
-            filtered = val.encode('utf8')
-        elif val is None:
-            filtered = ''
-        else:
-            filtered = str(val)
+            # It's not Unicode and it's not a byte-string. Must be a primitive.
+            #   Under Python 2, six.text_type is equivalent to calling unicode(val).
+            #   Under Python 3, it is equivalent to calling str(val).
+            # So, the results always end up as Unicode.
+            filtered = six.text_type(val)
         return filtered

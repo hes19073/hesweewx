@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # growth10generator.py
@@ -9,21 +8,29 @@
 
 """
 
-from __future__ import with_statement
-from __future__ import division
+from __future__ import absolute_import
+
 import os.path
 import time
 import datetime
 import csv
 import syslog
 import configobj
+
+import six
 import Cheetah.Template
+import Cheetah.Filters
+
 import weeplot.genplot
 import weeutil.weeutil
-from weeutil.weeutil import to_bool, to_int, to_float
 import weewx.units
-from weewx.units import ValueTuple, CtoK, CtoF, FtoC
 import weewx.reportengine
+
+from weewx.units import ValueTuple
+from weewx.units import CtoK, CtoF, FtoC
+from weeutil.weeutil import to_bool, to_int, to_float
+from weeutil.config import search_up
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 
 ZERO = 0
@@ -36,7 +43,7 @@ NA = -1
 def get_float_t(txt, unit_group):
     if txt is None:
         result = None
-    elif isinstance(txt, basestring):
+    elif isinstance(txt, str):
         if txt.lower() in [NULL, 'none']:
             result = None
     else:
@@ -143,18 +150,15 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
     def genImages(self, gen_ts):
 
         """Generate the images.
-        
         The time scales will be chosen to include the given timestamp, with
         nice beginning and ending times.
-    
+
         gen_ts: The time around which plots are to be generated. This will
-        also be used as the bottom label in the plots.
-        
-        """
+        also be used as the bottom label in the plots.        """
 
         t1 = time.time()
         ngen = ZERO
-        
+
         for species_name in self.growth10_dict.sections:
             # Get the path that the image is going to be saved to:
             plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict['year_images'])
@@ -178,14 +182,14 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
                 now_tuple = time.localtime(plotgen_ts)
                 new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
                 start_date_ts = time.mktime(tuple(new_year_tuple))
-            
+
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
             ai = 43200 #86400           # enspricht 24 Stunden seit START
-            
+
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)
-             
+
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
@@ -200,7 +204,7 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
 
             # Do any necessary unit conversions:
             self.vectors = {}
-            for (key, val) in recs.iteritems():
+            for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
             if skipThisPlot(plotgen_ts, ai, img_file):
@@ -227,7 +231,7 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
                     # Now save the image
                     image.save(img_file)
                     ngen += 1
-                except IOError, e:
+                except IOError as e:
                     syslog.syslog(syslog.LOG_CRIT, "growth10Generator: Unable to save to file '%s' %s:" % (img_file, e))
                 t2 = time.time()
                 if self.log_success:
@@ -248,19 +252,19 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
 
         line_options = plot_options
         (minstamp, maxstamp, timeinc) = stamps
-        
+
         # Create a new instance of a time plot and start adding to it
         result = TimeHorizonPlot(plot_options)
-                
+
         # Override the x interval if the user has given an explicit interval:
         timeinc_user = to_int(plot_options.get('x_interval'))
         if timeinc_user is not None:
             timeinc = timeinc_user
         result.setXScaling((minstamp, maxstamp, timeinc))
-        
-        # Set the y-scaling, using any user-supplied hints: 
+
+        # Set the y-scaling, using any user-supplied hints:
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
-        
+
         # Get a suitable bottom label:
         bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
         bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
@@ -335,10 +339,10 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
             )
         result.horizon_label_offset = int(line_options.get('horizon_label_offset', 3))
 
-        
+
         # Get the line width, if explicitly requested.
         width = to_int(line_options.get('width'))
-                            
+
         # Some plot types require special treatments:
         interval_vec = None
         vector_rotate = None
@@ -368,7 +372,7 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
         result.addLine(weeplot.genplot.PlotLine(
             vectors['date'][ZERO],
             vectors['dd_cumulative'][ZERO],
-            label         = label, 
+            label         = label,
             color         = color,
             fill_color    = fill_color,
             width         = width,
@@ -394,8 +398,6 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
             'daily_min': ValueTuple([], 'degree_F', 'group_temperature'),
             'dd': ValueTuple([], 'count', 'group_count'),
             'dd_cumulative': ValueTuple([], 'count', 'group_count'),
-            #'dd': ValueTuple([], 'degree_F_day', 'group_degree_day'),
-            #'dd_cumulative': ValueTuple([], 'degree_F_day', 'group_degree_day'),
             }
         try:
             with open(csv_file_name) as csv_file:
@@ -429,7 +431,7 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
                             pass
                         except TypeError:
                             pass
-        except IOError, e:
+        except IOError as e:
             syslog.syslog(syslog.LOG_CRIT, "growth10Generator: Unable to read file '%s' %s:" % (csv_file_name, e))
         return result
 
@@ -466,15 +468,13 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
             rec['remark'] = weewx.units.ValueHelper(val_t, 'day', self.formatter, self.converter)
         return result
 
-            
+
 def skipThisPlot(time_ts, aggregate_interval, img_file):
 
     """A plot can be skipped if it was generated recently and has not changed.
     This happens if the time since the plot was generated is less than the
-    aggregation interval.
+    aggregation interval.    """
 
-    """
-    
     # Images without an aggregation interval have to be plotted every time.
     # Also, the image definitely has to be generated if it doesn't exist.
     if aggregate_interval is None or not os.path.exists(img_file):
@@ -483,7 +483,7 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
     # If its a very old image, then it has to be regenerated
     if time_ts - os.stat(img_file).st_mtime >= aggregate_interval:
         return False
-    
+
     # Finally, if we're on an aggregation boundary, regenerate.
     time_dt = datetime.datetime.fromtimestamp(time_ts)
     tdiff = time_dt -  time_dt.replace(hour=ZERO, minute=ZERO, second=ZERO, microsecond=ZERO)
@@ -494,9 +494,8 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
 
     def _getScaledDraw(self, draw):
         """Returns an instance of ScaledDraw, with the appropriate scaling.
-        
-        draw: An instance of ImageDraw
-        """
+
+        draw: An instance of ImageDraw        """
         sdraw = ScaledDrawText(
             draw,
             [
@@ -509,32 +508,30 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             ],
             )
         return sdraw
-        
+
     def render(self):
         """Traverses the universe of things that have to be plotted in this image, rendering
-        them and returning the results as a new Image object.
-        
-        """
+        them and returning the results as a new Image object.        """
 
         # NB: In what follows the variable 'draw' is an instance of an ImageDraw object and is in pixel units.
         # The variable 'sdraw' is an instance of ScaledDraw and its units are in the "scaled" units of the plot
         # (e.g., the horizontal scaling might be for seconds, the vertical for degrees Fahrenheit.)
         image = weeplot.genplot.Image.new("RGB", (self.image_width, self.image_height), self.image_background_color)
         draw = self._getImageDraw(image)
-        draw.rectangle(((self.lmargin,self.tmargin), 
-                        (self.image_width - self.rmargin, self.image_height - self.bmargin)), 
+        draw.rectangle(((self.lmargin,self.tmargin),
+                        (self.image_width - self.rmargin, self.image_height - self.bmargin)),
                         fill=self.chart_background_color)
 
         self._renderBottom(draw)
         self._renderTopBand(draw)
-        
+
         self._calcXScaling()
         self._calcYScaling()
         (lo, hi, step) = self.yscale
         self.yscale = (min(self.horizon_min, lo), max(self.horizon_max, hi), max(step, 100.0))
         self._calcXLabelFormat()
         self._calcYLabelFormat()
-        
+
         sdraw = self._getScaledDraw(draw)
         if self.horizons:
             self._renderHorizons(sdraw)
@@ -552,12 +549,12 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             image.thumbnail((self.image_width / self.anti_alias, self.image_height / self.anti_alias), Image.ANTIALIAS)
 
         return image
-    
+
     def _renderHorizons(self, sdraw):
         """Draw horizontal bands for insect developmental stages and treatments.
 
         """
-        
+
         self.horizons.sort()
         self.horizons.reverse()
         origin = self.yscale[ZERO]
@@ -571,7 +568,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         """Draw horizontal shading.
 
         """
-        
+
         shades = self.horizon_gradient
         overall_height = (self.yscale[1] - self.yscale[ZERO]) * 0.10
         stripe_height = overall_height / shades
@@ -677,17 +674,13 @@ class growth10ReportGenerator(weewx.reportengine.ReportGenerator):
                    (ngen, self.skin_dict['REPORT_NAME'], elapsed_time))
 
     def setup(self):
-        
+
         # This dictionary will hold the formatted dates of all generated files
-        
-#        self.outputted_dict = {}
-#        for key in self.generator_dict.iter_keys():
-#            self.outputted_dict[key] = []; 
         self.formatter = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter = weewx.units.Converter.fromSkinDict(self.skin_dict)
 
     def initExtensions(self, gen_dict):
-        
+
         """Load the search list
 
         """
@@ -751,7 +744,9 @@ class growth10ReportGenerator(weewx.reportengine.ReportGenerator):
         report_dict = weeutil.weeutil.accumulateLeaves(growth10_dict[species_name])
         
         (template, dest_dir, encoding, default_binding) = self._prepGen(species_name, report_dict)
+
         (dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
+
         dest_file = os.path.join(dest_dir, dest_file_name)
 
         # Get start and stop times
@@ -781,15 +776,38 @@ class growth10ReportGenerator(weewx.reportengine.ReportGenerator):
         tmpname = dest_file + '.tmp'
             
         try:
-            compiled_template = Cheetah.Template.Template(
-                file=template,
-                searchList=searchList,
-                filter=encoding,
-                filtersLib=weewx.cheetahgenerator)
-            with open(tmpname, mode='w') as _file:
-                print >> _file, compiled_template
+            # Cheetah V2 will crash if given a template file name in Unicode. So,
+            # be prepared to catch the exception and convert to ascii:
+            try:
+                # TODO: Look into cacheing the compiled template.
+                compiled_template = Cheetah.Template.Template(
+                    file=template,
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+            except TypeError:
+                compiled_template = Cheetah.Template.Template(
+                    file=template.encode('ascii', 'ignore'),
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+                    
+            unicode_string = compiled_template.respond()
+                    
+            if encoding == 'html_entities':
+                byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
+            elif encoding == 'strict_ascii':
+                byte_string = unicode_string.encode('ascii', 'ignore')
+            else:
+                byte_string = unicode_string.encode('utf8')
+            
+            # Open in binary mode. We are writing a byte-string, not a string
+            with open(tmpname, mode='wb') as fd:
+                fd.write(byte_string)
+            
             os.rename(tmpname, dest_file)
-        except Exception, e:
+            
+        except Exception as e:
             # We would like to get better feedback when there are cheetah
             # compiler failures, but there seem to be no hooks for this.
             # For example, if we could get make cheetah emit the source
@@ -859,7 +877,7 @@ class growth10ReportGenerator(weewx.reportengine.ReportGenerator):
         template = os.path.join(self.config_dict['WEEWX_ROOT'],
                                 self.config_dict['StdReport']['SKIN_ROOT'],
                                 report_dict['skin'],
-                                template_name.encode('ascii', 'ignore'))
+                                template_name) #.encode('ascii', 'ignore'))
 
         # ------ Destination directory --------
         dest_dir = os.path.join(self.config_dict['WEEWX_ROOT'],

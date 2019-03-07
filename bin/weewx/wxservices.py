@@ -6,6 +6,9 @@
 
 """Services specific to weather."""
 
+
+from __future__ import absolute_import
+
 import syslog
 import os.path
 import weedb
@@ -90,6 +93,8 @@ class WXCalculate(object):
         'sumsimIndex',
         'deltaT',
         'densityA',
+        'thwIndex',
+        'thswIndex',
         ]
 
     def __init__(self, config_dict, alt_vt, lat_f, long_f, db_binder=None):
@@ -516,10 +521,18 @@ class WXCalculate(object):
              data['summersimmerIndex'] = None
 
     def calc_densityA(self, data, data_type):
-        if 'outTemp' in data and 'pressure' in data:
-             data['densityA'] = weewx.wxformulas.da_US(data['outTemp'], data['pressure'])
+        if 'outTemp' in data and 'altimeter' in data:
+             data['densityA'] = weewx.wxformulas.da_US(data['outTemp'], data['altimeter'])
         else:
              data['densityA'] = None
+
+    def calc_thwIndex(self, data, data_type):  # @UnusedVariable
+        if 'outTemp' in data and 'outHumidity' in data and 'windSpeed' in data:
+            data['thwIndex'] = weewx.wxformulas.thw_US(data['outTemp'], data['outHumidity'], data['windSpeed'])
+
+    def calc_thswIndex(self, data, data_type):  # @UnusedVariable
+        if 'outTemp' in data and 'outHumidity' in data and 'windSpeed' in data and 'radiation' in data:
+            data['thswIndex'] = weewx.wxformulas.thsw_US(data['outTemp'], data['outHumidity'], data['windSpeed'], data['radiation'])
 
 
     def _get_archive_interval(self, data):

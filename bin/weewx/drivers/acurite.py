@@ -363,16 +363,19 @@ X1 - 2 bytes
 # FIXME: perhaps retry read when dodgey data or short read?
 
 from __future__ import with_statement
-import syslog
+from __future__ import absolute_import
+from __future__ import print_function
+
 import time
 import usb
 
 import weewx.drivers
 import weewx.wxformulas
 from weeutil.weeutil import to_bool
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 DRIVER_NAME = 'AcuRite'
-DRIVER_VERSION = '0.24'
+DRIVER_VERSION = '0.30'
 DEBUG_RAW = 0
 
 # USB constants for HID
@@ -386,22 +389,6 @@ def loader(config_dict, engine):
 
 def confeditor_loader():
     return AcuRiteConfEditor()
-
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'acurite: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
-def logcrt(msg):
-    logmsg(syslog.LOG_CRIT, msg)
 
 def _fmt_bytes(data):
     return ' '.join(['%02x' % x for x in data])
@@ -966,6 +953,7 @@ class AcuRiteConfEditor(weewx.drivers.AbstractConfEditor):
 # PYTHONPATH=bin python bin/weewx/drivers/acurite.py
 
 if __name__ == '__main__':
+    import syslog
     import optparse
 
     usage = """%prog [options] [--help]"""
@@ -978,7 +966,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
-        print "acurite driver version %s" % DRIVER_VERSION
+        print("acurite driver version %s" % DRIVER_VERSION)
         exit(0)
 
     test_r1 = True
@@ -992,20 +980,20 @@ if __name__ == '__main__':
                                               time.localtime(ts)), ts)
             if test_r1:
                 r1 = s.read_R1()
-                print tstr, _fmt_bytes(r1), Station.decode_R1(r1)
+                print(tstr, _fmt_bytes(r1), Station.decode_R1(r1))
                 delay = min(delay, 18)
             if test_r2:
                 r2 = s.read_R2()
-                print tstr, _fmt_bytes(r2), Station.decode_R2(r2)
+                print(tstr, _fmt_bytes(r2), Station.decode_R2(r2))
                 delay = min(delay, 60)
             if test_r3:
                 try:
                     x = s.read_x()
-                    print tstr, _fmt_bytes(x)
-                    for i in range(0, 17):
+                    print(tstr, _fmt_bytes(x))
+                    for i in range(17):
                         r3 = s.read_R3()
-                        print tstr, _fmt_bytes(r3)
+                        print(tstr, _fmt_bytes(r3))
                 except usb.USBError as e:
-                    print tstr, e
+                    print(tstr, e)
                 delay = min(delay, 12*60)
             time.sleep(delay)

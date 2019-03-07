@@ -15,16 +15,14 @@ import calendar
 import datetime
 import math
 import os
-import struct
+import shutil
 import syslog
 import time
 import traceback
-try:
-    # Python 2
-    from StringIO import StringIO
-except ImportError:
-    # Python 3
-    from io import StringIO
+
+# Compatibility shims
+import six
+from six.moves import StringIO, input
 
 # For backwards compatibility:
 from weeutil import config
@@ -33,6 +31,7 @@ accumulateLeaves = config.accumulateLeaves
 merge_config     = config.merge_config
 patch_config     = config.patch_config
 comment_scalar   = config.comment_scalar
+conditional_merge= config.conditional_merge
 
 
 def convertToFloat(seq):
@@ -44,35 +43,10 @@ def convertToFloat(seq):
     return res
 
 
-def conditional_merge(a_dict, b_dict):
-    """Merge fields from b_dict into a_dict, but only if they do not yet
-    exist in a_dict"""
-    # Go through each key in b_dict
-    for k in b_dict:
-        if isinstance(b_dict[k], dict):
-            if k not in a_dict:
-                # It's a new section. Initialize it...
-                a_dict[k] = {}
-                # ... and transfer over the section comments, if available
-                try:
-                    a_dict.comments[k] = b_dict.comments[k]
-                except AttributeError:
-                    pass
-            conditional_merge(a_dict[k], b_dict[k])
-        elif k not in a_dict:
-            # It's a scalar. Transfer over the value...
-            a_dict[k] = b_dict[k]
-            # ... then its comments, if available:
-            try:
-                a_dict.comments[k] = b_dict.comments[k]
-            except AttributeError:
-                pass
-
-
 def option_as_list(option):
     if option is None:
         return None
-    return [option] if isinstance(option, str) else option
+    return [option] if not isinstance(option, list) else option
 
 
 def list_as_string(option):
@@ -90,7 +64,7 @@ def list_as_string(option):
     Reno, NV
     """
     # Check if it's already a string.
-    if option is not None and not isinstance(option, str):
+    if option is not None and not isinstance(option, six.string_types):
         return ', '.join(option)
     return option
 
@@ -103,6 +77,7 @@ def stampgen(startstamp, stopstamp, interval):
     Example:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> startstamp = 1236560400
     >>> print(timestamp_to_string(startstamp))
     2009-03-08 18:00:00 PDT (1236560400)
@@ -181,6 +156,7 @@ def startOfInterval(time_ts, interval):
     Examples:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> start_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
     >>> time.ctime(startOfInterval(start_ts,  300))
     'Thu Jul  4 01:55:00 2013'
@@ -307,6 +283,7 @@ def intervalgen(start_ts, stop_ts, interval):
     Example:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> startstamp = 1236477600
     >>> print(timestamp_to_string(startstamp))
     2009-03-07 18:00:00 PST (1236477600)
@@ -394,6 +371,7 @@ def archiveHoursAgoSpan(time_ts, hours_ago=0, grace=1):
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
     >>> print(archiveHoursAgoSpan(time_ts, hours_ago=0))
     [2013-07-04 01:00:00 PDT (1372924800) -> 2013-07-04 02:00:00 PDT (1372928400)]
@@ -424,6 +402,7 @@ def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta
     
     Example:
     >>> os.environ['TZ'] = 'Australia/Brisbane'
+    >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2015-07-21 09:05:35", "%Y-%m-%d %H:%M:%S"))
     >>> print(archiveSpanSpan(time_ts, time_delta=3600))
     [2015-07-21 08:05:35 AEST (1437429935) -> 2015-07-21 09:05:35 AEST (1437433535)]
@@ -445,6 +424,7 @@ def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta
     Example over a DST boundary. Because Brisbane does not observe DST, we need to
     switch timezones.
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = 1457888400
     >>> print(timestamp_to_string(time_ts))
     2016-03-13 10:00:00 PDT (1457888400)
@@ -489,6 +469,7 @@ def isMidnight(time_ts):
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
     >>> print(isMidnight(time_ts))
     False
@@ -505,6 +486,7 @@ def isStartOfDay(time_ts):
     """Is the indicated time at the start of the day, local time?
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
     >>> print(isStartOfDay(time_ts))
     False
@@ -512,6 +494,7 @@ def isStartOfDay(time_ts):
     >>> print(isStartOfDay(time_ts))
     True
     >>> os.environ['TZ'] = 'America/Sao_Paulo'
+    >>> time.tzset()
     >>> time_ts = 1541300400
     >>> print(isStartOfDay(time_ts))
     True
@@ -544,6 +527,7 @@ def archiveDaySpan(time_ts, grace=1, days_ago=0):
     
     Example, which spans the end-of-year boundary
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2014-01-01 01:57:35", "%Y-%m-%d %H:%M:%S"))
     
     As for today:
@@ -592,6 +576,7 @@ def archiveWeekSpan(time_ts, startOfWeek=6, grace=1, weeks_ago=0):
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = 1483429962
     >>> print(timestamp_to_string(time_ts))
     2017-01-02 23:52:42 PST (1483429962)
@@ -634,6 +619,7 @@ def archiveMonthSpan(time_ts, grace=1, months_ago=0):
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = 1483429962
     >>> print(timestamp_to_string(time_ts))
     2017-01-02 23:52:42 PST (1483429962)
@@ -728,6 +714,7 @@ def genHourSpans(start_ts, stop_ts):
     Example:
 
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> start_ts = 1204796460
     >>> stop_ts  = 1204818360
 
@@ -771,6 +758,7 @@ def genDaySpans(start_ts, stop_ts):
     Example:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> start_ts = 1204796460
     >>> stop_ts  = 1205265720
     
@@ -818,6 +806,7 @@ def genMonthSpans(start_ts, stop_ts):
     Example:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> start_ts = 1196705700
     >>> stop_ts  = 1206101100
     >>> print("start time is %s" % timestamp_to_string(start_ts))
@@ -905,6 +894,7 @@ def startOfGregorianDay(date_greg):
     Example:
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> date_greg = 735973  # 10-Jan-2016
     >>> print(startOfGregorianDay(date_greg))
     1452412800
@@ -924,6 +914,7 @@ def toGregorianDay(time_ts):
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> time_ts = 1452412800  # Midnight, 10-Jan-2016
     >>> print(toGregorianDay(time_ts))
     735972
@@ -1013,8 +1004,8 @@ def secs_to_string(secs):
     str_list = []
     for (label, interval) in (('day', 86400), ('hour', 3600), ('minute', 60)):
         amt = int(secs / interval)
-        plural = '' if amt == 1 else 's'
-        str_list.append("%d %s%s" % (amt, label, plural))
+        plural = u'' if amt == 1 else u's'
+        str_list.append(u"%d %s%s" % (amt, label, plural))
         secs %= interval
     ans = ', '.join(str_list)
     return ans
@@ -1026,6 +1017,7 @@ def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
     Example:
 
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> print(timestamp_to_string(1196705700))
     2007-12-03 10:15:00 PST (1196705700)
     >>> print(timestamp_to_string(None))
@@ -1080,6 +1072,7 @@ def utc_to_local_tt(y, m, d, hrs_utc):
     Returns: A timetuple with the local time.
     
     >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time.tzset()
     >>> tt=utc_to_local_tt(2009, 3, 27, 14.5)
     >>> print(tt.tm_year, tt.tm_mon, tt.tm_mday, tt.tm_hour, tt.tm_min)
     2009 3 27 7 30
@@ -1182,13 +1175,16 @@ class GenWithPeek(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Advance to the next object"""
         if self.have_peek:
             self.have_peek = False
             return self.peek_obj
         else:
             return next(self.generator)
+
+    # For Python 2:
+    next = __next__
 
     def peek(self):
         """Take a peek at the next object"""
@@ -1278,31 +1274,6 @@ def to_float(x):
     if isinstance(x, str) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
-
-
-def to_unicode(string, encoding='utf8'):
-    u"""Convert to Unicode, unless string is None
-    
-    Example:
-    >>> print(to_unicode(u"degree sign from UTF8: °".encode('utf8')))
-    degree sign from UTF8: °
-    >>> print(to_unicode(u"degree sign from Unicode: °"))
-    degree sign from Unicode: °
-    >>> print(to_unicode(None))
-    None
-    """
-    try:
-        return unicode(string, encoding) if string is not None else None
-    except NameError:
-        # No unicode function. Probably running under Python 3
-        try:
-            return str(string, encoding) if string is not None else None
-        except TypeError:
-            # The string is already in Unicode. Just return it.
-            return string
-    except TypeError:
-        # The string is already in Unicode. Just return it.
-        return string
 
 
 def min_with_none(x_seq):
@@ -1413,16 +1384,7 @@ def to_sorted_string(rec):
     return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=str.lower)])
 
 
-# Define an "input" function that works for both Python 2 and 3:
-# An exception will be raised in Python 3, but not Python 2
-try:
-    input = raw_input
-except NameError:
-    # Python 3
-    pass
-
-
-def y_or_n(msg, noprompt):
+def y_or_n(msg, noprompt=False):
     """Prompt and look for a 'y' or 'n' response"""
 
     # If noprompt is truthy, always return 'y'
@@ -1435,9 +1397,36 @@ def y_or_n(msg, noprompt):
     return ans
 
 
-def int2byte(x):
-    """Convert integer argument to signed byte string, under both Python 2 and 3"""
-    return struct.pack('>b', x)
+def deep_copy_path(path, dest_dir):
+    """Copy a path to a destination, making any subdirectories along the way.
+    The source path is relative to the current directory.
+
+    Returns the number of files copied
+    """
+
+    ncopy = 0
+    # Are we copying a directory?
+    if os.path.isdir(path):
+        # Yes. Walk it
+        for dirpath, _, filenames in os.walk(path):
+            for f in filenames:
+                # For each source file found, call myself recursively:
+                ncopy += deep_copy_path(os.path.join(dirpath, f), dest_dir)
+    else:
+        # path is a file. Get the directory it's in.
+        d = os.path.dirname(os.path.join(dest_dir, path))
+        # Make the destination directory, wrapping it in a try block in
+        # case it already exists:
+        try:
+            os.makedirs(d)
+        except OSError:
+            pass
+        # This version of copy does not copy over modification time,
+        # so it will look like a new file, causing it to be (for
+        # example) ftp'd to the server:
+        shutil.copy(path, d)
+        ncopy += 1
+    return ncopy
 
 if __name__ == '__main__':
     import doctest

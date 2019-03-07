@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 # $Id: earth.py 1651 2018-09-01 12:10:37Z hes $
-#
-# original by Pat O'Brien, August 19, 2018
-#
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
 
@@ -19,33 +16,35 @@ import weecfg
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
-    
+
+
 def logmsg(level, msg):
     syslog.syslog(level, 'Erdbeben Extension: %s' % msg)
-    
+
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
-    
+
 def loginf(msg):
     logmsg(syslog.LOG_INFO, msg)
-    
+
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
 # Print version in syslog for easier troubleshooting
 VERSION = "1.0"
+
 loginf("version %s" % VERSION)
 
 
 class getEarthquake(SearchList):
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-        
+
     def get_extension_list(self, timespan, db_lookup):
         """
         Parse the Earthquake data.
         """
-        
+
         # Return right away if we're not going to use the earthquake.
         if self.generator.skin_dict['Extras']['earthquake_enabled'] == "0":
             # Return an empty SLE
@@ -68,34 +67,19 @@ class getEarthquake(SearchList):
         else:
             # File doesn't exist, download a new copy
             earthquake_is_stale = True
-            
+
         # File is stale, download a new copy
         if earthquake_is_stale:
-            # Download new earthquake data
-            try:
-                import urllib2
-                user_agent = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) AppleWebKit/534.3 (KHTML, like Gecko) Chrome/6.0.472.63 Safari/534.3'
-                headers = { 'User-Agent' : user_agent }
-                req = urllib2.Request( earthquake_url, None, headers )
-                response = urllib2.urlopen( req )
-                page = response.read()
-                response.close()
-            except Exception as error:
-                raise ValueError( "Error downloading earthquake data. Check the URL and try again. You are trying to use URL: %s, and the error is: %s" % ( earthquake_url, error ) )
-                
-            # Save earthquake data to file. w+ creates the file if it doesn't exist, and truncates the file and re-writes it everytime
-            try:
-                with open( earthquake_file, 'w+' ) as file:
-                    file.write( page )
-                    loginf( "New earthquake data downloaded to %s" % earthquake_file )
-            except IOError, e:
-                raise ValueError( "Error writing earthquake data to %s. Reason: %s" % ( earthquake_file, e) )
-            
-        # Process the earthquake file
-        with open( earthquake_file, "r") as read_file:
-            eqdata = json.load( read_file )
+            import urllib.request, urllib.error, urllib.parse
+            urllib.request.urlretrieve(earthquake_url, earthquake_file)
 
-        eqtime = time.strftime( "%d.%B %Y, %H:%M  %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
+            loginf( "New earthquake data downloaded to %s" % earthquake_file )
+
+
+        with open(earthquake_file, encoding="utf8") as read_file:
+            eqdata= json.loads(read_file.read())
+
+        eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
         equrl = eqdata["features"][0]["properties"]["url"]
         eqplace = eqdata["features"][0]["properties"]["place"]
         eqmag = eqdata["features"][0]["properties"]["mag"]

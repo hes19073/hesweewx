@@ -14,10 +14,10 @@ from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
 
 class windroseData(SearchList):
-    
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-  
+
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with windrose data for
            customclientraw.txt (steelseries gauges).
@@ -48,12 +48,12 @@ class windroseData(SearchList):
         # Get last x hours windSpeed obs as a ValueTuple. No need to
         # convert them as the steelseries code autoscales so untis are
         # meaningless.
-        (time_start_vt, time_stop_vt, wind_speed_vt) = db_lookup().getSqlVectors(TimeSpan(timespan.stop - self.period, timespan.stop), 
+        (time_start_vt, time_stop_vt, wind_speed_vt) = db_lookup().getSqlVectors(TimeSpan(timespan.stop - self.period, timespan.stop),
                                                                                  'windSpeed')
         # Get last x hours windDir obs as a ValueTuple. Again no need to
         # convert them as the steelseries code autoscales so untis are
         # meaningless.
-        (time_start_vt, time_stop_vt, wind_dir_vt) = db_lookup().getSqlVectors(TimeSpan(timespan.stop - self.period, timespan.stop), 
+        (time_start_vt, time_stop_vt, wind_dir_vt) = db_lookup().getSqlVectors(TimeSpan(timespan.stop - self.period, timespan.stop),
                                                                                'windDir')
         x = 0
         # Step through each windDir and add corresponding windSpeed to windroseList

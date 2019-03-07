@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
@@ -71,9 +72,9 @@ class MyFrostDays(SearchList):
 
         Returns:
           lastfrost_day                 last day of the year if outTemp MIN < 0
-          lastfrost_delta_time          days, horas, mins lastfrost_day to now 
+          lastfrost_delta_time          days, horas, mins lastfrost_day to now
           lasteis_day                   last day of the year if outTemp MAX < 0
-          lasteis_delta_time            days, horas, mins lastfrost_day to now 
+          lasteis_delta_time            days, horas, mins lastfrost_day to now
 
           year_frost_minE_days:         Length of longest run of consecutive min<0
                                         days in current year
@@ -127,7 +128,7 @@ class MyFrostDays(SearchList):
 
         _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE min < 0.0")
         lastfrost_ts = _row[0]
-
+        _lastfrost_ts = None
         if lastfrost_ts is not None:
             try:
                 _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0.0 AND dateTime > ? AND dateTime <= ?", (lastfrost_ts, lastfrost_ts + 86400))
@@ -138,7 +139,7 @@ class MyFrostDays(SearchList):
 
         _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive_day_outTemp WHERE max < 0.0")
         lasteis_ts = _row[0]
-
+        _lasteis_ts = None
         if lasteis_ts is not None:
             try:
                 _row = db_lookup().getSql("SELECT MAX(dateTime) FROM archive WHERE outTemp < 0.0 AND dateTime > ? AND dateTime <= ?", (lasteis_ts, lasteis_ts + 86400))
@@ -329,7 +330,7 @@ class MyFrostDays(SearchList):
 
         # Create a small dictionary with the tag names (keys) we want to use
         search_list_extension = {'lastfrost_day': _lastfrost_vh,
-                                 'lastfrost_delta_time': _delta_time_vh, 
+                                 'lastfrost_delta_time': _delta_time_vh,
                                  'lasteis_day': _lasteis_vh,
                                  'lasteis_delta_time': _delta_eistime_vh,
 

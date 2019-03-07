@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2016 Tom Keffer <tkeffer@gmail.com> and
+#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com> and
 #                            Gary Roderick
 #
 #    See the file LICENSE.txt for your full rights.
@@ -12,12 +12,14 @@ use with weeimport.
 from __future__ import with_statement
 
 # Python imports
+from __future__ import absolute_import
+from __future__ import print_function
 import csv
 import os
 import syslog
 
-# weeWX imports
-import weeimport
+# WeeWX imports
+from . import weeimport
 import weewx
 
 from weeutil.weeutil import timestamp_to_string, option_as_list
@@ -36,7 +38,7 @@ class CSVSource(weeimport.Source):
     names.
     """
 
-    # Define a dict to map CSV fields to weeWX archive fields. For a CSV import
+    # Define a dict to map CSV fields to WeeWX archive fields. For a CSV import
     # these details are specified by the user in the wee_import config file.
     _header_map = None
 
@@ -75,7 +77,7 @@ class CSVSource(weeimport.Source):
             self.source = csv_config_dict['file']
         except KeyError:
             raise weewx.ViolatedPrecondition("CSV source file not specified in '%s'." % import_config_path)
-        # initialise our import field-to-weeWX archive field map
+        # initialise our import field-to-WeeWX archive field map
         self.map = None
         # initialise some other properties we will need
         self.start = 1
@@ -118,16 +120,16 @@ class CSVSource(weeimport.Source):
                                                                         unit_nicknames[self.archive_unit_sys])
         self.wlog.printlog(syslog.LOG_INFO, _msg)
         if self.calc_missing:
-            print "Missing derived observations will be calculated."
+            print("Missing derived observations will be calculated.")
         if not self.UV_sensor:
-            print "All weeWX UV fields will be set to None."
+            print("All WeeWX UV fields will be set to None.")
         if not self.solar_sensor:
-            print "All weeWX radiation fields will be set to None."
+            print("All WeeWX radiation fields will be set to None.")
         if options.date or options.date_from:
-            print "Observations timestamped after %s and up to and" % (timestamp_to_string(self.first_ts), )
-            print "including %s will be imported." % (timestamp_to_string(self.last_ts), )
+            print("Observations timestamped after %s and up to and" % timestamp_to_string(self.first_ts))
+            print("including %s will be imported." % timestamp_to_string(self.last_ts))
         if self.dry_run:
-            print "This is a dry run, imported data will not be saved to archive."
+            print("This is a dry run, imported data will not be saved to archive.")
 
     def getRawData(self, period):
         """Obtain an iterable containing the raw data to be imported.
@@ -135,7 +137,7 @@ class CSVSource(weeimport.Source):
         Raw data is read and any clean-up/pre-processing carried out before the
         iterable is returned. In this case we will use csv.Dictreader(). The
         iterable should be of a form where the field names in the field map can
-        be used to map the data to the weeWX archive record format.
+        be used to map the data to the WeeWX archive record format.
 
         Input parameters:
 

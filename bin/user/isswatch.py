@@ -15,22 +15,18 @@
 
 """
 
-from weewx.cheetahgenerator import SearchList
-
 import sys
 import syslog
 
+import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
 import time
 import datetime
 import re
 
 from time import mktime
+from weewx.cheetahgenerator import SearchList
 
-try:
-    from urllib2 import *
-except ImportError:
-    raise ImportError('<any message you want here>')
 
 class ISSAlert(SearchList):
     """Retrieves data from an ISS Station RSS Feed and converts it into a variable that is available for templates."""
@@ -44,6 +40,7 @@ class ISSAlert(SearchList):
         #Pass the RSS feed from the weewx.conf to the processAlertUrl
         issall = self.processAlertRSS(self.generator.config_dict['StdReport']['isswatch']['url'])
         #issall = self.processAlertRSS(self, 'https://spotthestation.nasa.gov/sightings/xml_files/Germany_None_Luneburg.xml')
+
         # Now create a small dictionary with keys 'alltime' and 'seven_day':
         search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
 
@@ -54,15 +51,15 @@ class ISSAlert(SearchList):
         #Retrieve the RSS feed
         try:
             feedsource = urlopen(feedurl)
-        except urllib2.HTTPError, e:
-            print ('HTTPError = ' + str(e.code))
-        except urllib2.URLError, e:
-            print ('URLError = ' + str(e.reason))
-        except httplib.HTTPException, e:
+        except urllib.error.HTTPError as e:
+            print(('HTTPError = ' + str(e.code)))
+        except urllib.error.URLError as e:
+            print(('URLError = ' + str(e.reason)))
+        except httplib.HTTPException as e:
             print ('HTTPException')
         except Exception:
             import traceback
-            print ('generic exception: ' + traceback.format_exc())
+            print(('generic exception: ' + traceback.format_exc()))
 
         feeddata = feedsource.read()
         feedsource.close()
@@ -120,9 +117,10 @@ class ISSAlert(SearchList):
             newsighting['approach'] = (newsighting['approach']).replace('above', '&uuml;ber')
             newsighting['duration'] = (newsighting['duration']).replace('less than', 'weniger als')
 
-            if then > now:
+            #if then > now:
                 #Add this sighting to our list of all
-                issall.append(newsighting)
+            #    issall.append(newsighting)
+            issall.append(newsighting)
 
         return issall
 
@@ -134,7 +132,7 @@ class ISSAlert(SearchList):
         return time.mktime(datetime.datetime.strptime(pubdate, format).timetuple())
 
     def clean(self,value):
-        print ("Cleaning ",value)
+        print(("Cleaning ",value))
 
 
 """This is for testing"""
@@ -150,13 +148,13 @@ if __name__ == '__main__':
 	syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
 
 	if len(sys.argv) < 1 :
-			print """Usage: isswatch.py path-to-configuration-file"""
+			print("""Usage: isswatch.py path-to-configuration-file""")
 			sys.exit(weewx.CMD_ERROR)
 
 	try :
 			config_dict = configobj.ConfigObj(sys.argv[1], file_error=True)
 	except IOError:
-			print "Unable to open configuration file ", sys.argv[1]
+			print(("Unable to open configuration file ", sys.argv[1]))
 			raise
 
 	socket.setdefaulttimeout(10)

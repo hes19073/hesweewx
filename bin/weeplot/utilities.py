@@ -1,11 +1,14 @@
 #
-#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
 """Various utilities used by the plot package.
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import zip
 try:
     from PIL import ImageFont, ImageColor
 except ImportError:
@@ -13,6 +16,8 @@ except ImportError:
 import datetime
 import time
 import math
+
+import six
 
 import weeplot
     
@@ -221,7 +226,7 @@ def scaletime(tmin_ts, tmax_ts) :
     2013-05-16 17:00:00 PDT (1368748800) 2013-05-17 08:00:00 PDT (1368802800) 7200
     """
     if tmax_ts <= tmin_ts :
-        raise weeplot.ViolatedPrecondition, "scaletime called with tmax <= tmin"
+        raise weeplot.ViolatedPrecondition("scaletime called with tmax <= tmin")
     
     tdelta = tmax_ts - tmin_ts
     
@@ -550,22 +555,23 @@ def _rel_approx_equal(x, y, rel=1e-7):
     """Relative test for equality.
     
     Example 
-    >>> _rel_approx_equal(1.23456, 1.23457)
+    >>> rel_approx_equal(1.23456, 1.23457)
     False
-    >>> _rel_approx_equal(1.2345678, 1.2345679)
+    >>> rel_approx_equal(1.2345678, 1.2345679)
     True
-    >>> _rel_approx_equal(0.0, 0.0)
+    >>> rel_approx_equal(0.0, 0.0)
     True
-    >>> _rel_approx_equal(0.0, 0.1)
+    >>> rel_approx_equal(0.0, 0.1)
     False
-    >>> _rel_approx_equal(0.0, 1e-9)
+    >>> rel_approx_equal(0.0, 1e-9)
     False
-    >>> _rel_approx_equal(1.0, 1.0+1e-9)
+    >>> rel_approx_equal(1.0, 1.0+1e-9)
     True
-    >>> _rel_approx_equal(1e8, 1e8+1e-3)
+    >>> rel_approx_equal(1e8, 1e8+1e-3)
     True
     """
     return abs(x-y) <= rel*max(abs(x), abs(y))
+
 
 def tobgr(x):
     """Convert a color to little-endian integer.  The PIL wants either
@@ -574,24 +580,23 @@ def tobgr(x):
     by ImageColor for example #RGB, #RRGGBB, hslHSL as well as standard color
     names from X11 and CSS3.  See ImageColor for complete set of colors.
     """
-    if isinstance(x, basestring):
+    if isinstance(x, six.string_types):
         if x.startswith('0x'):
             return int(x, 0)
         try:
             (r,g,b) = ImageColor.getrgb(x)
             return r + g*256 + b*256*256
-        except :
-            pass
-        try:
-            return int(x)
         except ValueError:
-            pass
-        raise ValueError("Unknown color specifier: '%s'.  Colors must be specified as 0xBBGGRR, #RRGGBB, or standard color names." % x)
+            try:
+                return int(x)
+            except ValueError:
+                raise ValueError("Unknown color specifier: '%s'.  "
+                                 "Colors must be specified as 0xBBGGRR, #RRGGBB, or standard color names." % x)
     return x
 
 if __name__ == "__main__":
     import doctest
 
     if not doctest.testmod().failed:
-        print "PASSED"
+        print("PASSED")
     

@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
@@ -26,10 +27,10 @@ from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
 class MyXSeason(SearchList):
-    
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-  
+
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with additions.
 
@@ -46,7 +47,7 @@ class MyXSeason(SearchList):
 
         if today < datetime.date(ano, 3, 21):
             anop = ano - 1
-          
+
         spring_start = datetime.date(anop, 3, 21)
         spring_end = datetime.date(anop, 6, 20)
         spring_start_ts = time.mktime(spring_start.timetuple())
@@ -103,7 +104,7 @@ class MyXSeason(SearchList):
         winter_start = datetime.date(anoi, 12, 21)
         winter_end = datetime.date(anoi+1, 3, 20)
         winter_start_ts = time.mktime(winter_start.timetuple())
-        winter_end_ts = time.mktime(winter_end.timetuple())        
+        winter_end_ts = time.mktime(winter_end.timetuple())
 
         winter = TimespanBinder(TimeSpan(winter_start_ts, winter_end_ts),
                                           db_lookup,

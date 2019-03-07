@@ -1,13 +1,5 @@
 #!/usr/bin/python
 # coding=utf-8
-"""weewx module that records air sensor
-
-Installation
-
-Put this file in the bin/user directory.
-
-"""
-
 
 from __future__ import print_function
 import serial, struct, sys

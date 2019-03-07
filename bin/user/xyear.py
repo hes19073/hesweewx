@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
@@ -9,10 +10,12 @@ This search list extension offers extra tags:
 
   'Easter':    this year or next year.
 
-  'day00':  hollyday. 
+  'day00':  hollyday.
 
 Jahr -1 = Vorjahr = year1, das Jahr vor dem Vorjahr = year2
 """
+from __future__ import absolute_import
+
 import datetime
 import time
 import os
@@ -26,11 +29,12 @@ from datetime import date
 from datetime import timedelta
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
 
+
 class xMyYear(SearchList):
-    
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-  
+
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list extension with additions.
 
@@ -51,7 +55,7 @@ class xMyYear(SearchList):
         year1_end = datetime.date(anoy, 12, 31)
 
         year1_start_ts = time.mktime(year1_start.timetuple())
-        year1_end_ts = time.mktime(year1_end.timetuple())        
+        year1_end_ts = time.mktime(year1_end.timetuple())
 
         year1_stats = TimespanBinder(TimeSpan(year1_start_ts, year1_end_ts),
                                      db_lookup,
@@ -67,7 +71,7 @@ class xMyYear(SearchList):
         year2_end = datetime.date(anoyy, 12, 31)
 
         year2_start_ts = time.mktime(year2_start.timetuple())
-        year2_end_ts = time.mktime(year2_end.timetuple())        
+        year2_end_ts = time.mktime(year2_end.timetuple())
 
         year2_stats = TimespanBinder(TimeSpan(year2_start_ts, year2_end_ts),
                                      db_lookup,
@@ -80,7 +84,7 @@ class xMyYear(SearchList):
                  'year2' : year2_stats}]
 
 class xMyEaster(SearchList):
-        
+
     def __init__(self, generator):
         SearchList.__init__(self, generator)
 
@@ -103,9 +107,10 @@ class xMyEaster(SearchList):
             i = h - (h / 28) * (1 - (h / 28) * (29 / (h + 1)) * ((21 - g) / 11))
             j = (years + years / 4 + i + 2 - century + century / 4) % 7
             p = i - j + e
-            _days = 1 + (p + 27 + (p + 6) / 40) % 31
-            _months = 3 + (p + 26) / 30
-            Easter_dt = datetime.datetime(year=years, month=_months, day=_days)
+            _days = int(1 + (p + 27 + (p + 6) / 40) % 31)
+            _months = int(3 + (p + 26) / 30)
+            #Easter_dt = datetime.datetime(year=years, month=_months, day=_days)
+            Easter_dt = datetime.date(years, _months, _days)
             Easter_ts = time.mktime(Easter_dt.timetuple())
             return Easter_ts
 
@@ -135,7 +140,7 @@ class xMyFeier(SearchList):
     def get_extension_list(self, timespan, db_lookup):
         """ Returns various tags.
           Returns:
-          day00:          Feiertag Deutschland M-V 
+          day00:          Feiertag Deutschland M-V
         """
         #
         # Easter. Calculate date for Easter Sunday this year
@@ -152,15 +157,16 @@ class xMyFeier(SearchList):
             i = h - (h / 28) * (1 - (h / 28) * (29 / (h + 1)) * ((21 - g) / 11))
             j = (years + years / 4 + i + 2 - century + century / 4) % 7
             p = i - j + e
-            _days = 1 + (p + 27 + (p + 6) / 40) % 31
-            _months = 3 + (p + 26) / 30
+            _days = int(1 + (p + 27 + (p + 6) / 40) % 31)
+            _months = int(3 + (p + 26) / 30)
             #easter_day_dt = datetime.datetime(year=years, month=_months, day=_days)
             easter_day_dt = datetime.date(years, _months, _days)
+            #easter_dt = date.fromtimestamp(easter_day_dt)
             return easter_day_dt
 
 
         today = datetime.date.today()
-        _years = date.today().year
+        _years = today.year
         Easter_year = calc_easter_day(_years)
 
         if today == datetime.date(_years, 1, 1):

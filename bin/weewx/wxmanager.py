@@ -5,6 +5,7 @@
 #
 """Weather-specific database manager."""
 
+from __future__ import absolute_import
 import weeutil.weeutil
 import weewx.wxformulas
 import weewx.manager
@@ -61,7 +62,7 @@ class WXDaySummaryManager(weewx.manager.DaySummaryManager):
 
         # Only summation (total) or average heating or cooling degree days is supported:
         if aggregateType not in ['sum', 'avg']:
-            raise weewx.ViolatedPrecondition, "Aggregate type %s for %s not supported." % (aggregateType, obs_type)
+            raise weewx.ViolatedPrecondition("Aggregate type %s for %s not supported." % (aggregateType, obs_type))
 
         # Get the base for heating and cooling degree-days
         units_dict = option_dict['skin_dict'].get('Units', {})

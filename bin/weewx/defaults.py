@@ -7,16 +7,11 @@
 
 """Backstop defaults used in the absence of any other values."""
 
-try:
-    # Python 2
-    from StringIO import StringIO
-except ImportError:
-    # Python 3
-    from io import StringIO
-
+from __future__ import absolute_import
+from six.moves import StringIO
 import configobj
 
-default_str = """# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+default_str = u"""# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
 # See the file LICENSE.txt for your rights.
 
 # Where the skins reside, relative to WEEWX_ROOT
@@ -103,7 +98,7 @@ log_failure = False
 
         centibar          = " cb"
         cm                = " cm"
-        cm_per_hour       = " cm/hr"
+        cm_per_hour       = " cm/h"
         degree_C          =   °C
         degree_F          =   °F
         degree_compass    =   °
@@ -117,14 +112,14 @@ log_failure = False
         knot              = " knots"
         knot2             = " knots"
         mbar              = " mbar"
-        meter             = " meters"
+        meter             = " m"
         meter_per_second  = " m/s"
         meter_per_second2 = " m/s"
         mile_per_hour     = " mph"
         mile_per_hour2    = " mph"
         mm                = " mm"
         mmHg              = " mmHg"
-        mm_per_hour       = " mm/hr"
+        mm_per_hour       = " mm/h"
         percent           =   %
         volt              = " V"
         watt_per_meter_squared = " W/m²"
@@ -224,4 +219,6 @@ log_failure = False
     moon_phases = New, Waxing crescent, First quarter, Waxing gibbous, Full, Waning gibbous, Last quarter, Waning crescent
 """
 
-defaults = configobj.ConfigObj(StringIO(default_str))
+# Even though default_str is in Unicode, specify an encoding in
+# case someone wants to write the ConfigObj out.
+defaults = configobj.ConfigObj(StringIO(default_str), encoding='utf-8', default_encoding='utf-8')

@@ -7,6 +7,7 @@
 """Main engine for the weewx weather system."""
 
 # Python imports
+from __future__ import absolute_import
 from __future__ import print_function
 import gc
 import locale
@@ -107,7 +108,7 @@ class StdEngine(object):
             self.console = loader_function(config_dict, self)
         except Exception as ex:
             syslog.syslog(syslog.LOG_ERR,
-                          "import of driver failed: %s (%s)" % (ex, type(ex)))
+                          "engine: Import of driver failed: %s (%s)" % (ex, type(ex)))
             # Signal that we have an initialization error:
             raise InitializationError(ex)
         
@@ -203,7 +204,7 @@ class StdEngine(object):
 
         finally:
             # The main loop has exited. Shut the engine down.
-            syslog.syslog(syslog.LOG_DEBUG, "engine: Main loop exiting. Shutting engine down.")
+            syslog.syslog(syslog.LOG_INFO, "engine: Main loop exiting. Shutting engine down.")
             self.shutDown()
 
     def bind(self, event_type, callback):
@@ -443,6 +444,7 @@ class StdArchive(StdService):
         if 'StdArchive' in config_dict:
             self.data_binding = config_dict['StdArchive'].get('data_binding', 'wx_binding')
             self.record_generation = config_dict['StdArchive'].get('record_generation', 'hardware').lower()
+            self.no_catchup = to_bool(config_dict['StdArchive'].get('no_catchup', False))
             self.archive_delay = to_int(config_dict['StdArchive'].get('archive_delay', 15))
             software_interval = to_int(config_dict['StdArchive'].get('archive_interval', 300))
             self.loop_hilo = to_bool(config_dict['StdArchive'].get('loop_hilo', True))
@@ -509,10 +511,11 @@ class StdArchive(StdService):
     
     def startup(self, event):  # @UnusedVariable
         """Called when the engine is starting up."""
-        # The engine is starting up. If hardware record generation has been specified,
-        # the main task is to do a catch up on any
-        # data still on the station, but not yet put in the database.
-        if self.record_generation == 'hardware':
+        # The engine is starting up. Unless the user has specified otherwise, the main task
+        # is to do a catch up on any data still on the station, but not yet put in the database.
+        if self.no_catchup:
+            syslog.syslog(syslog.LOG_DEBUG, "engine: No catchup specified.")
+        else:
             # Not all consoles can do a hardware catchup, so be prepared to catch the exception:
             try:
                 self._catchup(self.engine.console.genStartupRecords)
@@ -718,11 +721,13 @@ class StdPrint(StdService):
         
     def new_loop_packet(self, event):
         """Print out the new LOOP packet"""
-        print("LOOP:  ", weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet))
+        s = "LOOP:  %s %s" % (weeutil.weeutil.timestamp_to_string(event.packet['dateTime']), to_sorted_string(event.packet))
+        print(s)
     
     def new_archive_record(self, event):
         """Print out the new archive record."""
-        print("REC:   ", weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record))
+        s = "REC:   %s %s" % (weeutil.weeutil.timestamp_to_string(event.record['dateTime']), to_sorted_string(event.record))
+        print(s)
 
 
 #==============================================================================
@@ -972,7 +977,7 @@ def getConfiguration(config_path):
     # Try to open up the given configuration file. Declare an error if
     # unable to.
     try:
-        config_dict = configobj.ConfigObj(config_path, file_error=True)
+        config_dict = configobj.ConfigObj(config_path, file_error=True, encoding='utf-8')
     except IOError:
         sys.stderr.write("Unable to open configuration file %s" % config_path)
         syslog.syslog(syslog.LOG_CRIT, "engine: Unable to open configuration file %s" % config_path)

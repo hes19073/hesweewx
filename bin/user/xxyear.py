@@ -1,11 +1,11 @@
-#!/usr/bin/env python
 # coding=utf-8
-# datei jahre Monate Tag und Stunden mit Minuten 
+# datei jahre Monate Tag und Stunden mit Minuten
 # Laufzeit der Datenbank bei weewx     xxyear.py
 # einsatz in weewx.conf als Erweiterung von cheetcheat unter
 #                user.xxyear.xyear
-# Wert 12 Jahre, 2 Monate, 13 Tage, 10 Stunden und 34 Minuten 
+# Wert 12 Jahre, 2 Monate, 13 Tage, 10 Stunden und 34 Minuten
 # ist der String zur Anzeige
+from __future__ import absolute_import
 
 import datetime
 import time
@@ -68,7 +68,7 @@ class xxyear(SearchList):
         con_MM = 0
         if d_start > d_end:
             con_MM -= 1
-    
+
         con_YY = y_end - y_start
         if m_start > m_end + con_MM:
             con_YY -= 1

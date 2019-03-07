@@ -166,7 +166,7 @@ class AirMonitor(StdService):
             pressure = bmp.readPressure()
             altitude = bmp.readAltitude(101560)
 
-            [temp1,humidity] = grovepi.dht(sensor,blue)  
+            [temp1,humidity] = grovepi.dht(sensor,blue)
 
             watsen = grovepi.digitalRead(water_sen)
 

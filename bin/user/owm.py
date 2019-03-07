@@ -1,6 +1,5 @@
 # $Id: owm.py 1767 2017-11-08 13:13:33Z mwall $
 # Copyright 2013 Matthew Wall
-
 """
 Upload data to OpenWeatherMap
   http://openweathermap.org
@@ -35,7 +34,7 @@ import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.7"
+VERSION = "0.8"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -198,4 +197,3 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
                 values[_key] = record[rkey] * self._DATA_MAP[_key][1] + self._DATA_MAP[_key][2]
         data = json.dumps([values])
         return data
-

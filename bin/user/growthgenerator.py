@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # growthgenerator.py
@@ -9,22 +8,29 @@
 
 """
 
-from __future__ import with_statement
-from __future__ import division
+from __future__ import absolute_import
+
 import os.path
 import time
 import datetime
 import csv
 import syslog
 import configobj
+
+import six
 import Cheetah.Template
+import Cheetah.Filters
+
 import weeplot.genplot
 import weeutil.weeutil
-from weeutil.weeutil import to_bool, to_int, to_float
 import weewx.units
-from weewx.units import ValueTuple, CtoK, CtoF, FtoC
 import weewx.reportengine
 
+from weewx.units import ValueTuple
+from weewx.units import CtoK, CtoF, FtoC
+from weeutil.weeutil import to_bool, to_int, to_float
+from weeutil.config import search_up
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 ZERO = 0
 SPACE = ' '
@@ -36,7 +42,7 @@ NA = -1
 def get_float_t(txt, unit_group):
     if txt is None:
         result = None
-    elif isinstance(txt, basestring):
+    elif isinstance(txt, str):
         if txt.lower() in [NULL, 'none']:
             result = None
     else:
@@ -108,10 +114,8 @@ def logcrt(msg):
 
 class GrowthGenerator(weewx.reportengine.ReportGenerator):
 
-    """Class for managing the image generator.
+    """Class for managing the image generator.    """
 
-    """
-    
     def __init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record=None):
         weewx.reportengine.ReportGenerator.__init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record)
         self.growth_report_generator = GrowthReportGenerator(config_dict, skin_dict, gen_ts, first_run, stn_info, record)
@@ -124,9 +128,8 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
             self.growth_report_generator.recs = self.zip_vectors()
             self.growth_report_generator.run()
         return self
-        
+
     def setup(self):
-        
         self.image_dict = self.skin_dict['ImageGenerator']
         self.growth_dict = self.skin_dict['GrowthGenerator']
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
@@ -144,18 +147,15 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
     def genImages(self, gen_ts):
 
         """Generate the images.
-        
+
         The time scales will be chosen to include the given timestamp, with
         nice beginning and ending times.
-    
         gen_ts: The time around which plots are to be generated. This will
-        also be used as the bottom label in the plots.
-        
-        """
+        also be used as the bottom label in the plots.        """
 
         t1 = time.time()
         ngen = ZERO
-        
+
         for species_name in self.growth_dict.sections:
             # Get the path that the image is going to be saved to:
             plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict['year_images'])
@@ -179,14 +179,14 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
                 now_tuple = time.localtime(plotgen_ts)
                 new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
                 start_date_ts = time.mktime(tuple(new_year_tuple))
-            
+
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
             ai = 21600 #86400           # enspricht 24 Stunden seit START
-            
+
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)
-             
+
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
@@ -201,7 +201,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
 
             # Do any necessary unit conversions:
             self.vectors = {}
-            for (key, val) in recs.iteritems():
+            for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
             if skipThisPlot(plotgen_ts, ai, img_file):
@@ -213,7 +213,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
                     os.makedirs(os.path.dirname(img_file))
                 except OSError:
                     pass
-            
+
                 self.plot = self.plot_image(
                     species_name,
                     plot_options,
@@ -228,7 +228,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
                     # Now save the image
                     image.save(img_file)
                     ngen += 1
-                except IOError, e:
+                except IOError as e:
                     syslog.syslog(syslog.LOG_CRIT, "GrowthGenerator: Unable to save to file '%s' %s:" % (img_file, e))
                 t2 = time.time()
                 if self.log_success:
@@ -297,7 +297,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         horizons.append([biofix, biofix_label])
         offsets = self.growth_dict[species_name].get('Offsets_from_Biofix')
         if offsets:
-            for (horizon_label, offset) in offsets.iteritems():
+            for (horizon_label, offset) in list(offsets.items()):
                 horizon_val = offset.get('offset')
                 if horizon_val:
                     horizon = get_float_t(horizon_val, 'group_temperature')
@@ -395,8 +395,6 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
             'daily_min': ValueTuple([], 'degree_F', 'group_temperature'),
             'dd': ValueTuple([], 'count', 'group_count'),
             'dd_cumulative': ValueTuple([], 'count', 'group_count'),
-            #'dd': ValueTuple([], 'degree_F_day', 'group_degree_day'),
-            #'dd_cumulative': ValueTuple([], 'degree_F_day', 'group_degree_day'),
             }
         try:
             with open(csv_file_name) as csv_file:
@@ -430,7 +428,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
                             pass
                         except TypeError:
                             pass
-        except IOError, e:
+        except IOError as e:
             syslog.syslog(syslog.LOG_CRIT, "GrowthGenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
         return result
 
@@ -782,15 +780,38 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
         tmpname = dest_file + '.tmp'
             
         try:
-            compiled_template = Cheetah.Template.Template(
-                file=template,
-                searchList=searchList,
-                filter=encoding,
-                filtersLib=weewx.cheetahgenerator)
-            with open(tmpname, mode='w') as _file:
-                print >> _file, compiled_template
+            # Cheetah V2 will crash if given a template file name in Unicode. So,
+            # be prepared to catch the exception and convert to ascii:
+            try:
+                # TODO: Look into cacheing the compiled template.
+                compiled_template = Cheetah.Template.Template(
+                    file=template,
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+            except TypeError:
+                compiled_template = Cheetah.Template.Template(
+                    file=template.encode('ascii', 'ignore'),
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+                    
+            unicode_string = compiled_template.respond()
+                    
+            if encoding == 'html_entities':
+                byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
+            elif encoding == 'strict_ascii':
+                byte_string = unicode_string.encode('ascii', 'ignore')
+            else:
+                byte_string = unicode_string.encode('utf8')
+            
+            # Open in binary mode. We are writing a byte-string, not a string
+            with open(tmpname, mode='wb') as fd:
+                fd.write(byte_string)
+            
             os.rename(tmpname, dest_file)
-        except Exception, e:
+
+        except Exception as e:
             # We would like to get better feedback when there are cheetah
             # compiler failures, but there seem to be no hooks for this.
             # For example, if we could get make cheetah emit the source
@@ -860,7 +881,7 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
         template = os.path.join(self.config_dict['WEEWX_ROOT'],
                                 self.config_dict['StdReport']['SKIN_ROOT'],
                                 report_dict['skin'],
-                                template_name.encode('ascii', 'ignore'))
+                                template_name) #.encode('ascii', 'ignore'))
 
         # ------ Destination directory --------
         dest_dir = os.path.join(self.config_dict['WEEWX_ROOT'],

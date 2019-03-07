@@ -4,6 +4,7 @@
 #    See the file LICENSE.txt for your full rights.
 #
 """Defines (mostly static) information about a station."""
+from __future__ import absolute_import
 import time
 
 import weeutil.weeutil
@@ -83,13 +84,14 @@ class Station(object):
         self.version = weewx.__version__
 
     @property
-    def uptime(self):
+    def uptime(self):        
         """Lazy evaluation of weewx uptime."""
         delta_time = time.time() - weewx.launchtime_ts if weewx.launchtime_ts else None
 
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
                                        formatter=self.formatter,
                                        converter=self.converter)
+
     @property
     def db_uptime(self):
         """Lazy evaluation of weewx uptime."""
@@ -118,7 +120,7 @@ class Station(object):
                     # for FreeBSD
                     import ctypes
                     from ctypes.util import find_library
-    
+
                     libc = ctypes.CDLL(find_library('c'))
                     size = ctypes.c_size_t()
                     buf = ctypes.c_int()

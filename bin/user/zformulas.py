@@ -1,13 +1,14 @@
+# coding=utf-8
 #
 #    Copyright (c) 2016-2017 Hartmut Schweidler
 #    Original by Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
-#    zformulas.py for weewx 
+#    zformulas.py for weewx
 
 """ Various weather related formulas and utilities.
     weewx module that provides greenDaySum greenDay Time
-    also airdensity and so on for 
+    also airdensity and so on for new Cals
 
     ano = datetime.fromtimestamp(dt - 1).year
 
@@ -43,13 +44,16 @@ import weewx.manager
 import weewx.wxformulas
 import weeutil.weeutil
 
+
 from math import sin
 from datetime import datetime
+
 
 INHG_PER_MBAR = 0.0295299830714
 METER_PER_FOOT = 0.3048
 METER_PER_MILE = 1609.34
 MM_PER_INCH = 25.4
+
 
 def CtoK(x):
     return x + 273.15
@@ -68,6 +72,7 @@ def kph_to_mph(x):
 
 def degtorad(x):
     return x * math.pi / 180.0
+
 
 def calc_warmSum(self, t_C, dt):
     """ Calculate warmSum
@@ -105,6 +110,7 @@ def calc_warmSum(self, t_C, dt):
 
     return warmS
 
+
 def calc_coolSum(self, t_C, dt):
     """ Calculate coolSum
 
@@ -116,19 +122,19 @@ def calc_coolSum(self, t_C, dt):
 
     ano = datetime.fromtimestamp(dt - 1).year
     anomo = datetime.fromtimestamp(dt - 1).month
-        
+
     if anomo < 11:
         maee_ano = datetime(ano, 3, 31)
         nov_ano = datetime(ano-1, 11, 1)
     else:
         maee_ano = datetime.fromtimestamp(dt - 1)
         nov_ano = datetime(ano, 11, 1)
-    
+
     maee_ano_ts = time.mktime(maee_ano.timetuple())
     nov_ano_ts = time.mktime(nov_ano.timetuple())
-    
+
     _cooS = []
-    
+
     db_manager = self.engine.db_binder.get_manager(data_binding='wx_binding', initialize=True)
     try:
         for tspan in weeutil.weeutil.genDaySpans(nov_ano_ts,  maee_ano_ts):
@@ -145,6 +151,7 @@ def calc_coolSum(self, t_C, dt):
         pass
 
     return coolS
+
 
 def calc_greenDaySum(self, t_C, dt):
     """ Calculate greenDaySum and greenDay
@@ -219,25 +226,26 @@ def calc_greenDaySum(self, t_C, dt):
                 tavgS = tavgS + tavg0
                 if tavgS >= 200.0 and tavg_ts is None:
                    tavg_ts = _row[0]
-                
+
     except weedb.DatabaseError:
-        pass    
-    
+        pass
+
     return tavgS, tavg_ts
+
 
 def density_Metric(dp_C, t_C, p_mbar):
     """Calculate the Air density in in kg per m3
-                          
+
     dp_C - dewpoint in degree Celsius
 
     t_C - temperature in degree Celsius
-    
+
     p_mbar - pressure in hPa or mbar
     """
-    
+
     if dp_C is None or t_C is None or p_mbar is None:
         return None
-    
+
     dp = dp_C
     Tk = (t_C) + 273.15
     p = (0.99999683 + dp * (-0.90826951E-2 + dp * (0.78736169E-4 +
@@ -248,24 +256,24 @@ def density_Metric(dp_C, t_C, p_mbar):
     Pv = 100 * 6.1078 / (p**8)
     Pd = p_mbar * 100 - Pv
     density = round((Pd / (287.05 * Tk)) + (Pv / (461.495 * Tk)), 3)
-    
+
     return density
 
 def density_US(dp_F, t_F, p_inHg):
     """Calculate the Air Density in kg per m3
-    
+
     dp_F - dewpoint in degree Fahrenheit
-    
+
     t_F - temperature in degree Fahrenheit
-    
+
     p_inHg - pressure in inHg
-    
+
     calculation airdensity_Metric(dp_C, t_C, p_mbar)
     """
- 
+
     if dp_F is None or t_F is None or p_inHg is None:
         return None
-    
+
     t_C = FtoC(t_F)
     dp_C = FtoC(dp_F)
     p_mbar = p_inHg / INHG_PER_MBAR
@@ -339,7 +347,7 @@ def winddruck_Metric(dp_C, t_C, p_mbar, vms):
 
     return winddruck
 
-    
+
 def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     """Calculate the Winddruck in N per m2
 
@@ -360,7 +368,7 @@ def winddruck_US(dp_F, t_F, p_inHg, ws_mph):
     wdru_C = winddruck_Metric(dp_C, t_C, p_mbar, vms)
 
     return wdru_C if wdru_C is not None else None
-    
+
 def wetbulb_Metric(t_C, RH, PP):
     #  Wet bulb calculations == Kuehlgrenztemperatur, Feuchtekugeltemperatur
     #  t_C = outTemp
@@ -412,10 +420,10 @@ def cbindex_US(t_F, RH):
 
     if t_F is None or RH is None:
          return None
-    
+
     t_C = FtoC(t_F)
     cbI_x = cbindex_Metric(t_C, RH)
-    
+
     return cbI_x if cbI_x is not None else None
 
 def sunhes(rahes, tihes):
@@ -424,7 +432,7 @@ def sunhes(rahes, tihes):
     # tihes = dateTime
     if rahes is None or tihes is None:
          return None
-    
+
     loc = ephem.Observer()
     loc.lon = '11.341407'
     loc.lat = '53.605963'
@@ -564,7 +572,7 @@ def gddx_C(Tmax, Tmin, xx):
             else:
                 gddx = (Tmax + xx) / 2.0 - xx
         else:
-            gddx = 20.0 
+            gddx = 20.0
 
     else:
         if Tmax < 30.0:
@@ -614,7 +622,7 @@ def da_US(t_F, p_inHg):
 
     daIn = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
     daI_x = round(daIn, 1)
-    
+
     return daI_x if daI_x is not None else None
 
 if __name__ == "__main__":

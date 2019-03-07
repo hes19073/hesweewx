@@ -50,17 +50,20 @@ Modem Mode commands used by the driver
 """
 
 from __future__ import with_statement
+from __future__ import absolute_import
+from __future__ import print_function
+
 import serial
-import syslog
 import time
 
 import weewx.drivers
 import weewx.wxformulas
 from weewx.units import INHG_PER_MBAR, MILE_PER_KM
 from weeutil.weeutil import timestamp_to_string
+from weeutil.log import logdbg, loginf, logerr
 
 DRIVER_NAME = 'Ultimeter'
-DRIVER_VERSION = '0.18'
+DRIVER_VERSION = '0.20'
 
 
 def loader(config_dict, _):
@@ -68,19 +71,6 @@ def loader(config_dict, _):
 
 def confeditor_loader():
     return UltimeterConfEditor()
-
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'ultimeter: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 
 def _fmt(x):
@@ -243,7 +233,7 @@ class Station(object):
         return buf
 
     def get_readings_with_retry(self, max_tries=5, retry_wait=3):
-        for ntries in range(0, max_tries):
+        for ntries in range(max_tries):
             try:
                 buf = self.get_readings()
                 self.validate_string(buf)
@@ -347,8 +337,8 @@ class UltimeterConfEditor(weewx.drivers.AbstractConfEditor):
 """ % Station.DEFAULT_PORT
 
     def prompt_for_settings(self):
-        print "Specify the serial port on which the station is connected, for"
-        print "example: /dev/ttyUSB0 or /dev/ttyS0 or /dev/cua0."
+        print("Specify the serial port on which the station is connected, for")
+        print("example: /dev/ttyUSB0 or /dev/ttyS0 or /dev/cua0.")
         port = self._prompt('port', Station.DEFAULT_PORT)
         return {'port': port}
 
@@ -359,6 +349,7 @@ class UltimeterConfEditor(weewx.drivers.AbstractConfEditor):
 # PYTHONPATH=bin python bin/weewx/drivers/ultimeter.py
 
 if __name__ == '__main__':
+    import syslog
     import optparse
 
     usage = """%prog [options] [--help]"""
@@ -376,10 +367,10 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.version:
-        print "ultimeter driver version %s" % DRIVER_VERSION
+        print("ultimeter driver version %s" % DRIVER_VERSION)
         exit(0)
 
     with Station(options.port, debug_serial=options.debug) as station:
         station.set_logger_mode()
         while True:
-            print time.time(), _fmt(station.get_readings())
+            print(time.time(), _fmt(station.get_readings()))

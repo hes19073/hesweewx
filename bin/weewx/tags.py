@@ -5,6 +5,7 @@
 #
 """Classes for implementing the weewx tag 'code' codes."""
 
+from __future__ import absolute_import
 import weeutil.weeutil
 from weeutil.weeutil import to_int
 import weewx.units
@@ -167,6 +168,45 @@ class TimespanBinder(object):
         self.converter   = converter
         self.option_dict = option_dict
 
+
+    # Iterate over all records in the time period:
+    def records(self, data_binding=None):
+        manager = self.db_lookup(data_binding)
+        for record in manager.genBatchRecords(self.timespan.start, self.timespan.stop):
+            yield CurrentObj(self.db_lookup, None, record['dateTime'], self.formatter,
+                             self.converter, record=record)
+
+    # Iterate over custom span
+    def spans(self, data_binding=None, context='day', interval=10800):
+        for span in weeutil.weeutil.intervalgen(self.timespan.start, self.timespan.stop, interval):
+            yield TimespanBinder(span, self.db_lookup, data_binding,
+                                 context, self.formatter, self.converter, **self.option_dict)
+
+    # Iterate over hours in the time period:
+    def hours(self, data_binding=None):
+        return TimespanBinder._seqGenerator(weeutil.weeutil.genHourSpans, self.timespan,
+                                            self.db_lookup, data_binding,
+                                            'hour', self.formatter, self.converter, **self.option_dict)
+
+    # Iterate over days in the time period:
+    def days(self, data_binding=None):
+        return TimespanBinder._seqGenerator(weeutil.weeutil.genDaySpans, self.timespan,
+                                            self.db_lookup, data_binding,
+                                            'day', self.formatter, self.converter, **self.option_dict)
+
+    # Iterate over months in the time period:
+    def months(self, data_binding=None):
+        return TimespanBinder._seqGenerator(weeutil.weeutil.genMonthSpans, self.timespan,
+                                            self.db_lookup, data_binding,
+                                            'month', self.formatter, self.converter, **self.option_dict)
+
+    # Iterate over years in the time period:
+    def years(self, data_binding=None):
+        return TimespanBinder._seqGenerator(weeutil.weeutil.genYearSpans, self.timespan,
+                                            self.db_lookup, data_binding,
+                                            'year', self.formatter, self.converter, **self.option_dict)
+
+    """ 
     # Iterate over all records in the time period:
     def records(self):
         manager = self.db_lookup(self.data_binding)
@@ -179,7 +219,8 @@ class TimespanBinder(object):
         for span in weeutil.weeutil.intervalgen(self.timespan.start, self.timespan.stop, interval):
             yield TimespanBinder(span, self.db_lookup, self.data_binding,
                                  context, self.formatter, self.converter, **self.option_dict)
-    
+
+
     # Iterate over hours in the time period:
     def hours(self):
         return TimespanBinder._seqGenerator(weeutil.weeutil.genHourSpans, self.timespan,
@@ -203,6 +244,7 @@ class TimespanBinder(object):
         return TimespanBinder._seqGenerator(weeutil.weeutil.genYearSpans, self.timespan,
                                             self.db_lookup, self.data_binding,
                                             'year', self.formatter, self.converter, **self.option_dict)
+    """
 
     # Static method used to implement the iteration:
     @staticmethod
@@ -309,6 +351,9 @@ class ObservationBinder(object):
 
     def sum_ge(self, val):
         return self._do_query('sum_ge', val=val)
+
+    def sum_le(self, val):
+        return self._do_query('sum_le', val=val)
 
     def __getattr__(self, aggregate_type):
         """Return statistical summary using a given aggregate type.

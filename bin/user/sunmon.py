@@ -30,7 +30,7 @@ Add the following to weewx.conf:
 
 """
 
-from __future__ import print_function
+
 
 import os
 import platform
@@ -43,8 +43,10 @@ import weecfg
 import weewx
 import weewx.uwxutils
 import weeutil.weeutil
+
 from weewx.engine import StdService
 from weewx.almanac import Almanac
+
 
 VERSION = "0.1"
 

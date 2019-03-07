@@ -1,3 +1,8 @@
+# coding=utf-8
+# xcolor.py for user color outTemp an so on
+# by H. Schweidler 01.11.2018 21:23 Uhe
+#
+from __future__ import absolute_import
 
 from weewx.cheetahgenerator import SearchList
 import weeutil.weeutil
@@ -11,7 +16,7 @@ class MyDecorator(SearchList):
 
     def decoratorColorStub(self, type, value):
         table_options = weeutil.weeutil.accumulateLeaves(self.table_dict[type])
-        table = zip(table_options['maxvalues'], table_options['colors'])
+        table = list(zip(table_options['maxvalues'], table_options['colors']))
         value = self.decoFunction(value, table)
 
         if value == "-" :
@@ -24,13 +29,13 @@ class MyDecorator(SearchList):
 
     def decoratorTextStub(self, type, value):
         table_options = weeutil.weeutil.accumulateLeaves(self.table_dict[type])
-        table = zip(table_options['maxvalues'], table_options['text1'])
+        table = list(zip(table_options['maxvalues'], table_options['text1']))
         htmlLine = self.decoFunction(value, table)
 
         return htmlLine
 
     def get_extension_list(self, timespan, db_lookup):
-        print "get_extension_list"
+        print ("get_extension_list")
         # Now create a small dictionary with keys 'UV_color' and 'UV_text':
 
         search_list_extension = {'decorator_color'   : self.decoratorColorStub,
@@ -50,5 +55,5 @@ class MyDecorator(SearchList):
                     return c[1]
         else:
            # retval = "#error2" # WHITE TODO decide what we return here ?
-        
+
             return "-"

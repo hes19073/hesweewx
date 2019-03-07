@@ -6,12 +6,16 @@
 """For uploading files to a remove server via FTP"""
 
 from __future__ import with_statement
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
 import ftplib
-import cPickle
 import time
 import syslog
+
+from six.moves import cPickle
+
 
 class FtpUpload(object):
     """Uploads a directory and all its descendants to a remote server.
@@ -148,28 +152,23 @@ class FtpUpload(object):
                     STOR_cmd = "STOR %s" % full_remote_path
                     # Retry up to max_tries times:
                     for count in range(self.max_tries):
-                        try:
-                            # If we have to retry, we should probably reopen the file as well.
-                            # Hence, the open is in the inner loop:
-                            fd = open(full_local_path, "r")
-                            ftp_server.storbinary(STOR_cmd, fd)
-                        except ftplib.all_errors as e:
-                            # Unsuccessful. Log it and go around again.
-                            syslog.syslog(syslog.LOG_ERR, "ftpupload: Attempt #%d. Failed uploading %s to %s. Reason: %s" %
-                                                          (count+1, full_remote_path, self.server, e))
-                            ftp_server.set_pasv(self.passive)
-                        else:
-                            # Success. Log it, break out of the loop
-                            n_uploaded += 1
-                            fileset.add(full_local_path)
-                            syslog.syslog(syslog.LOG_DEBUG, "ftpupload: Uploaded file %s" % full_remote_path)
-                            break
-                        finally:
-                            # This is always executed on every loop. Close the file.
+                        # If we have to retry, we should probably reopen the file as well.
+                        # Hence, the open is in the inner loop:
+                        with open(full_local_path, 'rb') as fd:
                             try:
-                                fd.close()
-                            except:
-                                pass
+                                ftp_server.storbinary(STOR_cmd, fd)
+                            except ftplib.all_errors as e:
+                                # Unsuccessful. Log it and go around again.
+                                syslog.syslog(syslog.LOG_ERR,
+                                              "ftpupload: Attempt #%d. Failed uploading %s to %s. Reason: %s"
+                                              % (count+1, full_remote_path, self.server, e))
+                                ftp_server.set_pasv(self.passive)
+                            else:
+                                # Success. Log it, break out of the loop
+                                n_uploaded += 1
+                                fileset.add(full_local_path)
+                                syslog.syslog(syslog.LOG_DEBUG, "ftpupload: Uploaded file %s" % full_remote_path)
+                                break
                     else:
                         # This is executed only if the loop terminates naturally (without a break statement),
                         # meaning the upload failed max_tries times. Log it, move on to the next file.
@@ -193,9 +192,9 @@ class FtpUpload(object):
         # If the file exists, but is truncated, an EOFError will be raised.
         # Either way, be prepared to catch it.
         try:
-            with open(timeStampFile, "r") as f:
+            with open(timeStampFile, "rb") as f:
                 timestamp = cPickle.load(f)
-                fileset   = cPickle.load(f) 
+                fileset   = cPickle.load(f)
         except (IOError, EOFError, cPickle.PickleError, AttributeError):
             timestamp = 0
             fileset = set()
@@ -211,7 +210,7 @@ class FtpUpload(object):
     def saveLastUpload(self, timestamp, fileset):
         """Saves the time and members of the last upload in the local root."""
         timeStampFile = os.path.join(self.local_root, "#%s.last" % self.name )
-        with open(timeStampFile, "w") as f:
+        with open(timeStampFile, "wb") as f:
             cPickle.dump(timestamp, f)
             cPickle.dump(fileset,   f)
                 
@@ -237,7 +236,7 @@ class FtpUpload(object):
                 return
         else:
             syslog.syslog(syslog.LOG_ERR, "ftpupload: Unable to create remote directory %s" % remote_dir_path)
-            raise IOError, "Unable to create remote directory %s" % remote_dir_path
+            raise IOError("Unable to create remote directory %s" % remote_dir_path)
             
     def _skipThisDir(self, local_dir):
         
@@ -270,13 +269,13 @@ if __name__ == '__main__':
     syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
 
     if len(sys.argv) < 2 :
-        print """Usage: ftpupload.py path-to-configuration-file [path-to-be-ftp'd]"""
+        print("""Usage: ftpupload.py path-to-configuration-file [path-to-be-ftp'd]""")
         sys.exit(weewx.CMD_ERROR)
         
     try :
-        config_dict = configobj.ConfigObj(sys.argv[1], file_error=True)
+        config_dict = configobj.ConfigObj(sys.argv[1], file_error=True, encoding='utf-8')
     except IOError:
-        print "Unable to open configuration file ", sys.argv[1]
+        print("Unable to open configuration file %s" % sys.argv[1])
         raise
 
     if len(sys.argv) == 2:
@@ -284,7 +283,7 @@ if __name__ == '__main__':
             ftp_dir = os.path.join(config_dict['WEEWX_ROOT'],
                                    config_dict['StdReport']['HTML_ROOT'])
         except KeyError:
-            print "No HTML_ROOT in configuration dictionary."
+            print("No HTML_ROOT in configuration dictionary.")
             sys.exit(1)
     else:
         ftp_dir = sys.argv[2]

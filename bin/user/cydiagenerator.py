@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # cydiagenerator.py
@@ -9,23 +8,34 @@ Cydia pomonella Flight-Model.
 
 """
 
-from __future__ import with_statement
-from __future__ import division
+from __future__ import absolute_import
+            
 import os.path
 import time
 import datetime
 import csv
+import math
+
 import syslog
 import configobj
-import codecs
+        
+import six
 import Cheetah.Template
+import Cheetah.Filters
+        
 import weeplot.genplot
 import weeutil.weeutil
-from weeutil.weeutil import to_bool, to_int, to_float
 import weewx.units
-from weewx.units import ValueTuple
 import weewx.reportengine
-import dd_table
+
+#import dd_table.py
+
+                
+from weewx.units import ValueTuple
+from weewx.units import CtoK, CtoF, FtoC
+from weeutil.weeutil import to_bool, to_int, to_float
+from weeutil.config import search_up
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 ZERO = 0
 SPACE = ' '
@@ -33,16 +43,60 @@ NULL = ''
 NUL = '\x00'
 NA = -1
 
-
 def get_float_t(txt, unit_group):
     if txt is None:
         result = None
-    elif isinstance(txt, basestring):
+    elif isinstance(txt, str):
         if txt.lower() in [NULL, 'none']:
             result = None
     else:
         result = ValueTuple(float(txt[ZERO]), txt[1], unit_group)
     return result
+
+
+def dd(day_max_temp, day_min_temp, base_temp):
+
+    day_sum_temp = day_max_temp + day_min_temp
+    day_diff_temp = day_max_temp - day_min_temp
+
+    if day_diff_temp < ZERO:
+        result = None
+
+    elif base_temp < day_min_temp:
+        result = (day_sum_temp / 2.0) - base_temp
+
+    elif base_temp > day_max_temp:
+        result = ZERO
+
+    else:
+        d2 = base_temp + base_temp - day_sum_temp
+
+        theta = math.atan2(d2, math.sqrt(day_diff_temp * day_diff_temp - d2 * d2))
+
+        if (d2 < ZERO ) and (theta > ZERO):
+            theta = theta - math.pi
+#        if day_diff_temp == ZERO:
+#            theta = ZERO
+#        else:
+#            theta = math.asin(d2 / day_diff_temp)
+        result = ((day_diff_temp * math.cos(theta)) - (d2 * ((math.pi / 2.0) - theta))) / (math.pi * 2.0)
+
+    return result
+
+def dd_clipped(day_max_temp_f, day_min_temp_f, threshold_temp_f, ceiling_temp_f):
+
+    dd_threshold = dd(day_max_temp_f, day_min_temp_f, threshold_temp_f)
+    dd_ceiling = dd(day_max_temp_f, day_min_temp_f, ceiling_temp_f)
+
+    if None in [dd_threshold, dd_ceiling]:
+        result = None
+    else:
+        result = dd_threshold - dd_ceiling
+
+    return result
+
+
+
 
 # The default search list includes standard information sources that should be
 # useful in most templates.
@@ -150,7 +204,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             #skin_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['SKIN_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-            html_file = os.path.join(image_root, '%s.html' % species_name)
+            #html_file = os.path.join(image_root, '%s.html' % species_name)
             ai = 21600   #test mit 600 86400 = 24h
             
             # Calculate a suitable min, max time for the requested time.
@@ -170,7 +224,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                 
             # Do any necessary unit conversions:
             self.vectors = {}
-            for (key, val) in recs.iteritems():
+            for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
             if skipThisPlot(plotgen_ts, ai, img_file):
@@ -197,26 +251,13 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                     # Now save the image
                     image.save(img_file)
                     ngen += 1
-                except IOError, e:
+                except IOError as e:
                     syslog.syslog(syslog.LOG_CRIT, "cydiagenerator: Unable to save to file '%s' %s:" % (img_file, e))
                 t2 = time.time()
                 if self.log_success:
                     syslog.syslog(syslog.LOG_INFO, "cydiagenerator: Generated %d images for %s in %.2f seconds" % \
                         (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
-                        
-                #unit = codecs.open(html_file, 'w', 'utf-8')
-                #self.generate_report(
-                #    species_name,
-                #    unit,
-                #    plot_options,
-                #    plotgen_ts,
-                #    (minstamp, maxstamp, timeinc),
-                #    (threshold_lo_t, threshold_hi_t),
-                #    self.recs,
-                #    self.plot.horizons,
-                #    )
-                #unit.close()
-                        
+
         return self
 
     def plot_image(
@@ -277,7 +318,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         horizons.append([biofix, biofix_label])
         offsets = self.cydia_dict[species_name].get('Offsets_from_Biofix')
         if offsets:
-            for (horizon_label, offset) in offsets.iteritems():
+            for (horizon_label, offset) in list(offsets.iteritems()):
                 horizon_val = offset.get('offset')
                 if horizon_val:
                     horizon = get_float_t(horizon_val, 'group_degree_day')
@@ -399,7 +440,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                             result['daily_max'][ZERO].append(daily_max)
                             daily_min = float(rec.get('TMPMIN_F'))
                             result['daily_min'][ZERO].append(daily_min)
-                            dd = dd_table.dd_clipped(daily_max, daily_min, threshold_lo, threshold_hi)
+                            dd = dd_clipped(daily_max, daily_min, threshold_lo, threshold_hi)
                             result['dd'][ZERO].append(dd)
                             dd_cumulative += dd
                             result['dd_cumulative'][ZERO].append(dd_cumulative)
@@ -407,122 +448,12 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                             pass
                         except TypeError:
                             pass
-        except IOError, e:
+        except IOError as e:
             syslog.syslog(syslog.LOG_CRIT, "cydiagenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
 
         return result
 
-    def generate_report(
-            self,
-            species_name,
-            unit,
-            plot_options,
-            plotgen_ts,
-            stamps,
-            thresholds,
-            vectors,
-            horizons,
-            ):
-        horizon_labels = [(cumulative_dd, horizon_label) for ((cumulative_dd, dd_units, dd_group), horizon_label) in horizons]
-        horizon_labels.sort()
-        (minstamp, maxstamp, timeinc) = stamps
-        (threshold_lo_t, threshold_hi_t) = thresholds
-        body_prolog = u'''<!doctype html>
- <html lang="de">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>%(location)s %(title)s</title>
-    <link rel="stylesheet" type="text/css" href="./../css/weewx.css"/>
-    <link rel="stylesheet" type="text/css" href="./../css/cydia.css"/>
-    <link rel="icon" type="image/png" href="favicon.ico" />
-  </head>
 
-  <body>
-    <div id="container">
-'''
-        body_epilog = u'''    </div>
-  </body>
-</html>
-'''
-        masthead = u'''      <div id="masthead">
-        <h1>%(location)s</h1>
-        <h2>%(title)s</h2>
-          <h2>%(time_stamp)s</h2>
-      </div>
-'''
-        content_prolog = u'''      <div id="content">
-        <div id="plots">
-          <img src="%(species_name)s.png" alt="%(title)s" />
-        </div>
-
-        <p>... where Degree-Days = ((Daily Max Temp + Daily Min Temp) /
-        2.0) - %(threshold_lo).1f %(units_threshold_lo)s.</p>
-
-        <p>... except that an adjustment is made for Daily Max/Min
-        outside the range %(threshold_lo).1f %(units_threshold_lo)s —
-        %(threshold_hi).1f %(units_threshold_hi)s by clipping the area
-        normalized to Degree-Days under a symmetric sine wave normalized
-        to Daily Max/Min between those limits.</p>
-        
-        <table>
-          <tr valign=top>
-            <th align=left>Date</th>
-            <th align=right>Min Temp<br>%(units_temp)s</th>
-            <th align=right>Max Temp<br>%(units_temp)s</th>
-            <th align=right>DegDay<br>%(units_dd)s</th>
-            <th align=right>Cumulative<br>DegDay<br>%(units_dd)s</th>
-            <th align=left>Event</th>
-          </tr>
-'''
-        content_epilog = u'''      </div>
-'''
-        detail = u'''          <tr>
-            <td align=left>%(date_string)s</td>
-            <td align=right>%(daily_min)5.1f</td>
-            <td align=right>%(daily_max)5.1f</td>
-            <td align=right>%(dd)5.1f</td>
-            <td align=right>%(dd_cumulative)5.1f</td>
-            <td align=left>%(remark)s</td>
-          </tr>
-'''
-        data_items = {}
-        data_items['species_name'] = os.path.basename(species_name)
-        data_items['title'] = plot_options.get('label', NULL)
-        bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
-        data_items['time_stamp'] = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
-        data_items['location'] = self.config_dict.get('Station', {}).get('location', NULL)
-        units_labels = self.skin_dict.get('Units', {}).get('Labels', {}) 
-        data_items['units_temp'] = units_labels.get(vectors['daily_max'][1], NULL).decode('utf-8')
-        data_items['units_dd'] = units_labels.get(vectors['dd'][1], NULL).decode('utf-8')
-        data_items['threshold_lo'] = round(threshold_lo_t[ZERO], 1)
-        data_items['units_threshold_lo'] = units_labels.get(threshold_lo_t[1], NULL).decode('utf-8')
-        data_items['threshold_hi'] = round(threshold_hi_t[ZERO], 1)
-        data_items['units_threshold_hi'] = units_labels.get(threshold_hi_t[1], NULL).decode('utf-8')
-        unit.write(body_prolog % data_items)
-        unit.write(masthead % data_items)
-        unit.write(content_prolog % data_items)
-        for (ndx, value) in enumerate(vectors['date'][ZERO]):
-            rec = {}
-            rec['date_string'] = time.strftime('%d %b', time.localtime(value))
-            rec['daily_max'] = round(vectors['daily_max'][ZERO][ndx], 1)
-            rec['daily_min'] = round(vectors['daily_min'][ZERO][ndx], 1)
-            rec['dd'] = round(vectors['dd'][ZERO][ndx], 1)
-            dd_cumulative = round(vectors['dd_cumulative'][ZERO][ndx], 1)
-            rec['dd_cumulative'] = dd_cumulative
-            remarks = []
-            while horizon_labels:
-                (horizon_dd, horizon_event) = horizon_labels[ZERO]
-                if dd_cumulative > horizon_dd:
-                    remarks.append(horizon_event)
-                    horizon_labels.pop(ZERO)
-                else:
-                    break
-            rec['remark'] = '; '.join(remarks)
-            unit.write(detail % rec)
-        unit.write(content_epilog % data_items)
-        unit.write(body_epilog % data_items)
-        return self
-    
     def zip_vectors(self):
         size = len(self.vectors['date'][ZERO])
         result = []
@@ -733,13 +664,6 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                           
     """
 
-#    generator_dict = {'SummaryByDay'  : weeutil.weeutil.genDaySpans,
-#                      'SummaryByMonth': weeutil.weeutil.genMonthSpans,
-#                      'SummaryByYear' : weeutil.weeutil.genYearSpans}
-    
-#    format_dict = {'SummaryByDay'  : "%Y-%m-%d",
-#                   'SummaryByMonth': "%Y-%m",
-#                   'SummaryByYear' : "%Y"}
 
     def run(self):
         
@@ -779,9 +703,6 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         
         # This dictionary will hold the formatted dates of all generated files
         
-#        self.outputted_dict = {}
-#        for key in self.generator_dict.iter_keys():
-#            self.outputted_dict[key] = []; 
         self.formatter = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter = weewx.units.Converter.fromSkinDict(self.skin_dict)
 
@@ -862,54 +783,8 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             loginf('Skipping template %s: cannot find start time' % section['template'])
             return ngen
 
-#        if gen_ts:
-#            record = default_archive.getRecord(gen_ts,
-#                                               max_delta=to_int(report_dict.get('max_delta')))
-#            if record:
-#                stop_ts = record['dateTime']
-#            else:
-#                loginf('Skipping template %s: generate time %s not in database' % (section['template'], timestamp_to_string(gen_ts)) )
-#                return ngen
-#        else:
-#            stop_ts = default_archive.lastGoodStamp()
-        
-#        # Get an appropriate generator function
-#        summarize_by = report_dict['summarize_by']
-#        if summarize_by in self.generator_dict:
-#            _spangen = self.generator_dict[summarize_by]
-#        else:
-#            # Just a single timespan to generate. Use a lambda expression.
-#            _spangen = lambda start_ts, stop_ts : [weeutil.weeutil.TimeSpan(start_ts, stop_ts)]
 
-        # Use the generator function
-        
-#        for timespan in _spangen(start_ts, stop_ts):
-#            start_tt = time.localtime(timespan.start)
-#            stop_tt  = time.localtime(timespan.stop)
-
-#            if summarize_by in self.Generator.format_dict:
-#                # This is a "SummaryBy" type generation. If it hasn't been done already, save the
-#                # date as a string, to be used inside the document
-#                date_str = time.strftime(self.format_dict[summarize_by], start_tt)
-#                if date_str not in self.outputted_dict[summarize_by]:
-#                    self.outputted_dict[summarize_by].append(date_str)
-#                # For these "SummaryBy" generations, the file name comes from the start of the timespan:
-#                _filename = self._getFileName(template, start_tt)
-#            else:
-#                # This is a "ToDate" generation. File name comes 
-#                # from the stop (i.e., present) time:
-#                _filename = self._getFileName(template, stop_tt)
-
-#            # Get the absolute path for the target of this template
-#            _fullname = os.path.join(dest_dir, _filename)
-
-#            # Skip summary files outside the timespan
-#            if report_dict['summarize_by'] in self.generator_dict \
-#                    and os.path.exists(_fullname) \
-#                    and not timespan.includesArchiveTime(stop_ts):
-#                continue
-
-            # skip files that are fresh, but only if staleness is defined
+        # skip files that are fresh, but only if staleness is defined
         timespan = weeutil.weeutil.TimeSpan(start_ts, stop_ts)
         stale = to_int(report_dict.get('stale_age'))
         if stale is not None:
@@ -927,15 +802,38 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         tmpname = dest_file + '.tmp'
             
         try:
-            compiled_template = Cheetah.Template.Template(
-                file=template,
-                searchList=searchList,
-                filter=encoding,
-                filtersLib=weewx.cheetahgenerator)
-            with open(tmpname, mode='w') as _file:
-                print >> _file, compiled_template
+            # Cheetah V2 will crash if given a template file name in Unicode. So,
+            # be prepared to catch the exception and convert to ascii:
+            try:
+                # TODO: Look into cacheing the compiled template.
+                compiled_template = Cheetah.Template.Template(
+                    file=template,
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+            except TypeError:
+                compiled_template = Cheetah.Template.Template(
+                    file=template.encode('ascii', 'ignore'),
+                    searchList=searchList,
+                    filter='assure_unicode',
+                    filtersLib=weewx.cheetahgenerator)
+                    
+            unicode_string = compiled_template.respond()
+                    
+            if encoding == 'html_entities':
+                byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
+            elif encoding == 'strict_ascii':
+                byte_string = unicode_string.encode('ascii', 'ignore')
+            else:
+                byte_string = unicode_string.encode('utf8')
+            
+            # Open in binary mode. We are writing a byte-string, not a string
+            with open(tmpname, mode='wb') as fd:
+                fd.write(byte_string)
+            
             os.rename(tmpname, dest_file)
-        except Exception, e:
+            
+        except Exception as e:
             # We would like to get better feedback when there are cheetah
             # compiler failures, but there seem to be no hooks for this.
             # For example, if we could get make cheetah emit the source
@@ -980,7 +878,6 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                 'threshold_hi': weewx.units.ValueHelper(threshold_hi_t, 'year', self.formatter, self.converter),
                 },
             }, 
-#            self.outputted_dict,
             ]
         
 #        # Bind to the default_binding:
@@ -991,27 +888,6 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             searchList += obj.get_extension_list(timespan, db_lookup)
         return searchList
 
-#    def _getFileName(self, template, ref_tt):
-#        """Calculate a destination filename given a template filename.
-#        Replace 'YYYY' with the year, 'MM' with the month, 'DD' with the day.
-#        Strip off any trailing .tmpl"""
-
-#        _filename = os.path.basename(template).replace('.tmpl', '')
-
-#        # If the filename contains YYYY, MM, or DD, then do the replacement
-#        if 'YYYY' in _filename or 'MM' in _filename or 'DD' in _filename:
-#            # Get strings representing year, month, and day
-#            _yr_str  = "%4d"  % ref_tt[0]
-#            _mo_str  = "%02d" % ref_tt[1]
-#            _day_str = "%02d"  % ref_tt[2]
-#            # Replace any instances of 'YYYY' with the year string
-#            _filename = _filename.replace('YYYY', _yr_str)
-#            # Do the same thing with the month...
-#            _filename = _filename.replace('MM', _mo_str)
-#            # ... and the day
-#            _filename = _filename.replace('DD', _day_str)
-
-#        return _filename
 
     def _prepGen(self, species_name, report_dict):
         
@@ -1027,7 +903,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         template = os.path.join(self.config_dict['WEEWX_ROOT'],
                                 self.config_dict['StdReport']['SKIN_ROOT'],
                                 report_dict['skin'],
-                                template_name.encode('ascii', 'ignore'))
+                                template_name)
 
         # ------ Destination directory --------
         dest_dir = os.path.join(self.config_dict['WEEWX_ROOT'],

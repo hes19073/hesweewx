@@ -143,8 +143,7 @@ class GeigerMonitor(StdService):
             ser.flushInput()
 
             read_full = False
-            #data = []
-            loginf("Serial device initialized for Geiger")
+            #loginf("Serial device initialized for Geiger")
 
             while not read_full:
 

@@ -923,22 +923,22 @@ Step 8. Go to step 1 to wait for state 0xde16 again.
 #        history records.  this means anything that modifies the archive
 #        interval should clear the history.
 
-from datetime import datetime
+from __future__ import absolute_import
+from __future__ import print_function
 
-import StringIO
+from datetime import datetime
 import sys
-import syslog
 import threading
 import time
-import traceback
 import usb
 
 import weewx.drivers
 import weewx.wxformulas
 import weeutil.weeutil
+from weeutil.log import logdbg, loginf, logcrt, logerr, log_traceback
 
 DRIVER_NAME = 'WS28xx'
-DRIVER_VERSION = '0.35'
+DRIVER_VERSION = '0.40'
 
 
 def loader(config_dict, engine):
@@ -958,34 +958,10 @@ DEBUG_WEATHER_DATA = 0
 DEBUG_HISTORY_DATA = 0
 DEBUG_DUMP_FORMAT = 'auto'
 
-def logmsg(dst, msg):
-    syslog.syslog(dst, 'ws28xx: %s: %s' %
-                  (threading.currentThread().getName(), msg))
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logcrt(msg):
-    logmsg(syslog.LOG_CRIT, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
-def log_traceback(dst=syslog.LOG_INFO, prefix='**** '):
-    sfd = StringIO.StringIO()
-    traceback.print_exc(file=sfd)
-    sfd.seek(0)
-    for line in sfd:
-        logmsg(dst, prefix + line)
-    del sfd
-
 def log_frame(n, buf):
     logdbg('frame length is %d' % n)
     strbuf = ''
-    for i in xrange(0,n):
+    for i in range(n):
         strbuf += str('%02x ' % buf[i])
         if (i + 1) % 16 == 0:
             logdbg(strbuf)
@@ -1007,7 +983,7 @@ def calc_checksum(buf, start, end=None):
     if end is None:
         end = len(buf[0]) - start
     cs = 0
-    for i in xrange(0, end):
+    for i in range(end):
         cs += buf[0][i+start]
     return cs
 
@@ -1040,9 +1016,9 @@ def index_to_addr(idx):
 def print_dict(data):
     for x in sorted(data.keys()):
         if x == 'dateTime':
-            print '%s: %s' % (x, weeutil.weeutil.timestamp_to_string(data[x]))
+            print('%s: %s' % (x, weeutil.weeutil.timestamp_to_string(data[x])))
         else:
-            print '%s: %s' % (x, data[x])
+            print('%s: %s' % (x, data[x]))
 
 
 class WS28xxConfEditor(weewx.drivers.AbstractConfEditor):
@@ -1064,8 +1040,8 @@ class WS28xxConfEditor(weewx.drivers.AbstractConfEditor):
 """
 
     def prompt_for_settings(self):
-        print "Specify the frequency used between the station and the"
-        print "transceiver, either 'US' (915 MHz) or 'EU' (868.3 MHz)."
+        print("Specify the frequency used between the station and the")
+        print("transceiver, either 'US' (915 MHz) or 'EU' (868.3 MHz).")
         freq = self._prompt('frequency', 'US', ['US', 'EU'])
         return {'transceiver_frequency': freq}
 
@@ -1115,30 +1091,30 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
 
     def check_transceiver(self, maxtries):
         """See if the transceiver is installed and operational."""
-        print 'Checking for transceiver...'
+        print('Checking for transceiver...')
         ntries = 0
         while ntries < maxtries:
             ntries += 1
             if self.station.transceiver_is_present():
-                print 'Transceiver is present'
+                print('Transceiver is present')
                 sn = self.station.get_transceiver_serial()
-                print 'serial: %s' % sn
+                print('serial: %s' % sn)
                 tid = self.station.get_transceiver_id()
-                print 'id: %d (0x%04x)' % (tid, tid)
+                print('id: %d (0x%04x)' % (tid, tid))
                 break
-            print 'Not found (attempt %d of %d) ...' % (ntries, maxtries)
+            print('Not found (attempt %d of %d) ...' % (ntries, maxtries))
             time.sleep(5)
         else:
-            print 'Transceiver not responding.'
+            print('Transceiver not responding.')
 
     def pair(self, maxtries):
         """Pair the transceiver with the station console."""
-        print 'Pairing transceiver with console...'
+        print('Pairing transceiver with console...')
         maxwait = 90 # how long to wait between button presses, in seconds
         ntries = 0
         while ntries < maxtries or maxtries == 0:
             if self.station.transceiver_is_paired():
-                print 'Transceiver is paired to console'
+                print('Transceiver is paired to console')
                 break
             ntries += 1
             msg = 'Press and hold the [v] key until "PC" appears'
@@ -1146,14 +1122,14 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
                 msg += ' (attempt %d of %d)' % (ntries, maxtries)
             else:
                 msg += ' (attempt %d)' % ntries
-            print msg
+            print(msg)
             now = start_ts = int(time.time())
             while (now - start_ts < maxwait and
                    not self.station.transceiver_is_paired()):
                 time.sleep(5)
                 now = int(time.time())
         else:
-            print 'Transceiver not paired to console.'
+            print('Transceiver not paired to console.')
 
     def get_interval(self, maxtries):
         cfg = self.get_config(maxtries)
@@ -1173,24 +1149,24 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
                 start_ts = int(time.time())
             else:
                 dur = int(time.time()) - start_ts
-                print 'No data after %d seconds (press SET to sync)' % dur
+                print('No data after %d seconds (press SET to sync)' % dur)
             time.sleep(30)
         return None
 
     def set_interval(self, maxtries, interval, prompt):
         """Set the station archive interval"""
-        print "This feature is not yet implemented"
+        print("This feature is not yet implemented")
 
     def show_info(self, maxtries):
         """Query the station then display the settings."""
-        print 'Querying the station for the configuration...'
+        print('Querying the station for the configuration...')
         cfg = self.get_config(maxtries)
         if cfg is not None:
             print_dict(cfg)
 
     def show_current(self, maxtries):
         """Get current weather observation."""
-        print 'Querying the station for current weather data...'
+        print('Querying the station for current weather data...')
         start_ts = None
         ntries = 0
         while ntries < maxtries or maxtries == 0:
@@ -1203,20 +1179,20 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
                 start_ts = int(time.time())
             else:
                 dur = int(time.time()) - start_ts
-                print 'No data after %d seconds (press SET to sync)' % dur
+                print('No data after %d seconds (press SET to sync)' % dur)
             time.sleep(30)
 
     def show_history(self, maxtries, ts=0, count=0):
         """Display the indicated number of records or the records since the 
         specified timestamp (local time, in seconds)"""
-        print "Querying the station for historical records..."
+        print("Querying the station for historical records...")
         ntries = 0
         last_n = nrem = None
         last_ts = int(time.time())
         self.station.start_caching_history(since_ts=ts, num_rec=count)
         while nrem is None or nrem > 0:
             if ntries >= maxtries:
-                print 'Giving up after %d tries' % ntries
+                print('Giving up after %d tries' % ntries)
                 break
             time.sleep(30)
             ntries += 1
@@ -1224,7 +1200,7 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
             n = self.station.get_num_history_scanned()
             if n == last_n:
                 dur = now - last_ts
-                print 'No data after %d seconds (press SET to sync)' % dur
+                print('No data after %d seconds (press SET to sync)' % dur)
             else:
                 ntries = 0
                 last_ts = now
@@ -1238,10 +1214,10 @@ class WS28xxConfigurator(weewx.drivers.AbstractConfigurator):
         self.station.stop_caching_history()
         records = self.station.get_history_cache_records()
         self.station.clear_history_cache()
-        print
-        print 'Found %d records' % len(records)
+        print()
+        print('Found %d records' % len(records))
         for r in records:
-            print r
+            print(r)
 
 
 class WS28xxDriver(weewx.drivers.AbstractDevice):
@@ -1981,7 +1957,7 @@ class USBHardware(object):
     @staticmethod
     def reverseByteOrder(buf, start, Count):
         nbuf=buf[0]
-        for i in xrange(0, Count >> 1):
+        for i in range(Count >> 1):
             tmp = nbuf[start + i]
             nbuf[start + i] = nbuf[start + Count - i - 1]
             nbuf[start + Count - i - 1 ] = tmp
@@ -2115,7 +2091,7 @@ class USBHardware(object):
                            (label, minutes, hours, days, month, year))
         if result is None:
             # FIXME: use None instead of a really old date to indicate invalid
-            result = datetime(1900, 01, 01, 00, 00)
+            result = datetime(1900, 0o1, 0o1, 00, 00)
         return result
 
     @staticmethod
@@ -2415,7 +2391,7 @@ class CCurrentWeatherData(object):
 
         if DEBUG_WEATHER_DATA > 2:
             unknownbuf = [0]*9
-            for i in xrange(0,9):
+            for i in range(9):
                 unknownbuf[i] = nbuf[163+i]
             strbuf = ""
             for i in unknownbuf:
@@ -2616,7 +2592,7 @@ class CWeatherStationConfig(object):
         '''Parse 7-digit number with 3 decimals'''
         num = int(number*1000)
         parsebuf=[0]*7
-        for i in xrange(7-numbytes,7):
+        for i in range(7-numbytes,7):
             parsebuf[i] = num%10
             num = num//10
         if StartOnHiNibble:
@@ -2634,7 +2610,7 @@ class CWeatherStationConfig(object):
         '''Parse float number to 6 bytes'''
         num = int(number*100*256)
         parsebuf=[0]*6
-        for i in xrange(0,6):
+        for i in range(6):
             parsebuf[i] = num%16
             num = num//16
         buf[0][0+start] = parsebuf[5]*16 + parsebuf[4]
@@ -2645,7 +2621,7 @@ class CWeatherStationConfig(object):
         '''Parse 5-digit number with 0 decimals'''
         num = int(number)
         nbuf=[0]*5
-        for i in xrange(5-numbytes,5):
+        for i in range(5-numbytes,5):
             nbuf[i] = num%10
             num = num//10
         if StartOnHiNibble:
@@ -3235,11 +3211,11 @@ class sHID(object):
                 timeout=self.timeout)
             data=[0]*0x15
             if numBytes < 16:
-                for i in xrange(0, numBytes):
+                for i in range(numBytes):
                     data[i] = buf[i+4]
                 numBytes = 0
             else:
-                for i in xrange(0, 16):
+                for i in range(16):
                     data[i] = buf[i+4]
                 numBytes -= 16
                 addr += 16
@@ -3266,7 +3242,7 @@ class sHID(object):
         buf[0] = 0xd5
         buf[1] = numBytes >> 8
         buf[2] = numBytes
-        for i in xrange(0, numBytes):
+        for i in range(numBytes):
             buf[i+3] = data[i]
         if DEBUG_COMM == 1:
             self.dump('setFrame', buf, 'short')
@@ -3290,7 +3266,7 @@ class sHID(object):
             timeout=self.timeout)
         new_data=[0]*0x131
         new_numBytes=(buf[1] << 8 | buf[2])& 0x1ff
-        for i in xrange(0, new_numBytes):
+        for i in range(new_numBytes):
             new_data[i] = buf[i+3]
         if DEBUG_COMM == 1:
             self.dump('getFrame', buf, 'short')
@@ -3403,11 +3379,11 @@ class sHID(object):
                 timeout=1000)
             new_data=[0]*0x15
             if numBytes < 16:
-                for i in xrange(0, numBytes):
+                for i in range(numBytes):
                     new_data[i] = buf[i+4]
                 numBytes = 0
             else:
-                for i in xrange(0, 16):
+                for i in range(16):
                     new_data[i] = buf[i+4]
                 numBytes -= 16
                 addr += 16
@@ -3535,7 +3511,7 @@ class CCommunicationService(object):
             newBuffer[0][1] = Buffer[0][1]
             newBuffer[0][2] = EAction.aSendConfig # 0x40 # change this value if we won't store config
             newBuffer[0][3] = Buffer[0][3]
-            for i in xrange(0,44):
+            for i in range(44):
                 newBuffer[0][i+4] = cfgBuffer[0][i]
             Buffer[0] = newBuffer[0]
             Length = 48 # 0x30
@@ -3576,7 +3552,7 @@ class CCommunicationService(object):
                    (action, cs, hidx))
         newBuffer = [0]
         newBuffer[0] = [0]*9
-        for i in xrange(0,2):
+        for i in range(2):
             newBuffer[0][i] = Buffer[0][i]
 
         comInt = self.DataStore.getCommModeInterval()
@@ -3982,7 +3958,7 @@ class CCommunicationService(object):
         # calculate the frequency then set frequency registers
         freq = self.DataStore.TransceiverSettings.Frequency
         loginf('base frequency: %d' % freq)
-        freqVal =  long(freq / 16000000.0 * 16777216.0)
+        freqVal =  int(freq / 16000000.0 * 16777216.0)
         corVec = self.shid.readConfigFlash(0x1F5, 4)
         corVal = corVec[0] << 8
         corVal |= corVec[1]
@@ -4112,7 +4088,7 @@ class CCommunicationService(object):
                 self.doRFCommunication()
         except Exception as e:
             logerr('exception in doRF: %s' % e)
-            log_traceback(dst=syslog.LOG_INFO)
+            log_traceback()
             self.running = False
 #            raise
         finally:

@@ -65,7 +65,7 @@ def Rsync(rsync_user, rsync_server, rsync_options, rsync_loc_file, rsync_ssh_str
         #rsyncpid = rsynccmd.pid
         #loginf("     post.wait rsync pid is %s" % rsyncpid)
         #subprocess.call( ('ps', '-l') )
-    except OSError, e:
+    except OSError as e:
             #print "EXCEPTION"
         if e.errno == errno.ENOENT:
             logerr("wxobs: rsync does not appear to be installed on this system. \
@@ -444,13 +444,13 @@ class wxobs(SearchList):
             if not os.path.isfile(new_location):
                 try:
                     os.symlink(org_location, new_location)
-                except OSError, e:
+                except OSError as e:
                     logerr("error creating database symlink %s" % e)
 
             try:
                 if not os.access(self.include_file, os.W_OK):
                     os.makedirs(self.inc_path)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == os.errno.EEXIST:
                     pass
         else:

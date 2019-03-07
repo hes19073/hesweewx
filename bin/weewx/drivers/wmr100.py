@@ -37,36 +37,27 @@ it out of the source code, available at:
   https://pyusb.svn.sourceforge.net/svnroot/pyusb/branches/0.4/pyusb.c  
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 import time
 import operator
-import syslog
+from functools import reduce
 
 import usb
 
 import weewx.drivers
 import weewx.wxformulas
 import weeutil.weeutil
+from weeutil.log import logdbg, loginf, logerr
 
 DRIVER_NAME = 'WMR100'
-DRIVER_VERSION = "3.3.3"
+DRIVER_VERSION = "3.4.0"
 
 def loader(config_dict, engine):  # @UnusedVariable
     return WMR100(**config_dict[DRIVER_NAME])    
 
 def confeditor_loader():
     return WMR100ConfEditor()
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'wmr100: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 
 class WMR100(weewx.drivers.AbstractDevice):
@@ -256,7 +247,7 @@ class WMR100(weewx.drivers.AbstractDevice):
                     else:
                         logdbg("Bad checksum on buffer of length %d" % len(buff))
                 # Throw away the next character (which will be 0xff):
-                genBytes.next()
+                next(genBytes)
                 # Start with a fresh buffer
                 buff = []
             else:
@@ -439,8 +430,8 @@ class WMR100ConfEditor(weewx.drivers.AbstractConfEditor):
 """
 
     def modify_config(self, config_dict):
-        print """
-Setting rainRate calculation to hardware."""
+        print("""
+Setting rainRate calculation to hardware.""")
         config_dict.setdefault('StdWXCalculate', {})
         config_dict['StdWXCalculate'].setdefault('Calculations', {})
         config_dict['StdWXCalculate']['Calculations']['rainRate'] = 'hardware'

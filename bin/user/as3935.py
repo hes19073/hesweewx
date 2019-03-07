@@ -1,3 +1,4 @@
+# coding=utf-8
 # $Id: as3935.py 1329 2015-06-18 15:20:40Z mwall $
 # Copyright 2015 Matthew Wall
 
@@ -165,5 +166,5 @@ class AS3935(StdService):
                 loginf("strike at %s km" % distance)
                 self.data.append((strike_ts, distance))
                 self.save_data(strike_ts, distance)
-        except Exception, e:
+        except Exception as e:
             logerr("callback failed: %s" % e)
