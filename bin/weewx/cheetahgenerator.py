@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2016 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2018 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -74,6 +74,7 @@ import weewx.station
 import weewx.units
 import weewx.tags
 from weeutil.weeutil import to_bool, to_int, timestamp_to_string
+from weeutil.config import search_up
 
 # The default search list includes standard information sources that should be
 # useful in most templates.
@@ -150,7 +151,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         gen_dict[section_name]['summarize_by'] = 'None'
 
         # determine how much logging is desired
-        log_success = to_bool(gen_dict[section_name].get('log_success', True))
+        log_success = to_bool(search_up(gen_dict[section_name], 'log_success', True))
 
         # configure the search list extensions
         self.initExtensions(gen_dict[section_name])
@@ -245,7 +246,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         # a predictable result.
         os.chdir(os.path.join(self.config_dict['WEEWX_ROOT'],
                               self.skin_dict['SKIN_ROOT'],
-                              self.skin_dict['skin']))
+                              self.skin_dict.get('skin', '')))
 
         report_dict = weeutil.weeutil.accumulateLeaves(section)
         
@@ -320,15 +321,15 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             searchList = self._getSearchList(encoding, timespan,
                                              default_binding)
             tmpname = _fullname + '.tmp'
-            
+
             try:
                 compiled_template = Cheetah.Template.Template(
                     file=template,
                     searchList=searchList,
                     filter=encoding,
                     filtersLib=weewx.cheetahgenerator)
-                with open(tmpname, mode='w') as _file:
-                    print >> _file, compiled_template
+                with open(tmpname, mode='w') as fd:
+                    fd.write(str(compiled_template))
                 os.rename(tmpname, _fullname)
             except Exception as e:
                 # We would like to get better feedback when there are cheetah
@@ -560,7 +561,7 @@ class Stats(SearchList):
         return [stats]
 
 class UnitInfo(SearchList):
-    """Class that implements the $unit tag."""
+    """Class that implements the $unit and $obs tags."""
 
     def __init__(self, generator):
         SearchList.__init__(self, generator)

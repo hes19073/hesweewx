@@ -1,11 +1,12 @@
 #
-#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com> and
+#    Copyright (c) 2009-2018 Tom Keffer <tkeffer@gmail.com> and
 #                            Matthew Wall
 #
 #    See the file LICENSE.txt for your full rights.
 #
 """Utilities for managing the config file"""
 
+from __future__ import print_function
 import sys
 
 import configobj
@@ -18,6 +19,7 @@ from weecfg import Logger
 stn_info_defaults = {'station_type': 'Simulator',
                      'driver': 'weewx.drivers.simulator'}
 
+
 class ConfigEngine(object):
 
     def __init__(self, logger=None):
@@ -25,7 +27,7 @@ class ConfigEngine(object):
 
     def run(self, args, options):
         if options.version:
-            print weewx.__version__
+            print(weewx.__version__)
             sys.exit(0)
 
         if options.list_drivers:
@@ -36,11 +38,11 @@ class ConfigEngine(object):
         # Check for errors in the options.
         #
 
-        # Must have one, and only one, of install, upgrade, and reconfigure:
+        # We must be doing one of install, upgrade, and reconfigure:
         if sum(1 if x is True else 0 for x in [options.install,
                                                options.upgrade,
                                                options.reconfigure]) != 1:
-            sys.exit("No command specified.")
+            sys.exit("Must specify one and only one of --install, --upgrade, or --reconfigure.")
 
         # Check for missing --dist-config
         if (options.install or options.upgrade) and not options.dist_config:
@@ -79,8 +81,7 @@ class ConfigEngine(object):
             config_dict = dist_config_dict
         else:
             try:
-                config_path, config_dict = weecfg.read_config(
-                    options.config_path, args)
+                config_path, config_dict = weecfg.read_config(options.config_path, args)
             except SyntaxError as e:
                 sys.exit("Syntax error in configuration file: %s" % e)
             except IOError as e:

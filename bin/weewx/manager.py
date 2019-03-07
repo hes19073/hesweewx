@@ -17,7 +17,7 @@ from weewx.units import ValueTuple
 import weewx.units
 import weeutil.weeutil
 import weedb
-from weeutil.weeutil import timestamp_to_string, isMidnight, to_int
+from weeutil.weeutil import timestamp_to_string, isStartOfDay, to_int
 
 #==============================================================================
 #                         class Manager
@@ -933,7 +933,7 @@ def get_database_dict_from_config(config_dict, database):
              driver: weedb.sqlite
     """
     try:
-        database_dict = dict(config_dict['Databases'][database])
+        database_dict = config_dict['Databases'][database].dict()
     except KeyError as e:
         raise weewx.UnknownDatabase("Unknown database '%s'" % e)
     
@@ -971,7 +971,7 @@ def get_manager_dict_from_config(config_dict, data_binding,
     # Start with a copy of the bindings in the config dictionary (we
     # will be adding to it):
     try:
-        manager_dict = dict(config_dict['DataBindings'][data_binding])
+        manager_dict = config_dict['DataBindings'][data_binding].dict()
     except KeyError as e:
         raise weewx.UnknownBinding("Unknown data binding '%s'" % e)
 
@@ -1257,9 +1257,9 @@ class DaySummaryManager(Manager):
         # We can use the day summary optimizations if the starting and ending times of
         # the aggregation interval sit on midnight boundaries, or are the first or last
         # records in the database.
-        if aggregate_type in ['last', 'lasttime'] or not (isMidnight(timespan.start) or \
+        if aggregate_type in ['last', 'lasttime'] or not (isStartOfDay(timespan.start) or \
                                                           timespan.start == self.first_timestamp) \
-                                                  or not (isMidnight(timespan.stop)  or \
+                                                  or not (isStartOfDay(timespan.stop)  or \
                                                           timespan.stop  == self.last_timestamp):
             
             # Cannot use the day summaries. We'll have to calculate the aggregate
@@ -1579,7 +1579,7 @@ class DaySummaryManager(Manager):
         if 'interval' not in record:
             raise ValueError("Missing value for record field 'interval'")
         elif record['interval'] <= 0:
-            raise ValueError("Non-positive value for record field 'interval': %s" (record['interval'], ))
+            raise ValueError("Non-positive value for record field 'interval': %s" % (record['interval'], ))
         weight = 60.0 * record['interval'] if self.version >= '2.0' else 1.0
         return weight
 

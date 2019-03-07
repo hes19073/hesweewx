@@ -460,22 +460,29 @@ class StdArchive(StdService):
         syslog.syslog(syslog.LOG_INFO, "engine: Record generation will be attempted in '%s'" % 
                       (self.record_generation,))
 
-        # If the station supports a hardware archive interval, use that.
-        # Warn if it is different than what is in config.
-        ival_msg = ''
-        try:
-            if software_interval != self.engine.console.archive_interval:
-                syslog.syslog(syslog.LOG_ERR,
-                              "engine: The archive interval in the"
-                              " configuration file (%d) does not match the"
-                              " station hardware interval (%d)." %
-                              (software_interval,
-                               self.engine.console.archive_interval))
-            self.archive_interval = self.engine.console.archive_interval
-            ival_msg = "(specified by hardware)"
-        except NotImplementedError:
+        if self.record_generation == 'software':
             self.archive_interval = software_interval
-            ival_msg = "(specified in weewx configuration)"
+            ival_msg = "(software record generation)"
+        elif self.record_generation == 'hardware':
+            # If the station supports a hardware archive interval, use that.
+            # Warn if it is different than what is in config.
+            try:
+                if software_interval != self.engine.console.archive_interval:
+                    syslog.syslog(syslog.LOG_ERR,
+                                  "engine: The archive interval in the"
+                                  " configuration file (%d) does not match the"
+                                  " station hardware interval (%d)." %
+                                  (software_interval,
+                                   self.engine.console.archive_interval))
+                self.archive_interval = self.engine.console.archive_interval
+                ival_msg = "(specified by hardware)"
+            except NotImplementedError:
+                self.archive_interval = software_interval
+                ival_msg = "(specified in weewx configuration)"
+        else:
+            syslog.syslog(syslog.LOG_CRITICAL, "Unknown type of record generation: %s" % self.record_generation)
+            raise ValueError(self.record_generation)
+
         syslog.syslog(syslog.LOG_INFO, "engine: Using archive interval of %d seconds %s" %
                       (self.archive_interval, ival_msg))
 
@@ -502,13 +509,15 @@ class StdArchive(StdService):
     
     def startup(self, event):  # @UnusedVariable
         """Called when the engine is starting up."""
-        # The engine is starting up. The main task is to do a catch up on any
-        # data still on the station, but not yet put in the database. Not
-        # all consoles can do this, so be prepared to catch the exception:
-        try:
-            self._catchup(self.engine.console.genStartupRecords)
-        except NotImplementedError:
-            pass
+        # The engine is starting up. If hardware record generation has been specified,
+        # the main task is to do a catch up on any
+        # data still on the station, but not yet put in the database.
+        if self.record_generation == 'hardware':
+            # Not all consoles can do a hardware catchup, so be prepared to catch the exception:
+            try:
+                self._catchup(self.engine.console.genStartupRecords)
+            except NotImplementedError:
+                pass
                     
     def pre_loop(self, event):  # @UnusedVariable
         """Called before the main packet loop is entered."""
@@ -655,8 +664,8 @@ class StdTimeSynch(StdService):
         
         # Zero out the time of last synch, and get the time between synchs.
         self.last_synch_ts = 0
-        self.clock_check = int(config_dict['StdTimeSynch'].get('clock_check', 14400))
-        self.max_drift = int(config_dict['StdTimeSynch'].get('max_drift', 5))
+        self.clock_check = int(config_dict.get('StdTimeSynch', {'clock_check': 14400}).get('clock_check', 14400))
+        self.max_drift = int(config_dict.get('StdTimeSynch', {'max_drift': 5}).get('max_drift', 5))
         
         self.bind(weewx.STARTUP, self.startup)
         self.bind(weewx.PRE_LOOP, self.pre_loop)

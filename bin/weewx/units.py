@@ -769,15 +769,15 @@ class Formatter(object):
             label = default_unit_label_dict[unit]
         else:
             # Can't find a label. Just return an empty string:
-            return ''
+            return u''
 
-        # Is the label a simple string? If so, return it
-        if isinstance(label, basestring):
-            return label
-        else:
-            # It is not a simple string. Assume it is a tuple or list
-            # Return the singular, or plural, version as requested.
+        # Is the label a tuple or list?
+        if isinstance(label, (tuple, list)):
+            # Yes. Return the singular or plural version as requested
             return label[1] if plural else label[0]
+        else:
+            # No singular/plural version. It's just a string. Return it.
+            return label
 
     def toString(self, val_t, context='current', addLabel=True,
                  useThisFormat=None, None_string=None,
@@ -917,8 +917,8 @@ class Converter(object):
         Examples:
         >>> p_m = (1016.5, 'mbar', 'group_pressure')
         >>> c = Converter()
-        >>> print c.convert(p_m)
-        (30.020673360897813, 'inHg', 'group_pressure')
+        >>> print "%.3f %s %s" % c.convert(p_m)
+        30.017 inHg group_pressure
         
         Try an unspecified unit type:
         >>> p2 = (1016.5, None, None)
@@ -968,10 +968,12 @@ class Converter(object):
         >>> c = Converter()
         >>> # Source dictionary is in metric units
         >>> source_dict = {'dateTime': 194758100, 'outTemp': 20.0,\
-            'usUnits': weewx.METRIC, 'barometer':1015.8, 'interval':15}
+            'usUnits': weewx.METRIC, 'barometer':1015.9166, 'interval':15}
         >>> target_dict = c.convertDict(source_dict)
-        >>> print target_dict
-        {'outTemp': 68.0, 'interval': 15, 'barometer': 30.0, 'dateTime': 194758100}
+        >>> print "dateTime: %d, interval: %d, barometer: %.3f, outTemp: %.3f" %\
+        (target_dict['dateTime'], target_dict['interval'], \
+         target_dict['barometer'], target_dict['outTemp'])
+        dateTime: 194758100, interval: 15, barometer: 30.000, outTemp: 68.000
         """
         target_dict = {}
         for obs_type in obs_dict:

@@ -8,18 +8,7 @@
    Works under Python 2 and Python 3.
 """
 
-#
-#                       IMPORTANT!
-#
-#  To run the doctest tests, this function must be run as a module. Do this:
-#
-#    python -m weeutil.weeutil
-#
-#  NOT THIS
-#
-#    python weeutil/weeutil.py
-#
-
+from __future__ import absolute_import
 from __future__ import print_function
 
 import calendar
@@ -30,8 +19,20 @@ import struct
 import syslog
 import time
 import traceback
+try:
+    # Python 2
+    from StringIO import StringIO
+except ImportError:
+    # Python 3
+    from io import StringIO
 
-from . import Sun
+# For backwards compatibility:
+from weeutil import config
+search_up        = config.search_up
+accumulateLeaves = config.accumulateLeaves
+merge_config     = config.merge_config
+patch_config     = config.patch_config
+comment_scalar   = config.comment_scalar
 
 
 def convertToFloat(seq):
@@ -41,96 +42,6 @@ def convertToFloat(seq):
         return None
     res = [None if s in ('None', 'none') else float(s) for s in seq]
     return res
-
-
-def search_up(d, k, *default):
-    """Search a ConfigObj dictionary for a key. If it's not found, try my parent, and so on
-    to the root.
-    
-    d: An instance of configobj.Section
-    
-    k: A key to be searched for. If not found in d, it's parent will be searched
-    
-    default: If the key is not found, then the default is returned. If no default is given,
-    then an AttributeError exception is raised.
-    
-    Example: 
-    
-    >>> import configobj
-    >>> c = configobj.ConfigObj({"color":"blue", "size":10, "robin":{"color":"red", "sound": {"volume": "loud"}}})
-    >>> print(search_up(c['robin'], 'size'))
-    10
-    >>> print(search_up(c, 'color'))
-    blue
-    >>> print(search_up(c['robin'], 'color'))
-    red
-    >>> print(search_up(c['robin'], 'flavor', 'salty'))
-    salty
-    >>> try:
-    ...   print(search_up(c['robin'], 'flavor'))
-    ... except AttributeError:
-    ...   print('not found')
-    not found
-    >>> print(search_up(c['robin'], 'sound'))
-    {'volume': 'loud'}
-    >>> print(search_up(c['robin'], 'smell', {}))
-    {}
-    """
-    if k in d:
-        return d[k]
-    if d.parent is d:
-        if len(default):
-            return default[0]
-        else:
-            raise AttributeError(k)
-    else:
-        return search_up(d.parent, k, *default)
-
-
-def accumulateLeaves(d, max_level=99):
-    """Merges leaf options above a ConfigObj section with itself, accumulating the results.
-    
-    This routine is useful for specifying defaults near the root node, 
-    then having them overridden in the leaf nodes of a ConfigObj.
-    
-    d: instance of a configobj.Section (i.e., a section of a ConfigObj)
-    
-    Returns: a dictionary with all the accumulated scalars, up to max_level deep, 
-    going upwards
-    
-    Example: Supply a default color=blue, size=10. The section "dayimage" overrides the former:
-    
-    >>> import configobj
-    >>> c = configobj.ConfigObj({"color":"blue", "size":10, "dayimage":{"color":"red", "position":{"x":20, "y":30}}})
-    >>> accumulateLeaves(c["dayimage"]) == {"color":"red", "size": 10}
-    True
-    >>> accumulateLeaves(c["dayimage"], max_level=0) == {'color': 'red'}
-    True
-    >>> accumulateLeaves(c["dayimage"]["position"]) == {'color': 'red', 'size': 10, 'y': 30, 'x': 20}
-    True
-    >>> accumulateLeaves(c["dayimage"]["position"], max_level=1) == {'color': 'red', 'y': 30, 'x': 20}
-    True
-    """
-
-    import configobj
-
-    # Use recursion. If I am the root object, then there is nothing above 
-    # me to accumulate. Start with a virgin ConfigObj
-    if d.parent is d:
-        cum_dict = configobj.ConfigObj()
-    else:
-        if max_level:
-            # Otherwise, recursively accumulate scalars above me
-            cum_dict = accumulateLeaves(d.parent, max_level - 1)
-        else:
-            cum_dict = configobj.ConfigObj()
-
-    # Now merge my scalars into the results:
-    merge_dict = {}
-    for k in d.scalars:
-        merge_dict[k] = d[k]
-    cum_dict.merge(merge_dict)
-    return cum_dict
 
 
 def conditional_merge(a_dict, b_dict):
@@ -573,6 +484,8 @@ def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta
 
 def isMidnight(time_ts):
     """Is the indicated time on a midnight boundary, local time?
+    NB: This algorithm does not work in countries that switch to DST
+    at midnight, such as Brazil.
     
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
@@ -586,6 +499,31 @@ def isMidnight(time_ts):
 
     time_tt = time.localtime(time_ts)
     return time_tt.tm_hour == 0 and time_tt.tm_min == 0 and time_tt.tm_sec == 0
+
+
+def isStartOfDay(time_ts):
+    """Is the indicated time at the start of the day, local time?
+    Example:
+    >>> os.environ['TZ'] = 'America/Los_Angeles'
+    >>> time_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
+    >>> print(isStartOfDay(time_ts))
+    False
+    >>> time_ts = time.mktime(time.strptime("2013-07-04 00:00:00", "%Y-%m-%d %H:%M:%S"))
+    >>> print(isStartOfDay(time_ts))
+    True
+    >>> os.environ['TZ'] = 'America/Sao_Paulo'
+    >>> time_ts = 1541300400
+    >>> print(isStartOfDay(time_ts))
+    True
+    >>> print(isStartOfDay(time_ts - 1))
+    False
+    """
+
+    # Test the date of the time against the date a tenth of a second before.
+    # If they do not match, the time must have been the start of the day
+    dt1 = datetime.date.fromtimestamp(time_ts)
+    dt2 = datetime.date.fromtimestamp(time_ts - .1)
+    return not dt1 == dt2
 
 
 def archiveDaySpan(time_ts, grace=1, days_ago=0):
@@ -1046,6 +984,8 @@ def getDayNightTransitions(start_ts, end_ts, lat, lon):
     returns: indication of whether the period from start to first transition
     is day or night, plus array of transitions (UTC).
     """
+    from weeutil import Sun
+
     first = None
     values = []
     for t in range(start_ts - 3600 * 24, end_ts + 3600 * 24 + 1, 3600 * 24):
@@ -1173,19 +1113,11 @@ def latlon_string(ll, hemi, which, format_list=None):
 
 def log_traceback(prefix='', loglevel=syslog.LOG_INFO):
     """Log the stack traceback into syslog."""
-    try:
-        # Python 2
-        from StringIO import StringIO
-    except ImportError:
-        # Python 3
-        from io import StringIO
-
     sfd = StringIO()
     traceback.print_exc(file=sfd)
     sfd.seek(0)
     for line in sfd:
         syslog.syslog(loglevel, prefix + line)
-    del StringIO
 
 
 def _get_object(module_class):
@@ -1325,7 +1257,11 @@ def to_int(x):
     """
     if isinstance(x, str) and x.lower() == 'none':
         x = None
-    return int(x) if x is not None else None
+    try:
+        return int(x) if x is not None else None
+    except ValueError:
+        # Perhaps it's a string, holding a floating point number?
+        return int(float(x))
 
 
 def to_float(x):
@@ -1381,7 +1317,10 @@ def min_with_none(x_seq):
 
 
 def max_with_none(x_seq):
-    """Find the maximum in a (possibly empty) sequence, ignoring Nones"""
+    """Find the maximum in a (possibly empty) sequence, ignoring Nones.
+
+    While this function is not necessary under Python 2, under Python 3 it is.
+    """
     xmax = None
     for x in x_seq:
         if xmax is None:
@@ -1464,6 +1403,12 @@ class ListOfDicts(dict):
         self.dict_list.append(new_dict)
 
 
+class KeyDict(dict):
+    """A dictionary that returns the key for an unsuccessful lookup."""
+    def __missing__(self, key):
+        return key
+
+
 def to_sorted_string(rec):
     return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=str.lower)])
 
@@ -1475,6 +1420,19 @@ try:
 except NameError:
     # Python 3
     pass
+
+
+def y_or_n(msg, noprompt):
+    """Prompt and look for a 'y' or 'n' response"""
+
+    # If noprompt is truthy, always return 'y'
+    if noprompt:
+        return 'y'
+
+    ans = None
+    while ans not in ['y', 'n']:
+        ans = input(msg)
+    return ans
 
 
 def int2byte(x):

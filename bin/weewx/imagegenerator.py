@@ -32,21 +32,21 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
         self.genImages(self.gen_ts)
 
     def setup(self):
+        try:
+            d = self.skin_dict['Labels']['Generic']
+        except KeyError:
+            d = {}
+        self.title_dict = weeutil.weeutil.KeyDict(d)
         self.image_dict = self.skin_dict['ImageGenerator']
-        self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
         self.formatter  = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
-        # determine how much logging is desired
-        self.log_success = to_bool(self.image_dict.get('log_success', True))
         # ensure that the skin_dir is in the image_dict
         self.image_dict['skin_dir'] = os.path.join(
             self.config_dict['WEEWX_ROOT'],
             self.skin_dict['SKIN_ROOT'],
             self.skin_dict['skin'])
         # ensure that we are in a consistent right location
-        os.chdir(os.path.join(self.config_dict['WEEWX_ROOT'],
-                              self.skin_dict['SKIN_ROOT'],
-                              self.skin_dict['skin']))
+        os.chdir(self.image_dict['skin_dir'])
 
     def genImages(self, gen_ts):
         """Generate the images.
@@ -70,9 +70,6 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                 # Accumulate all options from parent nodes:
                 plot_options = weeutil.weeutil.accumulateLeaves(
                     self.image_dict[timespan][plotname])
-
-                # FIXME: is this necessary?  does not accumulateLeaves do it?
-                plot_options['skin_dir'] = self.image_dict['skin_dir']
 
                 plotgen_ts = gen_ts
                 if not plotgen_ts:
@@ -196,9 +193,9 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     # See if a line label has been explicitly requested:
                     label = line_options.get('label')
                     if not label:
-                        # No explicit label. Is there a generic one?
-                        # If not, then the SQL type will be used instead
-                        label = self.title_dict.get(var_type, var_type)
+                        # No explicit label. Look up a generic one. NB: title_dict is a KeyDict which
+                        # will substitute the key if the value is not in the dictionary.
+                        label = self.title_dict[var_type]
 
                     # See if a color has been explicitly requested.
                     color = line_options.get('color')
@@ -210,6 +207,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     width = to_int(line_options.get('width'))
 
                     interval_vec = None
+                    gap_fraction = None
 
                     # Some plot types require special treatments:
                     if plot_type == 'vector':
@@ -218,7 +216,6 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     else:
                         vector_rotate = None
 
-                        gap_fraction = None
                         if plot_type == 'bar':
                             interval_vec = [x[1] - x[0]for x in zip(new_start_vec_t.value, new_stop_vec_t.value)]
                         elif plot_type == 'line':
@@ -262,7 +259,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     syslog.syslog(syslog.LOG_CRIT, "imagegenerator: Unable to save to file '%s' %s:" % (img_file, e))
         t2 = time.time()
 
-        if self.log_success:
+        if self.skin_dict.get('log_success', True):
             syslog.syslog(syslog.LOG_INFO, "imagegenerator: Generated %d images for %s in %.2f seconds" % (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
 
 def skipThisPlot(time_ts, aggregate_interval, img_file):
