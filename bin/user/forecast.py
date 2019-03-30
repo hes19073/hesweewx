@@ -511,23 +511,28 @@ $summary.obvis           array
 # http://www.surf-forecast.com/
 # http://ocean.peterbrueggeman.com/tidepredict.html
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import calendar
 import configobj
 import datetime
 import gzip
 import hashlib
-import http.client
 import os, errno
 import re
 import socket
-import string
 import subprocess
 import syslog
 import threading
 import time
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
 
 from io import StringIO
+from io import BytesIO
+from urllib.request import Request, urlopen
+from urllib.error import URLError
+from http.client import BadStatusLine, IncompleteRead
 
 try:
     import cjson as json
@@ -546,7 +551,7 @@ import weeutil.weeutil
 from weewx.engine import StdService
 from weewx.cheetahgenerator import SearchList
 
-VERSION = "3.3.0"
+VERSION = "3.4.0"
 
 def logmsg(level, msg):
     syslog.syslog(level, 'forecast: %s: %s' %
@@ -1116,7 +1121,7 @@ class Forecast(StdService):
         # map a percentage to a cloud indicator
         try:
             v = int(value)
-        except ValueError as TypeError:
+        except (ValueError, TypeError):
             return None
         if 0 <= v <= 5:
             return 'CL'
@@ -1137,7 +1142,7 @@ class Forecast(StdService):
         # map a decimal degree to a compass direction
         try:
             v = float(value)
-        except ValueError as TypeError:
+        except (ValueError, TypeError):
             return None
         if 0 <= v <= 22.5:
             return 'N'
@@ -1164,7 +1169,7 @@ class Forecast(StdService):
         # map a decimal degree to a compass direction
         try:
             v = float(value)
-        except ValueError as TypeError:
+        except (ValueError, TypeError):
             return None
         if 0 <= v <= 11.25:
             return 'N'
@@ -1238,7 +1243,8 @@ class Forecast(StdService):
             self.do_forecast(event)
         elif self.updating:
             logdbg('%s: update thread already running' % self.method_id)
-        elif time.time() - self.interval > self.last_ts:
+        elif self.last_ts is None or time.time() - self.interval > self.last_ts:
+        #elif time.time() - self.interval > self.last_ts:
             t = ForecastThread(self.do_forecast, event)
             t.setName(self.method_id + 'Thread')
             logdbg('%s: starting thread' % self.method_id)
@@ -1284,7 +1290,7 @@ class Forecast(StdService):
     @staticmethod
     def get_last_forecast_ts(dbm, method_id):
         sql = "select dateTime,issued_ts from %s where method = '%s' and dateTime = (select max(dateTime) from %s where method = '%s') limit 1" % (dbm.table_name, method_id, dbm.table_name, method_id)
-#        sql = "select max(dateTime),issued_ts from %s where method = '%s'" % (table, method_id)
+        #sql = "select max(dateTime),issued_ts from %s where method = '%s'" % (table, method_id)
         r = dbm.getSql(sql)
         if r is None:
             return None
@@ -1820,8 +1826,7 @@ def NWSDownloadForecast(foid, url=NWS_DEFAULT_PFM_URL, max_tries=3):
             response = urllib.request.urlopen(u)
             text = response.read()
             return text
-        except (urllib.error.URLError, socket.error,
-                http.client.BadStatusLine, http.client.IncompleteRead) as e:
+        except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
             logerr('%s: failed attempt %d to download NWS forecast: %s' %
                    (NWS_KEY, count + 1, e))
     else:
@@ -2223,23 +2228,24 @@ class DSForecast(Forecast):
             u = '?'.join([u, optional_str]) if len(optional_str) > 0 else u
         else:
             u = url
-        request = urllib.request.Request(u)
+        request = Request(u)
         if compression:
             request.add_header('Accept-Encoding', 'gzip')
         masked = Forecast.get_masked_url(u, api_key)
         loginf("%s: downloading forecast from '%s'" % (DS_KEY, masked))
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(request)
+                response = urlopen(request)
                 if response.info().get('Content-Encoding') == 'gzip':
-                    buf = StringIO(response.read())
+                    #buf = StringIO(response.read())
+                    buf = BytesIO(response.read())
                     f = gzip.GzipFile(fileobj=buf)
                     text = f.read()
                 else:
                     text = response.read()
+                #text = response.read()
                 return text
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (DS_KEY, count + 1, e))
         else:
@@ -2274,7 +2280,7 @@ class DSForecast(Forecast):
     def parse(text, issued_ts=None, now=None, fc_type='daily', location=None):
         """Parse a raw forecast."""
 
-        obj = json.loads(text)
+        obj = json.loads(text.decode('utf-8'))
         if fc_type not in obj:
             msg = "%s: no '%s' forecast in json object" % (DS_KEY, fc_type)
             logerr(msg)
@@ -2718,11 +2724,10 @@ class WUForecast(Forecast):
         loginf("%s: download forecast from '%s'" % (WU_KEY, masked))
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(u)
+                response = urlopen(u)
                 text = response.read()
                 return text
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (WU_KEY, count + 1, e))
         else:
@@ -2731,7 +2736,7 @@ class WUForecast(Forecast):
 
     @staticmethod
     def parse(text, issued_ts=None, now=None, location=None):
-        obj = json.loads(text)
+        obj = json.loads(text.decode('utf-8'))
         if not 'response' in obj:
             msg = "%s: no 'response' in json object" % WU_KEY
             logerr(msg)
@@ -3168,10 +3173,9 @@ class OWMForecast(Forecast):
 
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(u)
+                response = urlopen(u)
                 return response.read()
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (OWMForecast.KEY, count + 1, e))
         else:
@@ -3189,7 +3193,7 @@ class OWMForecast(Forecast):
         msgs = []
         records = []
         cnt = 0
-        fc = json.loads(text)
+        fc = json.loads(text.decode('utf-8'))
         total = fc.get('cnt', 0)
         for period in fc['list']:
             try:
@@ -3387,10 +3391,9 @@ class UKMOForecast(Forecast):
 
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(u)
+                response = urlopen(u)
                 return response.read()
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (UKMOForecast.KEY, count + 1, e))
         else:
@@ -3404,7 +3407,7 @@ class UKMOForecast(Forecast):
         msgs = []
         records = []
         cnt = 0
-        fc = json.loads(text)
+        fc = json.loads(text.decode('utf-8'))
         try:
             fc['SiteRep']['DV']['dataDate']
             fc['SiteRep']['DV']['Location']['Period']
@@ -3643,10 +3646,9 @@ class AerisForecast(Forecast):
 
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(u)
+                response = urlopen(u)
                 return response.read()
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (AerisForecast.KEY, count + 1, e))
         else:
@@ -3658,7 +3660,7 @@ class AerisForecast(Forecast):
         msgs = []
         records = []
 
-        obj = json.loads(text)
+        obj = json.loads(text.decode('utf-8'))
         if not ('response' in obj and 'success' in obj and 'error' in obj):
             msg = "%s: no response/success/error in reply" % AerisForecast.KEY
             logerr(msg)
@@ -3909,10 +3911,9 @@ class WWOForecast(Forecast):
 
         for count in range(max_tries):
             try:
-                response = urllib.request.urlopen(u)
+                response = urlopen(u)
                 return response.read()
-            except (urllib.error.URLError, socket.error,
-                    http.client.BadStatusLine, http.client.IncompleteRead) as e:
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
                 logerr('%s: failed attempt %d to download forecast: %s' %
                        (WWOForecast.KEY, count + 1, e))
         else:
@@ -3921,7 +3922,7 @@ class WWOForecast(Forecast):
 
     @staticmethod
     def parse(text, issued_ts=None, now=None, location=None):
-        obj = json.loads(text)
+        obj = json.loads(text.decode('utf-8'))
         if 'results' in obj and 'error' in obj['results']:
             msg = "%s: %s: %s" % (WWOForecast.KEY,
                                   obj['results']['error']['type'],
@@ -4052,25 +4053,32 @@ class XTideForecast(Forecast):
             self.location, dur=self.duration, prog=self.tideprog)
         if lines is None:
             return None
-        records = self.parse(lines)
+        records = self.parse(lines, self.location)
         if records is None:
             return None
         logdbg('%s: tide matrix: %s' % (self.method_id, records))
         return records
 
-    def parse(self, lines, now=None):
+    @staticmethod
+    def parse(lines, now=None, location=None):
         """Convert the text output into an array of records."""
         if now is None:
             now = int(time.time())
         records = []
         for line in lines:
-            line = string.rstrip(line)
-            fields = string.split(line, ',')
+            line = line.rstrip(line)
+            if not line:
+                continue
+            fields = line.split(line, ',')
+            if len(fields) != 5:
+                logdbg("expected 5 fields, found %s: %s" % (len(fields), line))
+                continue
+
             if fields[4] == 'High Tide' or fields[4] == 'Low Tide':
                 s = '%s %s' % (fields[1], fields[2])
                 tt = time.strptime(s, '%Y.%m.%d %H:%M')
                 ts = time.mktime(tt)
-                ofields = string.split(fields[3], ' ')
+                ofields = fields[3].split(' ')
                 if ofields[1] == 'ft':
                     offset = ofields[0]
                 elif ofields[1] == 'm':
@@ -4087,7 +4095,7 @@ class XTideForecast(Forecast):
                 record['event_ts'] = int(ts)
                 record['hilo'] = XT_HILO[fields[4]]
                 record['offset'] = offset
-                record['location'] = self.location
+                record['location'] = location
                 records.append(record)
         return records
 
@@ -4124,13 +4132,16 @@ class XTideForecast(Forecast):
             # xtide replaces commas in the location with |
             out = []
             for line in p.stdout:
-                if string.count(line, ',') == 4:
+                if line.count(',') == 4:
                     out.append(line)
+                else:
+                     logdbg("%s: ignoring line: %s" % (XT_KEY, line))
             if out:
                 logdbg("%s: got %d lines of output" % (XT_KEY, len(out)))
-                fields = string.split(out[0], ',')
-                loc = string.replace(fields[0], '|', ',')
-                loc = string.replace(loc, ' - READ flaterco.com/pol.html', '')
+                fields = out[0].split(',')
+                loc = fields[0].replace('|', ',')
+                loc = loc.replace(' - READ flaterco.com/pol.html', '')
+
                 if loc != location:
                     loginf("%s: location mismatch: '%s' != '%s'" %
                            (XT_KEY, location, loc))
@@ -4144,7 +4155,7 @@ class XTideForecast(Forecast):
                 if line.startswith('Indexing'):
                     preamble = False
                 if not line.startswith('Indexing') and not preamble:
-                    line = string.rstrip(line)
+                    line = line.rstrip()
                     err.append(line)
             errmsg = ' '.join(err)
             idx = errmsg.find('XTide Error:')
@@ -4484,10 +4495,18 @@ class ForecastVariables(SearchList):
         sd = generator.skin_dict.get('Forecast', {})
         label_dict = sd.get('Labels', {})
         self.labels = {}
-        self.labels['Directions'] = dict(list(directions_label_dict.items()) + list(label_dict.get('Directions', {}).items()))
-        self.labels['Tide'] = dict(list(tide_label_dict.items()) + list(label_dict.get('Tide', {}).items()))
-        self.labels['Weather'] = dict(list(weather_label_dict.items()) + list(label_dict.get('Weather', {}).items()))
-        self.labels['Zambretti'] = dict(list(zambretti_label_dict.items()) + list(label_dict.get('Zambretti', {}).items()))
+        self.labels['Directions'] = dict(
+            list(directions_label_dict.items()) +
+            list(label_dict.get('Directions', {}).items()))
+        self.labels['Tide'] = dict(
+            list(tide_label_dict.items()) +
+            list(label_dict.get('Tide', {}).items()))
+        self.labels['Weather'] = dict(
+            list(weather_label_dict.items()) +
+            list(label_dict.get('Weather', {}).items()))
+        self.labels['Zambretti'] = dict(
+            list(zambretti_label_dict.items()) +
+            list(label_dict.get('Zambretti', {}).items()))
 
         self.db_max_tries = 3
         self.db_retry_wait = 5 # seconds
@@ -5177,6 +5196,9 @@ if __name__ == "__main__":
         parser.add_option("--filename", dest="filename", metavar="FILENAME",
                           help="file that contains forecast data",
                           default="forecast.txt")
+        parser.add_option("--prog", metavar="XTIDE_PROGRAM",
+                          help="path to xtide program",
+                          default='/usr/bin/tide')
         (options, args) = parser.parse_args()
 
         if options.version:
@@ -5214,7 +5236,7 @@ if __name__ == "__main__":
                 fcast = WWOForecast.download(options.api_key, options.loc)
                 print(fcast)
             elif options.method.lower() == 'xtide':
-                lines = XTide.generate(options.loc)
+                lines = XTideForecast.generate(options.loc, prog=options.prog)
                 if lines is not None:
                     for line in lines:
                         print(line)
@@ -5225,22 +5247,33 @@ if __name__ == "__main__":
             else:
                 print('unsupported forecast method %s' % options.method)
         elif options.action == 'parse':
-            text = ''
-            with open(options.filename, 'r') as f:
-                text = f.read()
-            if options.method.lower() == 'nws':
-                matrix = NWSParseForecast(text, options.lid)
-                print(matrix)
-            elif options.method.lower() == 'ukmo':
-                records, msgs = UKMOForecast.parse(text, location=options.loc)
+            # tide wants lines, other forecasts want a block of text
+            if options.method.lower() == 'xtide':
+                lines = []
+                with open(options.filename, 'r') as f:
+                    for line in f:
+                        lines.append(line)
+                records = XTideForecast.parse(lines, location=options.loc)
                 print(records)
-                print(msgs)
-            elif options.method.lower() == 'ds':
-                records, msgs = DSForecast.parse(text,
-                                                 location=options.loc,
-                                                 fc_type=options.type)
-                print(records)
-                print(msgs)
+            else:
+                text = ''
+                with open(options.filename, 'r') as f:
+                    text = f.read()
+                if options.method.lower() == 'nws':
+                    matrix = NWSParseForecast(text, options.lid)
+                    print(matrix)
+                elif options.method.lower() == 'ukmo':
+                    records, msgs = UKMOForecast.parse(text,
+                                                       location=options.loc)
+                    print(records)
+                    print(msgs)
+                elif options.method.lower() == 'ds':
+                    records, msgs = DSForecast.parse(text,
+                                                     location=options.loc,
+                                                     fc_type=options.type)
+                    print(records)
+                    print(msgs)
+
         elif options.action == 'compare':
             pass
         else:
