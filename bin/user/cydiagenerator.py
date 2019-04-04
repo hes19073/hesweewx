@@ -9,20 +9,20 @@ Cydia pomonella Flight-Model.
 """
 
 from __future__ import absolute_import
-            
+from __future__ import division
+
 import os.path
 import time
 import datetime
 import csv
 import math
-
 import syslog
 import configobj
-        
+
 import six
 import Cheetah.Template
 import Cheetah.Filters
-        
+
 import weeplot.genplot
 import weeutil.weeutil
 import weewx.units
@@ -30,7 +30,6 @@ import weewx.reportengine
 
 #import dd_table.py
 
-                
 from weewx.units import ValueTuple
 from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
@@ -53,7 +52,7 @@ def get_float_t(txt, unit_group):
         result = ValueTuple(float(txt[ZERO]), txt[1], unit_group)
     return result
 
-
+# from python-datei dd_table
 def dd(day_max_temp, day_min_temp, base_temp):
 
     day_sum_temp = day_max_temp + day_min_temp
@@ -96,8 +95,6 @@ def dd_clipped(day_max_temp_f, day_min_temp_f, threshold_temp_f, ceiling_temp_f)
     return result
 
 
-
-
 # The default search list includes standard information sources that should be
 # useful in most templates.
 default_search_list = [
@@ -109,7 +106,7 @@ default_search_list = [
     "weewx.cheetahgenerator.Extras"]
 
 def logmsg(lvl, msg):
-    syslog.syslog(lvl, 'cydiagenerator: %s' % msg)
+    syslog.syslog(lvl, 'Cydiagenerator: %s' % msg)
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -132,7 +129,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
     """Class for managing the image generator.
 
     """
-    
+
     def __init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record=None):
         weewx.reportengine.ReportGenerator.__init__(self, config_dict, skin_dict, gen_ts, first_run, stn_info, record)
         self.cydia_report_generator = CydiaReportGenerator(config_dict, skin_dict, gen_ts, first_run, stn_info, record)
@@ -145,9 +142,9 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             self.cydia_report_generator.recs = self.zip_vectors()
             self.cydia_report_generator.run()
         return self
-        
+
     def setup(self):
-        
+
         self.image_dict = self.skin_dict['ImageGenerator']
         self.cydia_dict = self.skin_dict['CydiaGenerator']
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
@@ -165,18 +162,16 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
     def genImages(self, gen_ts):
 
         """Generate the images.
-        
+
         The time scales will be chosen to include the given timestamp, with
         nice beginning and ending times.
-    
+
         gen_ts: The time around which plots are to be generated. This will
-        also be used as the bottom label in the plots.
-        
-        """
+        also be used as the bottom label in the plots.        """
 
         t1 = time.time()
         ngen = ZERO
-        
+
         for species_name in self.cydia_dict.sections:
             # Get the path that the image is going to be saved to:
             plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict['year_images'])
@@ -200,16 +195,16 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                 now_tuple = time.localtime(plotgen_ts)
                 new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
                 start_date_ts = time.mktime(tuple(new_year_tuple))
-            
+
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             #skin_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['SKIN_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
             #html_file = os.path.join(image_root, '%s.html' % species_name)
             ai = 21600   #test mit 600 86400 = 24h
-            
+
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)
-             
+
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
@@ -221,7 +216,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             spec_threshold_hi = plot_options.get('threshold_hi', [88, 'degree_F'])
             threshold_hi_t = get_float_t(spec_threshold_hi, 'group_temperature')
             recs = self.get_vectors((minstamp, maxstamp), csv_file_name, threshold_lo_t, threshold_hi_t)
-                
+
             # Do any necessary unit conversions:
             self.vectors = {}
             for (key, val) in list(recs.items()):
@@ -236,7 +231,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                     os.makedirs(os.path.dirname(img_file))
                 except OSError:
                     pass
-            
+
                 self.plot = self.plot_image(
                     species_name,
                     plot_options,
@@ -271,19 +266,19 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
 
         line_options = plot_options
         (minstamp, maxstamp, timeinc) = stamps
-        
+
         # Create a new instance of a time plot and start adding to it
         result = TimeHorizonPlot(plot_options)
-                
+
         # Override the x interval if the user has given an explicit interval:
         timeinc_user = to_int(plot_options.get('x_interval'))
         if timeinc_user is not None:
             timeinc = timeinc_user
         result.setXScaling((minstamp, maxstamp, timeinc))
-        
-        # Set the y-scaling, using any user-supplied hints: 
+
+        # Set the y-scaling, using any user-supplied hints:
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
-        
+
         # Get a suitable bottom label:
         bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
         bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
@@ -303,7 +298,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         # See if a line label has been explicitly requested:
         label = line_options.get('label')
         if not label:
-            # No explicit label. Is there a generic one? 
+            # No explicit label. Is there a generic one?
             # If not, then the SQL type will be used instead
             label = self.title_dict.get(var_type, var_type)
 
@@ -357,12 +352,12 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             )
         result.horizon_label_offset = int(line_options.get('horizon_label_offset', 3))
 
-        
+
         # Get the line width, if explicitly requested.
         width = to_int(line_options.get('width'))
-                            
+
         # Some plot types require special treatments:
-        interval_vec = None                        
+        interval_vec = None
         vector_rotate = None
         gap_fraction = None
         if plot_type == 'bar':
@@ -390,7 +385,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         result.addLine(weeplot.genplot.PlotLine(
             vectors['date'][ZERO],
             vectors['dd_cumulative'][ZERO],
-            label         = label, 
+            label         = label,
             color         = color,
             fill_color    = fill_color,
             width         = width,
@@ -403,7 +398,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             gap_fraction  = gap_fraction,
             ))
         return result
-    
+
     def get_vectors(self, stamps, csv_file_name, threshold_lo_t, threshold_hi_t):
 
         (minstamp, maxstamp) = stamps

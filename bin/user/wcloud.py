@@ -1,7 +1,7 @@
-# $Id: wcloud.py 1156 2014-12-03 19:44:45Z mwall $
+# $Id: wcloud.py 1391 2015-12-28 14:51:29Z mwall $
 # Copyright 2014 Matthew Wall
 
-""" 
+"""
 This is a weewx extension that uploads data to WeatherCloud.
 
 http://weather.weathercloud.com
@@ -30,13 +30,20 @@ Minimal Configuration:
         id = WEATHERCLOUD_ID
         key = WEATHERCLOUD_KEY
 """
-
-import Queue
+import re
 import sys
 import syslog
 import time
-import urllib
-import urllib2
+
+# Python 2/3 compatiblity
+try:
+    import Queue as queue                    # python 2
+    from urllib import urlencode            # python 2
+    from urllib2 import Request                # python 2
+except ImportError:
+    import queue                            # python 3
+    from urllib.parse import urlencode        # python 3
+    from urllib.request import Request        # python 3
 
 import weewx
 import weewx.restx
@@ -44,7 +51,7 @@ import weewx.units
 import weewx.wxformulas
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.7"
+VERSION = "0.12"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -130,13 +137,13 @@ class WeatherCloud(weewx.restx.StdRESTbase):
             site_dict = accumulateLeaves(site_dict, max_level=1)
             site_dict['id']
             site_dict['key']
-        except KeyError, e:
+        except KeyError as e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = WeatherCloudThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -159,8 +166,8 @@ class WeatherCloudThread(weewx.restx.RESTThread):
                  'bar':        ('barometer',    '%.0f', 10.0), # hPa * 10
                  'rain':       ('dayRain',      '%.0f', 10.0), # mm * 10
                  'rainrate':   ('rainRate',     '%.0f', 10.0), # mm/hr * 10
-                 'tempin':     ('inTemp',       '%.0f', 10.0), # C * 10
-                 'humin':      ('inHumidity',   '%.0f', 1.0),  # percent
+                 #'tempin':     ('inTemp',       '%.0f', 10.0), # C * 10
+                 #'humin':      ('inHumidity',   '%.0f', 1.0),  # percent
                  'uvi':        ('UV',           '%.0f', 10.0), # index * 10
                  'solarrad':   ('radiation',    '%.0f', 10.0), # W/m^2 * 10
                  'et':         ('EV',           '%.0f', 10.0), # mm * 10
@@ -180,8 +187,8 @@ class WeatherCloudThread(weewx.restx.RESTThread):
                  'temp10':     ('heatingTemp4', '%.0f', 10.0), # C * 10
                  'leafwet01':  ('leafWet1',     '%.0f', 1.0),  # [0,15]
                  'leafwet02':  ('leafWet2',     '%.0f', 1.0),  # [0,15]
-                 'hum01':      ('extraHumid1',  '%.0f', 1.0),  # percent
-                 'hum02':      ('extraHumid2',  '%.0f', 1.0),  # percent
+                 #'hum01':      ('extraHumid1',  '%.0f', 1.0),  # percent
+                 #'hum02':      ('extraHumid2',  '%.0f', 1.0),  # percent
                  'soilmoist01': ('soilMoist1',  '%.0f', 1.0),  # Cb [0,200]
                  'soilmoist02': ('soilMoist2',  '%.0f', 1.0),  # Cb [0,200]
                  'soilmoist03': ('soilMoist3',  '%.0f', 1.0),  # Cb [0,200]
@@ -212,9 +219,14 @@ class WeatherCloudThread(weewx.restx.RESTThread):
 #                 'forecasticon': ('??',       '%.0f', 1.0),
                  }
 
+    try:
+        max_integer = sys.maxint    # python 2
+    except AttributeError:
+        max_integer = sys.maxsize    # python 3
+
     def __init__(self, queue, id, key, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
-                 post_interval=600, max_backlog=sys.maxint, stale=None,
+                 post_interval=600, max_backlog=max_integer, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
         super(WeatherCloudThread, self).__init__(queue,
@@ -239,7 +251,7 @@ class WeatherCloudThread(weewx.restx.RESTThread):
         if self.skip_upload:
             loginf("skipping upload")
             return
-        req = urllib2.Request(url)
+        req = Request(url)
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 
@@ -256,10 +268,12 @@ class WeatherCloudThread(weewx.restx.RESTThread):
         rec['winddiravg'] = _get_winddiravg(dbm, record['dateTime'])
 
         # ensure wind direction is in [0,359]
-        if rec['windDir'] > 359:
-            rec['windDir'] -= 360
-        if rec['winddiravg'] > 359:
-            rec['winddiravg'] -= 360
+        if rec['windDir'] is not None:
+            if int(rec['windDir']) > 359:
+                rec['windDir'] -= 360
+        if rec['winddiravg'] is not None:
+            if int(rec['winddiravg']) > 359:
+                rec['winddiravg'] -= 360
 
         # these observations are non-standard, so do unit conversions directly
         rec['windavg'] = _convert_windspeed(rec['windavg'], record['usUnits'])
@@ -272,15 +286,15 @@ class WeatherCloudThread(weewx.restx.RESTThread):
                 rec['inTemp'], rec['inHumidity'])
 #        if 'heatindex' in rec and 'windSpeed' in rec:
 #            rec['thw'] = _calc_thw(rec['heatindex'], rec['windSpeed'])
-        if record.has_key('txBatteryStatus'):
+        if 'txBatteryStatus' in record:
             rec['bat01'] = _invert(record['txBatteryStatus'])
-        if record.has_key('windBatteryStatus'):
+        if 'windBatteryStatus' in record:
             rec['bat02'] = _invert(record['windBatteryStatus'])
-        if record.has_key('rainBatteryStatus'):
+        if 'rainBatteryStatus' in record:
             rec['bat03'] = _invert(record['rainBatteryStatus'])
-        if record.has_key('outTempBatteryStatus'):
+        if 'outTempBatteryStatus' in record:
             rec['bat04'] = _invert(record['outTempBatteryStatus'])
-        if record.has_key('inTempBatteryStatus'):
+        if 'inTempBatteryStatus' in record:
             rec['bat05'] = _invert(record['inTempBatteryStatus'])
         return rec
 
@@ -296,9 +310,10 @@ class WeatherCloudThread(weewx.restx.RESTThread):
         values['date'] = time.strftime("%Y%m%d", time_tt)
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
+            if rkey in record and record[rkey] is not None:
                 v = record[rkey] * self._DATA_MAP[key][2]
                 values[key] = self._DATA_MAP[key][1] % v
-        url = self.server_url + '?' + urllib.urlencode(values)
-        logdbg('url: %s' % url)
+        url = self.server_url + '?' + urlencode(values)
+        if weewx.debug >= 2:
+            logdbg('url: %s' % re.sub(r"key=[^\&]*", "key=XXX", url))
         return url

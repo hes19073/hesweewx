@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # coding=utf-8
 
 """weewx module that records cpm and nSvh from GMC 300.
@@ -133,7 +132,6 @@ class GeigerMonitor(StdService):
 
 
         try:
-
             ser = serial.Serial()
             ser.port = "/dev/geiger"
             ser.baudrate = 9600
@@ -146,11 +144,11 @@ class GeigerMonitor(StdService):
             #loginf("Serial device initialized for Geiger")
 
             while not read_full:
-
                 #cpm = getCPM(ser)
                 ser.write(b'<GETCPM>>')
                 rec = ser.read(2)
-                cpm = ord(rec[0])<< 8 | ord(rec[1])
+                #cpm = ord((rec[0])<< 8 | ord(rec[1])
+                cpm = ((rec[0] & 0x3f) << 8 | rec[1])
 
                 rad_cpm = cpm
 

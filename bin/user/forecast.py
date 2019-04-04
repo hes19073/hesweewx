@@ -2391,19 +2391,19 @@ class DSForecast(Forecast):
                 #    r['fcttext'] = period['summary']
                 if 'icon' in period:
                     r['icon'] = period['icon']
-
+                # apparentTemperatureHigh and apparentTemperatureLow in data 'daily'
                 if 'apparentTemperature' in period:
                     r['feelslike'] = Forecast.str2float('apparentTemperature',
                                                          period['apparentTemperature'],
                                                          DS_KEY)
-                #else:
-                #    _feelMax = Forecast.str2float('apparentTemperatureHigh',
-                #                                  period['apparentTemperatureHigh'],
-                #                                  DS_KEY)
-                #    _feelMin = Forecast.str2float('apparentTemperatureLow',
-                #                                  period['apparentTemperatureLow'],
-                #                                  DS_KEY)
-                #    r['feelslike'] = (r['_feelMin'] + r['_feelMax']) / 2
+                else:
+                    _feelMax = Forecast.str2float('apparentTemperatureHigh',
+                                                  period['apparentTemperatureHigh'],
+                                                  DS_KEY)
+                    _feelMin = Forecast.str2float('apparentTemperatureLow',
+                                                  period['apparentTemperatureLow'],
+                                                  DS_KEY)
+                    r['feelslike'] = (_feelMin + _feelMax) / 2
 
                 if location is not None:
                     r['location'] = location

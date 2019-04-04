@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # coding=utf-8
 
 """weewx module that records sun altitude and moon altitude.
@@ -48,7 +47,7 @@ from weewx.engine import StdService
 from weewx.almanac import Almanac
 
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -72,7 +71,7 @@ schema = [
     ]
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'sunmon_weewx: %s' % msg)
+    syslog.syslog(level, 'SunMon_weewx: %s' % msg)
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -132,7 +131,7 @@ class sunmonMonitor(StdService):
         self.dbm.addRecord(record)
 
     def get_data(self, now_ts, last_ts):
-
+        """ read data from almanac """
         try:
             alm = Almanac(time.time(), 53.605963, 11.341407, 53.2)
 

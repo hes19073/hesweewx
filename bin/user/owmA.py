@@ -1,7 +1,6 @@
 # $Id: owm.py 1156 2014-12-03 19:44:45Z mwall $
 # Copyright 2013 Matthew Wall
-"""
-Upload data to OpenWeatherMap
+""" Upload data to OpenWeatherMap
   http://openweathermap.org
 
 Thanks to Antonio Burriel for the dewpoint, longitude, and radiation fixes.
@@ -69,9 +68,10 @@ class OpenWeatherMap(weewx.restx.StdRESTbase):
             site_dict['username']
             site_dict['password']
             site_dict['station_name']
-        except KeyError, e:
+        except KeyError as e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
+
         site_dict.setdefault('latitude', engine.stn_info.latitude_f)
         site_dict.setdefault('longitude', engine.stn_info.longitude_f)
         site_dict.setdefault('altitude', engine.stn_info.altitude_vt[0])
@@ -81,6 +81,7 @@ class OpenWeatherMap(weewx.restx.StdRESTbase):
         self.archive_queue = Queue.Queue()
         self.archive_thread = OpenWeatherMapThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
+
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
         loginf("Data will be uploaded for %s" % site_dict['station_name'])
 
@@ -116,6 +117,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
                  post_interval=None, max_backlog=0, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
+
         super(OpenWeatherMapThread, self).__init__(queue,
                                                    protocol_name='OWM',
                                                    manager_dict=manager_dict,
@@ -127,6 +129,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
                                                    timeout=timeout,
                                                    max_tries=max_tries,
                                                    retry_wait=retry_wait)
+
         self.username = username
         self.password = password
         self.latitude = float(latitude)
@@ -142,6 +145,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         if self.skip_upload:
             loginf("skipping upload")
             return
+
         req = urllib2.Request(self.server_url, urllib.urlencode(data))
         req.get_method = lambda: 'POST'
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)

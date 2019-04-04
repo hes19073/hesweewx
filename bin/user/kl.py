@@ -1915,20 +1915,11 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 					# calculate the dewpoint and heatindex for each sensor
 					# FIXME: this belongs in StdWXCalculate
 					for y in range(0, 9):
-						if r['Temp%d' % y] < 81.0 and r['Humidity%d' % y] < 100.1:
-							r['Dewpoint%d' % y] = weewx.wxformulas.dewpointC(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Heatindex%d' % y] = weewx.wxformulas.heatindexC(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Heatdeg%d' % y] = weewx.wxformulas.heating_degrees(r['Temp%d' % y], 18.333)
-							r['Cooldeg%d' % y] = weewx.wxformulas.cooling_degrees(r['Temp%d' % y], 18.333)
-							r['Homedeg%d' % y] = weewx.wxformulas.heating_degrees(r['Temp%d' % y], 15.0)
-							r['AbsoF%d' % y] = weewx.wxformulas.absF_C(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Avd%d' % y] = (weewx.wxformulas.SaturationVaporPressure(r['Temp%d' % y])) * r['Humidity%d' % y] / 100.0
-							r['Svd%d' % y] = weewx.wxformulas.SaturationVaporPressure(r['Temp%d' % y])
-						#if 'Temp%d' % y in r and 'Humidity%d' % y in r:
-						#	r['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
-						#		r['Temp%s' % y], r['Humidity%d' % y])
-						#	r['heatindex%d' % y] = weewx.wxformulas.heatindexC(
-						#		r['Temp%s' % y], r['Humidity%d' % y])
+						if 'Temp%d' % y in r and 'Humidity%d' % y in r:
+							r['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
+								r['Temp%s' % y], r['Humidity%d' % y])
+							r['heatindex%d' % y] = weewx.wxformulas.heatindexC(
+								r['Temp%s' % y], r['Humidity%d' % y])
 					# get values requested from the sensor map
 					for k in self.sensor_map:
 						label = self.sensor_map[k]
@@ -2033,6 +2024,8 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		obs_group_dict['heatindex6'] = 'group_temperature'
 		obs_group_dict['heatindex7'] = 'group_temperature'
 		obs_group_dict['heatindex8'] = 'group_temperature'
+		obs_group_dict['rxCheckPercent'] = 'group_percent'
+		obs_group_dict['batteryStatus0'] = 'group_count'
 		obs_group_dict['batteryStatus1'] = 'group_count'
 		obs_group_dict['batteryStatus2'] = 'group_count'
 		obs_group_dict['batteryStatus3'] = 'group_count'
@@ -2041,15 +2034,6 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		obs_group_dict['batteryStatus6'] = 'group_count'
 		obs_group_dict['batteryStatus7'] = 'group_count'
 		obs_group_dict['batteryStatus8'] = 'group_count'
-		obs_group_dict['absolutF0'] = 'group_gram'
-		obs_group_dict['absolutF1'] = 'group_gram'
-		obs_group_dict['absolutF2'] = 'group_gram'
-		obs_group_dict['absolutF3'] = 'group_gram'
-		obs_group_dict['absolutF4'] = 'group_gram'
-		obs_group_dict['absolutF5'] = 'group_gram'
-		obs_group_dict['absolutF6'] = 'group_gram'
-		obs_group_dict['absolutF7'] = 'group_gram'
-		obs_group_dict['absolutF8'] = 'group_gram'
 
 	@staticmethod
 	def setup_units_wview_schema():
@@ -2086,23 +2070,13 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		# calculate dewpoints and heatindices
 		# FIXME: this belongs in StdWXCalculate
 		for y in range(0, 9):
-			if data.values['Temp%d' % y] < 81.0 and data.values['Humidity%d' % y] < 100.1:
-				data.values['Dewpoint%d' % y] = weewx.wxformulas.dewpointC(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Heatindex%d' % y] = weewx.wxformulas.heatindexC(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Heatdeg%d' % y] = weewx.wxformulas.heating_degrees(data.values['Temp%d' % y], 18.333)
-				data.values['Cooldeg%d' % y] = weewx.wxformulas.cooling_degrees(data.values['Temp%d' % y], 18.333)
-				data.values['Homedeg%d' % y] = weewx.wxformulas.heating_degrees(data.values['Temp%d' % y], 15.0)
-				data.values['AbsoF%d' % y] = weewx.wxformulas.absF_C(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Avd%d' % y] = (weewx.wxformulas.SaturationVaporPressure(data.values['Temp%d' % y])) * data.values['Humidity%d' % y] / 100.0
-				data.values['Svd%d' % y] = weewx.wxformulas.SaturationVaporPressure(data.values['Temp%d' % y])
-
-			#if 'Temp%d' % y in data.values and 'Humidity%d' % y in data.values:
-			#	data.values['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
-			#		data.values['Temp%d' % y],
-			#		data.values['Humidity%d' % y])
-			#	data.values['heatindex%d' % y] = weewx.wxformulas.heatindexC(
-			#		data.values['Temp%d' % y],
-			#		data.values['Humidity%d' % y])
+			if 'Temp%d' % y in data.values and 'Humidity%d' % y in data.values:
+				data.values['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
+					data.values['Temp%d' % y],
+					data.values['Humidity%d' % y])
+				data.values['heatindex%d' % y] = weewx.wxformulas.heatindexC(
+					data.values['Temp%d' % y],
+					data.values['Humidity%d' % y])
 
 		# extract the values from the data object
 		for k in self.sensor_map:

@@ -6,13 +6,12 @@
 #
 """Extended stats based on the xsearch example
 
-This search list extension offers extra tags:
+   This search list extension offers extra tags:
 
   'Easter':    this year or next year.
 
   'day00':  hollyday.
 
-Jahr -1 = Vorjahr = year1, das Jahr vor dem Vorjahr = year2
 """
 from __future__ import absolute_import
 
@@ -30,61 +29,8 @@ from datetime import timedelta
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
 
 
-class xMyYear(SearchList):
-
-    def __init__(self, generator):
-        SearchList.__init__(self, generator)
-
-    def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list extension with additions.
-
-        timespan: An instance of weeutil.weeutil.TimeSpan. This holds
-                  the start and stop times of the domain of valid times.
-
-        db_lookup: Function that returns a database manager given a
-                   data binding.
-        """
-
-        today = datetime.date.today()
-
-        ano = today.year
-
-        anoy = ano - 1
-
-        year1_start = datetime.date(anoy, 1, 1)
-        year1_end = datetime.date(anoy, 12, 31)
-
-        year1_start_ts = time.mktime(year1_start.timetuple())
-        year1_end_ts = time.mktime(year1_end.timetuple())
-
-        year1_stats = TimespanBinder(TimeSpan(year1_start_ts, year1_end_ts),
-                                     db_lookup,
-                                     context='year1',
-                                     formatter=self.generator.formatter,
-                                     converter=self.generator.converter,
-                                     skin_dict=self.generator.skin_dict)
-
-
-        anoyy = ano - 2
-
-        year2_start = datetime.date(anoyy, 1, 1)
-        year2_end = datetime.date(anoyy, 12, 31)
-
-        year2_start_ts = time.mktime(year2_start.timetuple())
-        year2_end_ts = time.mktime(year2_end.timetuple())
-
-        year2_stats = TimespanBinder(TimeSpan(year2_start_ts, year2_end_ts),
-                                     db_lookup,
-                                     context='year2',
-                                     formatter=self.generator.formatter,
-                                     converter=self.generator.converter,
-                                     skin_dict=self.generator.skin_dict)
-
-        return [{'year1' : year1_stats,
-                 'year2' : year2_stats}]
-
 class xMyEaster(SearchList):
-
+    """calc easter for year"""
     def __init__(self, generator):
         SearchList.__init__(self, generator)
 
@@ -133,7 +79,7 @@ class xMyEaster(SearchList):
         return [search_list_extension]
 
 class xMyFeier(SearchList):
-
+    """Holyday for the year"""
     def __init__(self, generator):
         SearchList.__init__(self, generator)
 
@@ -144,7 +90,7 @@ class xMyFeier(SearchList):
         """
         #
         # Easter. Calculate date for Easter Sunday this year
-        # Berechnung Ostersonntag nach Lichtenberg 
+        # Berechnung Ostersonntag nach Lichtenberg
         # (http://de.wikipedia.org/wiki/Gau%C3%9Fsche_Osterformel)
         # (Korrektur wenn Ostersonntag nach dem 25.April
 

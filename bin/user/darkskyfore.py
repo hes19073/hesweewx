@@ -1,6 +1,8 @@
-#!/usr/bin/env python
-# coding=utf-8
+# -*- coding: utf-8 -*-
+# $Id: forecasthes.py 1651 2018-09-01 12:10:37Z hes $
 # original by Pat O'Brien, August 19, 2018
+# Copyright 2017 Hartmut Schweidler
+# Die Erde und ihre Beben
 
 import datetime
 import time
@@ -17,7 +19,7 @@ from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'Forecast hes Extension: %s' % msg)
+    syslog.syslog(level, 'Forecast DarkSky Extension: %s' % msg)
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -29,27 +31,31 @@ def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
 # Print version in syslog
-VERSION = "1.2"
+VERSION = "1.2.1"
+
 loginf("version %s" % VERSION)
 
 
 class getForecast(SearchList):
-
     def __init__(self, generator):
         SearchList.__init__(self, generator)
 
     def get_extension_list(self, timespan, db_lookup):
 
         """ Download and parse the Forecast data.
+            von DakrSky 
             This is required for the majority of the theme to work
         """
 
         # Return right away if we're not going to use the forecast.
         if self.generator.skin_dict['Extras']['forecast_enabled'] == "0":
             # Return an empty SLE
-            search_list_extension = { 'current_obs_icon': "",
-                                      'current_obs_summary': "",
-                                      'visibility': "", }
+            search_list_extension = {
+                                     'current_obs_icon': "",
+                                     'current_obs_summary': "",
+                                     'visibility': "",
+                                    }
+
             return [search_list_extension]
 
 
@@ -60,13 +66,13 @@ class getForecast(SearchList):
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
         forecast_stale_timer = self.generator.skin_dict['Extras']['forecast_stale']
+        forecast_url = "https://api.darksky.net/forecast/%s/%s,%s?units=%s&lang=de" % (darksky_secret_key, latitude, longitude, darksky_units)
+
         forecast_is_stale = False
 
-        forecast_url = "https://api.darksky.net/forecast/%s/%s,%s?units=%s&lang=de" % ( darksky_secret_key, latitude, longitude, darksky_units )
-
         # Determine if the file exists and get it's modified time
-        if os.path.isfile( forecast_file ):
-            if ( int( time.time() ) - int( os.path.getmtime( forecast_file ) ) ) > int( forecast_stale_timer ):
+        if os.path.isfile(forecast_file):
+            if (int(time.time()) - int(os.path.getmtime(forecast_file))) > int(forecast_stale_timer):
                 forecast_is_stale = True
         else:
             # File doesn't exist, download a new copy
@@ -74,29 +80,14 @@ class getForecast(SearchList):
 
         # File is stale, download a new copy
         if forecast_is_stale:
-            # Download new forecast data
-            try:
-                import urllib2
-                user_agent = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) AppleWebKit/534.3 (KHTML, like Gecko) Chrome/6.0.472.63 Safari/534.3'
-                headers = { 'User-Agent' : user_agent }
-                req = urllib2.Request( forecast_url, None, headers )
-                response = urllib2.urlopen( req )
-                page = response.read()
-                response.close()
-            except Exception as error:
-                raise ValueError( "Error downloading forecast data. Check the URL in your configuration and try again. You are trying to use URL: %s, and the error is: %s" % ( forecast_url, error ) )
+            import urllib.request, urllib.error, urllib.parse
+            urllib.request.urlretrieve(forecast_url, forecast_file)
 
-            # Save forecast data to file. w+ creates the file if it doesn't exist, and truncates the file and re-writes it everytime
-            try:
-                with open( forecast_file, 'w+' ) as file:
-                    file.write( page )
-                    loginf( "New forecast file downloaded to %s" % forecast_file )
-            except IOError as e:
-                raise ValueError( "Error writing forecast info to %s. Reason: %s" % ( forecast_file, e) )
+            loginf("New DarkSky Forecast data downloaded to %s" % forecast_file)
 
-        # Process the forecast file
-        with open( forecast_file, "r" ) as read_file:
-            data = json.load( read_file )
+        with open(forecast_file, encoding="utf8") as read_file:
+            data = json.loads(read_file.read())
+
 
         html_output = ""
         forecast_updated = time.strftime( "%d.%m.%Y %H:%M", time.localtime( data["currently"]["time"] ) )
@@ -204,16 +195,19 @@ class getForecast(SearchList):
 
 
         # Put into a dictionary to return
-        search_list_extension  = { 'forecast_updated': forecast_updated,
-                                   'forecast_json_url': forecast_json_url,
-                                   'current_obs_icon': current_obs_icon,
-                                   'current_obs_summary': current_obs_summary,
-                                   'current_temp': current_temp,
-                                   'current_apptemp': current_apptemp,
-                                   'current_wind': current_windGust,
-                                   'visibility': visibility,
-                                   'visibility_unit': visibility_unit,
-                                   'forecastHTML' : html_output }
+        search_list_extension  = {
+                                  'forecast_updated': forecast_updated,
+                                  'forecast_json_url': forecast_json_url,
+                                  'current_obs_icon': current_obs_icon,
+                                  'current_obs_summary': current_obs_summary,
+                                  'current_temp': current_temp,
+                                  'current_apptemp': current_apptemp,
+                                  'current_wind': current_windGust,
+                                  'visibility': visibility,
+                                  'visibility_unit': visibility_unit,
+                                  'forecastHTML' : html_output
+                                 }
+
         # Return our json data
         return [search_list_extension]
 

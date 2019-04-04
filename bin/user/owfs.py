@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # coding=utf-8
 # owfs.py 1396 2016-01-21 05:08:45Z mwall $
 #

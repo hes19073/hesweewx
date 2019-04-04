@@ -361,7 +361,7 @@ class Collector(object):
             logerr('rpi_info failed: %s' % e)
         return record
 
-"""   Test Banania Pi test
+    """ Test Banania Pi test
     _BPI_VGENCMD = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input'
     _BPI_VOLT = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/voltage_now'
     _BPI_AMPE = '/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/axp20-supplyer.28/power_supply/ac/current_now'
@@ -397,8 +397,7 @@ class Collector(object):
                     record[m.group(1) + '_mem'] = float(m.group(2))
         except (ValueError, IOError, KeyError), e:
             logerr('bpi_info failed: %s' % e)
-        return record
-"""
+        return record """
 
 # this should work on any linux running kernel 2.2 or later
 class LinuxCollector(Collector):
@@ -691,7 +690,7 @@ class ComputerMonitorDriver(AbstractDevice):
             p = self.collector.get_data()
             yield p
             time.sleep(self.polling_interval)
-            
+
 
 class ComputerMonitor(StdService):
     """Collect CPU, Memory, Disk, and other computer information."""

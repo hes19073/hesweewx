@@ -11,13 +11,20 @@ Upload data to wetter.com
         password = STATION PASSWORD
 """
 
-import Queue
 import re
 import sys
 import syslog
 import time
-import urllib
-import urllib2
+
+# Python 2/3 compatiblity
+try:
+    import Queue as queue                                   # python 2
+    from urllib import urlencode                    # python 2
+    from urllib2 import Request as request  # python 2
+except ImportError:
+    import queue                                                    # python 3
+    from urllib.parse import urlencode              # python 3
+    from urllib import request                              # python 3
 
 import weewx
 import weewx.restx
@@ -93,6 +100,11 @@ class WetterThread(weewx.restx.RESTThread):
                  #'tes': ('soilTemp1',   '%.1f')  # C
                  #}
 
+    try:
+        max_integer = sys.maxint	# python 2
+    except AttributeError:
+        max_integer = sys.maxsize	# python 3
+
     def __init__(self, queue, username, password, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
                  post_interval=None, max_backlog=sys.maxint, stale=None,
@@ -117,13 +129,15 @@ class WetterThread(weewx.restx.RESTThread):
     def process_record(self, record, dbm):
         r = self.get_record(record, dbm)
         data = self.get_data(r)
-        url = urllib.urlencode(data)
+        #url = urllib.urlencode(data)
+        url = urllib.parse.urlencode(data)
         if weewx.debug >= 2:
             logdbg('url: %s' % re.sub(r"passwort=[^\&]*", "passwort=XXX", url))
         if self.skip_upload:
             loginf("skipping upload")
             return
-        req = urllib2.Request(self.server_url, url)
+        #req = urllib2.Request(self.server_url, url)
+        req = urllib.request.urlopen(self.server_url, url)
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 

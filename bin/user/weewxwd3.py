@@ -46,7 +46,6 @@ from __future__ import print_function
 import syslog
 import threading
 import urllib.request, urllib.error, urllib.parse
-import json
 import math
 import os
 import time
@@ -56,86 +55,57 @@ from math import sin
 from datetime import datetime
 #from urllib import urlopen
 
+try:
+    # Python 3
+    from io import StringIO
+except ImportError:
+    # Python 2
+    from StringIO import StringIO
+
+try:
+    # Python 3
+    from urllib.request import Request, urlopen
+except ImportError:
+    # Python 2
+    from urllib2 import Request, urlopen
+
+try:
+    # Python 3
+    from urllib.error import URLError
+except ImportError:
+    # Python 2
+    from urllib2 import URLError
+
+try:
+    # Python 3
+    from http.client import BadStatusLine, IncompleteRead
+except ImportError:
+    # Python 2
+    from httplib import BadStatusLine, IncompleteRead
+
+try:
+    import cjson as json
+    setattr(json, 'dumps', json.encode)
+    setattr(json, 'loads', json.decode)
+except (ImportError, AttributeError):
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
+
 import weewx
+import weedb
 import weewx.engine
 import weewx.manager
 import weewx.wxformulas
 import weewx.almanac
-import user.zformulas
+import weeutil.weeutil
 
 from weewx.units import convert, obs_group_dict
 from weeutil.weeutil import to_bool, accumulateLeaves
 from weewx.units import CtoF, CtoK, mps_to_mph, kph_to_mph
 
-WEEWXWD_VERSION = '1.2.1'
-
-# Define a dictionary with our API call query details
-WU_queries = [
-    {
-        'name': 'conditions',
-        'interval': None,
-        'last': None,
-        'interval': None,
-        'def_interval': 1800,
-        'response': None,
-        'json_title': 'current_observation'
-    },
-    {
-        'name': 'forecast',
-        'interval': None,
-        'last': None,
-        'interval': 1800,
-        'def_interval': 1800,
-        'response': None,
-        'json_title': 'forecast'
-    },
-    {
-        'name': 'almanac',
-        'interval': None,
-        'last': None,
-        'interval': 3600,
-        'def_interval': 3600,
-        'response': None,
-        'json_title': 'almanac'
-    }
-]
-
-# Define a dictionary to look up WU icon names and
-# return corresponding Saratoga icon code
-icon_dict = {
-    'clear'             : 0,
-    'cloudy'            : 18,
-    'flurries'          : 25,
-    'fog'               : 11,
-    'hazy'              : 7,
-    'mostlycloudy'      : 18,
-    'mostlysunny'       : 9,
-    'partlycloudy'      : 19,
-    'partlysunny'       : 9,
-    'sleet'             : 23,
-    'rain'              : 20,
-    'snow'              : 25,
-    'sunny'             : 28,
-    'tstorms'           : 29,
-    'nt_clear'          : 1,
-    'nt_cloudy'         : 13,
-    'nt_flurries'       : 16,
-    'nt_fog'            : 11,
-    'nt_hazy'           : 13,
-    'nt_mostlycloudy'   : 13,
-    'nt_mostlysunny'    : 1,
-    'nt_partlycloudy'   : 4,
-    'nt_partlysunny'    : 1,
-    'nt_sleet'          : 12,
-    'nt_rain'           : 14,
-    'nt_snow'           : 16,
-    'nt_tstorms'        : 17,
-    'chancerain'        : 20,
-    'chancesleet'       : 23,
-    'chancesnow'        : 25,
-    'chancetstorms'     : 29
-    }
-
+WEEWXWD_VERSION = '3.2.1'
 
 # Define a dictionary to look up Davis forecast rule
 # and return forecast text
@@ -640,235 +610,6 @@ class WeeArchive(weewx.engine.StdService):
 
 
 #===============================================================================
-#                           Class WdGenerateDerived
-#===============================================================================
-
-class WdGenerateDerived(object):
-    """ Generator wrapper. Adds Weewx-WD derived obs to the output of the
-        wrapped generator.
-    """
-
-    def __init__(self, input_generator):
-        """ Initialize an instance of WdGenerateDerived
-
-            input_generator: An iterator which will return dictionary records.
-        """
-        self.input_generator = input_generator
-
-    def __iter__(self):
-        return self
-
-    """ Initialize copy weewx.
-    def next(self):
-        # get our next record
-        _rec = self.input_generator.next()
-        _re_wee = weewx.units.to_METRICWX(_rec)
-
-        _re_wee['dateTime'] = _re_wee['dateTime']
-        _re_wee['usUnits'] = _re_wee['usUnits']
-        _re_wee['interval'] = _re_wee['interval']
-        _re_wee['barometer'] = _re_wee['barometer']
-        _re_wee['pressure'] = _re_wee['pressure']
-        _re_wee['altimeter'] = _re_wee['altimeter']
-        _re_wee['inTemp'] = _re_wee['inTemp']
-        _re_wee['outTemp'] = _re_wee['outTemp']
-        _re_wee['inHumidity'] = _re_wee['inHumidity']
-        _re_wee['outHumidity'] = _re_wee['outHumidity']
-        _re_wee['windSpeed'] = _re_wee['windSpeed']
-        _re_wee['windDir'] = _re_wee['windDir']
-        _re_wee['windGust'] = _re_wee['windGust']
-        _re_wee['windGustDir'] = _re_wee['windGustDir']
-        _re_wee['rainRate'] = _re_wee['rainRate']
-        _re_wee['rain'] = _re_wee['rain']
-        _re_wee['stormRain'] = _re_wee['stormRain']
-        _re_wee['dewpoint'] = _re_wee['dewpoint']
-        _re_wee['windchill'] = _re_wee['windchill']
-        _re_wee['heatindex'] = _re_wee['heatindex']
-        _re_wee['ET'] = _re_wee['ET']
-        _re_wee['radiation'] = _re_wee['radiation']
-        _re_wee['UV'] = _re_wee['UV']
-        _re_wee['extraTemp1'] = _re_wee['extraTemp1']
-        _re_wee['extraTemp2'] = _re_wee['extraTemp2']
-        _re_wee['extraTemp3'] = _re_wee['extraTemp3']
-        _re_wee['soilTempO1'] = _re_wee['soilTempO1']
-        _re_wee['soilTempO2'] = _re_wee['soilTempO2']
-        _re_wee['soilTempO3'] = _re_wee['soilTempO3']
-        _re_wee['soilTempO4'] = _re_wee['soilTempO4']
-        _re_wee['soilTempO5'] = _re_wee['soilTempO5']
-        _re_wee['leafTemp1'] = _re_wee['leafTemp1']
-        _re_wee['leafTemp2'] = _re_wee['leafTemp2']
-        _re_wee['extraHumid1'] = _re_wee['extraHumid1']
-        _re_wee['extraHumid2'] = _re_wee['extraHumid2']
-        _re_wee['soilMoist1'] = _re_wee['soilMoist1']
-        _re_wee['soilMoist2'] = _re_wee['soilMoist2']
-        _re_wee['soilMoist3'] = _re_wee['soilMoist3']
-        _re_wee['soilMoist4'] = _re_wee['soilMoist4']
-        _re_wee['leafWet1'] = _re_wee['leafWet1']
-        _re_wee['leafWet2'] = _re_wee['leafWet2']
-        _re_wee['rxCheckPercent'] = _re_wee['rxCheckPercent']
-        _re_wee['txBatteryStatus'] = _re_wee['txBatteryStatus']
-        _re_wee['consBatteryVoltage'] = _re_wee['consBatteryVoltage']
-        _re_wee['hail'] = _re_wee['hail']
-        _re_wee['hailRate'] = _re_wee['hailRate']
-        _re_wee['heatingTemp'] = _re_wee['heatingTemp']
-        _re_wee['heatingVoltage'] = _re_wee['heatingVoltage']
-        _re_wee['supplyVoltage'] = _re_wee['supplyVoltage']
-        _re_wee['referenceVoltage'] = _re_wee['referenceVoltage']
-        _re_wee['windBatteryStatus'] = _re_wee['windBatteryStatus']
-        _re_wee['rainBatteryStatus'] = _re_wee['rainBatteryStatus']
-        _re_wee['outTempBatteryStatus'] = _re_wee['outTempBatteryStatus']
-        _re_wee['lighting'] = _re_wee['lighting']
-        _re_wee['extraTemp4'] = _re_wee['extraTemp4']
-        _re_wee['extraTemp5'] = _re_wee['extraTemp5']
-        _re_wee['extraTemp6'] = _re_wee['extraTemp6']
-        _re_wee['extraTemp7'] = _re_wee['extraTemp7']
-        _re_wee['extraTemp8'] = _re_wee['extraTemp8']
-        _re_wee['extraTemp9'] = _re_wee['extraTemp9']
-        _re_wee['maxSolarRad'] = _re_wee['maxSolarRad']
-        _re_wee['cloudbase'] = _re_wee['cloudbase']
-        _re_wee['humidex'] = _re_wee['humidex']
-        _re_wee['appTemp'] = _re_wee['appTemp']
-        _re_wee['windrun'] = _re_wee['windrun']
-        _re_wee['beaufort'] = _re_wee['beaufort']
-        _re_wee['inDewpoint'] = _re_wee['inDewpoint']
-        _re_wee['inTempBatteryStatus'] = _re_wee['inTempBatteryStatus']
-        _re_wee['absolutF'] = _re_wee['absolutF']
-        _re_wee['sunshineS'] = _re_wee['sunshineS']
-        _re_wee['snow'] = _re_wee['snow']
-        _re_wee['snowRate'] = _re_wee['snowRate']
-        _re_wee['snowTotal'] = _re_wee['snowTotal']
-        _re_wee['wetBulb'] = _re_wee['wetBulb']
-        _re_wee['cbIndex'] = _re_wee['cbIndex']
-        _re_wee['airDensity'] = _re_wee['airDensity']
-        _re_wee['windDruck'] = _re_wee['windDruck']
-        _re_wee['soilTemp1'] = _re_wee['soilTemp1']
-        _re_wee['soilTemp2'] = _re_wee['soilTemp2']
-        _re_wee['soilTemp3'] = _re_wee['soilTemp3']
-        _re_wee['soilTemp4'] = _re_wee['soilTemp4']
-        _re_wee['soilTemp5'] = _re_wee['soilTemp5']
-        _re_wee['dampfDruck'] = _re_wee['dampfDruck']
-        _re_wee['summersimmerIndex'] = _re_wee['summersimmerIndex']
-        _re_wee['SVP'] = _re_wee['SVP']
-        _re_wee['SVPin'] = _re_wee['SVPin']
-        _re_wee['AVP'] = _re_wee['AVP']
-        _re_wee['AVPin'] = _re_wee['AVPin']
-        _re_wee['densityA'] = _re_wee['densityA']
-
-        data_x = weewx.units.to_std_system(_re_wee, _rec['usUnits'])
-        # return our modified record
-        return data_x
-        """ 
-
-    def __next__(self):
-        # get our next record
-        _rec = next(self.input_generator)
-        _rec_mwx = weewx.units.to_METRICWX(_rec)
-
-        # get our historical humidex, if not available then calculate it
-        #if _rec_mwx['extraTemp1'] is not None:
-        #    _rec_mwx['humidex'] = _rec_mwx['extraTemp1']
-        #else:
-        if 'outTemp' in _rec_mwx and 'outHumidity' in _rec_mwx:
-            _rec_mwx['humidex'] = weewx.wxformulas.humidexC(_rec_mwx['outTemp'],
-                                                                _rec_mwx['outHumidity'])
-        else:
-            _rec_mwx['humidex'] = None
-
-        # get our historical appTemp, if not available then calculate it
-        #if _rec_mwx['extraTemp2'] is not None:
-        #    _rec_mwx['appTemp'] = _rec_mwx['extraTemp2']
-        #else:
-        if 'outTemp' in _rec_mwx and 'outHumidity' in _rec_mwx and 'windSpeed' in _rec_mwx:
-            _rec_mwx['appTemp'] = weewx.wxformulas.apptempC(_rec_mwx['outTemp'],
-                                                                _rec_mwx['outHumidity'],
-                                                                _rec_mwx['windSpeed'])
-        else:
-            _rec_mwx['appTemp'] = None
-
-        # 'calculate' summersimmerIndex
-        if 'outTemp' in _rec_mwx and 'outHumidity' in _rec_mwx:
-            _rec_mwx['summersimmerIndex'] = weewx.wxformulas.sumsimIndex_C(_rec_mwx['outTemp'], _rec_mwx['outHumidity'])
-        else:
-            _rec_mwx['summersimmerIndex'] = None
-
-
-        # 'calculate' outTempNight
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['outTempDay'], _rec_mwx['outTempNight'] = calc_daynighttemps(_rec_mwx['outTemp'], _rec_mwx['dateTime'])
-        else:
-            _rec_mwx['outTempDay'], _rec_mwx['outTempNight'] = (None, None)
-
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['heatdeg'] = weewx.wxformulas.heating_degrees(_rec_mwx['outTemp'], 18.333)
-        else:
-            _rec_mwx['heatdeg'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['cooldeg'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 18.333)
-        else:
-            _rec_mwx['cooldeg'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['homedeg'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 15.0)
-        else:
-            _rec_mwx['homedeg'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['outTemp'])
-        else:
-            _rec_mwx['SVP'] = None
-
-        if 'inTemp' in _rec_mwx:
-            _rec_mwx['SVPin'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['inTemp'])
-        else:
-            _rec_mwx['SVPin'] = None
-
-        if 'outTemp' in _rec_mwx and 'outHumidity' in _rec_mwx:
-            _rec_mwx['AVP'] = _rec_mwx['outHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['outTemp'])) / 100.0
-        else:
-            _rec_mwx['AVP'] = None
-
-        if 'inTemp' in _rec_mwx and 'inHumidity' in _rec_mwx:
-            _rec_mwx['AVPin'] = _rec_mwx['inHumidity'] * (weewx.uwxutils.TWxUtils.SaturationVaporPressure(_rec_mwx['inTemp'])) / 100.0
-        else:
-            _rec_mwx['AVPin'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['wdd_deg'] = weewx.wxformulas.heating_degrees(_rec_mwx['outTemp'], 10.0)
-        else:
-            _rec_mwx['wdd_deg'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['densityA'] = weewx.wxformulas.da_Metric(_rec_mwx['outTemp'], _rec_mwx['pressure'])
-        else:
-            _rec_mwx['densityA'] = None
-
-
-        # 'calculate' Green DayDegrees 4 6 10
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['GDD4'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 4.0)
-        else:
-            _rec_mwx['GDD4'] = None
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['GDD6'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 6.0)
-        else:
-            _rec_mwx['GDD6'] = None
-
-
-        if 'outTemp' in _rec_mwx:
-            _rec_mwx['GDD10'] = weewx.wxformulas.cooling_degrees(_rec_mwx['outTemp'], 10.0)
-        else:
-            _rec_mwx['GDD10'] = None
-
-
-
-        data_x = weewx.units.to_std_system(_rec_mwx, _rec['usUnits'])
-        # return our modified record
-        return data_x
-
-#===============================================================================
 #                             Class wdSuppThread
 #===============================================================================
 
@@ -927,6 +668,8 @@ class WdSuppArchive(weewx.engine.StdService):
                 # how long to wait between retries (default 2 sec)
                 self.db_retry_wait = config_dict['Weewx-WD']['Supplementary'].get('database_retry_wait', 2)
                 self.db_retry_wait = int(self.db_retry_wait)
+                # help for supp
+                earthquake_file = "/home/weewx/archive/earthquake.json"
 
                 # initialise a few things
                 # setup our database if needed
@@ -964,79 +707,16 @@ class WdSuppArchive(weewx.engine.StdService):
                 # on each new record
                 self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
 
-            # do we have necessary config info for WU ie a [[[WU]]] stanza,
-            # apiKey and location
-            _wu_dict = check_enable(config_dict['Weewx-WD']['Supplementary'], 'WU', 'apiKey')
-            if _wu_dict is None:
-                # we are missing some/all essential WU API settings so set a
-                # flag and return
-                self.do_WU = False
-                loginf("WdSuppArchive:", "WU API calls will not be made")
-                loginf("              ", "**** Incomplete or missing config settings")
-                return
-
-            # if we got this far we have the essential WU API settings so carry
-            # on with the rest of the initialisation
-            # set a flag indicating we are doing WU API queries
-            self.do_WU = True
-            # get station info required for almanac/Sun related calcs
-            self.latitude = float(config_dict['Station']['latitude'])
-            self.longitude = float(config_dict['Station']['longitude'])
-            self.altitude = convert(engine.stn_info.altitude_vt, 'meter')[0]
-            # create a list of the WU API calls we need
-            self.WU_queries = WU_queries
-            # set interval between API calls for each API call type we need
-            for q in self.WU_queries:
-                q['interval'] = int(config_dict['Weewx-WD']['Supplementary']['WU'].get(q['name'] + '_interval', q['def_interval']))
-            # Set max no of tries we will make in any one attempt to contact WU via API
-            self.max_WU_tries = config_dict['Weewx-WD']['Supplementary']['WU'].get('max_WU_tries', 3)
-            self.max_WU_tries = toint('max_WU_tries', self.max_WU_tries, 3)
-            # set API call lockout period in sec (default 60 sec). refer weewx.conf
-            self.api_lockout_period = config_dict['Weewx-WD']['Supplementary']['WU'].get('api_lockout_period', 60)
-            self.api_lockout_period = toint('api_lockout_period', self.api_lockout_period, 60)
-            # create holder for last WU API call ts
-            self.last_WU_query = None
-            # Get our API key from weewx.conf, we know we have something in
-            # [Weewx-WD] but it could be None. If this is the case try
-            # [Forecast] if it exists. [Weewx-WD] should not throw an exception
-            # but [Forecast] may so wrap in a try..except loop to catch any
-            # exceptions (eg [Forecast][WU]apiKey does not exist).
-            try:
-                if config_dict['Weewx-WD']['Supplementary']['WU'].get('apiKey', None) != None:
-                    self.api_key = config_dict['Weewx-WD']['Supplementary']['WU'].get('apiKey')
-                elif config_dict['Forecast']['WU'].get('api_key', None) != None:
-                    self.api_key = config_dict['Forecast']['WU'].get('api_key')
-                else:
-                    loginf("WdSuppArchive:", "Cannot find valid Weather Underground API key")
-                    loginf("              ", "**** Incomplete or missing config settings")
-            except:
-                loginf("WdSuppArchive:", "Cannot find Weather Underground API key")
-                loginf("              ", "**** Incomplete or missing config settings")
-            # get our 'location' for use in WU API calls. Default to station
-            # lat/long.
-            self.location = config_dict['Weewx-WD']['Supplementary']['WU'].get('location', '%s,%s' % (self.latitude, self.longitude))
-            if self.location == 'replace_me':
-                self.location = '%s,%s' % (self.latitude, self.longitude)
-            # set fixed part of WU API call url
-            self.default_url = 'http://api.wunderground.com/api'
-            # we have everything we need to put a short message in the log with
-            # a partially masked API key
-            loginf("WdSuppArchive:", 'max_age=%s vacuum=%s, WU API calls will be made' % (self.max_age, self.vacuum))
-            _msg = ''
-            for _wuq in self.WU_queries:
-                _msg += _wuq['name'] + ' interval=' + '%s ' % (_wuq['interval'],)
-            loginf("WdSuppArchive:", _msg)
-            loginf("WdSuppArchive:", 'api_key=%s location=%s' % ('xxxxxxxxxxxx' + self.api_key[-4:], self.location))
 
     def new_archive_record(self, event):
         """ Kick off in a new thread.
         """
 
-        t = wdSuppThread(self.wdSupp_main, event)
-        t.setName('wdSuppThread')
-        t.start()
+        #t = wdSuppThread(self.wdSupp_main, event)
+        #t.setName('wdSuppThread')
+        #t.start()
 
-    def wdSupp_main(self, event):
+        #def wdSupp_main(self, event):
         """ Take care of getting our data, archiving it and completing any
             database housekeeping.
 
@@ -1055,56 +735,12 @@ class WdSuppArchive(weewx.engine.StdService):
         _data_record['usUnits'] = event.record['usUnits']
         _data_record['interval'] = event.record['interval']
 
-        # get our WU data if we are setup for WU
-        if self.do_WU:
-            # get ts of record about to be processed
-            rec_ts = event.record['dateTime']
-            # almanac gives more accurate results with current temp and pressure
-            # initialise some defaults
-            temperature_C = 15.0
-            pressure_mbar = 1010.0
-            # get current outTemp and barometer if they exist
-            if 'outTemp' in event.record:
-                temperature_C = weewx.units.convert(weewx.units.as_value_tuple(event.record, 'outTemp'),
-                                                    "degree_C")[0]
-            if 'barometer' in event.record:
-                pressure_mbar = weewx.units.convert(weewx.units.as_value_tuple(event.record, 'barometer'),
-                                                    "mbar")[0]
-            # get our almanac object
-            self.almanac = weewx.almanac.Almanac(rec_ts, self.latitude,
-                                                 self.longitude,
-                                                 self.altitude,
-                                                 temperature_C,
-                                                 pressure_mbar)
-            # work out sunrise and sunset ts so we can determine if it is night or day. Needed so
-            # we can set day or night icons when translating WU icons to Saratoga icons
-            sunrise_ts = self.almanac.sun.rise.raw
-            sunset_ts = self.almanac.sun.set.raw
-            # if we are not between sunrise and sunset it must be night
-            self.night = not (sunrise_ts < rec_ts < sunset_ts)
-            # get the fully constructed URL for those API feature calls that
-            # are to be made
-            _WU_URL, _features = self.construct_WU_URL(now)
-            _response = None
-            if _WU_URL is not None:
-                if self.last_WU_query is None or ((now + 1 - self.api_lockout_period) >= self.last_WU_query):
-                    # if we haven't made this API call previously or if its been too long since
-                    # the last call then make the call, wrap in a try..except just in case
-                    try:
-                        _response = self.get_WU_response(_WU_URL,
-                                                         self.max_WU_tries)
-                        logdbg2("WdSuppArchive:", "Downloaded updated Weather Underground information for %s" % (_features,))
-                        loginf("WdSuppArchive:", "Downloaded updated Weather Underground information for %s" % (_features,))
-                    except Exception as e:
-                        loginf("WdSuppArchive:", "Weather Underground API query failure: %s" % (e, ))
-                    self.last_WU_query = max(q['last'] for q in self.WU_queries)
-                else:
-                    # API call limiter kicked in so say so
-                    loginf("WdSuppArchive:", "API call limit reached. Tried to make an API call within %d sec of the previous call. API call skipped." % (self.api_lockout_period, ))
-            # parse the WU responses and put into a dictionary
-            _wu_record = self.parse_WU_response(_response, _data_record['usUnits'])
-            # update our data record with any WU data
-            _data_record.update(_wu_record)
+
+        # parse the WU responses and put into a dictionary
+        _wu_record = self.parse_WU_response(_data_record['usUnits'])
+
+        # update our data record with any WU data
+        _data_record.update(_wu_record)
 
         # process data from latest loop packet
         _data_loop = self.process_loop()
@@ -1125,122 +761,34 @@ class WdSuppArchive(weewx.engine.StdService):
                            self.db_max_tries,
                            self.db_retry_wait)
                 # vacuum the database
-                if self.vacuum > 0:
-                    if self.last_vacuum is None or ((now + 1 - self.vacuum) >= self.last_vacuum):
-                        self.vacuum_database(dbm)
-                        self.last_vacuum = now
+                #if self.vacuum > 0:
+                #    if self.last_vacuum is None or ((now + 1 - self.vacuum) >= self.last_vacuum):
+                #        self.vacuum_database(dbm)
+                #        self.last_vacuum = now
         return
 
-    def construct_WU_URL(self, now):
-        """ Construct a multi-feature WU API URL
-
-            WU API allows multiple feature requests to be combined into a single
-            http request (thus cutting down on API calls. Look at each of our WU
-            queries then construct and return a WU API URL string that will
-            request all features that are due. If no features are due then
-            return None.
-        """
-
-        _feature_string = ''
-        for _wuq in self.WU_queries:
-            # if we haven't made this feature request previously or if its been
-            # too long since the last call then make the call
-            if (_wuq['last'] is None) or ((now + 1 - _wuq['interval']) >= _wuq['last']):
-                # we need to request this feature so add the feature code to our
-                # feature string
-                if len(_feature_string) > 0:
-                    _feature_string += '/' + _wuq['name']
-                else:
-                    _feature_string += _wuq['name']
-                _wuq['last'] = now
-        if len(_feature_string) > 0:
-            # we have a feature we need so construct the URL
-            url = '%s/%s/%s/lang:DL/pws:1/q/%s.json' % (self.default_url, self.api_key,
-                                                _feature_string, self.location)
-            return (url, _feature_string)
-        return (None, None)
-
-    def get_WU_response(self, WU_URL, max_WU_tries):
-        """ Make a WU API call and return the raw response.
-        """
-
-        # we will attempt the call max_WU_tries times
-        for count in range(max_WU_tries):
-            # attempt the call
-            try:
-                #w = urllib.request.urlopen(WU_URL)
-                w = urlopen(WU_URL)
-                _WUresponse = w.read()
-                w.close()
-                return _WUresponse
-            except Exception as e:
-                loginf("WdSuppArchive:", "Failed to get Weather Underground API response on attempt %d: %s" % (count + 1, e))
-        else:
-            loginf("WdSuppArchive:", "Failed to get Weather Underground API response")
-        return None
-
-    def parse_WU_response(self, response, units):
+    def parse_WU_response(self, units):
         """ Parse a potentially multi-feature API response and construct a data
             dict with the required fields.
         """
-
+        forecast_file = "/home/weewx/archive/darksky_forecast.json"
         # Create a holder dict for the data we will gather
         _data = {}
         # Do some pre-processing and error checking
-        if response is not None:
-            # We have a response
-            # Deserialise our JSON response
-            _json_response = json.loads(response)
-            # Check for recognised format
-            if not 'response' in _json_response:
-                loginf("WdSuppArchive:", "Unknown format in Weather Underground API response")
-                return _data
-            # Get the WU 'response' field so we can check for errors
-            _response = _json_response['response']
-            # Check for WU provided error otherwise start pulling in the fields/data we want
-            if 'error' in _response:
-                loginf("WdSuppArchive:", "Error in Weather Underground API response")
-                return _data
-            # Pull out our individual 'feature' responses, this way in the
-            # future we can populate our results even if we did not get a
-            # 'feature' response that time round
-            for _wuq in self.WU_queries:
-                if _wuq['json_title'] in _json_response:
-                    _wuq['response'] = _json_response[_wuq['json_title']]
-        # Step through each of possible queries and parse as required
-        for _wuq in self.WU_queries:
-            # Forecast data
-            if _wuq['name'] == 'forecast' and _wuq['response'] is not None:
-                # Look up Saratoga icon number given WU icon name
-                _data['forecastIcon'] = icon_dict[_wuq['response']['txt_forecast']['forecastday'][0]['icon']]
-                _data['forecastText'] = _wuq['response']['txt_forecast']['forecastday'][0]['fcttext']
-                _data['forecastTextMetric'] = _wuq['response']['txt_forecast']['forecastday'][0]['fcttext_metric']
-                _data['pop'] = _wuq['response']['txt_forecast']['forecastday'][0]['pop']
-            # Conditions data
-            elif _wuq['name'] == 'conditions' and _wuq['response'] is not None:
-                # WU does not seem to provide day/night icon name in their 'conditions' response so we
-                # need to do. Just need to add 'nt_' to front of name before looking up in out Saratoga
-                # icons dictionary
-                #if self.night:
-                #    _data['currentIcon'] = icon_dict['nt_' + _wuq['response']['icon']]
-                #else:
-                _data['currentIcon'] = icon_dict[_wuq['response']['icon']]
-                _data['currentText'] = _wuq['response']['weather']
-                _data['visibility_km'] = _wuq['response']['visibility_km']
-            # Almanac data
-            elif _wuq['name'] == 'almanac' and _wuq['response'] is not None:
-                if units is weewx.US:
-                    _data['tempRecordHigh'] = _wuq['response']['temp_high']['record']['F']
-                    _data['tempNormalHigh'] = _wuq['response']['temp_high']['normal']['F']
-                    _data['tempRecordLow'] = _wuq['response']['temp_low']['record']['F']
-                    _data['tempNormalLow'] = _wuq['response']['temp_low']['normal']['F']
-                else:
-                    _data['tempRecordHigh'] = _wuq['response']['temp_high']['record']['C']
-                    _data['tempNormalHigh'] = _wuq['response']['temp_high']['normal']['C']
-                    _data['tempRecordLow'] = _wuq['response']['temp_low']['record']['C']
-                    _data['tempNormalLow'] = _wuq['response']['temp_low']['normal']['C']
-                _data['tempRecordHighYear'] = _wuq['response']['temp_high']['recordyear']
-                _data['tempRecordLowYear'] = _wuq['response']['temp_low']['recordyear']
+        # forecast Dark Sky current read
+        with open(forecast_file, encoding="utf8") as read_file:
+            data = json.loads(read_file.read())
+
+        _data['currentIcon'] = data["currently"]["time"]
+        _data['currentText'] = data["currently"]["summary"]
+        _data['tempRecordHigh'] = data["currently"]["temperature"]
+        _data['tempNormalHigh'] = data["currently"]["apparentTemperature"]
+        data_wspee = str(int(data["currently"]["windSpeed"] * 3.6))
+        data_wgust = str(int(data["currently"]["windGust"] * 3.6))
+        _data['forecastText'] = data_wspee + " km/h in Spitzen " + data_wgust + " km/h"
+        _data['visibility_km'] = data["currently"]["visibility"]
+        _data['tempRecordLow'] = data["currently"]["dewPoint"]
+
         return _data
 
     def process_loop(self):

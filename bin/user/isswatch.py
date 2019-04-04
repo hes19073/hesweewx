@@ -15,8 +15,12 @@
 
 """
 
+from __future__ import print_function
+from __future__ import with_statement
+
 import sys
 import syslog
+import hashlib
 
 import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
@@ -47,7 +51,7 @@ class ISSAlert(SearchList):
         # Finally, return our extension as a list:
         return [search_list_extension]
 
-    def processAlertRSS(self,feedurl):
+    def processAlertRSS(self, feedurl):
         #Retrieve the RSS feed
         try:
             feedsource = urlopen(feedurl)
