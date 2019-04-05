@@ -526,7 +526,13 @@ import subprocess
 import syslog
 import threading
 import time
-import urllib.request
+#import urllib.request
+
+# Python 2/3 compatiblity shims
+import six
+from six.moves import http_client
+from six.moves import queue
+from six.moves import urllib
 
 from io import StringIO
 from io import BytesIO
@@ -1243,14 +1249,21 @@ class Forecast(StdService):
             self.do_forecast(event)
         elif self.updating:
             logdbg('%s: update thread already running' % self.method_id)
-        elif self.last_ts is None or time.time() - self.interval > self.last_ts:
-        #elif time.time() - self.interval > self.last_ts:
+        elif self.last_ts is None:
             t = ForecastThread(self.do_forecast, event)
             t.setName(self.method_id + 'Thread')
             logdbg('%s: starting thread' % self.method_id)
             t.start()
+        elif time.time() - self.interval > self.last_ts:
+            #t = ForecastThread(self.do_forecast, event)
+            #t.setName(self.method_id + 'Thread')
+            #logdbg('%s: starting thread' % self.method_id)
+            loginf('%s: starting thread' % self.method_id)
+            #t.start()
+            self.do_forecast(event)
         else:
             logdbg('%s: not yet time to do the forecast' % self.method_id)
+            loginf('%s: not yet time to do the forecast' % self.method_id)
 
     def do_forecast(self, event):
         self.updating = True
