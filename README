@@ -18,6 +18,69 @@ Community support: https://groups.google.com/group/weewx-user
 
 Meine Wetterseiten unter http://wetter.hes61.de
 
+Nach / after
+#  --- Python 3 ---
+
+install from debian testing (Python3.7.3)
+
+sudo apt-get install python3-pil
+sudo apt-get install python3-configobj
+
+# As of this writing, Cheetah 3 can only be installed using pip:
+sudo apt-get install python3-pip
+sudo apt-get install python3-dev
+sudo pip3 install cheetah3
+
+# Required if hardware is serial or USB, respectively:
+sudo apt-get install python3-serial
+sudo apt-get install python3-usb
+
+# Required if using MySQL:
+sudo apt-get install mysql-client
+sudo apt-get install python3-mysqldb
+
+# Optional for extended almanac information:
+sudo pip3 install pyephem
+    
+also 
+sudo apt-get install python-ow
+
+and 
+Expand the source archive:
+Quelle: https://github.com/weewx/weewx/tree/development
+
+tar xvfz weewx-development.tar.gz
+
+Change directory:
+
+cd weewx-development
+
+To specify a location different from the standard /home/weewx, 
+modify the parameter home in the setup.cfg file.
+
+Then build and install:
+
+./setup.py build
+sudo ./setup.py install
+
+cd /home/weewx
+sudo cp util/init.d/weewx.debian /etc/init.d/weewx
+sudo chmod +x /etc/init.d/weewx
+sudo update-rc.d weewx defaults 98
+sudo /etc/init.d/weewx start
+
+in weewx/bin/weewxd first line '#!/usr/bin/python3'
+
+I have copy the weewx/bin/user to /home/weewx/bin/user
+
+Adaptation --> weewx.conf
+
+and then /etc/init.d/weewx restart
+
+it is currently running weewx-4.0.0a4 under Python 3.7.3
+
+It's an experiment 
+
 Grundversorgung DWD über ftp-server/ Anmeldung notwendig
 Erweiterung txt-Daten vom DWD die einzelnen Verzeichnisse (Muster)
                               The individual directories (patterns)
@@ -29,5 +92,5 @@ Zur Zeit läuft weewx und cmon über
 
 als multi-weewx
 
-Einstellungen vom 20.10.2018  TEST TEST
+Einstellungen vom 05.04.2019  TEST TEST
 Quelle WEEWX development
