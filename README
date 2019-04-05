@@ -43,7 +43,7 @@ sudo apt-get install python3-mysqldb
 sudo pip3 install pyephem
     
 also 
-sudo apt-get install python-ow
+sudo apt-get install python3-ow
 
 and 
 Expand the source archive:
