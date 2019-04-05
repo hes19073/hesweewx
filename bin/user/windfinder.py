@@ -1,8 +1,7 @@
 # $Id: windfinder.py 1300 2015-04-14 13:19:10Z mwall $
 # Copyright 2014 Matthew Wall
 
-"""
-This is a weewx extension that uploads data to WindFinder.
+"""This is a weewx extension that uploads data to WindFinder.
 
 http://www.windfinder.com/
 
@@ -24,19 +23,27 @@ Minimal Configuration:
         password = WINDFINDER_PASSWORD
 """
 
-import Queue
+import re
 import sys
 import syslog
 import time
-import urllib
-import urllib2
+
+# Python 2/3 compatiblity
+try:
+    import Queue as queue                   # python 2
+    from urllib import urlencode            # python 2
+    from urllib2 import Request             # python 2
+except ImportError:
+    import queue                            # python 3
+    from urllib.parse import urlencode      # python 3
+    from urllib.request import Request      # python 3
 
 import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.8"
+VERSION = "0.9"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -73,13 +80,13 @@ class WindFinder(weewx.restx.StdRESTbase):
             site_dict = accumulateLeaves(site_dict, max_level=1)
             site_dict['station_id']
             site_dict['password']
-        except KeyError, e:
+        except KeyError as e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = WindFinderThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -91,17 +98,23 @@ class WindFinder(weewx.restx.StdRESTbase):
 class WindFinderThread(weewx.restx.RESTThread):
 
     _SERVER_URL = 'http://www.windfinder.com/wind-cgi/httpload.pl'
-    _DATA_MAP = {'airtemp':       ('outTemp',     '%.1f'), # C
-                 'winddir':       ('windDir',     '%.0f'), # degree
-                 'windspeed':     ('windSpeed',   '%.1f'), # knots
-                 'gust':          ('windGust',    '%.1f'), # knots
-                 'pressure':      ('barometer',   '%.3f'), # hPa
-                 'rain':          ('rainRate',    '%.2f'), # mm/hr
+    _DATA_MAP = {'airtemp':       ('outTemp',     '%.1f', 1.0), # C
+                 'winddir':       ('windDir',     '%.0f', 1.0), # degree
+                 'windspeed':     ('windSpeed',   '%.1f', 1.0), # knots
+                 'gust':          ('windGust',    '%.1f', 1.0), # knots
+                 'pressure':      ('barometer',   '%.3f', 1.0), # hPa
+                 'rain':          ('rainRate',    '%.2f', 1.0), # mm/hr
                  }
+
+
+    try:
+        max_integer = sys.maxint    # python 2
+    except AttributeError:
+        max_integer = sys.maxsize    # python 3
 
     def __init__(self, queue, station_id, password, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
-                 post_interval=300, max_backlog=sys.maxint, stale=None,
+                 post_interval=300, max_backlog=max_integer, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
         super(WindFinderThread, self).__init__(queue,
@@ -127,7 +140,7 @@ class WindFinderThread(weewx.restx.RESTThread):
         url = self.get_url(r)
         if self.skip_upload:
             raise weewx.restx.FailedPost("Upload disabled for this service")
-        req = urllib2.Request(url)
+        req = Request(url)
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 
@@ -138,14 +151,14 @@ class WindFinderThread(weewx.restx.RESTThread):
         lines = []
         reading = False
         for line in response:
-            if line.find('<body') >= 0:
+            if line.find(b'<body') >= 0:
                 reading = True
-            elif line.find('</body>') >= 0:
+            elif line.find(b'</body>') >= 0:
                 reading = False
             elif reading:
                 lines.append(line)
-        msg = ''.join(lines)
-        if not msg.startswith('OK'):
+        msg = b''.join(lines)
+        if not msg.startswith(b'OK'):
             raise weewx.restx.FailedPost("Server response: %s" % msg)
 
     def get_url(self, in_record):
@@ -163,10 +176,13 @@ class WindFinderThread(weewx.restx.RESTThread):
         time_tt = time.localtime(record['dateTime'])
         values['date'] = time.strftime("%d.%m.%Y", time_tt)
         values['time'] = time.strftime("%H:%M", time_tt)
+
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
+            if rkey in record and record[rkey] is not None:
                 values[key] = self._DATA_MAP[key][1] % record[rkey]
-        url = self.server_url + '?' + urllib.urlencode(values)
-        logdbg('url: %s' % url)
+
+        url = self.server_url + '?' + urlencode(values)
+        if weewx.debug >= 2:
+            logdbg('url: %s' % re.sub(r"key=[^\&]*", "key=XXX", url))
         return url

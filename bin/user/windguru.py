@@ -1,7 +1,6 @@
 # Based on WindFinder plugin, portions copyright 2014 Matthew Wall
 
-"""
-This is a WeeWX extension that uploads data to WindGuru.
+"""This is a WeeWX extension that uploads data to WindGuru.
 
 http://www.windguru.cz/
 
@@ -37,20 +36,27 @@ mslp: hPa, mean sea level pressure
 precip: mm
 """
 
-import Queue
 import re
 import sys
 import syslog
 import time
-import urllib
-import urllib2
+
+# Python 2/3 compatiblity
+try:
+    import Queue as queue                   # python 2
+    from urllib import urlencode            # python 2
+    from urllib2 import Request             # python 2
+except ImportError:
+    import queue                            # python 3
+    from urllib.parse import urlencode      # python 3
+    from urllib.request import Request      # python 3
 
 import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -60,18 +66,14 @@ if weewx.__version__ < "3":
 def logmsg(level, msg):
     syslog.syslog(level, 'restx: WindGuru: %s' % msg)
 
-
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
-
 
 def loginf(msg):
     logmsg(syslog.LOG_INFO, msg)
 
-
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
-
 
 def _mps_to_knot(v):
     from_t = (v, 'meter_per_second', 'group_speed')
@@ -93,13 +95,13 @@ class WindGuru(weewx.restx.StdRESTbase):
             site_dict = accumulateLeaves(site_dict, max_level=1)
             site_dict['station_id']
             site_dict['password']
-        except KeyError, e:
+        except KeyError as e:
             logerr("Data will not be posted: Missing option %s" % e)
             return
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
                 config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = WindGuruThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -111,20 +113,26 @@ class WindGuru(weewx.restx.StdRESTbase):
 
 class WindGuruThread(weewx.restx.RESTThread):
     _SERVER_URL = 'http://www.windguru.cz/upload/api.php'
-    _DATA_MAP = {'temperature': ('outTemp', '%.1f'),  # C
-                 'wind_direction': ('windDir', '%.0f'),  # degree
-                 'wind_avg': ('windSpeed', '%.1f'),  # knots
-                 'wind_max': ('windGust', '%.1f'),  # knots
-                 'mslp': ('barometer', '%.3f'),  # hPa
-                 'rh': ('outHumidity', '%.1f'),  # %
-                 'rain': ('rain', '%.2f'),  # mm
-                 'interval': ('interval', '%d'),  # seconds
-                 'precip_interval': ('interval', '%d')  # seconds
+    _DATA_MAP = {'temperature':     ('outTemp', '%.1f', 1.0),      # C
+                 'wind_direction':  ('windDir', '%.0f', 1.0),      # degree
+                 'wind_avg':        ('windSpeed', '%.1f', 1.0),    # knots
+                 'wind_max':        ('windGust', '%.1f', 1.0),     # knots
+                 'mslp':            ('barometer', '%.3f', 1.0),    # hPa
+                 'rh':              ('outHumidity', '%.1f', 1.0),  # %
+                 'rain':            ('rain', '%.2f', 1.0),         # mm
+                 'interval':        ('interval', '%d', 1.0),       # seconds
+                 'precip_interval': ('interval', '%d', 1.0)        # seconds
                  }
+
+
+    try:
+        max_integer = sys.maxint    # python 2
+    except AttributeError:
+        max_integer = sys.maxsize    # python 3
 
     def __init__(self, queue, station_id, password, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
-                 post_interval=60, max_backlog=sys.maxint, stale=None,
+                 post_interval=60, max_backlog=max_integer, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
         super(WindGuruThread, self).__init__(queue,
@@ -150,7 +158,7 @@ class WindGuruThread(weewx.restx.RESTThread):
         url = self.get_url(r)
         if self.skip_upload:
             raise weewx.restx.FailedPost("Upload disabled for this service")
-        req = urllib2.Request(url)
+        req = Request(url)
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 
@@ -158,8 +166,8 @@ class WindGuruThread(weewx.restx.RESTThread):
         lines = []
         for line in response:
             lines.append(line)
-        msg = ''.join(lines)
-        if not msg.startswith('OK'):
+        msg = b''.join(lines)
+        if not msg.startswith(b'OK'):
             raise weewx.restx.FailedPost("Server response: %s" % msg)
 
     def get_url(self, in_record):
@@ -181,10 +189,10 @@ class WindGuruThread(weewx.restx.RESTThread):
         values['time'] = time.strftime("%H:%M", time_tt)
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
+            if rkey in record and record[rkey] is not None:
                 values[key] = self._DATA_MAP[key][1] % record[rkey]
-        url = self.server_url + '?' + urllib.urlencode(values)
+
+        url = self.server_url + '?' + urlencode(values)
         if weewx.debug >= 2:
             logdbg('url: %s' % re.sub(r"password=[^\&]*", "password=XXX", url))
         return url
-

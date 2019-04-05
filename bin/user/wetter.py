@@ -18,20 +18,20 @@ import time
 
 # Python 2/3 compatiblity
 try:
-    import Queue as queue                                   # python 2
-    from urllib import urlencode                    # python 2
+    import Queue as queue                   # python 2
+    from urllib import urlencode            # python 2
     from urllib2 import Request as request  # python 2
 except ImportError:
-    import queue                                                    # python 3
-    from urllib.parse import urlencode              # python 3
-    from urllib import request                              # python 3
+    import queue                            # python 3
+    from urllib.parse import urlencode      # python 3
+    from urllib.request import Request      # python 3
 
 import weewx
 import weewx.restx
 import weewx.units
-from weeutil.weeutil import to_bool
+from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.5"
+VERSION = "0.6"
 API_VERSION = "0.5"
 
 if weewx.__version__ < "3":
@@ -58,7 +58,7 @@ class Wetter(weewx.restx.StdRESTful):
 
         password: password
         """
-        super(Wetter, self).__init__(engine, config_dict)        
+        super(Wetter, self).__init__(engine, config_dict)
         loginf("service version is %s" % VERSION)
         loginf("wetter API version is %s" % API_VERSION)
         site_dict = weewx.restx.check_enable(
@@ -69,7 +69,7 @@ class Wetter(weewx.restx.StdRESTful):
         site_dict['manager_dict'] = weewx.manager.get_manager_dict_from_config(
             config_dict, 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = WetterThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -81,23 +81,23 @@ class Wetter(weewx.restx.StdRESTful):
 class WetterThread(weewx.restx.RESTThread):
 
     _SERVER_URL = 'http://interface.wetterarchiv.de/weather'
-    _DATA_MAP = {'hu':  ('outHumidity', '%.0f'), # percent
-                 'te':  ('outTemp',     '%.1f'), # C
-                 'dp':  ('dewpoint',    '%.1f'), # C
-                 'pr':  ('barometer',   '%.1f'), # hPa
-                 'wd':  ('windDir',     '%.0f'), # degrees
-                 'ws':  ('windSpeed',   '%.1f'), # m/s
-                 'wg':  ('windGust',    '%.1f'), # m/s
-                 'pa':  ('hourRain',    '%.2f'), # mm
-                 'rr':  ('rainRate',    '%.2f'), # mm/hr
-                 'uv':  ('UV',          '%.0f'), # uv index
-                 'sr':  ('radiation',   '%.2f'), # W/m^2
+    _DATA_MAP = {'hu':  ('outHumidity', '%.0f', 1.0), # percent
+                 'te':  ('outTemp',     '%.1f', 1.0), # C
+                 'dp':  ('dewpoint',    '%.1f', 1.0), # C
+                 'pr':  ('barometer',   '%.1f', 1.0), # hPa
+                 'wd':  ('windDir',     '%.0f', 1.0), # degrees
+                 'ws':  ('windSpeed',   '%.1f', 1.0), # m/s
+                 'wg':  ('windGust',    '%.1f', 1.0), # m/s
+                 'pa':  ('hourRain',    '%.2f', 1.0), # mm
+                 'rr':  ('rainRate',    '%.2f', 1.0), # mm/hr
+                 'uv':  ('UV',          '%.0f', 1.0), # uv index
+                 'sr':  ('radiation',   '%.2f', 1.0), # W/m^2
                  }
-                 #'hui': ('inHumidity',  '%.0f'), # percent
-                 #'tei': ('inTemp',      '%.1f'), # C
-                 #'huo': ('extraHumid1', '%.0f'), # percent
-                 #'teo': ('extraTemp1',  '%.1f'), # C
-                 #'tes': ('soilTemp1',   '%.1f')  # C
+                 #'hui': ('inHumidity',  '%.0f', 1.0), # percent
+                 #'tei': ('inTemp',      '%.1f', 1.0), # C
+                 #'huo': ('extraHumid1', '%.0f', 1.0), # percent
+                 #'teo': ('extraTemp1',  '%.1f', 1.0), # C
+                 #'tes': ('soilTemp1',   '%.1f', 1.0)  # C
                  #}
 
     try:
@@ -107,7 +107,7 @@ class WetterThread(weewx.restx.RESTThread):
 
     def __init__(self, queue, username, password, manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
-                 post_interval=None, max_backlog=sys.maxint, stale=None,
+                 post_interval=None, max_backlog=max_integer, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
         super(WetterThread, self).__init__(queue,
@@ -129,25 +129,24 @@ class WetterThread(weewx.restx.RESTThread):
     def process_record(self, record, dbm):
         r = self.get_record(record, dbm)
         data = self.get_data(r)
-        #url = urllib.urlencode(data)
-        url = urllib.parse.urlencode(data)
+        #url = urlencode(data)
+        url = urlencode(data).encode('utf-8')
         if weewx.debug >= 2:
             logdbg('url: %s' % re.sub(r"passwort=[^\&]*", "passwort=XXX", url))
         if self.skip_upload:
             loginf("skipping upload")
             return
-        #req = urllib2.Request(self.server_url, url)
-        req = urllib.request.urlopen(self.server_url, url)
+        req = Request(self.server_url, url)
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 
     def check_response(self, response):
         txt = response.read().lower()
-        if txt.find('"errorcode":"100"') != -1 or \
-           txt.find('"errorcode":"101"') != -1 or \
-           txt.find('"errorcode":"102"') != -1:
+        if txt.find(b'"errorcode":"100"') != -1 or \
+           txt.find(b'"errorcode":"101"') != -1 or \
+           txt.find(b'"errorcode":"102"') != -1:
             raise weewx.restx.BadLogin(txt)
-        elif txt.find('"status":"error"') != -1:
+        elif txt.find(b'"status":"error"') != -1:
             raise weewx.restx.FailedPost("Server returned '%s'" % txt)
 
     def get_data(self, in_record):
@@ -163,7 +162,7 @@ class WetterThread(weewx.restx.RESTThread):
         values['dtutc'] = time.strftime('%Y%m%d%H%M', time.gmtime(record['dateTime']))
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
+            if rkey in record and record[rkey] is not None:
                 values[key] = self._DATA_MAP[key][1] % record[rkey]
 
         return values
