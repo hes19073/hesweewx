@@ -12,6 +12,7 @@
 ## Version: 1.0.0                                    Date: 10 January 2015
 ##
 ## Revision History
+##  10 April 2019       v1.0.1      -for python3
 ##  10 January 2015     v1.0.0      -Rewritten for Weewx v3.0.0
 ##  21 October 2014     v0.9.4      -Initial implementation
 ##     (never released)
@@ -276,7 +277,7 @@ class MyXMoonApsis(SearchList):
         # get our list of apogees/perigees for the current year. List will
         # include last apogee/perigee from previous year and first
         # apogee/perigee from next year
-        for z in range(0,40):
+        for z in range(0, 40):
             sk = ssk + z * 0.5
             apsis = 'p' if (sk - math.floor(sk)) < 0.25 else 'a'
             pa = self.moonpa(sk)

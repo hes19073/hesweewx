@@ -1,7 +1,8 @@
 #errorCatcher Echo
+#encoding UTF-8
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
 ## $Id: index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
-#encoding UTF-8
+
 <!DOCTYPE html>
 <html lang="de">
  <head>
@@ -37,15 +38,9 @@
 
 <body>
  <div id='hes11'>
-#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
-
-
-#include $Extras.header
-#include $Extras.cwarn
-
-#set $summary = $forecast.weather_summary('WU')
-#set $dd = $forecast.label('Weather', $summary.windDir)
-#set $wind_text = $windT_dir_dict.get($dd)
+#import time
+#import locale
+#set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw) / 86400, 0))
 
 #set $sunrise_ts = $almanac.sun.rise.raw
 #set $sunset_ts = $almanac.sun.set.raw
@@ -55,73 +50,19 @@
 #set $daylight_h_str = "%02d" % $daylight_hours
 #set $daylight_m_str = "%02d" % $daylight_minutes
 
-<div id='hescontainer'><section>
- <div id='popupanchor' style='float:left'></div>
+#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
 
-<div class='hes'>
- <div class='hesbox'>
-  <table class="hes_prog">
-   <tr>
-    <td class='hes1_wol'>
-    #if $summary.clouds is not None
-        #set $simg = 'xicons/' + $summary.clouds + '.png'
-        <a href='forecastT.html'>
-        <img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
-    #end if
-    </td>
-    <td class='hes1_wol'>
-    #for $k in $summary.precip
-        #set $precip_img = 'xicons/' + $k + '.png'
-        <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-    #end for
-    </td>
-    <td class='hes1_wol'>
-    #for $k in $summary.obvis
-         #set $obvis_img = 'xicons/' + $k + '.png'
-         <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-    #end for
-    </td>
-   </tr>
-  </table>
-  <p><b>Zambretti:</b>&nbsp;$forecast.label('Zambretti', $forecast.zambretti.code)<br />
-   Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)</p>
-  <hr />
-    #set $VPn = $latest($data_binding='wdsupp_binding').vantageForecastNumber.raw
-    #set $VPn = int($VPn)
-    #set $VPn = str($VPn)
-    #if $current.outTemp.raw < 0
-        #set $VPnumber = 'xicons/VPnumbers/' + $VPn + 's.gif'
-    #else
-        #set $VPnumber = 'xicons/VPnumbers/' + $VPn + '.gif'
-    #end if
-     <img alt="Wetter" src="$VPnumber" /><br>
-   <b>VantagePro 2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
-  <hr />
-#if $Extras.has_key('forecast_enabled') and $Extras.forecast_enabled == '1'
-    $current_obs_icon <br />
-    $current_obs_summary <br />
-    <b>DarkSky:</b><br>
-    Prognose erstellt am: $forecast_updated <br>
-    Temperatur: $current_temp$unit.label.outTemp : gefühlt: $current_apptemp$unit.label.outTemp<br>
-    Windgeschwindigkeit: $current_wind$unit.label.windSpeed<br>
-   Sichtweite: $visibility&nbsp;$visibility_unit 
-  <hr />
-#end if
-  <p>Wind heute meist aus&nbsp;<b>$wind_text</b></p>
-  <hr />
-  <h3>Wetter Kamera Richtung SW</h3>
-   <a href="xicons/wet/snapshot.jpg">
-   <img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
-   <hr />
-   #if $latest($data_binding='wdsupp_binding').visibility_km.raw > 0.0
-     <p>WU-Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km</p>
-   #else 
-     <p>&nbsp;</p>
-   #end if
-   <hr />
-   <img src="daySonne.png" alt="Sonnenstand" style="width:300px; height:175px;" />
- </div>
-</div>
+#set $summary = $forecast.weather_summary('DS')
+#set $dd = $forecast.label('Weather', $summary.windDir)
+#set $wind_text = $windT_dir_dict.get($dd)
+
+#include $Extras.header
+#include $Extras.cwarn
+
+<div id='hescontainer'>
+  <div id='popupanchor' style='float:left'></div>
+
+#include "links_forecast.inc"
 
 <div class="hes">
  <div class='hesbox'>
@@ -132,7 +73,10 @@
      <td class='hes1_bigval' style="$decorator_color('tempO', $current.outTemp.raw)"></td>
      <td class='hes1_bigval' colspan='2'><a href='daytemp.png' class='popup'>$current.outTemp</a></td>
 
- #if $trend.outTemp.raw < 0
+ #if $trend.outTemp.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>        
+ #elif $trend.outTemp.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.outTemp</td>
  #elif $trend.outTemp.raw == 0
@@ -149,7 +93,15 @@
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$summary.tempMax</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='templo'> $summary.tempMin</span></td>
+     <td><span class='templo'>$summary.tempMin</span></td>
+    </tr>
+ #else
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$yesterday.outTemp.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$yesterday.outTemp.min</span></td>
     </tr>
  #end if
    </table>
@@ -157,7 +109,7 @@
     <img src="daytempklein.png" alt="Temperatur" />
  </div>
 </div> <!-- end Temperatur -->
-
+  
 <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
@@ -171,7 +123,10 @@
      <td class='hes1_bigval' style="$decorator_color('chill_C', $current.windchill.raw)"></td>
      <td class='hes1_bigval' colspan='2' ><a href='daywindchill.png' class='popup'>$current.windchill</a></td>
 
-    #if $trend.windchill.raw < 0
+ #if $trend.windchill.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.windchill.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.windchill</td>
     #elif $trend.windchill.raw == 0
@@ -181,7 +136,14 @@
         <td class="hes1_trendhi"> &#8679;</td>
         <td class="hes1_valhi">$trend.windchill</td>
     #end if
-    </tr>  
+    </tr>
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.windchill.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.windchill.min</span></td>
+     </tr>
 #elif $current.outTemp.raw > 26.67
     <tr>
      <td class='hes1_kopfa'>Hitzeindex</td>
@@ -192,7 +154,10 @@
      <td class='hes1_bigval' style="$decorator_color('heatindex', $current.heatindex.raw)"></td>
      <td class='hes1_bigval' colspan='2' ><a href='dayheatindex.png' class='popup'>$current.heatindex</a></td>
 
-    #if $trend.heatindex.raw < 0
+ #if $trend.heatindex.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.heatindex.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.heatindex</td>
     #elif $trend.heatindex.raw == 0
@@ -203,6 +168,13 @@
        <td class="hes1_valhi">$trend.heatindex</td>
     #end if
     </tr>
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.heatindex.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.heatindex.min</span></td>
+     </tr>
 #else
     <tr>
      <td class='hes1_kopfa'>gefühlt</td>
@@ -212,8 +184,10 @@
     <tr>
      <td class='hes1_bigval' style="$decorator_color('temphes', $current.appTemp.raw)"></td>
      <td class='hes1_bigval' colspan='2' ><a href='dayapptemp.png' class='popup'>$current.appTemp</a></td>
-
-    #if $trend.appTemp.raw < 0
+ #if $trend.appTemp.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.appTemp.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.appTemp</td>
     #elif $trend.appTemp.raw == 0
@@ -224,16 +198,14 @@
        <td class="hes1_valhi">$trend.appTemp</td>
     #end if
     </tr>
-#end if
-    #if $varExists('forecast')
      <tr>
-      <td><span class='hes1_m'>Tagesprognose</span></td>
+      <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
-      <td><span class='temphi'>$summary.feelslikeMax</span></td>
+      <td><span class='temphi'>$yesterday.appTemp.max</span></td>
       <td><span class="hes1_m">min</span></td>
-      <td><span class='templo'>$summary.feelslikeMin</span></td>
+      <td><span class='templo'>$yesterday.appTemp.min</span></td>
      </tr>
-    #end if
+#end if
   </table>
     <hr />
 #if $current.outTemp.raw < 10.1
@@ -253,7 +225,10 @@
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
         <td class='hes1_bigval' colspan='3'><a href='daydewpoint.png' class='popup'>$current.dewpoint</a></td>
-    #if $trend.dewpoint.raw < 0
+ #if $trend.dewpoint.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.dewpoint.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class='hes1_vallo'>$trend.dewpoint</td>
     #elif $trend.dewpoint.raw == 0
@@ -272,6 +247,14 @@
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'> $summary.dewpointMin</span></td>
     </tr>
+    #else
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.dewpoint.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.dewpoint.min</span></td>
+     </tr>
 #end if
    </table>
     <hr />
@@ -289,7 +272,7 @@
     </tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daybarometer.png' class='popup'>$current.barometer</a></td>
-     
+
 <!-- note: these thresholds are for millibar, not inHg -->
 #if $varExists('trend')
 #if $trend.barometer.raw is not None:
@@ -325,8 +308,16 @@
      <td><span class='temphi'>$summary.barometerMax.formatted</span></td> <!-- summary.barometerMax.formatted -->
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'>$summary.barometerMin.formatted</span></td>
-    </tr> 
-#end if 
+    </tr>
+    #else
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.barometer.max.formatted</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.barometer.min.formatted</span></td>
+     </tr>
+#end if
     </table>
      <hr />
     <img src="daybaroklein.png" alt="Luftdruck" />
@@ -343,7 +334,10 @@
     </tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayhumid.png' class='popup'>$current.outHumidity</a></td>
-    #if $trend.outHumidity.raw < 0
+    #if $trend.outHumidity.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.outHumidity.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
      <td class='hes1_vallo'>$trend.outHumidity</td>
     #elif $trend.outHumidity.raw == 0
@@ -362,6 +356,14 @@
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'> $summary.humidityMin</span></td>
     </tr>
+    #else
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.outHumidity.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.outHumidity.min</span></td>
+     </tr>
 #end if
    </table>
     <hr />
@@ -382,22 +384,21 @@
      </td>
      <td colspan='2'>$day.rain.sum</td>
    </tr>
-#if $varExists('forecast')
    <tr>
      <td colspan='2'><span class='hes1_m'>Regenrisiko</span></td>
-     #if $summary.pop.raw > 0
+     <!-- <td colspan='3'>$summary.pop</td> -->
+     #if $summary.pop.raw is None
+       <td colspan='3'>&nbsp;</td>
+     #elif $summary.pop.raw > 0
         <td class='hes1_valhi'> $summary.pop  </td>
         <td>max</td>
-        <td>    
-         #if $summary.qpf.raw > 0
-             $summary.qpf.nolabel('%.2f',' ') <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
-         #end if
+        <td>
+         <img class='pop-img' src='xicons/raindrop.png' alt='regen' />
        </td>
     #else
        <td colspan='3'>&nbsp;</td>
     #end if
    </tr>
-#end if
   </table>
   <hr />
   <img src="dayrainklein.png" alt="Regen" />
@@ -418,24 +419,12 @@
      </td>
      <td colspan='2'>$day.snowTotal.max</td>
    </tr>
-   #if $varExists('forecast')
    <tr>
      <td colspan='2'>
       <span class='hes1_m'>Schneeprognose</span>
      </td>
-       #if $summary.qsf.raw > 0
-        <td class='hes1_valhi'> $summary.pop </td>
-        <td>max</td>
-        <td>
-          #if $summary.qsf.raw > 0
-              $summary.qsf.cm.nolabel('%.1f',' ') <img class='pop-img' src='xicons/snowflake.png' alt='schnee'/>
-           #end if
-        </td>
-       #else
         <td colspan='3'>&nbsp;</td>
-       #end if
    </tr>
-  #end if
   </table>
   <hr />
   <img src="daysnowklein.png" alt="Schnee" />
@@ -444,58 +433,58 @@
 #end if
 
 <div class="hes">
-  <div class='hesbox'>
-   <table class='hes_win'>
-   <tr><td class='hes1_kopfa' colspan='3'>Windgeschwindigkeit</td>
+ <div class='hesbox'>
+   <table class='hes_wind'>
+    <tr>
+     <td class='hes1_kopfa' colspan='3'>Windgeschwindigkeit</td>
      <td class='hes1_kopf'>Prognose</td>
    </tr>
    <tr>
-     <td class='hes1_bigval' colspan='2' style="$decorator_color('windBof', $current.windSpeed.raw)"
+    <td class='hes1_bigval' colspan='2' style="$decorator_color('windBof', $current.windSpeed.raw)"
          title="$decorator_text('windBof', $current.windSpeed.raw)">
         <a href='daywind.png' class='popup'>$current.windSpeed</a> </td>
 
-#if $varExists('trend')
-    #if $trend.windSpeed.raw is not None:
-        #if $trend.windSpeed.formatted > 0
-           <td class='hes1_trendhi'>&#8679;</td>
-    #elif $trend.windSpeed.formatted < 0
-           <td class='hes_trendlo'>&#8681;</td>
+    #if $varExists('trend')
+        #if $trend.windSpeed.raw is not None:
+            #if $trend.windSpeed.raw > 0
+               <td class='hes1_trendhi'>&#8679;</td>
+            #elif $trend.windSpeed.raw == 0
+               <td class="hes1_trendhi"><b>=</b></td>
+            #elif $trend.windSpeed.raw < 0
+               <td class='hes_trendlo'>&#8681;</td>
+            #end if
+        #end if
     #end if
-#end if
-#end if
-
-#if $varExists('forecast')
-     <td class='hes1_winro' rowspan='2'
-   #if $summary.windDirs is not None
+    #if $varExists('forecast')
+        <td class='hes1_winro' rowspan='2'
+    #if $summary.windDirs is not None
          style='width:44px; height:44px; vertical-align:middle; text-align:center; background: url()
-     #for $d in $summary.windDirs
-       #set $winddir_img = 'xicons/' + $d + '.png'
+      #for $d in $summary.windDirs
+        #set $winddir_img = 'xicons/' + $d + '.png'
                ,url($winddir_img)
-     #end for
+      #end for
                ; background-repeat:no-repeat; background-position:center; background-size:44px;'
-   #end if
+    #end if
          >
-   #if $summary.windSpeedMin == $summary.windSpeedMax or $summary.windSpeedMin.raw == $summary.windSpeedMax.raw
+    #if $summary.windSpeedMin == $summary.windSpeedMax or $summary.windSpeedMin.raw == $summary.windSpeedMax.raw
           $summary.windSpeedMin.nolabel('%.0f',' ')
-   #else
+    #else
           $summary.windSpeedMin.nolabel('%.0f',' ')-$summary.windSpeedMax.nolabel('%.0f',' ')
-   #end if
+    #end if
           <br/>
           $summary.windGust.nolabel('%.0f',' ')
-     </td>
-#end if
+        </td>
+    #end if
    </tr>
    <tr>
-         <td class="hes1_winbo"  style="$decorator_color('windBof', $current.windSpeed.raw)">
-          $decorator_text('windBof', $current.windSpeed.raw)</td>
-
-
-       <td style='font-size:100%;padding-left:8px;'>
-       <a href='daywinddir.png' class='popup'>$current.windDir.ordinal_compass<br />
-      <span style='font-size:100%'>$current.windDir</span></a>
-       </td>
-       <td class='hes1_wind' style='padding-left:8px; font-size:240%;'>
-       <a href='daywindvec.png' class='popup'>
+     <td class="hes1_winbo"  style="$decorator_color('windBof', $current.windSpeed.raw)">
+        $decorator_text('windBof', $current.windSpeed.raw)</td>
+     <td style='font-size:100%;padding-left:8px;'>
+        <a href='daywinddir.png' class='popup'>$current.windDir.ordinal_compass<br />
+     <span style='font-size:100%'>$current.windDir</span></a>
+     </td>
+     <td class='hes1_wind' style='padding-left:8px; font-size:240%;'>
+     <a href='daywindvec.png' class='popup'>
 #if $current.windDir.raw is None:
       -
 #else
@@ -522,10 +511,10 @@
       </a>
      </td>
     </tr>
-  </table>
+   </table>
     <hr />
-    <img src="daywindklein.png" alt="Wind" />
- </div>
+    <img src="daywindklein.png" alt="Wind" style="width:300px; height:160px;"/>
+  </div>
 </div> <!-- ende Wind -->
 
 <div class="hes">
@@ -539,8 +528,10 @@
      <td class='hes1_winbo' colspan='2' style="$decorator_color('uv', $current.UV.raw)">
           $decorator_text('uv', $current.UV.raw)</td>
      <td class='hes1_bigval'><a href='dayuv.png' class='popup'>$current.UV</a></td>
-
-    #if $trend.UV.raw < 0
+    #if $trend.UV.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.UV.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
      <td class='hes1_vallo'>$trend.UV.formatted</td>
     #elif $trend.UV.raw == 0.0
@@ -559,12 +550,20 @@
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'> $summary.uvIndexMin</span></td>
     </tr>
+#else
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$yesterday.UV.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$yesterday.UV.min</span></td>
+    </tr>
 #end if
    </table>
    <hr />
    <img src="dayUVklein.png" alt="UV-Index" />
   </div>
- </div> <!-- ende UV -->
+</div> <!-- ende UV -->
 
 <div class="hes">
   <div class='hesbox'>
@@ -576,15 +575,18 @@
     <tr>
      <td class='hes1_bigval' colspan='3'>
         <a href='dayradiation.png' class='popup'>$current.radiation</a></td>
- #if $trend.radiation.raw < 0
+ #if $trend.radiation.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+ #elif $trend.radiation.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
-     <td class="hes1_vallo">$trend.radiation</td>
+     <td class="hes1_vallo">$trend.radiation.formatted</td>
  #elif $trend.radiation.raw == 0
      <td class="hes1_trendhi"><b>=</b></td>
-     <td class="hes1_valhi">$trend.radiation</td>
+     <td class="hes1_valhi">$trend.radiation.formatted</td>
  #elif $trend.radiation.raw > 0
      <td class="hes1_trendhi"> &#8679;</td>
-     <td class="hes1_valhi">$trend.radiation</td>
+     <td class="hes1_valhi">$trend.radiation.formatted</td>
  #end if
     </tr>
     <tr>
@@ -592,7 +594,7 @@
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$current.maxSolarRad.formatted</span></td>
      <td><span class="hes1_m">erreicht</span></td>
-     #if $current.radiation.raw > 0.0 and $current.maxSolarRad.raw > 0.0 
+     #if $current.radiation.raw > 0.0 and $current.maxSolarRad.raw > 0.0
          #set $anteil = $current.radiation.raw * 100 / $current.maxSolarRad.raw
          #set $anteil = ("{:.2f}".format($anteil));
      #else
@@ -600,16 +602,24 @@
      #end if
      <td><span class='templo'>$anteil %</span></td>
     </tr>
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     #set $sonne = $yesterday.maxSolarRad.sum.raw
+     #set $son = locale.format('%.2f', $sonne, 1)
+     <td><span class='temphi'>$son</span></td>
+     <td><span class='hes1_m'>Sonne</span></td>
+     <td><span class='temphi'>$yesterday.sunshineS.sum.hour</span></td>
+    </tr>
    </table>
    <hr />
    <img src="daysunklein.png" alt="Sonne" />
  </div>
 </div> <!-- end Sonne -->
 
-<div class='hes'>
+<div class="hes">
  <div class='hesbox'>
-
-<table class='hes1'>
+ <table class='hes1'>
   <tr>
     <td class="hes1_sol">
       <a href="astro.html">Sonne</a></td>
@@ -619,6 +629,17 @@
  <tr>
     <td class='hes1_nam'>Tageslicht</td>
     <td class='hes1_nam'>$daylight_h_str&nbsp;Stunden&nbsp;$daylight_m_str&nbsp;Minuten</td>
+ </tr>
+ <tr>
+    <td class='hes1_nam'>Sonnenstunden</td>
+    <td class='hes1_nam'>$day.sunshineS.sum.hour</td>
+ </tr>
+   <tr>
+    <td class='hes1_nam'>Entfernung&nbsp;</td>
+    #set $sun_earth = $almanac.sun.earth_distance * 149597870.700
+    #set $sonne_erde = locale.format('%.2f', $sun_earth, 1)
+    <td class='hes1_nam'>$sonne_erde&nbsp;km</td>
+   </tr>
  <tr>
     <td class='hes1_nam'>Aufgang&nbsp;&#8679; </td>
     <td class='hes1_nam'>$almanac.sun.rise</td>
@@ -648,17 +669,23 @@
     <td class="hes1_nam">$almanac.next_winter_solstice</td>
   </tr>
   <tr>
-    <td class="hes1_nam">Ostern<br /> am</td>
+    <td class="hes1_nam">Ostern</td>
     <td class="hes1_nam">$Easter.format('%d.%m.%Y')</td>
   </tr>
 </table>
 </div>
 </div> <!-- ende sonne -->
 
+<div class='hesSonne'>
+ <div class='hesbox'>
+  <h3>Sonnenstand</h3>
+  <img src="https://www.timeanddate.com/scripts/sunmap.php?iso=201904T0640" width="600px" height="248px" style="border:1px solid black" alt="Sonnenstand"/>
+ </div>
+</div> <!-- Sonne die Zweite -->
+
 <div class='hes'>
  <div class='hesbox'>
-
-<table class='hes1'>
+ <table class='hes1'>
  <tr>
     <td class="hes1_sol">
        <a href="astro.html">Mond</a></td>
@@ -666,20 +693,46 @@
     </td>
  </tr>
  <tr>
-    <td class='hes1_mon'>Aufgang&nbsp;&#8679; </td>
+    <td class='hes1_mon'>Aufgang&nbsp;&#8679;</td>
     <td class='hes1_mon'>$almanac.moon.rise</td>
   </tr>
   <tr>
-    <td class='hes1_mon'>Untergang&nbsp; &#8681;</td>
+    <td class="hes1_mon">Transit:&nbsp;</td>
+    <td class="hes1_mon">$almanac.moon.transit</td>
+  </tr>
+  <tr>
+    <td class='hes1_mon'>Untergang&nbsp;&#8681;</td>
     <td class='hes1_mon'>$almanac.moon.set</td>
   </tr>
   <tr>
     <td class='hes1_mon'>$almanac.moon_phase</td>
     <td class='hes1_mon'>$almanac.moon_fullness %</td>
   </tr>
+  <tr>
+    <td class='hes1_mon'> Azimut</td>
+    <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.az)</td>
+  </tr>
+  <tr>
+    <td class='hes1_mon'> Altitude</td>
+    <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.alt)</td>
+  </tr>
+   <tr>
+    <td class='hes1_mon'>Entfernung&nbsp;</td>
+    #set $moon_earth = $almanac.moon.earth_distance * 149597870.700
+    #set $mond_erde = locale.format('%.2f', $moon_earth, 1)
+    <td class='hes1_mon'>$mond_erde&nbsp;km</td>
+   </tr>
+   <tr>
+    <td class='hes1_mon'>Alter des Mondes:</td>
+    <td class='hes1_mon'>$moonDays&nbsp;Tage</td>
+   </tr>
+   <tr>
+    <td class='hes1_mon'>&nbsp;</td>
+    <td class='hes1_mon'>&nbsp;</td>
+   </tr>
   #if $almanac.next_full_moon.raw < $almanac.next_new_moon.raw
    <tr>
-    <td class='hes1_mon'>Vollmond:</td>
+    <td class='hes1_mon'>Vollmond:<br></td>
     <td class='hes1_mon'>$almanac.next_full_moon</td>
    </tr>
    <tr>
@@ -696,10 +749,9 @@
     <td class='hes1_mon'>$almanac.next_full_moon</td>
    </tr>
   #end if
-   #set $moonDays = int(round(($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400,0))
    <tr>
-    <td class='hes1_mon'>Alter des Mondes:</td>
-    <td class='hes1_mon'>$moonDays&nbsp;Tage</td>
+    <td class='hes1_mon'>&nbsp;</td>
+    <td class='hes1_mon'>&nbsp;</td>
    </tr>
 </table>
 </div>
@@ -719,12 +771,12 @@
    <td class="re_data"> $current.absolutF</td>
   </tr>
   <tr>
-   <td class="re_data">Luftdichte:</td>
-   <td class="re_data"> $current.airDensity</td>
+   <td class="re_data">THW-Index:</td>
+   <td class="re_data"> $current.thwIndex</td>
   </tr>
   <tr>
-   <td class='re_data'>Winddruck</td>
-   <td class='re_data'>$current.windDruck</td>
+   <td class='re_data'>THSW-Index</td>
+   <td class='re_data'>$current.thswIndex</td>
   </tr>
   <tr>
    <td class='re_data'>Windweg aktuell</td>
@@ -746,8 +798,20 @@
    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   </tr>
   <tr>
-   <td class='re_data'>Blatt-Temp</td>
-   <td class='re_data'>$current.leafTemp1</td>
+   <td class='re_data'>VantagePro2 Empfang</td>
+   <td class='re_data'>$current.rxCheckPercent</td>
+  </tr>
+  <tr>
+   <td class='re_data'>VantagePro2 Batt-Status</td>
+   #if $current.txBatteryStatus.raw == 0
+       <td class='re_data'><font color='blue'>i.O.</font></td>
+   #else
+       <td class='re_data'><font color='red'>Null</font></td>
+   #end if
+  </tr>
+  <tr>
+   <td class='re_data'>VantagePro2 Console</td>
+   <td class='re_data'>$current.consBatteryVoltage</td>
   </tr>
 #if len($day00) > 3
   <tr>
@@ -921,10 +985,14 @@
 
 <div class="hes">
  <div class='hesbox'>
-  <h3>Bekannt bei</h3>
-  #include "bekannt.inc"
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Tagesübersicht</td></tr>
+   <tr><td>Einzelwerte</td></tr>
+   <tr><td>Diagramme</td></tr>
+   <tr><td><a href='day.html'>weiter</a></td></tr>
+  </table>
  </div>
-</div> <!-- end bekannt -->
+</div> <!-- end Tag -->
 
 <div class="hes">
  <div class='hesbox'>
@@ -933,13 +1001,18 @@
  </div>
 </div> <!-- end counter -->
 
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Bekannt bei</h3>
+  #include "bekannt.inc"
+ </div>
+</div> <!-- end bekannt -->
 
 </section >
 
 </div> <!-- ende container -->
 
      #include $Extras.footer
-
 
   </div> 
 

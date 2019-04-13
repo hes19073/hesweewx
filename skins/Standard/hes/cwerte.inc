@@ -303,7 +303,7 @@
                  &nbsp;
                 </td>
                 <td class="stats_data">
-                  $werte.sunshineS.sum.format("%.2f")
+                  $werte.sunshineS.sum.hour
                 </td>
               </tr>
              #end if

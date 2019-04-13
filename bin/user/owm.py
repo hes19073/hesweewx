@@ -14,10 +14,10 @@ Thanks to Antonio Burriel for the dewpoint, longitude, and radiation fixes.
 
 # FIXME: set the station lat/lon/alt using [PUT]/stations/{:id}
 
-import Queue
+import re
+import sys
 import syslog
-import urllib
-import urllib2
+import time
 
 try:
     import cjson as json
@@ -34,7 +34,7 @@ import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.8"
+VERSION = "0.8.1"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -90,7 +90,7 @@ class OpenWeatherMap(weewx.restx.StdRESTful):
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = OpenWeatherMapThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -141,6 +141,12 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         'rain_24h':    ('rain24',      10.0, 0.0),   # mm
         }
 
+    try:
+        max_integer = sys.maxint    # python 2
+    except AttributeError:
+        max_integer = sys.maxsize # python 3
+
+
     def __init__(self, queue,
                  appid, latitude, longitude, altitude,
                  station_id, manager_dict,
@@ -178,7 +184,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         if self.skip_upload:
             loginf("skipping upload")
             return
-        req = urllib2.Request(url, data)
+        req = Request(url, data)
         req.get_method = lambda: 'POST'
         req.add_header("Content-Type", "application/json")
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
@@ -195,5 +201,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
             rkey = self._DATA_MAP[_key][0]
             if rkey in record and record[rkey] is not None:
                 values[_key] = record[rkey] * self._DATA_MAP[_key][1] + self._DATA_MAP[_key][2]
+
         data = json.dumps([values])
+
         return data

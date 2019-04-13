@@ -1,0 +1,162 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: indexGDD.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und
+                                        Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 min" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location Aktuelles Wetter</title>
+
+     <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script src='js/hesweewx.js'></script>
+     <script>
+       window.onload = function() { applypopups(); }
+     </script>
+ </head>
+
+<body>
+ <div id='hes11'>
+
+#set $sunrise_ts = $almanac.sun.rise.raw
+#set $sunset_ts = $almanac.sun.set.raw
+#set $daylight_s = $sunset_ts - $sunrise_ts
+#set $daylight_hours = int($daylight_s / 3600)
+#set $daylight_minutes = int(($daylight_s % 3600) / 60)
+#set $daylight_h_str = "%02d" % $daylight_hours
+#set $daylight_m_str = "%02d" % $daylight_minutes
+
+#include $Extras.header
+#include $Extras.cwarn
+#set $summary = $forecast.weather_summary('DS')
+
+<div id='hescontainer'>
+  <div id='popupanchor' style='float:left'></div>
+
+#include "links_forecast.inc"
+
+ <div class="hes">
+  <div class='hesbox'>
+   <table>
+  <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_growth.html'>Wachstumsgradtage</a><br />WTG (Basis 10°C)</td></tr>
+  <tr><td>link folgen zur</td><td><a href='Cydia/C_growth.html'>Seite WGT</a> </td></tr>
+  </table>
+   <hr />
+   <img src="Cydia/C_growth.png" alt="WGT Basis 10" style="width:300px; height:175px;" />
+  <hr />
+  <p>Aufzeichnungen aus den Jahren</p>
+   <ul>
+     <li>das Jahr  <a href='Cydia/C_growth-2014.html'> 2014 </a></li>
+     <li>das Jahr  <a href='Cydia/C_growth-2015.html'> 2015 </a></li>
+     <li>das Jahr  <a href='Cydia/C_growth-2016.html'> 2016 </a></li>
+     <li>das Jahr  <a href='Cydia/C_growth-2017.html'> 2017 </a></li>
+     <li>das Jahr  <a href='Cydia/C_growth-2018.html'> 2018 </a></li>
+     <li>das Jahr  <a href='Cydia/C_growth.html'> 2019 </a></li>
+  </ul>
+ </div>
+</div> <!-- ende ggd -->
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_green.html'>Grünland-</a><br />temperatursumme (GLT)</td></tr>
+  <tr><td>link folgen zur</td><td><a href='Cydia/C_green.html'>Seite GLT</a> </td></tr>
+    </table>
+   <hr />
+    <img src="Cydia/C_green.png" alt="Gruenland" style="width:300px; height:175px;" />
+  <hr />
+  <p>Aufzeichnungen aus den Jahren  </p>
+   <ul>
+     <li>das Jahr  <a href='Cydia/C_green-2014.html'> 2014 </a></li>
+     <li>das Jahr  <a href='Cydia/C_green-2015.html'> 2015 </a></li>
+     <li>das Jahr  <a href='Cydia/C_green-2016.html'> 2016 </a></li>
+     <li>das Jahr  <a href='Cydia/C_green-2017.html'> 2017 </a></li>
+     <li>das Jahr  <a href='Cydia/C_green-2018.html'> 2018 </a></li>
+     <li>das Jahr  <a href='Cydia/C_green.html'> 2019 </a></li>
+  </ul>
+   </div>
+  </div> <!-- gruenlandtempsum -->
+
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='Cydia/C_pomonella.html'>Apfelwickler</a><br>(Cydia pomonella)</td></tr>
+     <tr><td>link folgen zur</td><td><a href='Cydia/C_pomonella.html'>Seite Cydia</a> </td></tr>
+   </table>
+   <hr />
+    <img src="Cydia/C_pomonella.png" alt="Apfelwickler" style="width:300px; height:175px;" />
+  <hr />
+  <p>Aufzeichnungen aus den Jahren  </p>
+   <ul>
+     <li>das Jahr  <a href='Cydia/C_pomonella-2014.html'> 2014 </a></li>
+     <li>das Jahr  <a href='Cydia/C_pomonella-2015.html'> 2015 </a></li>
+     <li>das Jahr  <a href='Cydia/C_pomonella-2016.html'> 2016 </a></li>
+     <li>das Jahr  <a href='Cydia/C_pomonella-2017.html'> 2017 </a></li>
+     <li>das Jahr  <a href='Cydia/C_pomonella-2018.html'> 2018 </a></li>
+     <li>das Jahr  <a href='Cydia/C_pomonella.html'> 2019 </a></li>
+  </ul>
+   </div>
+  </div> <!-- Apfelwickler entwicklung -->
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='gdd_4.html'>Wachstumsgradtage</a><br />(WTG) Basis 4°C</td></tr>
+   </table>
+   <hr />
+   <img src="Cydia/C_growth4.png" alt="WGT Basis 4" style="width:300px; height:175px;" />
+   </div>
+  </div> <!-- Tulpen 4 degree tag -->
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='gdd_5.html'>Tulpen</a><br />(WTG) Basis 5°C</td></tr>
+   </table>
+   <hr />
+   <img src="Cydia/C_growth5.png" alt="WGT Basis 5" style="width:300px; height:175px;" />
+
+   </div>
+  </div> <!-- Gras 5 degree tag -->
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'><a href='gdd_6.html'>Rasen</a><br />(WTG) Basis 6°C</td></tr>
+   </table>
+   <hr />
+   <img src="Cydia/C_growth6.png" alt="WGT Basis 6" style="width:300px; height:175px;" />
+
+   </div>
+  </div> <!-- wachstum 6 degree tag -->
+
+
+</div> <!-- ende container -->
+
+     #include $Extras.footer
+
+ </div> 
+</body>
+
+</html>

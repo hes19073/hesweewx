@@ -1,11 +1,14 @@
 ## for weewx - Copyright 2015- Hartmut Schweidler
-## header.inc  2015-05-02 20:53:34Z hes $
+## head.inc to Extra.header  2015-05-02 20:53:34Z hes $
 #errorCatcher Echo
 #encoding UTF-8
 #import time
 
 #if $latest($data_binding='wdsupp_binding').vantageForecastNumber.has_data
     #set $VPn = $latest($data_binding='wdsupp_binding').vantageForecastNumber.raw
+#else
+    #set $VPn = '46'
+#end if
     #set $VPn = int($VPn)
     #set $VPn = str($VPn)
     #if $current.outTemp.raw < 0
@@ -13,7 +16,6 @@
     #else
         #set $VPnumber = 'xicons/VPnumbers/' + $VPn + '.gif'
     #end if
-#end if
 
 <div id='header'>
  <div id="masthead">
@@ -43,29 +45,31 @@
   <li style="$decorator_color('heattemp', $current.appTemp.raw)">&nbsp;$current.appTemp</li>
   <li style="$decorator_color('heattemp', $current.appTemp.raw)">$decorator_text('heattemp', $current.appTemp.raw)</li>
  </ul>
-#if len($day00) > 2.0
-  <p class="neon">$day00</p>
+#if $varExists('$day00')
+    #if len($day00) > 2.0
+     <p class="neon">$day00</p>
+    #end if
 #end if
 </div> <!-- ende Temp Sonne  -->
  
 <div class="navbar">
  <ul id="nav">
-  <li><input type="button" value=" Aktuell " onclick="openURL('index.html')" />   </li>
+  <li><input type="button" value=" Aktuell " onclick="openURL('index.html')" /> </li>
   <li><input type="button" value=" OWFS  " onclick="openURL('indexOWFS.html')" /></li>
   <li><input type="button" value=" Boden " onclick="openURL('index1.html')" /></li>
   <li><input type="button" value=" Luft " onclick="openURL('indexAir.html')" /></li>
   <li><input type="button" value=" Rad " onclick="openURL('indexRad.html')" /></li>
   <li><input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <ul>
-    <li><input type="button" value=" HeizDD " onclick="openURL('heatdeg.html')" /></li>
-    <li><input type="button" value=" KühlDD " onclick="openURL('cooldeg.html')" /></li>
-    <li><input type="button" value=" HomeDD " onclick="openURL('homedeg.html')" /></li>
-    <li><input type="button" value=" WTG 4°C " onclick="openURL('gdd_4.html')" /></li>
-    <li><input type="button" value=" WTG 5°C " onclick="openURL('gdd_5.html')" /></li>
-    <li><input type="button" value=" WTG 6°C " onclick="openURL('gdd_6.html')" /></li>
+    <li><input type="button" value=" Heiz-GDD " onclick="openURL('heatdeg.html')" /></li>
+    <li><input type="button" value=" Kühl-GDD " onclick="openURL('cooldeg.html')" /></li>
+    <li><input type="button" value=" Home-GDD " onclick="openURL('homedeg.html')" /></li> 
+    <li><input type="button" value=" WTG  4°C " onclick="openURL('gdd_4.html')" /></li>
+    <li><input type="button" value=" WTG  5°C " onclick="openURL('gdd_5.html')" /></li>
+    <li><input type="button" value=" WTG  6°C " onclick="openURL('gdd_6.html')" /></li>
     <li><input type="button" value=" WTG 10°C " onclick="openURL('Cydia/C_growth.html')" /></li>
-    <li><input type="button" value=" GLT " onclick="openURL('Cydia/C_green.html')" /></li>
-    <li><input type="button" value=" Cydia " onclick="openURL('Cydia/C_pomonella.html')" /></li>
+    <li><input type="button" value=" GLT      " onclick="openURL('Cydia/C_green.html')" /></li>
+    <li><input type="button" value=" Cydia    " onclick="openURL('Cydia/C_pomonella.html')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" Tag " onclick="openURL('day.html')" />
@@ -74,7 +78,8 @@
     <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
     <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
     <li><input type="button" value=" 24 Stunden " onclick="openURL('trend.html')" /></li>
-   <!--  <li><input type="button" value=" wx-obs " onclick="openURL('index.php')" /></li> -->
+    <!-- <li><input type="button" value=" wx-obs " onclick="openURL('index.php')" /></li> -->
+    <li><input type="button" value=" Diagramm" onclick="openURL('daya.html')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" Prognose " onclick="openURL('forecast.html')" />
@@ -84,7 +89,7 @@
     <li><input type="button" value=" Wetter Infos " onclick="openURL('indexInfo.html')" /></li>
     <li><input type="button" value=" WetterWissen " onclick="openURL('wissen.html')" /></li>
     <li><input type="button" value=" ISS &Uuml;berflug " onclick="openURL('indexISS.html')" /></li> 
-    <li><input type="button" value="  IMECKLEN20    " onclick="openURL('http://www.wunderground.com/cgi-bin/findweather/hdfForecast?query=53.606%2C11.341&amp;sp=IMECKLEN20')" /></li>
+    <!-- <li><input type="button" value="  IMECKLEN20    " onclick="openURL('http://www.wunderground.com/cgi-bin/findweather/hdfForecast?query=53.606%2C11.341&amp;sp=IMECKLEN20')" /></li> -->
    </ul>
   </li>
   <li><input type="button" value=" Station " onclick="openURL('station.html')" />
@@ -106,10 +111,10 @@
       <li><input type="button" value=" Historisch " onclick="openURL('historisch.html')" /></li>
      </ul>
     </li>
-    <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
+    <!-- <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
     <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
     <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
-    <li><input type="button" value=" Sonnentage " onclick="openURL('sola.html')" /></li>
+    <li><input type="button" value=" Sonnentage " onclick="openURL('sola.html')" /></li> -->
     <li><input type="button" value=" Tabellen  &#8659;" onclick="openURL('week-table.html')" />
      <ul>
       <li><input type="button" value=" Die Woche " onclick="openURL('week-table.html')" /></li>
@@ -142,7 +147,7 @@
   </li>
   <li><input type="button" value=" Netzwerk " onclick="openURL('graphs.html')" />
    <ul>
-    <li><input type="button" value=" wunderground " onclick="openURL('http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=IMECKLEN20')" /></li>
+    <!-- <li><input type="button" value=" wunderground " onclick="openURL('http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=IMECKLEN20')" /></li> -->
     <li><input type="button" value=" PWSweather " onclick="openURL('http://www.pwsweather.com/obs/heskrfrr38.html')" /></li>
     <li><input type="button" value=" CWOP " onclick="openURL('http://www.findu.com/cgi-bin/wxpage.cgi?call=EW3693')" /></li>
     <li><input type="button" value=" WindFinder " onclick="openURL('http://www.windfinder.com/forecast/klein-rogahn')" /></li>
@@ -164,12 +169,12 @@
    </ul>
   </li>
   <!-- <li><input type="button" value=" RSS " onclick="openURL('RSS/weewx_rss.xml')" /></li> -->
-  <li><input type="button" value=" Ansicht " onclick="openURL('mobile.html')" />
+  <li><input type="button" value=" Ansicht " onclick="openURL('mobile/index.html')" />
    <ul>
     <li><input type="button" value=" RSS / Abo " onclick="openURL('RSS/weewx_rss.xml')" /></li>
-    <li><input type="button" value=" SteelGauge " onclick="openURL('ss/index.html')" /></li>
+   <!--  <li><input type="button" value=" SteelGauge " onclick="openURL('ss/index.html')" /></li> -->
    <!--  <li><input type="button" value=" New Skins  " onclick="openURL('sc/index.html')" /></li> -->
-    <li><input type="button" value=" Mobiltelefon " onclick="openURL('mobile.html')" /></li>
+    <li><input type="button" value=" Mobiltelefon " onclick="openURL('mobile/index.html')" /></li>
     <li><input type="button" value=" Smartphone " onclick="openURL('smartphone/index.html')" /></li>
    </ul>
   </li>
@@ -215,3 +220,9 @@
    </div><!--  End navbar1 -->
   </div><!-- Ende masthead -->
  </div> <!-- Ende header -->
+<!-- <script src="https://unpkg.com/magic-snowflakes/dist/snowflakes.min.js"></script>
+<script>
+    var sf = new Snowflakes({
+        color: "#5ecdef"
+    });
+</script> -->

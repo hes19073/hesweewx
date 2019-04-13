@@ -1,0 +1,48 @@
+                   MONTHLY CLIMATOLOGICAL SUMMARY for Dez 2005
+
+
+NAME: Klein Rogahn, M-V, Deutschland                  
+ELEV: 53 meter    LAT: 53-36.36 N    LONG: 011-20.48 E
+
+
+                   TEMPERATURE (C), RAIN (mm), WIND SPEED (km/h)
+
+                                         HEAT   COOL         AVG
+      MEAN                               DEG    DEG          WIND                   DOM
+DAY   TEMP   HIGH   TIME    LOW   TIME   DAYS   DAYS   RAIN  SPEED   HIGH   TIME    DIR
+---------------------------------------------------------------------------------------
+ 01    0,6    0,6  01:00    0,6  01:00   17,7    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 02   -1,0   -1,0  01:00   -1,0  01:00   19,3    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 03   -0,5   -0,5  01:00   -0,5  01:00   18,8    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 04    2,3    2,3  01:00    2,3  01:00   16,0    0,0   40,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 05    4,8    4,8  01:00    4,8  01:00   13,5    0,0   30,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 06    4,4    4,4  01:00    4,4  01:00   13,9    0,0    6,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 07    2,8    2,8  01:00    2,8  01:00   15,5    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 08    2,5    2,5  01:00    2,5  01:00   15,8    0,0    2,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 09    2,2    2,2  01:00    2,2  01:00   16,1    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 10    0,4    0,4  01:00    0,4  01:00   17,9    0,0    6,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 11    3,5    3,5  01:00    3,5  01:00   14,8    0,0    3,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 12    4,7    4,7  01:00    4,7  01:00   13,6    0,0    1,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 13    4,6    4,6  01:00    4,6  01:00   13,7    0,0   13,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 14    5,5    5,5  01:00    5,5  01:00   12,8    0,0   16,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 15    6,4    6,4  01:00    6,4  01:00   11,9    0,0  104,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 16    2,4    2,4  01:00    2,4  01:00   15,9    0,0   64,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 17   -0,9   -0,9  01:00   -0,9  01:00   19,2    0,0   82,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 18   -1,1   -1,1  01:00   -1,1  01:00   19,4    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 19    1,0    1,0  01:00    1,0  01:00   17,3    0,0   32,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 20    4,2    4,2  01:00    4,2  01:00   14,1    0,0   45,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 21    1,0    1,0  01:00    1,0  01:00   17,3    0,0   10,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 22    5,1    5,1  01:00    5,1  01:00   13,2    0,0    5,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 23    5,7    5,7  01:00    5,7  01:00   12,6    0,0   28,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 24    6,6    6,6  01:00    6,6  01:00   11,7    0,0   11,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 25    0,7    0,7  01:00    0,7  01:00   17,6    0,0    3,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 26   -2,2   -2,2  01:00   -2,2  01:00   20,5    0,0   35,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 27   -1,7   -1,7  01:00   -1,7  01:00   20,0    0,0    0,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 28   -2,4   -2,4  01:00   -2,4  01:00   20,7    0,0   28,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 29   -1,4   -1,4  01:00   -1,4  01:00   19,7    0,0   59,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 30   -2,4   -2,4  01:00   -2,4  01:00   20,7    0,0    5,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+ 31   -2,8   -2,8  01:00   -2,8  01:00   21,1    0,0    6,0 $day.wind.avg.nolabel($Wind,$NONE) $day.wind.max.nolabel($Wind,$NONE) $day.wind.maxtime.format($Time) $day.wind.vecdir.nolabel($Dir,$NONE)
+---------------------------------------------------------------------------------------
+       1,8    6,6     24   -2,8     31  512,3    0,0  634,0 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)    $month.wind.maxtime.format($D) $month.wind.vecdir.nolabel($Dir)
+    
+

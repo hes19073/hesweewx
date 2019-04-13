@@ -166,16 +166,16 @@ class Weather365Thread(weewx.restx.RESTThread):
             loginf("skipping upload")
             return
         req = Request(self.server_url, url_data)
-        loginf("Data uploaded to %s is: (%s)" % (self.server_url, url_data))
+        #loginf("Data uploaded to %s is: (%s)" % (self.server_url, url_data))
         req.get_method = lambda: 'POST'
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
 
     def check_response(self, response):
         txt = response.read()
-        if txt.find('invalid-login-data') >= 0:
+        if txt.find(b'invalid-login-data') >= 0:
             raise weewx.restx.BadLogin(txt)
-        elif not txt.startswith('INSERT'):
+        elif not txt.startswith(b'INSERT'):
             raise weewx.restx.FailedPost("Server returned '%s'" % txt)
 
     def get_data(self, in_record):

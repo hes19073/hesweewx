@@ -21,6 +21,7 @@ from __future__ import with_statement
 import sys
 import syslog
 import hashlib
+import http.client
 
 import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
@@ -28,6 +29,7 @@ import time
 import datetime
 import re
 
+from urllib.request import urlopen
 from time import mktime
 from weewx.cheetahgenerator import SearchList
 
@@ -59,11 +61,11 @@ class ISSAlert(SearchList):
             print(('HTTPError = ' + str(e.code)))
         except urllib.error.URLError as e:
             print(('URLError = ' + str(e.reason)))
-        except httplib.HTTPException as e:
+        except http.client.HTTPException as e:
             print ('HTTPException')
         except Exception:
             import traceback
-            print(('generic exception: ' + traceback.format_exc()))
+            print('generic exception: ' + traceback.format_exc())
 
         feeddata = feedsource.read()
         feedsource.close()

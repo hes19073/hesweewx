@@ -87,6 +87,18 @@ a:visited {
     color: #5f8ea9;
 }
 
+/* .col-sm-1-5 { */
+.wuforecast {
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    width: 10%;
+    float:left;
+    display: inline-block;
+    width: 148px;
+}
+
 .neon {
     font-family: sans-serif;
     text-transform: uppercase;
@@ -806,6 +818,21 @@ tr.odd {
     box-shadow: 6px 4px 10px #000000;
     background-color: #f0ffff;
 }
+
+.hesSonne {
+    float: left;
+    width: 630px;
+    margin: 10px;
+    padding: 2px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    box-shadow: 6px 4px 10px #000000;
+    background-color: #f0ffff;
+}
+
 
 .hes table {
     text-align: center;

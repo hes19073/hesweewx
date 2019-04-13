@@ -4,8 +4,8 @@
 #encoding UTF-8
 
    <p>
-    <a href = 'http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=IMECKLEN20'>
-         <img style="width: 88px; height: 48px;" alt="wunderground" src="xicons/logo/wundergroundLogo_4c.png"  /></a>
+    <!-- <a href = 'http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=IMECKLEN20'>
+         <img style="width: 88px; height: 48px;" alt="wunderground" src="xicons/logo/wundergroundLogo_4c.png"  /></a> -->
     <a href = 'http://www.pwsweather.com/obs/heskrfrr38.html'>
          <img style="width: 147px; height: 48px;" alt="pws" src="xicons/logo/PWSWX.jpg"  /></a>
     <a href = 'http://www.findu.com/cgi-bin/wxpage.cgi?call=EW3693'>

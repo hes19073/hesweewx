@@ -185,7 +185,8 @@ class growth10Generator(weewx.reportengine.ReportGenerator):
 
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-            ai = 43200 #86400           # enspricht 24 Stunden seit START
+            #ai = 43200 #86400           # enspricht 24 Stunden seit START
+            ai = 86400
 
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)

@@ -1,0 +1,859 @@
+/*
+ * $Revision: 732 $ 2014 $
+ * $Author: tkeffer $ Hartmut $
+ * $Date: 2012-11-03 13:59:51 -0700 (Sat, 03 Nov 2012) $
+ * $Date: 2014-02-05 12:00:00 +0100 (Mit, 05 Feb 2014) $
+ */
+  
+/* Global */
+
+body {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    background-color: #f2f2f7;
+    background-image: url('backgrounds/band.gif');
+    background-repeat: repeat;
+    background-attachment: scroll;
+}	
+
+#hes11 {
+   /*margin: 0;
+   padding: 0; */
+   background-image: url('backgrounds/Clouds.jpg');
+}
+
+#container {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+a:link {
+  text-decoration: none;
+  color: #207020;
+}
+
+a:hover {
+  text-decoration: none;
+  color: #30a030;
+}
+
+a:visited {
+  text-decoration: none;
+  color: #207020;
+}
+
+
+/*
+ * This is the big header at the top of the page
+ */
+
+#header {   
+  clear: both;
+  /*background-color: #fffff;*/
+  border: 1px solid #000000;
+  /*border-radius: 10px 20px;*/
+  border-top-left-radius: 100px;
+  border-top-right-radius: 100px;
+  margin: 10px;
+  padding: 2px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+
+#masthead {
+    margin: 1% 1% 0 1%;
+    padding: 5px;
+    vertical-align: middle;
+    text-align: center;
+    /*border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;*/
+}
+
+#masthead h1 {
+    color: #3d6c87;
+}
+
+#masthead h3 {
+    color: #5f8ea9;
+}
+
+/*
+#masthead table { width: 100%; }
+
+#masthead img {  width: 80px;  
+                 height: 80px;
+              }
+*/
+
+/*  indexx  */
+
+#links {
+  clear: both;
+  background-color: #f0ffff;
+  border-radius: 15px;
+  box-shadow: 6px 4px 9px #000;
+  padding: 2px;
+  margin: 10px;
+  width: 350px;
+  float: left;
+}
+
+ 
+#rechts {
+     background-color: #f0ffff;
+     border-radius: 15px;
+     box-shadow: 6px 4px 9px #000;
+     padding: 2px;                                 /*10px 25px;*/
+     margin: 10px;
+     width: 310px;
+     float: right;
+}
+
+#contentx {
+         background-color: #f0ffff;
+         box-shadow: 6px 4px 10px #000;
+         border-radius: 20px;
+         width: 640px;
+         text-align: center;
+         margin: 20px auto;
+         padding: 2px;
+}
+
+#contentx table {
+     width: 100%;
+}
+
+
+.mitte {  
+    width: 95%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+  }
+
+
+.heatindex {
+        color: #aa4444;
+}
+
+.windchill {
+        color: #4444aa;
+}
+
+.temphi {
+        color: #aa4444;
+}
+
+.templo {
+        color: #4444aa;
+}
+
+.precip-img {
+        width: 44px;
+}
+
+.obvis-img {
+        width: 44px;
+}
+
+.pop-img {
+        width: 8px;
+}
+
+.table_heading  {
+        font-size: 80%;
+        color: #888888;
+        border-bottom: 1px solid #cccccc;
+        padding-top: 20px;
+}
+
+
+/*
+ * This holds the statistics (daily high/low, etc.) on the left: 
+ */
+
+#stats_group {
+    width: 30%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 5px;
+    float: left;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+.stats table {
+    border: thin solid #000000;
+    width: 100%;
+}
+
+.stats td {
+    border: thin solid #000000;
+    padding: 2px;
+}
+
+.stats_header  {
+    background-color: #000000;
+    color: #a8b8c8;
+    font-size: 14pt;
+    font-weight: bolder;
+}
+
+.stats_label {
+    color: green;
+    font-size: 10pt;
+}
+
+.stats_data {
+    color: blue;
+    font-size: 10pt;
+}
+
+/*
+ * This holds the "About", "Almanac", and plots on the right
+ */
+
+#contentl, #contentr { 
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+#contentl table {
+    width: 100%;
+}
+
+#content {
+    width: 62%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    float: right;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+    text-align: center;
+}
+
+
+#content .header {
+    font-size: 14pt;
+    font-weight: bolder;
+    color: #3d6c87;
+    margin-bottom: 10px;
+}
+
+
+#content .caption {
+    font-weight: bold;
+    color: #3d6c87;
+}
+
+#content table {
+    text-align: center;
+    width: 100%;
+}
+
+
+#content .label {
+    text-align: right;
+    font-style: italic;
+}
+
+#content .data {
+    text-align: left;
+}
+
+#about, #almanac { 
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+}
+
+
+#contentwe {
+    width: 64%;
+    min-height: 500px;
+    margin: 1%;
+    padding: 7px;
+    float: right;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+    text-align: center;
+}
+
+#contentwe table {
+    text-align: center;
+    width: 100%;
+    border: thin solid #000000;
+}
+
+#contentwe td {
+    border: thin solid #000000;
+    padding: 2px;
+}
+
+.celestial_group {
+}
+    
+.celestial_body {
+    width: 48%;
+    vertical-align: top;
+    display:inline-block;
+}
+
+
+#plots { 
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+    
+#plots img {
+    border: thin solid #3d6c87;
+    margin: 3px;
+    padding: 3px;
+}
+
+
+/*
+ * Navigation bar (week, month, etc.) at the bottom
+ */
+
+.navbar {
+    margin: 0 1% 1% 1%;
+    padding: 5px;
+    text-align: center;
+    clear: both;
+    border-radius: 5px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-image: linear-gradient(left,
+                                      purple,
+                                      blue,
+                                      green,
+                                      yellow,
+                                      red,
+                                      purple);
+
+    background-image: -moz-linear-gradient(left,
+                                           purple,
+                                           blue,
+                                           green,
+                                           yellow,
+                                           red,
+                                           purple);
+    background-image: -o-linear-gradient(left,
+                                           purple,
+                                           blue,
+                                           green,
+                                           yellow,
+                                           red,
+                                           purple);
+    background-image: -webkit-linear-gradient(left,
+                                           purple,
+                                           blue,
+                                           green,
+                                           yellow,
+                                           red,
+                                           purple);
+   background-image: -ms-linear-gradient(left,
+                                           purple,
+                                           blue,
+                                           green,
+                                           yellow,
+                                           red,
+                                           purple);
+}
+
+.hesnavbar {
+    margin: 0 1% 1% 1%;
+    padding: 5px;
+    width: 150px;
+    text-align: left;
+    flot: left;
+    clear: both;
+    border-radius: 5px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    box-shadow: 6px 10px 10px #000000;
+}
+
+
+/*************** Global Styles ***************/
+
+h2, h3, h4, h5, h6 {
+    color: #3d6c87;
+}
+
+.header {
+    font-size: 14pt;
+    font-weight: bolder;
+    color: #3d6c87;
+    margin-bottom: 10px;
+}
+
+
+li {  list-style-type: none;   }  
+
+
+/**************** linke Tabelle index.html.tmpl *********************/
+
+.metrics {
+  font-size: 80%;
+}
+
+.metrics table {
+   width: 100%;
+}
+
+.metrics a {
+  text-decoration: none;
+}
+
+.metric_title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.metric_name {
+  text-align: right;
+}
+
+.metric_large {
+  text-align: left;
+  font-weight: bold;
+  font-size: 230%;
+}
+
+tr.even {
+  background-color: #ffffff;
+}
+
+tr.odd {
+  background-color: #B5D3DB;
+}
+
+.metric_value {
+  text-align: left;
+  font-weight: bold;
+}
+
+.metric_units {
+  text-align: left;
+}
+
+.hilo_time {
+  text-align: left;
+  color: #333333;
+  font-size: 85%;
+}
+
+/****************** almanach ****************************/
+
+.ametrics {
+}
+
+.ametrics table {
+   width: 100%;
+}
+
+.ametrics a {
+  text-decoration: none;
+}
+
+.ametric_title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.ametric_name {
+  text-align: right;
+}
+
+.ametric_sym {
+  font-weight: bold;
+  font-size: 250%;
+}
+
+.ametric_large {
+  text-align: left;
+  font-weight: bold;
+  font-size: 230%;
+}
+
+.ametric_value {
+  text-align: left;
+  color: #007000;
+}
+
+.ametric_valuem {
+  text-align: left;
+  color: #ff0000;
+}
+
+.ametric_units {
+  text-align: left;
+}
+
+.ahilo_time {
+  text-align: left;
+  font-size: 85%;
+}
+
+
+
+/************************* footer ******************************/
+
+/*#footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: yellow;
+    height: 2em;
+}*/
+
+#footer p {
+   text-align: center;
+}
+
+
+#footer  {
+    clear: both;
+    margin: 1% 1% 2% 1%;
+    padding: 5px;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 20px;
+    /*border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;*/
+    box-shadow: 6px 10px 10px #000000;
+    background-color: #fafaff;
+}
+
+
+#fzei {
+    width: 95%;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+    text-align: center;
+}
+
+.rthes {
+   float: right;
+   clear: right;
+   text-align: right;
+   font-size: 8pt;
+}
+    
+.lthes {
+    float: left;
+    clear: left;
+    text-align: left;
+    font-size: 8pt;
+}
+
+/*  rechts */
+
+
+#radar_img,
+#radar_local_img {
+    width: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin: 3px;
+    padding: 3px;
+}
+    
+#radar_img img,
+#radar_local_img img {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+    margin: 3px;
+    padding: 3px;
+}
+    
+#radar_img p,
+#radar_local_img p {
+    width: 90%;
+    font-style: italic;
+    font-size: smaller;
+    text-align: center;
+    margin-top: 0;
+}
+    
+/***************** Tabellen *******************/
+
+#hesdata {
+  clear: both;
+  background-color: #f0ffff;
+  border: 1px solid #000;
+  border-radius: 10px 20px;
+  margin: 10px;
+  padding: 20px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+.mittetab {                
+    width: 95%;
+    min-height: 50px;
+    margin: 1%;
+    padding: 7px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #f0ffff;
+}
+
+#hesdata table {
+    text-align: center;
+    width: 100%;
+}
+
+
+#contentcmon {
+  clear: both;
+  border: 1px solid #000000;
+  border-radius: 10px 20px;
+  margin: 10px;
+  padding: 2px;
+  box-shadow: 6px 4px 10px #000000;
+  text-align: center;
+}
+
+/* neue Seite */
+
+.hes1 {
+  font-size: 90%;
+}
+
+.hes1_kopfa {
+    font-size: 150%;
+    color: coral;
+    font-weight: bold;
+}
+
+.hes1_bigval {
+    font-size: 200%;
+    color: chocolate;
+    font-weight: bold;
+    text-align: right;
+}
+
+/*#flexbox {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row ;
+    flex-wrap: wrap ;
+
+}
+#flexbox div {
+      flex-grow: 1 ;
+      flex-basis: auto;
+}*/
+
+
+.hes {
+    float: left;
+    width: 330px;
+    /*height: 180px;*/
+    margin: 10px;
+    padding: 2px;
+    border-radius: 12px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    box-shadow: 6px 4px 10px #000000;
+    background-color: #f0ffff;
+}
+
+.hes table {
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 100%;
+}
+
+
+.hesbox {
+    margin: 1%;
+    padding: 5px;
+    vertical-align: center;
+    text-align: center;
+    border-radius: 10px;
+    border-top: 1px solid #dcdcdc;
+    border-right: 1px solid #a9a9a9;
+    border-bottom: 1px solid #808080;
+    border-left: 1px solid #a9a9a9;
+    background-color: #fafaff;
+}
+
+.hes1_kopf {
+        font-size: 80%;
+        color: #888888;
+        border-bottom: 1px solid #cccccc;
+        padding-top: 20px;
+}
+
+.hes1_kopfb {
+       text-align: right;
+       padding-top: 10px;
+}
+
+.hes1_kopfc {
+       text-align: center;
+       padding-top: 10px;
+}
+
+.hes1_valhi {
+        color: fuchsia;
+}
+
+.hes1_vallo {
+        color: dodgerblue;
+}
+
+.hes1_leer {
+     width: 44px;
+     background-color: #faebd7;
+}
+
+.hes1_trendhi {
+       color: fuchsia;
+       font-weight: bold;
+       font-size: 180%;
+  }
+
+.hes1_trendlo {
+       color: dodgerblue;
+       font-weight: bold;
+       font-size: 180%;
+}
+
+.hes1_wind {
+       width: 45px;
+}
+.hes1_nam {
+      background-color: gold;
+}
+.hes1_mon {
+     background-color: darkblue;
+     color: white;
+}
+/*
+.hes_lufe,
+.hes_reg {
+      background-image: url('backgrounds/drops.gif');
+}
+
+.hes_temp {
+      background-image: url('backgrounds/leaf.jpg');
+}
+
+.hes_win {
+        background-image: url('backgrounds/butterfly.jpg');
+}
+
+.hes_somo {
+     background-image: url('backgrounds/night.gif');
+}*/
+
+
+td.hes1_wol {
+   width: 33%;
+}
+td.hes1_wind {
+   font-size: 230%;
+   font-weight: bold;
+}
+
+.hesso {
+    /*background-color: gold;*/
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 30px;
+    left: 50px;
+    border: 2px solid gold;
+    border-radius: 50px;
+    background-image: url('xicons/son01.png');
+
+}
+/*
+.hesso ul li,
+.hesmo ul li { 
+    margin-top: 15px;
+    padding-top: 5px;
+    text-align: left;
+    margin-top: auto;
+    margin-bottom: auto;
+}*/
+
+.hesmo {
+    /*background-color: lightskyblue;*/
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 30px;
+    right: 80px;
+    border: 3px solid lightskyblue;
+    text-align: center;
+    border-radius: 50px;
+    background-image: url('xicons/Mo33.png');
+
+}
+.tab_datab {
+   text-align: center;
+   } 

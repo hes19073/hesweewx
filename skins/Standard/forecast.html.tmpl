@@ -68,7 +68,6 @@ function topFunction() {
    </div> <!-- ende about -->
 
    <div id='fc_pane_dwd' class='fc_pane'>
-    <p>&nbsp;</p>
      <h3>Vom Deutschen Wetterdienst DWD</h3>
      <hr />
     #include $Extras.tag0
@@ -81,6 +80,16 @@ function topFunction() {
      <hr />
     #include $Extras.tag4
    </div> <!-- Text DWD -->
+
+#if $varExists('$forecastHTML')
+    #if len($forecastHTML) > 2.0
+   <div>
+    <hr />
+     <h3>Vom Wetterdienst DarkSky</h3>
+     <p>$forecastHTML</p>
+   </div> <!-- Text Dark Sky -->
+    #end if
+#end if  
 
   </div><!-- Ende containt -->
 

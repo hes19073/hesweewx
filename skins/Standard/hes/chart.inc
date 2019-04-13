@@ -90,7 +90,6 @@
   $period2.absolutF.min um $period2.absolutF.mintime
 </td>
 </tr>
-#if $period1.extraHumid1.min.raw >= 55
 <tr>
 <td class="stats_label">  Luftfeuchte (2) (max)/ (min)</td>
 <td class="stats_data">
@@ -102,8 +101,6 @@
   $period2.extraHumid1.min um $period2.extraHumid1.mintime
 </td>
 </tr>
-#end if
-#if $period1.extraHumid2.min.raw >= 55
 <tr>
 <td class="stats_label">  Luftfeuchte (3) (max) / (min)</td>
 <td class="stats_data">
@@ -115,7 +112,6 @@
   $period2.extraHumid2.min um $period2.extraHumid2.mintime
 </td>
 </tr>
-#end if
 <tr>
 <td class="stats_label">  Luftdruck (max) / (min)</td>
 <td class="stats_data">

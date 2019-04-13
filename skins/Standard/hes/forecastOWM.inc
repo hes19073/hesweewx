@@ -24,12 +24,12 @@
 #set $show_wind = 1
 #set $show_uv = 0
 #set $show_feelslike = 0
-#set $show_barometer = 1
+#set $show_barometer = 0
 #set $show_tides = 0
 #set $show_sun = 1
 #set $show_moon = 1
-#set $show_pop = 1
-#set $show_precip = 1
+#set $show_pop = 0
+#set $show_precip = 0
 #set $show_obvis = 1
 
 #set $wloc = ''

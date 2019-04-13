@@ -69,6 +69,7 @@
 var forecasts = [
   'WU',
   'OWM',
+  'DS',
 ];
 
 var fc_panes = ['dwd', 'table', 'strip', 'cmp', 'ico'];
@@ -105,7 +106,7 @@ function choose_forecast_table(fcID) {
 function setup() {
   var pane = get_cookie('weather.forecast.pane', 'dwd');
   choose_pane(pane);
-  var source = get_cookie('weather.forecast.source', 'WU');
+  var source = get_cookie('weather.forecast.source', 'DS');
   choose_forecast_strip(source);
   var e = document.getElementById('strip_selector');
   if(e) { e.value = source; }
@@ -159,10 +160,10 @@ function topFunction() {
   <div id="content">
 
    <div id="about">
-    <div class="header">
-          <h2>Wetterprognose und Wettervorhersage</h2>
-          <p>für den Ort Klein Rogahn und die Region</p>
-    </div>
+     <div class="header">
+      <h2>Wetterprognose und Wettervorhersage</h2>
+      <p>für den Ort Klein Rogahn und die Region</p>
+     </div>
    </div> <!-- ende about -->
 
    <div class='navigation'>
@@ -173,7 +174,7 @@ function topFunction() {
      <span class='btn' id='btn_ico' href="#" onclick="choose_pane('ico')">ICON</span>
    </div> <!-- ende navigation -->
 
-   <div id='fc_pane_dwd' class='fc_pane'>
+  <div id='fc_pane_dwd' class='fc_pane'>
     <p>&nbsp;</p>
      <h3>Vom Deutschen Wetterdienst DWD</h3>
      <hr />
@@ -186,21 +187,22 @@ function topFunction() {
     #include $Extras.tag3
      <hr />
     #include $Extras.tag4
-   </div> <!-- Text DWD -->
+  </div> <!-- Text DWD -->
 
-   <div id='fc_pane_table' class='fc_pane'>
+  <div id='fc_pane_table' class='fc_pane'>
     <p class='fc_select'>
     <select id='table_selector' onchange='choose_forecast_table(value)'>
-     <option value="WU">Weather Underground</option>
+     <!-- <option value="WU">Weather Underground</option> -->
      <option value="OWM">Open WeatherMap</option>
+     <option value="DS">Dark Sky</option>
     </select>
     </p>
-    <div id="WU" class='fc_table'>
-    #include $Extras.forecastWUT
+    <!-- <div id="WU" class='fc_table'>
+    ##include $Extras.forecastWUT
      <p>Stündliche Wettervorhersage</p>
-    #include $Extras.forecastWU
-     <hr />
-    </div>
+    ##include $Extras.forecastWU
+     <hr /> 
+    </div> -->
 
     <div id="OWM" class='fc_table'>
     #include $Extras.forecastOWMT
@@ -208,17 +210,26 @@ function topFunction() {
     #include $Extras.forecastOWM
      <hr />
     </div>
+
+    <div id="DS" class='fc_table'>
+    #include $Extras.forecastDST
+     <p>Stündliche Wettervorhersage</p>
+    #include $Extras.forecastDS
+     <hr />
+    </div>
    </div> <!-- tabelle -->
 
    <div id='fc_pane_strip' class='fc_pane'>
 
-   #include "wu_strip.inc"
+   ##include "wu_strip.inc"
    #include "owm_strip.inc"
+   #include "ds_strip.inc"
 
     <div class='fc_select'>
      <select id='strip_selector' onchange='choose_forecast_strip(value)'>
-      <option value="WU">Weather Underground</option>
+      <!-- <option value="WU">Weather Underground</option> -->
       <option value="OWM">Open WeatherMap</option>
+      <option value="DS">Dark Sky</option>
      </select>
     </div>
 
@@ -249,7 +260,7 @@ function topFunction() {
    <div id='fc_pane_ico' class='fc_pane'>
     <p>&nbsp;</p>
     <div>
-    <h3>Vorschau nach Weather Underground</h3>
+    <h3>Vorschau nach Dark Sky</h3>
     #include $Extras.forecast_iconic
     </div>
    </div> <!-- ICON Ende -->

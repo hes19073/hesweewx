@@ -73,10 +73,10 @@ class DWD(SearchList):
             # File doesn't exist, download a new copy
             pollen_is_stale = True
 
-        """Generate a Pollen from DWD using data from 11:00 (39200 12=43200s).  If the
-        current time is before 11:00, use the data from the previous day."""
+        """Generate a Pollen from DWD using data from 11:00 (39200 11:30=41400s).  If the
+        current time is before 11:30, use the data from the previous day."""
         now = time.time()
-        ts = weeutil.weeutil.startOfDay(now) + 43300
+        ts = weeutil.weeutil.startOfDay(now) + 41400
         if now < ts:
             ts -= 86400
             logdbg('DWD: Pollen was already calculated for %s' %

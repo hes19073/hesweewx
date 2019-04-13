@@ -5,7 +5,7 @@
 #set $forecast_source = 'OWM'
 ## How many forecast periods should be considered?
 #set $num_periods = 40
-#set $wlog = ''
+#set $wloc = ''
 #set $wts = ''
 #set $lastday = None
 #set $periods = $forecast.weather_periods($forecast_source, max_events=$num_periods)

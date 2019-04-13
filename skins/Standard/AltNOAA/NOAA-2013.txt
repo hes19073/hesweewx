@@ -1,0 +1,71 @@
+                     CLIMATOLOGICAL SUMMARY for year 2013
+
+
+NAME: Klein Rogahn, M-V, Deutschland                  
+ELEV: 53 meter    LAT: 53-36.36 N    LONG: 011-20.48 E
+
+
+                                       TEMPERATURE (C)
+
+                              HEAT    COOL                              MAX    MAX    MIN    MIN
+          MEAN   MEAN         DEG     DEG                                >=     <=     <=     <=
+ YR  MO   MAX    MIN    MEAN  DAYS    DAYS      HI  DAY     LOW  DAY     30      0      0    -20
+------------------------------------------------------------------------------------------------
+2013 01    0,7    0,7    0,7  545,2    0,0     8,0   30    -7,1   26      0     17     17      0
+2013 02   -0,1   -0,1   -0,1  515,6    0,0     4,5   01    -3,7   10      0     13     13      0
+2013 03   -0,8   -0,8   -0,8  591,3    0,0     5,7   05    -5,1   23      0     21     21      0
+2013 04    7,5    7,5    7,5  322,8    0,0    15,9   15    -0,2   01      0      2      2      0
+2013 05   13,1   13,1   13,1  163,1    2,5    20,8   17     8,9   01      0      0      0      0
+2013 06   15,8   15,8   15,8   87,8   12,2    24,7   19    11,8   30      0      0      0      0
+2013 07   19,4   19,4   19,4   17,6   52,0    25,5   27    15,7   06      0      0      0      0
+2013 08   18,4   18,4   18,4   31,1   34,9    27,4   02    13,8   13      0      0      0      0
+2013 09   13,2   13,2   13,2  156,3    3,7    20,2   06     9,1   28      0      0      0      0
+2013 10   11,1   11,1   11,1  222,1    0,0    15,8   23     7,5   31      0      0      0      0
+2013 11    5,4    5,4    5,4  386,2    0,0     9,3   01     0,3   15      0      0      0      0
+2013 12    4,4    4,4    4,4  430,1    0,0    10,7   24     0,3   03      0      0      0      0
+------------------------------------------------------------------------------------------------
+           9,1    9,1    9,1 3469,2  105,3    27,4  Aug    -7,1  Jan      0     53     53      0
+
+
+                  PRECIPITATION (mm)
+
+                  MAX         ---DAYS OF RAIN---
+                  OBS.               OVER
+ YR  MO  TOTAL    DAY  DATE   0.30   3.00  30.00
+------------------------------------------------
+2013 01  699,0  111,0    30     22     18      7
+2013 02  321,0   51,0    18     18     15      4
+2013 03  219,0  102,0    09     14     10      2
+2013 04  367,0  188,0    26      9      9      4
+2013 05  865,0  198,0    25     16     13      8
+2013 06  617,0  292,0    13     13     12      5
+2013 07  176,0   77,0    01      8      5      2
+2013 08  221,0   77,0    13     10      9      2
+2013 09  867,0  176,0    09     16     14     10
+2013 10  523,0  134,0    12     14     12      5
+2013 11  479,0  117,0    04     16     12      5
+2013 12  408,0  120,0    08     17     15      4
+------------------------------------------------
+        5762,0  292,0   Jun    173    144     58
+
+
+           WIND SPEED (km/h)
+
+                                DOM
+ YR  MO    AVG     HI   DATE    DIR
+-----------------------------------
+2013 01 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 02 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 03 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 04 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 05 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 06 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 07 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 08 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 09 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 10 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 11 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2013 12 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+-----------------------------------
+        $year.wind.avg.nolabel($Wind,$NONE) $year.wind.max.nolabel($Wind,$NONE)   $year.wind.maxtime.format($M,$NODAY) $year.wind.vecdir.nolabel($Dir,$NONE)
+

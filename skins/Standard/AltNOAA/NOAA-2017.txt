@@ -1,0 +1,71 @@
+                     CLIMATOLOGICAL SUMMARY for year 2017
+
+
+NAME: Klein Rogahn, M-V, Deutschland                  
+ELEV: 53 meter    LAT: 53-36.36 N    LONG: 011-20.48 E
+
+
+                                       TEMPERATURE (C)
+
+                              HEAT    COOL                              MAX    MAX    MIN    MIN
+          MEAN   MEAN         DEG     DEG                                >=     <=     <=     <=
+ YR  MO   MAX    MIN    MEAN  DAYS    DAYS      HI  DAY     LOW  DAY     30      0      0    -20
+------------------------------------------------------------------------------------------------
+2017 01
+2017 02
+2017 03
+2017 04
+2017 05
+2017 06
+2017 07    4,0   -1,1    0,5   35,9    0,0     7,7   23    -1,1   23      0      0      2      0
+2017 08    0,4   -0,4   -0,5   36,8    0,0     0,4   12    -1,1   12      0      0      1      0
+2017 09
+2017 10    0,4   -1,1   -0,4   18,7    0,0     0,4   27    -1,1   27      0      0      1      0
+2017 11
+2017 12
+------------------------------------------------------------------------------------------------
+           1,8   -0,8    0,0   91,4    0,0     7,7  Jul    -1,1  Okt      0      0      4      0
+
+
+                  PRECIPITATION (mm)
+
+                  MAX         ---DAYS OF RAIN---
+                  OBS.               OVER
+ YR  MO  TOTAL    DAY  DATE   0.30   3.00  30.00
+------------------------------------------------
+2017 01
+2017 02
+2017 03
+2017 04
+2017 05
+2017 06
+2017 07    0,0    0,0    22      0      0      0
+2017 08    0,0    0,0    12      0      0      0
+2017 09
+2017 10    0,0    0,0    27      0      0      0
+2017 11
+2017 12
+------------------------------------------------
+           0,0    0,0   Jul      0      0      0
+
+
+           WIND SPEED (km/h)
+
+                                DOM
+ YR  MO    AVG     HI   DATE    DIR
+-----------------------------------
+2017 01
+2017 02
+2017 03
+2017 04
+2017 05
+2017 06
+2017 07 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2017 08 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2017 09
+2017 10 $month.wind.avg.nolabel($Wind,$NONE) $month.wind.max.nolabel($Wind,$NONE)   $month.wind.maxtime.format($D,$NODAY) $month.wind.vecdir.nolabel($Dir,$NONE) 
+2017 11
+2017 12
+-----------------------------------
+        $year.wind.avg.nolabel($Wind,$NONE) $year.wind.max.nolabel($Wind,$NONE)   $year.wind.maxtime.format($M,$NODAY) $year.wind.vecdir.nolabel($Dir,$NONE)
+

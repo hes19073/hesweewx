@@ -12,18 +12,27 @@ Thanks to Antonio Burriel for the dewpoint, longitude, and radiation fixes.
         station_name = STATION_NAME
 """
 
-import Queue
-import base64
+import re
+import sys
 import syslog
-import urllib
-import urllib2
+import time
+
+# Python 2/3 compatiblity
+try:
+    import Queue as queue                   # python 2
+    from urllib import urlencode            # python 2
+    from urllib2 import Request             # python 2
+except ImportError:
+    import queue                            # python 3
+    from urllib.parse import urlencode      # python 3
+    from urllib.request import Request      # python 3
 
 import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
@@ -78,7 +87,7 @@ class OpenWeatherMap(weewx.restx.StdRESTbase):
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
-        self.archive_queue = Queue.Queue()
+        self.archive_queue = queue.Queue()
         self.archive_thread = OpenWeatherMapThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
 
@@ -109,6 +118,11 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         'dewpoint':   ('dewpoint',    '%.1f', 1.0, 273.15), # K
         'uv':         ('UV',          '%.2f', 1.0, 0.0),    # index
         }
+
+    try:
+        max_integer = sys.maxint    # python 2
+    except AttributeError:
+        max_integer = sys.maxsize # python 3
 
     def __init__(self, queue,
                  username, password, latitude, longitude, altitude,
@@ -146,7 +160,7 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
             loginf("skipping upload")
             return
 
-        req = urllib2.Request(self.server_url, urllib.urlencode(data))
+        req = Request(self.server_url, data)
         req.get_method = lambda: 'POST'
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         b64s = base64.encodestring('%s:%s' % (self.username, self.password)).replace('\n', '')
@@ -165,10 +179,13 @@ class OpenWeatherMapThread(weewx.restx.RESTThread):
         values['alt']  = str(self.altitude) # meter
         for key in self._DATA_MAP:
             rkey = self._DATA_MAP[key][0]
-            if record.has_key(rkey) and record[rkey] is not None:
+            if rkey in record and record[rkey] is not None:
                 v = record[rkey] * self._DATA_MAP[key][2] + self._DATA_MAP[key][3]
                 values[key] = self._DATA_MAP[key][1] % v
 
         logdbg('data: %s' % values)
+
+        values = urlencode(values)
+
         return values
 

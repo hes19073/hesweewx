@@ -10,7 +10,7 @@
    <tr>
     <td class="stats_label">Temperatur<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.outTemp.raw)">$current.outTemp
-     &nbsp;&nbsp; $decorator_text('tempO', $current.outTemp.raw)</td>
+     &nbsp;&nbsp; $decorator_text('tempO', $current.outTemp.raw)&nbsp;&nbsp;&nbsp;($current.outTemp.degree_F)</td>
    </tr>
    <tr>
     #set $deltaT = $current.outTemp.raw - $current.wetBulb.raw
@@ -22,7 +22,7 @@
     <td class="stats_label">scheinbare<br />Temperatur</td>
     <!-- <td class="stats_data"><b>$current.appTemp</b></td> -->
     <td class="stats_data" style="$decorator_color('heattemp', $current.appTemp.raw)">$current.appTemp 
-     &nbsp;&nbsp; $decorator_text('heattemp', $current.appTemp.raw)</td>
+     &nbsp;&nbsp; $decorator_text('heattemp', $current.appTemp.raw)&nbsp;&nbsp;&nbsp;($current.appTemp.degree_F)</td>
    </tr>
    <tr>
     <td class="stats_label">Windchill
@@ -34,7 +34,7 @@
     <br />&nbsp;</td>
     <!-- <td class="stats_data">$current.windchill</td> -->
     <td class="stats_data" style="$decorator_color('chill_C', $current.windchill.raw)">$current.windchill
-     &nbsp;$decorator_text('chill_C', $current.windchill.raw)</td>
+     &nbsp;&nbsp; $decorator_text('chill_C', $current.windchill.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Hitzeindex
@@ -46,7 +46,7 @@
     <br />&nbsp;</td>
     <!-- <td class="stats_data">$current.heatindex</td> -->
     <td class="stats_data" style="$decorator_color('heatindex', $current.heatindex.raw)">$current.heatindex 
-     &nbsp;$decorator_text('heatindex', $current.heatindex.raw)</td>
+     &nbsp;&nbsp; $decorator_text('heatindex', $current.heatindex.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Humidex<br />&nbsp;</td>
@@ -56,12 +56,24 @@
    </tr>
    <tr>
    <td class="stats_label">Taupunkt<br />&nbsp;</td>
-   <td class="stats_data">$current.dewpoint</td>
+   <td class="stats_data">$current.dewpoint&nbsp;&nbsp;&nbsp;($current.dewpoint.degree_F)</td>
    </tr>
    <tr>
     <td class="stats_label">Luftfeuchte<br />&nbsp;</td>
     <td class="stats_data">$current.outHumidity</td>
    </tr>
+#if $current.extraHumid1 is not None
+   <tr>
+    <td class="stats_label">Luftfeuchte<br />Garten</td>
+    <td class="stats_data">$current.extraHumid1</td>
+   </tr>
+#end if
+#if $current.extraHumid2 is not None
+   <tr>
+    <td class="stats_label">Luftfeuchte<br />Carport</td>
+    <td class="stats_data">$current.extraHumid2</td>
+   </tr>
+#end if
    <tr>
     <td class="stats_label">Luftfeuchte<br />absolut&nbsp;</td>
     <td class="stats_data">$current.absolutF</td>
@@ -76,10 +88,10 @@
    </tr>
    <tr>
     <td class="stats_label">Luftdruck<br />&nbsp;</td>
-    <td class="stats_data">$current.barometer</td>
+    <td class="stats_data">$current.barometer&nbsp;&nbsp;&nbsp;($current.barometer.inHg)</td>
    </tr>
    <tr>
-    <td class="stats_label">Luftdruck trend ($trend.time_delta.hour.format("%.0f"))<br />&nbsp;</td>
+    <td class="stats_label">Luftdruck Trend ($trend.time_delta.hour.format("%.0f"))<br />&nbsp;</td>
     <!-- <td class="stats_data">$trend.barometer</td> -->
     <td class="stats_data" style="$decorator_color('barotrend', $trend.barometer.raw)">$trend.barometer
      &nbsp;&nbsp; $decorator_text('barotrend', $trend.barometer.raw)
@@ -95,8 +107,9 @@
     #if $current.windSpeed.raw == 0.0
         <b>&nbsp;Windstill</b>
     #else
-        <b>aus&nbsp;$current.windDir ($current.windDir.ordinal_compass)</b></td>
+        <b>aus&nbsp;$current.windDir ($current.windDir.ordinal_compass)</b>
     #end if
+    </td>
    </tr>
    <tr>
     <td class="stats_label">Wind in Beaufort<br />&nbsp;</td>
@@ -109,8 +122,14 @@
     #if $current.windGust.raw == 0.0
         <b>&nbsp;Windstill</b>
     #else
-        <b>aus&nbsp;$current.windDir ($current.windDir.ordinal_compass)</b></td>
+        <b>aus&nbsp;$current.windGustDir ($current.windGustDir.ordinal_compass)</b>
     #end if
+    </td>
+   </tr>
+   <tr>
+    <td class="stats_label">Böe in Beaufort<br />&nbsp;</td>
+    <td class="stats_data" style="$decorator_color('windBof', $current.windGust.raw)">
+     &nbsp; $decorator_text('windBof', $current.windGust.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Winddruck<br />&nbsp;</td>
@@ -227,7 +246,7 @@
          #set $anteil = 0.0
      #end if
     <td class="stats_label">Globalstrahlung<br />&nbsp;</td>
-    <td class="stats_data">$current.radiation&nbsp;das sind&nbsp;$anteil&nbsp;% vom Maximum)</td>
+    <td class="stats_data">$current.radiation&nbsp;(das sind&nbsp;$anteil&nbsp;% vom Maximum)</td>
    </tr>
    <tr>
     <td class="stats_label">Sonnestunden am Tag<br />Berechnung&nbsp;</td>

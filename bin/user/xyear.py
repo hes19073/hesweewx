@@ -167,3 +167,80 @@ class xMyFeier(SearchList):
 
         return [search_list_extension]
 
+class xSternzeit(SearchList):
+    """calc sternzeit for year"""
+    def __init__(self, generator):
+        SearchList.__init__(self, generator)
+
+    def get_extension_list(self, timespan, db_lookup):
+
+        now = datetime.utcnow()
+        year = now.year
+        month = now.month
+        day = now.day
+        utc = now.hour + now.minute / 60 + now.second / 3600
+        long = 53.605963
+
+        def JulianDate(year, month, day, utc=0):
+            """
+            Returns the Julian date, number of days since 1 January 4713 BC 12:00.
+            utc is UTC in decimal hours. If utc=0, returns the date at 12:00 UTC.
+            """
+            if month > 2:
+                y = year
+                m = month
+            else:
+                y = year - 1
+                m = month + 12
+                d = day
+                h = utc / 24
+
+            if year <= 1582 and month <= 10 and day <= 4:
+                # Julian calendar
+                b = 0
+            elif year == 1582 and month == 10 and day > 4 and day < 15:
+                # Gregorian calendar reform: 10 days (5 to 14 October 1582) were skipped.
+                # In 1582 after 4 October follows the 15 October.
+                d = 15
+                b = -10
+            else:
+                # Gregorian Calendar
+                a = int(y / 100)
+                b = 2 - a + int(a / 4)
+
+            jd = int(365.25 * (y + 4716)) + int(30.6001 *(m + 1)) + d + h + b - 1524.5
+
+            return(jd)
+
+        def SiderialTime(year, month, day, utc=0, long=0):
+            """
+            Returns the siderial time in decimal hours. Longitude (long) is in decimal degrees.
+            If long=0, return value is Greenwich Mean Siderial Time (GMST).
+            """
+            jd = JulianDate(year, month, day)
+            t = (jd - 2451545.0) / 36525
+            # Greenwich siderial time at 0h UTC (hours)
+            st = (24110.54841 + 8640184.812866 * t + 0.093104 * t **2 - 0.0000062 * t **3) / 3600
+            # Greenwich siderial time at given UTC
+            st = st + 1.00273790935 * utc
+            # Local siderial time at given UTC (longitude in degrees)
+            st = st + long / 15
+            st = st % 24
+
+            return(st)
+
+        jd     = JulianDate(year, month, day)
+        jd_utc = JulianDate(year, month, day, utc)
+        gmst   = SiderialTime(year, month, day, utc, 0)
+        lmst   = SiderialTime(year, month, day, utc, long)
+
+
+        search_list_extension = {'jd00': jd,
+                                 'jdutc' : jd_utc,
+                                 'gmst' : gmst,
+                                 'lmst' : lmst,
+                                 'utc00' : utc,
+                                }
+
+        return [search_list_extension]
+

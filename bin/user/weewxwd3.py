@@ -303,7 +303,7 @@ davis_fr_dict= {
         190 : 'Teils wolkig mit geringer Temperaturänderung.',
         191 : 'Meist heiter mit geringer Temperaturänderung.',
         192 : 'Meist wolkig und kälter. Niederschlag möglich innerhalb 12 Stunden, zeitweise heftig. Windig.',
-        193 : 'FORECAST REQUIRES 3 HOURS OF RECENT DATA',
+        193 : 'PROGNOSE ERFORDERT 3 STUNDEN AKTUELLE DATEN',
         194 : 'Meist heiter und kälter.',
         195 : 'Meist heiter und kälter.',
         196 : 'Meist heiter und kälter.',
@@ -822,7 +822,7 @@ class WdSuppArchive(weewx.engine.StdService):
         if 'stormStart' in self.loop_packet:
             _data['stormStart'] = self.loop_packet['stormStart']
         # theoretical solar radiation value
-        _data['maxSolarRad'] = self.loop_packet['maxSolarRad']
+        #_data['maxSolarRad'] = self.loop_packet['maxSolarRad']
         return _data
 
     @staticmethod
@@ -923,10 +923,10 @@ class WdSuppArchive(weewx.engine.StdService):
                 self.loop_packet['stormStart'] = event.packet['stormStart']
             else:
                 self.loop_packet['stormStart'] = None
-            if 'maxSolarRad' in event.packet:
-                self.loop_packet['maxSolarRad'] = event.packet['maxSolarRad']
-            else:
-                self.loop_packet['maxSolarRad'] = None
+            #if 'maxSolarRad' in event.packet:
+            #    self.loop_packet['maxSolarRad'] = event.packet['maxSolarRad']
+            #else:
+            #    self.loop_packet['maxSolarRad'] = None
         except:
             loginf("WdSuppArchive:", "new_loop_packet: Loop packet data error. Cannot decode packet: %s" % (e, ))
 

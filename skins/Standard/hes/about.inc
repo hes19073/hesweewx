@@ -56,7 +56,7 @@
     </tr>
     <tr>
      <td class="label">Python</td>
-     <td class="label">$weePython</td>
+     <td class="label" bgcolor="red">$weePython</td>
     </tr>
     <tr>
       <td class="label">Platform</td>
@@ -72,7 +72,7 @@
     </tr>
     <tr>
       <td class="label">Forecast:</td>
-      <td class="data">3.2.14</td>
+      <td class="data">3.3.0</td>
     </tr>
     <tr>
       <td class="label">ComputerMonitor</td>
@@ -81,6 +81,10 @@
     <tr>
       <td class="label">OWFS version:</td>
       <td class="data">0.20</td>
+    </tr>
+    <tr>
+      <td class="label">AS3935 Service:</td>
+      <td class="data">as3935-0.6</td>
     </tr>
     <tr>
       <td class="label">Astro version:</td>
@@ -92,11 +96,11 @@
     </tr>
     <tr>
       <td class="label">windfinder:</td>
-      <td class="data">0.8</td>
+      <td class="data">0.9</td>
     </tr>
     <tr>
       <td class="label">wetter:</td>
-      <td class="data">0.2</td>
+      <td class="data">0.5</td>
     </tr>
     <tr>
       <td class="label">wcloud:</td>
@@ -106,10 +110,10 @@
       <td class="label">snowhes:</td>
       <td class="data">0.2</td>
     </tr>
-    <tr>
+    <!-- <tr>
       <td class="label">DWD Pollen</td>
       <td class="data">0.3</td>
-    </tr>
+    </tr> -->
     <tr>
       <td class="label">DWD Vorschau</td>
       <td class="data">0.5</td>

@@ -1,7 +1,8 @@
 #errorCatcher Echo
+#encoding UTF-8
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
 ## $Id: indexAir.html.tmpl 743 2013-12-22 23:24:18Z mwall $
-#encoding UTF-8
+
 <!DOCTYPE html>
 <html lang="de">
   <head>
@@ -38,61 +39,14 @@
 
  <div id='hes11'>
 
-   #include $Extras.header
-   #include $Extras.cwarn
-#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
-
-#set $summary = $forecast.weather_summary('WU')
-
-#set $dd = $forecast.label('Weather', $summary.windDir)
-#set $wind_text = $windT_dir_dict.get($dd)
+#include $Extras.header
+#include $Extras.cwarn
 
 <section>
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
-     <!-- <div id='popupanchor' style='position:absolute; left:350px; top:80px;'></div> -->
 
-<div class='hes'>
-  <div class='hesbox'>
-   <table class="hes_prog">
-    <tr>
-     <td class='hes1_wol'>
-   #if $summary.clouds is not None
-       #set $simg = 'xicons/' + $summary.clouds + '.png'
-          <a href='forecastT.html'><img src='$simg' alt='$summary.clouds' title='$forecast.label('Weather', $summary.clouds)' /></a>
-   #end if
-     </td>
-     <td class='hes1_wol'>
-   #for $k in $summary.precip
-        #set $precip_img = 'xicons/' + $k + '.png'
-           <img class='precip-img' src='$precip_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-   #end for
-     </td>
-     <td class='hes1_wol'>
-   #for $k in $summary.obvis
-        #set $obvis_img = 'xicons/' + $k + '.png'
-            <img class='obvis-img' src='$obvis_img' alt='$k' title='$forecast.label('Weather', $k)' /><br/>
-   #end for
-     </td>
-    </tr>
-   </table>
-   <b>Zambretti:</b> $forecast.label('Zambretti', $forecast.zambretti.code)<br />
-       Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts)
-   <hr />      
-   <p><b>Weather Underground:</b>
-    Der Himmel&nbsp;$forecast.label('Weather', $summary.clouds).&nbsp;
-    Wind aus<b>&nbsp;$wind_text&nbsp;</b>mit einer Geschwindigkeit von&nbsp;$forecast.label('Weather', $summary.windSpeed).&nbsp;
-    Die Tagestemperatur zwischen&nbsp;$forecast.label('Weather', $summary.tempMin)&nbsp; und&nbsp;
-    $forecast.label('Weather', $summary.tempMax).&nbsp;
-    Luftfeuchtigkeit von ca.&nbsp;$forecast.label('Weather', $summary.humidity).&nbsp;
-   </p>
-   <hr />
-   <p><b>VantagePro2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
-   <hr />
-   <p>Wetter-Cam Blick SW</p>
-     <img src="xicons/wet/snapshot.jpg" alt="Wetterstation" style="width:300px; height:175px;" />
-  </div>
-</div> <!-- ende Prognose -->
+#include "links_forecast.inc"
 
 #if $day($data_binding='air_binding').air_sensor.has_data
   <div class="hes">
@@ -106,7 +60,10 @@
     <tr>
     <td class='hes1_bigval' colspan='3'>
         <a href='dayAir.png' class='popup'>$latest($data_binding='air_binding').air_sensor</a></td>
-   #if $trend($data_binding='air_binding').air_sensor.raw < 0
+    #if $trend($data_binding='air_binding').air_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').air_sensor.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').air_sensor</td>
    #elif $trend($data_binding='air_binding').air_sensor.raw == 0
@@ -133,22 +90,25 @@
     </tr>
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
-    #if $day($data_binding='air_binding').air_sensor.avg.raw <= 50
+    #if $day($data_binding='air_binding').air_sensor.avg.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw <= 50
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
-    #else if $day($data_binding='air_binding').air_sensor.avg.raw > 50 and $day($data_binding='air_binding').air_sensor.avg.raw <= 100
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw > 50 and $day($data_binding='air_binding').air_sensor.avg.raw <= 100
       <td class='hes1_winbo' colspan='3' style="background-color: yellow">Mittel</td>
       <td class='hes1_m' colspan='2' style="background-color: yellow">
-    #else if $day($data_binding='air_binding').air_sensor.avg.raw > 100 and $day($data_binding='air_binding').air_sensor.avg.raw <= 150
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw > 100 and $day($data_binding='air_binding').air_sensor.avg.raw <= 150
       <td class='hes1_winbo' colspan='3' style="background-color: orange">Sensibel</td>
       <td class='hes1_m' colspan='2' style="background-color: orange">
-    #else if $day($data_binding='air_binding').air_sensor.avg.raw > 150 and $day($data_binding='air_binding').air_sensor.avg.raw <= 200
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw > 150 and $day($data_binding='air_binding').air_sensor.avg.raw <= 200
       <td class='hes1_winbo' colspan='3' style="background-color: red">Ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='air_binding').air_sensor.avg.raw > 200 and $day($data_binding='air_binding').air_sensor.avg.raw <= 300
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw > 200 and $day($data_binding='air_binding').air_sensor.avg.raw <= 300
       <td class='hes1_winbo' colspan='3' style="background-color: red">sehr ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='air_binding').air_sensor.avg.raw > 300
+    #elif $day($data_binding='air_binding').air_sensor.avg.raw > 300
       <td class='hes1_winbo' colspan='3' style="background-color: maroon">Gefährlich</td>
       <td class='hes1_m' colspan='2' style="background-color: maroon">
     #end if
@@ -192,7 +152,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayGas.png' class='popup'>
           $latest($data_binding='air_binding').gas_sensor</a></td>
-   #if $trend($data_binding='air_binding').gas_sensor.raw < 0
+    #if $trend($data_binding='air_binding').gas_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').gas_sensor.raw < 0
        <td class="hes1_trendlo"> &#8681;</td>
        <td class='hes1_vallo'>$trend($data_binding='air_binding').gas_sensor</td>
    #elif $trend($data_binding='air_binding').gas_sensor.raw == 0
@@ -280,7 +243,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayHCHO.png' class='popup'>
          $latest($data_binding='air_binding').hcho_sensor</a></td>
-   #if $trend($data_binding='air_binding').hcho_sensor.raw < 0
+    #if $trend($data_binding='air_binding').hcho_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').hcho_sensor.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').hcho_sensor</td>
    #elif $trend($data_binding='air_binding').hcho_sensor.raw == 0
@@ -366,7 +332,10 @@
     <tr>
       <td class='hes1_bigval' colspan='3'><a href='daygasC.png' class='popup'>
             $latest($data_binding='air_binding').gasC_sensor</a></td>
-   #if $trend($data_binding='air_binding').gasC_sensor.raw < 0
+    #if $trend($data_binding='air_binding').gasC_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').gasC_sensor.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').gasC_sensor</td>
    #elif $trend($data_binding='air_binding').gasC_sensor.raw == 0
@@ -452,7 +421,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daygasO.png' class='popup'>
              $latest($data_binding='air_binding').gasO_sensor</a></td>
-   #if $trend($data_binding='air_binding').gasO_sensor.raw < 0
+    #if $trend($data_binding='air_binding').gasO_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').gasO_sensor.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').gasO_sensor</td>
    #elif $trend($data_binding='air_binding').gasO_sensor.raw == 0
@@ -496,7 +468,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='daygasN.png' class='popup'>
             $latest($data_binding='air_binding').gasN_sensor</a></td>
-   #if $trend($data_binding='air_binding').gasN_sensor.raw < 0
+    #if $trend($data_binding='air_binding').gasN_sensor.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').gasN_sensor.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').gasN_sensor</td>
    #elif $trend($data_binding='air_binding').gasN_sensor.raw == 0
@@ -583,7 +558,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayPM25.png' class='popup'>
             $latest($data_binding='air2_binding').pm_25</a></td>
-   #if $trend($data_binding='air2_binding').pm_25.raw < 0
+    #if $trend($data_binding='air2_binding').pm_25.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air2_binding').pm_25.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air2_binding').pm_25</td>
    #elif $trend($data_binding='air2_binding').pm_25.raw == 0
@@ -669,7 +647,10 @@
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayPM10.png' class='popup'>
             $latest($data_binding='air2_binding').pm_10</a></td>
-   #if $trend($data_binding='air2_binding').pm_10.raw < 0
+    #if $trend($data_binding='air2_binding').pm_10.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air2_binding').pm_10.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air2_binding').pm_10</td>
    #elif $trend($data_binding='air2_binding').pm_10.raw == 0
@@ -745,6 +726,8 @@
  </div><!-- ende gas_sensor -->
 #end if
 
+#include 'pollen.inc'
+
 #if $day($data_binding='air_binding').sound.has_data
  <div class="hes">
   <div class='hesbox'>
@@ -753,10 +736,12 @@
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
-     <td class='hes1_bigval' colspan='2' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">
-     <td><a href='daysound.png' class='popup'>
-             $latest($data_binding='air_binding').sound.format("%.1f")</a></td>
-   #if $trend($data_binding='air_binding').sound.raw < 0
+     <td class='hes1_bigval' colspan='3'><a href='daySound.png' class='popup'>
+             $latest($data_binding='air_binding').sound.formatted</a></td>
+    #if $trend($data_binding='air_binding').sound.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').sound.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
       <td class='hes1_vallo'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
    #elif $trend($data_binding='air_binding').sound.raw == 0
@@ -782,7 +767,8 @@
      <td class='hes1_vallo'>$yesterday($data_binding='air_binding').sound.min.format("%.1f")</td>
     </tr>
     <tr>
-    <td colspan='5' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">Tagesmittelwert:&nbsp;$day($data_binding='air_binding').sound.avg.format("%.2f")</td>
+    <td colspan='5' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">
+            Tagesmittelwert:&nbsp;$day($data_binding='air_binding').sound.avg.format("%.2f")</td>
     </tr>
    </table>
   </div>
@@ -790,104 +776,44 @@
 #end if
 <!-- ende sound -->
 
-#if $current.dateTime.format("%m") > 2 and $current.dateTime.format("%m") < 9
 <div class="hes">
- <div class='hesbox'>
-  <h3>Pollenvorhersage /Quelle: DWD</h3>
-   <p>erstellt: $latest($data_binding='dwd_binding').up_date.raw UTC<br />
-   gültig bis: $latest($data_binding='dwd_binding').next_date.raw UTC<br />
-   <br />für: $latest($data_binding='dwd_binding').region.raw</p><hr />
- <table>
-  <thead><tr><th>Pollenart</th><th>Heute</th><th>Morgen</th></tr></thead>
-  <tr><td>Hasel</td>
-     <td>$latest($data_binding='dwd_binding')hasel_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')hasel_m.raw</td></tr>
-  <tr><td>Erle </td>
-     <td>$latest($data_binding='dwd_binding')erle_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')erle_m.raw</td></tr>
-  <tr><td>Esche</td>
-     <td>$latest($data_binding='dwd_binding')esche_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')esche_m.raw</td></tr>
-  <tr><td>Birke</td>
-     <td>$latest($data_binding='dwd_binding')birke_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')birke_m.raw</td></tr>
-  <tr><td>Gräser</td>
-     <td>$latest($data_binding='dwd_binding')graeser_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')graeser_m.raw</td></tr>
-  <tr><td>Roggen</td>
-     <td>$latest($data_binding='dwd_binding')roggen_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')roggen_m.raw</td></tr>
-  <tr><td>Beifuss</td>
-     <td>$latest($data_binding='dwd_binding')beifuss_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')beifuss_m.raw</td></tr>
-  <tr><td>Ambrosia</td>
-     <td>$latest($data_binding='dwd_binding')ambrosia_h.raw</td>
-     <td>$latest($data_binding='dwd_binding')ambrosia_m.raw</td></tr>
- </table>
- </div>
-</div> <!-- end pollen -->
-  <div class="hes">
-  <div class='hesbox'>
-   <h3>Deutscher Wetterdienst </h3><p> -Medizin-Meteorologie-</p>
-    <ul>
-     <li>Pollen Legende</li>
-     <li><b>0</b> keine Belastung</li>
-     <li><b>0-1</b> keine bis geringe Belastung</li>
-     <li><b>1</b>  geringe Belastung</li>
-     <li><b>1-2</b>  geringe bis mittlere Belastung</li>
-     <li><b>2</b>  mittlere Belastung</li>
-     <li><b>2-3</b>  mittlere bis hohe Belastung</li>
-     <li><b>3</b>  hohe Belastung</li>
-     <li>Quelle: DWD</li>
-  </ul>
- </div>
-</div> <!-- end pollen -->
-#end if
-
-  <div class="hes">
   <div class='hesbox'>
    <table class='hes_lufe'>
     <tr>
      <td class='hes1_kopfa'>Blitz-Sensor<br />&nbsp;</td>
-     <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class="hes1_kopf" colspan="2">Trend</td>
+     <td class='hes1_kopf' colspan='2'>Entfernung</td>
+     <td class="hes1_kopf" colspan="2">Uhrzeit</td>
     </tr>
     <tr>
      <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>
               $latest($data_binding='lightning_binding').distance</a></td>
-    #if $trend($data_binding='lightning_binding').distance.raw < 0
      <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_vallo'>$trend($data_binding='lightning_binding').distance</td>
-    #else
-     <td class="hes1_trendhi"> &#8679;</td>
-     <td class='hes1_valhi'>$trend($data_binding='lightning_binding').distance</td>
-    #end if
+     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M") Uhr</td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Letzter<br />Blitz</td>
-     <td class='hes1_m'>um</td>
+     <td class='hes1_m'>am</td>
      <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</td>
-     <td class="hes1_m">am</span></td>
+     <td class="hes1_m">um</span></td>
      <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
      <td class='hes1_m'>Tag</td>
      <td class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-     <td class="hes1_m">6 h</td>
-     <td class='hes1_vallo'>$hour($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Woche</td>
+     <td class='hes1_vallo'>$week($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td class='hes1_m'>Monat</td>
+     <td class='hes1_valhi'>$month($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Jahr</td>
+     <td class='hes1_vallo'>$year($data_binding='lightning_binding').distance.count.format('%.0f')</td>
     </tr>
    </table>
   </div>
 </div> <!-- ende Blitz-Sensor -->
-
-<div class="hes">
- <div class='hesbox'>
-  <h3>ISS-Überflug</h3>
-  <a href="http://www.heavens-above.com/">
-  <img src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=300&height=300&satid=25544" width="250" height="250" alt="WetterWarn" /></a>
- </div>
-</div> <!-- end iss Flug -->
 
 <div class="hes">
  <div class='hesbox'>
