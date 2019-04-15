@@ -48,32 +48,21 @@
 #         in_humid = inHumidity
 
 from __future__ import with_statement
-import syslog
 import time
 
 import weewx.drivers
+from weeutil.log import logdbg, loginf, logerr
 
 DRIVER_NAME = 'FileParse'
 DRIVER_VERSION = "0.6"
 
-def logmsg(dst, msg):
-    syslog.syslog(dst, 'fileparse: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 def _get_as_float(d, s):
     v = None
     if s in d:
         try:
             v = float(d[s])
-        except ValueError, e:
+        except ValueError as e:
             logerr("cannot read value for '%s': %s" % (s, e))
     return v
 
@@ -106,7 +95,7 @@ class FileParseDriver(weewx.drivers.AbstractDevice):
                         name = line[:eq_index].strip()
                         value = line[eq_index + 1:].strip()
                         data[name] = value
-            except Exception, e:
+            except Exception as e:
                 logerr("read failed: %s" % e)
 
             # map the data into a weewx loop packet

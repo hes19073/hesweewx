@@ -31,30 +31,17 @@ Add the following to weewx.conf:
 """
 
 import os
-import platform
 import re
-import syslog
 import time
 from subprocess import Popen, PIPE
 
 import weewx
 import weedb
 import weeutil.weeutil
+from weeutil.log import logdbg, loginf, logerr
 from weewx.engine import StdService
 
 VERSION = "0.4"
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'pmon: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 schema = [
     ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
@@ -139,7 +126,7 @@ class ProcessMonitor(StdService):
                     if m:
                         record['mem_vsz'] = int(m.group(1))
                         record['mem_rss'] = int(m.group(2))
-        except (ValueError, IOError, KeyError), e:
+        except (ValueError, IOError, KeyError) as e:
             logerr('apcups_info failed: %s' % e)
         return record
 

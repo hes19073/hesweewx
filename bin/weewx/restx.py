@@ -45,7 +45,7 @@ should only have to implement a few functions. In particular,
    'stale', then the post is skipped. Second, it will not allow posts more
    often than 'post_interval'. Both of these can be set in the constructor of
    RESTThread.
-   
+
  - post_request(self, request, data). This function takes a urllib.request.Request object
    and is responsible for performing the HTTP GET or POST. The default version
    simply uses urllib.request.urlopen(request) and returns the result. If the post
@@ -61,10 +61,20 @@ should only have to implement a few functions. In particular,
    
 In unusual cases, you might also have to implement the following:
   
- - process_record(). The default version is for HTTP GET posts, but if you wish
-   to do a POST or use a socket, you may need to provide a specialized version.
-   See the CWOP version, CWOPThread.process_record(), for an example that
-   uses sockets. 
+ - get_request(self, url). The default version of this function creates
+   an urllib.request.Request object from the url, adds a 'User-Agent' header,
+   then returns it. You may need to override this function if you need to add
+   other headers, such as "Authorization" header.
+
+ - get_post_body(self, record). Override this function if you want to do an HTTP
+   POST (instead of GET). It should return a tuple. First element is the body
+   of the POST, the second element is the type of the body. An example would
+   be (json.dumps({'city' : 'Sacramento'}), 'application/json').
+
+ - process_record(self, record, dbmanager). The default version is designed
+   to handle HTTP GET and POST. However, if your uploader uses some other
+   protocol, you may need to override this function. See the CWOP version,
+   CWOPThread.process_record(), for an example that uses sockets.
 
 See the file restful.md in the "tests" subdirectory for known behaviors
 of various RESTful services.
@@ -74,7 +84,6 @@ of various RESTful services.
 from __future__ import absolute_import
 
 import datetime
-import hashlib
 import platform
 import re
 import socket
@@ -97,8 +106,9 @@ from weeutil.weeutil import to_int, to_float, to_bool, timestamp_to_string, sear
     accumulateLeaves, to_sorted_string
 from weeutil.log import logdbg, logerr, loginf, logcrt, logalt
 
+
 class FailedPost(IOError):
-    """Raised when a post does not succeed."""
+    """Raised when a post fails, and is unlikely to succeed if retried."""
 
 
 class AbortedPost(Exception):
@@ -156,7 +166,7 @@ class RESTThread(threading.Thread):
     
     Offers a few bits of common functionality."""
 
-    def __init__(self, queue, protocol_name,
+    def __init__(self, q, protocol_name,
                  essentials={},
                  manager_dict=None,
                  post_interval=None, max_backlog=six.MAXSIZE, stale=None,
@@ -167,7 +177,7 @@ class RESTThread(threading.Thread):
         """Initializer for the class RESTThread
         Required parameters:
 
-          queue: An instance of queue.Queue where the records will appear.
+          q: An instance of queue.Queue where the records will appear.
 
           protocol_name: A string holding the name of the protocol.
           
@@ -218,7 +228,7 @@ class RESTThread(threading.Thread):
         threading.Thread.__init__(self, name=protocol_name)
         self.setDaemon(True)
 
-        self.queue = queue
+        self.queue = q
         self.protocol_name = protocol_name
         self.essentials = essentials
         self.manager_dict = manager_dict
@@ -359,7 +369,7 @@ class RESTThread(threading.Thread):
             except AbortedPost as e:
                 if self.log_success:
                     _time_str = timestamp_to_string(_record['dateTime'])
-                    loginf("%s: Skipped record %s: %s" %  (self.protocol_name, _time_str, e))
+                    loginf("%s: Skipped record %s: %s" % (self.protocol_name, _time_str, e))
             except BadLogin:
                 if self.retry_login:
                     logerr("%s: Bad login; waiting %s minutes then retrying"
@@ -547,6 +557,8 @@ class RESTThread(threading.Thread):
         """
         return None
 
+    def format_url(self, _):
+        raise NotImplementedError
 
 # ==============================================================================
 #                    Ambient protocols
@@ -702,7 +714,7 @@ class StdPWSWeather(StdRESTful):
                                             **_ambient_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("PWSWeather: Data for station %s will be posted" %_ambient_dict['station'])
+        loginf("PWSWeather: Data for station %s will be posted" % _ambient_dict['station'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -753,7 +765,7 @@ class AmbientThread(RESTThread):
        """
 
     def __init__(self,
-                 queue,
+                 q,
                  manager_dict,
                  station, password, server_url,
                  post_indoor_observations=False,
@@ -777,7 +789,7 @@ class AmbientThread(RESTThread):
           
           server_url: An url where the server for this protocol can be found.
         """
-        super(AmbientThread, self).__init__(queue,
+        super(AmbientThread, self).__init__(q,
                                             protocol_name=protocol_name,
                                             essentials=essentials,
                                             manager_dict=manager_dict,
@@ -885,7 +897,7 @@ class AmbientThread(RESTThread):
 class AmbientLoopThread(AmbientThread):
     """Version used for the Rapidfire protocol."""
 
-    def __init__(self, queue, manager_dict,
+    def __init__(self, q, manager_dict,
                  station, password, server_url,
                  protocol_name="Unknown-Ambient",
                  essentials={},
@@ -899,7 +911,7 @@ class AmbientLoopThread(AmbientThread):
           
           rtfreq: Frequency of update in seconds for RapidFire
         """
-        super(AmbientLoopThread, self).__init__(queue,
+        super(AmbientLoopThread, self).__init__(q,
                                                 station=station,
                                                 password=password,
                                                 server_url=server_url,
@@ -1056,7 +1068,7 @@ class CWOPThread(RESTThread):
     """Concrete class for threads posting from the archive queue,
     using the CWOP protocol."""
 
-    def __init__(self, queue, manager_dict,
+    def __init__(self, q, manager_dict,
                  station, passcode, latitude, longitude, station_type,
                  server_list=StdCWOP.default_servers,
                  post_interval=600, max_backlog=six.MAXSIZE, stale=600,
@@ -1091,7 +1103,7 @@ class CWOPThread(RESTThread):
           Default is 60 (one minute).
         """
         # Initialize my superclass
-        super(CWOPThread, self).__init__(queue,
+        super(CWOPThread, self).__init__(q,
                                          protocol_name="CWOP",
                                          manager_dict=manager_dict,
                                          post_interval=post_interval,
@@ -1350,7 +1362,7 @@ class StdStationRegistry(StdRESTful):
 class StationRegistryThread(RESTThread):
     """Concrete threaded class for posting to the weewx station registry."""
 
-    def __init__(self, queue, station_url, latitude, longitude,
+    def __init__(self, q, station_url, latitude, longitude,
                  server_url=StdStationRegistry.archive_url,
                  description="Unknown",
                  station_type="Unknown", station_model="Unknown",
@@ -1389,7 +1401,7 @@ class StationRegistryThread(RESTThread):
         """
 
         super(StationRegistryThread, self).__init__(
-            queue,
+            q,
             protocol_name='StationRegistry',
             post_interval=post_interval,
             max_backlog=max_backlog,
@@ -1408,17 +1420,18 @@ class StationRegistryThread(RESTThread):
         self.station_model = station_model
 
     def get_record(self, dummy_record, dummy_archive):
-        _record = dict()
-        _record['station_url'] = self.station_url
-        _record['description'] = self.description
-        _record['latitude'] = self.latitude
-        _record['longitude'] = self.longitude
-        _record['station_type'] = self.station_type
-        _record['station_model'] = self.station_model
-        _record['python_info'] = platform.python_version()
-        _record['platform_info'] = platform.platform()
-        _record['weewx_info'] = weewx.__version__
-        _record['usUnits'] = weewx.US
+        _record = {
+            'station_url'   : self.station_url,
+            'description'   : self.description,
+            'latitude'      : self.latitude,
+            'longitude'     : self.longitude,
+            'station_type'  : self.station_type,
+            'station_model' : self.station_model,
+            'python_info'   : platform.python_version(),
+            'platform_info' :  platform.platform(),
+            'weewx_info'    : weewx.__version__,
+            'usUnits'       : weewx.US,
+        }
         return _record
 
     _FORMATS = {'station_url'  : 'station_url=%s',
@@ -1537,8 +1550,7 @@ class StdAWEKAS(StdRESTful):
     def __init__(self, engine, config_dict):
         super(StdAWEKAS, self).__init__(engine, config_dict)
 
-        site_dict = get_site_dict(
-            config_dict, 'AWEKAS', 'username', 'password')
+        site_dict = get_site_dict(config_dict, 'AWEKAS', 'username', 'password')
         if site_dict is None:
             return
 
@@ -1578,12 +1590,12 @@ class AWEKASThread(RESTThread):
                 'UV'         : '%.2f',
                 'rainRate'   : '%.2f'}
 
-    def __init__(self, queue, username, password, latitude, longitude,
+    def __init__(self, q, username, password, latitude, longitude,
                  manager_dict,
                  language='de', server_url=_SERVER_URL,
                  post_interval=300, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=60, max_tries=3, retry_wait=5, retry_login=3600, skip_upload=False):
+                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, skip_upload=False):
         """Initialize an instances of AWEKASThread.
 
         Parameters specific to this class:
@@ -1614,7 +1626,8 @@ class AWEKASThread(RESTThread):
           that uploads happen no more often than 5 minutes, so this should be
           set to no less than 300. Default is 300
         """
-        super(AWEKASThread, self).__init__(queue,
+        import hashlib
+        super(AWEKASThread, self).__init__(q,
                                            protocol_name='AWEKAS',
                                            manager_dict=manager_dict,
                                            post_interval=post_interval,
@@ -1628,7 +1641,10 @@ class AWEKASThread(RESTThread):
                                            retry_login=retry_login,
                                            skip_upload=skip_upload)
         self.username = username
-        self.password = password
+        # Calculate and save the password hash
+        m = hashlib.md5()
+        m.update(password.encode('utf-8'))
+        self.password_hash = m.hexdigest()
         self.latitude = float(latitude)
         self.longitude = float(longitude)
         self.language = language
@@ -1636,91 +1652,77 @@ class AWEKASThread(RESTThread):
 
     def get_record(self, record, dbmanager):
         """Ensure that rainRate is in the record."""
-        # Get the record from my superclass
-        r = super(AWEKASThread, self).get_record(record, dbmanager)
+        # Have my superclass process the record first.
+        record = super(AWEKASThread, self).get_record(record, dbmanager)
 
+        # No need to do anything if rainRate is already in the record
+        if 'rainRate' in record:
+            return record
+
+        # If we don't have a database, we can't do anything
         if dbmanager is None:
-            # If we don't have a database, we can't do anything
             if self.log_failure:
-                loginf("AWEKAS: No database specified. Augmentation from database skipped.")
-            return r
+                logdbg("AWEKAS: No database specified. Augmentation from database skipped.")
+            return record
 
-        # If rain rate is already available, return the record
-        if 'rainRate' in r:
-            return r
-
-        # Otherwise, augment with rainRate, which AWEKAS expects. If the
-        # archive does not have rainRate, an exception will be raised.
+        # If the database does not have rainRate in its schema, an exception will be raised.
         # Be prepare to catch it.
         try:
             rr = dbmanager.getSql('select rainRate from %s where dateTime=?' %
-                                  dbmanager.table_name, (r['dateTime'],))
+                                  dbmanager.table_name, (record['dateTime'],))
         except weedb.OperationalError:
             pass
         else:
-            r['rainRate'] = rr[0]
-        return r
+            # If there is no record with the timestamp, None will be returned.
+            # In theory, this shouldn't happen, but check just in case:
+            if rr:
+                record['rainRate'] = rr[0]
 
-    def process_record(self, record, dbmanager):
-        r = self.get_record(record, dbmanager)
-        url = self.get_url(r)
-        if self.skip_upload:
-            raise AbortedPost("Skip post")
-        req = urllib.request.Request(url)
-        req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
-        self.post_with_retries(req)
+        return record
 
-    def check_response(self, response):
-        for line in response:
-            if line.startswith(b"Benutzer/Passwort Fehler"):
-                raise BadLogin(line)
-            elif not line.startswith(b'OK'):
-                raise FailedPost("server returned '%s'" % line)
-
-    def get_url(self, in_record):
+    def format_url(self, in_record):
+        """Specialized version of format_url() for the AWEKAS protocol."""
 
         # Convert to units required by awekas
-        record = weewx.units.to_METRIC(in_record)
-        if 'dayRain' in record and record['dayRain'] is not None:
-            record['dayRain'] *= 10
-        if 'rainRate' in record and record['rainRate'] is not None:
-            record['rainRate'] *= 10
+        record = weewx.units.to_METRICWX(in_record)
 
-        # assemble an array of values in the proper order
-        values = [self.username]
-        m = hashlib.md5()
-        m.update(self.password)
-        values.append(m.hexdigest())
         time_tt = time.gmtime(record['dateTime'])
-        values.append(time.strftime("%d.%m.%Y", time_tt))
-        values.append(time.strftime("%H:%M", time_tt))
-        values.append(self._format(record, 'outTemp'))  # C
-        values.append(self._format(record, 'outHumidity'))  # %
-        values.append(self._format(record, 'barometer'))  # mbar
-        values.append(self._format(record, 'dayRain'))  # mm
-        values.append(self._format(record, 'windSpeed'))  # km/h
-        values.append(self._format(record, 'windDir'))
-        values.append('')  # weather condition
-        values.append('')  # warning text
-        values.append('')  # snow high
-        values.append(self.language)
-        values.append('')  # tendency
-        values.append(self._format(record, 'windGust'))  # km/h
-        values.append(self._format(record, 'radiation'))  # W/m^2
-        values.append(self._format(record, 'UV'))  # uv index
-        values.append('')  # brightness in lux
-        values.append('')  # sunshine hours
-        values.append('')  # soil temperature
-        values.append(self._format(record, 'rainRate'))  # mm/h
-        values.append('weewx_%s' % weewx.__version__)
-        values.append(str(self.longitude))
-        values.append(str(self.latitude))
+        # assemble an array of values in the proper order
+        values = [
+            self.username,
+            self.password_hash,
+            time.strftime("%d.%m.%Y", time_tt),
+            time.strftime("%H:%M", time_tt),
+            self._format(record, 'outTemp'),  # C
+            self._format(record, 'outHumidity'),  # %
+            self._format(record, 'barometer'),  # mbar
+            self._format(record, 'dayRain'),  # mm
+            self._format(record, 'windSpeed'),  # km/h
+            self._format(record, 'windDir'),
+            '',  # weather condition
+            '',  # warning text
+            '',  # snow high
+            self.language,
+            '',  # tendency
+            self._format(record, 'windGust'),  # km/h
+            self._format(record, 'radiation'),  # W/m^2
+            self._format(record, 'UV'),  # uv index
+            '',  # brightness in lux
+            '',  # sunshine hours
+            '',  # soil temperature
+            self._format(record, 'rainRate'),  # mm/h
+            'weewx_%s' % weewx.__version__,
+            str(self.longitude),
+            str(self.latitude),
+        ]
 
         valstr = ';'.join(values)
         url = self.server_url + '?val=' + valstr
-        # show the url in the logs for debug, but mask any credentials
+
         if weewx.debug >= 2:
-            logdbg('AWEKAS: url: %s' % re.sub(m.hexdigest(), "XXX", url))
+            # show the url in the logs for debug, but mask any credentials
+            logdbg('AWEKAS: url: %s' % url.replace(self.password_hash, 'XXX'))
+
         return url
 
     def _format(self, record, label):
@@ -1729,6 +1731,19 @@ class AWEKASThread(RESTThread):
                 return self._FORMATS[label] % record[label]
             return str(record[label])
         return ''
+
+    def check_response(self, response):
+        """Specialized version of check_response()."""
+        for line in response:
+            # Skip blank lines:
+            if not line.strip():
+                continue
+            if line.startswith(b'OK'):
+                return
+            elif line.startswith(b"Benutzer/Passwort Fehler"):
+                raise BadLogin(line)
+            else:
+                raise FailedPost("Server returned '%s'" % line)
 
 
 ###############################################################################
