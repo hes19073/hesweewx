@@ -264,22 +264,25 @@ obs_group_dict = ListOfDicts({"altitude"           : "group_altitude",
 
 # Some aggregations when applied to a type result in a different unit
 # group. This data structure maps aggregation type to the group:
-agg_group = {'mintime'    : "group_time",
-             'maxmintime' : "group_time",
-             'maxtime'    : "group_time",
-             'minmaxtime' : "group_time",
-             "maxsumtime" : "group_time",
-             "minsumtime" : "group_time",
-             "lasttime"   : "group_time",
-             'count'      : "group_count",
-             'max_ge'     : "group_count",
-             'max_le'     : "group_count",
-             'min_ge'     : "group_count",
-             'min_le'     : "group_count",
-             'sum_ge'     : "group_count",
-             'sum_le'     : "grpou_count",
-             'vecdir'     : "group_direction",
-             'gustdir'    : "group_direction"}
+agg_group = {
+    "firsttime"  : "group_time",
+    "lasttime"   : "group_time",
+    "maxsumtime" : "group_time",
+    "minsumtime" : "group_time",
+    'count'      : "group_count",
+    'gustdir'    : "group_direction",
+    'max_ge'     : "group_count",
+    'max_le'     : "group_count",
+    'maxmintime' : "group_time",
+    'maxtime'    : "group_time",
+    'min_ge'     : "group_count",
+    'min_le'     : "group_count",
+    'minmaxtime' : "group_time",
+    'mintime'    : "group_time",
+    'sum_ge'     : "group_count",
+    'sum_le'     : "group_count",
+    'vecdir'     : "group_direction",
+}
 
 # This dictionary maps unit groups to a standard unit type in the
 # US customary unit system:
@@ -476,8 +479,12 @@ conversionDict = {
                             'kilobyte'         : lambda x : x*1024*1024*1024,
                             'megabyte'         : lambda x : x*1024*1024,
                             'gigabyte'         : lambda x : x*1024},
-      'nSv_per_hour'     : {'mSv_per_hour'     : lambda x : x / 1000},
-      'mSv_per_hour'     : {'nSv_per_hour'     : lambda x : x * 1000}
+      'nSv_per_hour'     : {'microSv_per_hour' : lambda x : x / 1000,
+                            'mSv_per_hour'     : lambda x : x / 1000000},
+      'mSv_per_hour'     : {'microSv_per_hour' : lambda x : x * 1000,
+                            'nSv_per_hour'     : lambda x : x * 1000000},
+      'microSv_per_hour' : {'mSv_per_hour'     : lambda x : x / 1000,
+                            'nSv_per_hour'     : lambda x : x * 1000}
       }
 
 
@@ -538,8 +545,9 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "N_per_meter_squared"    : "%.3f",
                             "kg_per_meter_qubic"     : "%.3f",
                             "g_per_meter_qubic"      : "%.3f",
-                            "nSv_per_hour"           : "%.1f",
-                            "mSv_per_hour"           : "%.4f",
+                            "nSv_per_hour"           : "%.2f",
+                            "microSv_per_hour"       : "%.4f",
+                            "mSv_per_hour"           : "%.1f",
                             "NONE"                   : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
@@ -600,7 +608,8 @@ default_unit_label_dict = { "amp"               : u" A",
                             "kg_per_meter_qubic"     : u" kg/m³", #\xc2\xb3",
                             "g_per_meter_qubic"      : u" g/m³",  #\xc2\xb3",
                             "nSv_per_hour"           : u" nSv/h",
-                            "mSv_per_hour"           : u" µSv/h", #\xc2\xb5Sv/h",
+                            "microSv_per_hour"       : u" µSv/h", #\xc2\xb5Sv/h",
+                            "mSv_per_hour"           : u" mSv/h",
                             "NONE"                   : u" " }
 
 # Default strftime formatting to be used in the absence of a skin
