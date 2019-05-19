@@ -18,8 +18,6 @@ import locale
 # Other options are possible. See:
 # http://docs.python.org/2/library/locale.html#locale.setlocale
 locale.setlocale(locale.LC_ALL, '')
-#locale.setlocale(locale.LC_ALL, 'de_DE')
-
 
 # setup units to support custom Klimalogg sensor map
 from weewx.units import obs_group_dict
@@ -30,7 +28,6 @@ obs_group_dict['earthquake_time'] = 'group_time'
 obs_group_dict['current_temp'] = 'group_temperature'
 obs_group_dict['current_apptemp'] = 'group_temperature'
 obs_group_dict['current_wind'] = 'group_speed'
-obs_group_dict['densityA'] = 'group_altitude'
 obs_group_dict['temp0'] = 'group_temperature'
 obs_group_dict['temp1'] = 'group_temperature'
 obs_group_dict['temp2'] = 'group_temperature'

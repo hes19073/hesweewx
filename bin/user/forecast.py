@@ -1255,12 +1255,12 @@ class Forecast(StdService):
             logdbg('%s: starting thread' % self.method_id)
             t.start()
         elif time.time() - self.interval > self.last_ts:
-            #t = ForecastThread(self.do_forecast, event)
-            #t.setName(self.method_id + 'Thread')
-            #logdbg('%s: starting thread' % self.method_id)
+            t = ForecastThread(self.do_forecast, event)
+            t.setName(self.method_id + 'Thread')
+            logdbg('%s: starting thread' % self.method_id)
             loginf('%s: starting thread' % self.method_id)
-            #t.start()
-            self.do_forecast(event)
+            t.start()
+            #self.do_forecast(event)
         else:
             logdbg('%s: not yet time to do the forecast' % self.method_id)
             loginf('%s: not yet time to do the forecast' % self.method_id)
