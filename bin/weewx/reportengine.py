@@ -8,12 +8,13 @@
 from __future__ import absolute_import
 
 # System imports:
+import copy
 import datetime
 import ftplib
 import glob
 import os.path
 import socket
-import sys
+#import sys
 import syslog
 import threading
 import time
@@ -233,7 +234,8 @@ class StdReportEngine(threading.Thread):
         # copy. We can do this by applying the .dict() member function, which returns a copy as a plain old
         # dictionary, then converting that into a ConfigObj. This will lose the comments, but we don't care about
         # that now.
-        skin_dict = configobj.ConfigObj(weewx.defaults.defaults.dict())
+        # copy.
+        skin_dict = copy.deepcopy(weewx.defaults.defaults)
 
         # Add the report name:
         skin_dict['REPORT_NAME'] = report
@@ -269,7 +271,7 @@ class StdReportEngine(threading.Thread):
 
         # Now add on the [StdReport][[Defaults]] section, if present:
         if 'Defaults' in self.config_dict['StdReport']:
-            merge_dict = configobj.ConfigObj(self.config_dict['StdReport']['Defaults'].dict())
+            merge_dict = copy.deepcopy(self.config_dict['StdReport']['Defaults'])
             weeutil.config.merge_config(skin_dict, merge_dict)
 
         # Inject any scalar overrides. This is for backwards compatibility. These options should now go
@@ -350,9 +352,8 @@ class FtpGenerator(ReportGenerator):
         try:
             n = ftp_data.run()
         except (socket.timeout, socket.gaierror, ftplib.all_errors, IOError) as e:
-            (cl, unused_ob, unused_tr) = sys.exc_info()
             syslog.syslog(syslog.LOG_ERR, "ftpgenerator: "
-                                          "Caught exception %s: %s" % (cl, e))
+                                          "Caught exception '%s': %s" % (type(e), e))
             weeutil.weeutil.log_traceback("        ****  ")
             return
 
@@ -397,9 +398,8 @@ class RsyncGenerator(ReportGenerator):
         try:
             rsync_data.run()
         except IOError as e:
-            (cl, unused_ob, unused_tr) = sys.exc_info()
             syslog.syslog(syslog.LOG_ERR, "rsyncgenerator: "
-                                          "Caught exception %s: %s" % (cl, e))
+                                          "Caught exception '%s': %s" % (type(e), e))
 
 
 # =============================================================================

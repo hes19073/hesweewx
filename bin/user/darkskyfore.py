@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# $Id: forecasthes.py 1651 2018-09-01 12:10:37Z hes $
+# $Id: darkskyfore.py 1651 2019-05-04 12:10:37Z hes $
 # original by Pat O'Brien, August 19, 2018
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
+# Wetter by DarkSky
 
 import datetime
 import time
@@ -30,11 +31,37 @@ def loginf(msg):
 def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
+def deg2dir(value):
+        # map a decimal degree to a compass direction
+    try:
+        v = float(value)
+    except (ValueError, TypeError):
+        return None
+    if 0 <= v <= 22.5:
+        return 'N'
+    elif 22.5 < v <= 65.5:
+        return 'NE'
+    elif 65.5 < v <= 112.5:
+        return 'E'
+    elif 112.5 < v <= 157.5:
+        return 'SE'
+    elif 157.5 < v <= 202.5:
+        return 'S'
+    elif 202.5 < v <= 247.5:
+        return 'SW'
+    elif 247.5 < v <= 292.5:
+        return 'W'
+    elif 292.5 < v <= 337.5:
+        return 'NW'
+    elif 337.5 < v <= 360:
+        return 'N'
+    return None
+
+
 # Print version in syslog
 VERSION = "1.2.1"
 
 loginf("version %s" % VERSION)
-
 
 class getForecast(SearchList):
     def __init__(self, generator):
@@ -53,7 +80,7 @@ class getForecast(SearchList):
             search_list_extension = {
                                      'current_obs_icon': "",
                                      'current_obs_summary': "",
-                                     'visibility': "",
+                                     'current_visibility': "",
                                     }
 
             return [search_list_extension]
@@ -94,12 +121,14 @@ class getForecast(SearchList):
         current_obs_summary = data["currently"]["summary"]
         current_temp = data["currently"]["temperature"]
         current_apptemp = data["currently"]["apparentTemperature"]
+        current_windSpeed = (data["currently"]["windSpeed"] * 3.6)
         current_windGust = (data["currently"]["windGust"] * 3.6)
-        visibility = data["currently"]["visibility"]
+        current_windDir = deg2dir(data["currently"]["windBearing"])
+        current_visibility = data["currently"]["visibility"]
+        #day_summary = data["daily"]["summary"]
+        current_day_summary = data["daily"]["data"][0]["summary"]
 
-        # Get the unit label from the skin dict for speed.
-        windSpeedUnit = self.generator.skin_dict["Units"]["Groups"]["group_speed"]
-        windSpeedUnitLabel = self.generator.skin_dict["Units"]["Labels"][windSpeedUnit]
+
 
         if data["currently"]["icon"] == "partly-cloudy-night":
             current_obs_icon = '<img id="wxicon" src="xicons/partly-cloudy-night.png">'
@@ -172,21 +201,21 @@ class getForecast(SearchList):
             output += condition_text
             output += '</span>'
             output += '</div>'
-            output += '<span class="forecast-high">'+str(int(daily_data["temperatureHigh"] ) ) + '&deg;C</span> | <span class="forecast-low">'+str(int(daily_data["temperatureLow"] ) ) + '&deg;C</span>'
+            output += '<span class="forecast-high">'+str(int(daily_data["temperatureHigh"])) + '&deg;C</span> | <span class="forecast-low">'+str(int(daily_data["temperatureLow"])) + '&deg;C</span>'
             output += '<br>'
             output += '<div class="forecast-precip">'
             if "precipType" in daily_data:
                 if daily_data["precipType"] == "snow":
                     output += '<div class="snow-precip">'
-                    output += '<img src="/xicons/snowflake-icon-15px.png"> <span>'+ str(int(daily_data["precipAccumulation"] ) ) + '<span> in'
+                    output += '<img src="/xicons/snowflake-icon-15px.png"> <span>'+ str(int(daily_data["precipAccumulation"])) + '<span> cm'
                     output += '</div>'
                 elif daily_data["precipType"] == "rain":
-                    output += '<i class="wi wi-raindrop wi-rotate-45 rain-precip"></i> <span >'+ str(int(daily_data["precipProbability"] * 100 ) ) + '%</span>'
+                    output += '<i class="wi wi-raindrop wi-rotate-45 rain-precip"></i> <span >'+ str(int(daily_data["precipProbability"] * 100)) + ' %</span>'
             else:
                 output += '<i class="wi wi-raindrop wi-rotate-45 rain-no-precip"></i> <span >0%</span>'
             output += '</div>'
             output += '<div class="forecast-wind">'
-            output += '<i class="wi wi-strong-wind"></i> '+ str( int( daily_data["windGust"] * 3.6 ) )+' '+ windSpeedUnitLabel
+            output += '<i class="wi wi-strong-wind"></i> '+ str(int(daily_data["windGust"] * 3.6)) + ' km/h'
             output += '</div>'
             output += "</div> <!-- end .wuforecast -->"
             output += '<br />'
@@ -202,9 +231,11 @@ class getForecast(SearchList):
                                   'current_obs_summary': current_obs_summary,
                                   'current_temp': current_temp,
                                   'current_apptemp': current_apptemp,
-                                  'current_wind': current_windGust,
-                                  'visibility': visibility,
-                                  'visibility_unit': visibility_unit,
+                                  'current_windSpeed': current_windSpeed,
+                                  'current_windGust': current_windGust,
+                                  'current_windDir': current_windDir,
+                                  'current_visibility': current_visibility,
+                                  'day_summary': current_day_summary,
                                   'forecastHTML' : html_output
                                  }
 

@@ -183,6 +183,27 @@
     <td class="stats_label">ET am Tag<br />Evapotranspiration</td>
     <td class="stats_data">$day.ET.sum</td>
    </tr>
+  <tr><td>Niederschlag<br />Verdunstung</td><td>Seit dem 04.05.2019</td></tr>
+  <tr>
+    <td class="stats_label">Wasserbilanz <br />seit Mitternacht</td>
+    #set $wasser_day = $day.rain.sum.raw - $day.ET.sum.raw
+    #set $WasserDay = ("{:.2f}".format($wasser_day));
+    #if $wasser_day < 0.0
+    <td class="stats_data" style="background-color: coral">$WasserDay&nbsp;mm</td>
+    #else
+    <td class="stats_data" style="background-color: limegreen">$WasserDay&nbsp;mm</td>
+    #end if
+  </tr>
+  <tr>
+    <td class="stats_label">Wasserbilanz <br />Dieses Jahr</td>
+    #set $wasser_year = $year.rain.sum.raw - $year.ET.sum.raw
+    #set $WasserYear = ("{:.2f}".format($wasser_year));
+    #if $wasser_year < 0.0
+    <td class="stats_data" style="background-color: coral">$WasserYear&nbsp;mm</td>
+    #else
+    <td class="stats_data" style="background-color: limegreen">$WasserYear&nbsp;mm</td>
+    #end if
+  </tr>
   <tr><td>1-Wire OWFS USB<br />Temperatur</td><td>Seit dem 10.08.2015&nbsp;</td></tr>
   #if $day.extraTemp9.has_data
   <tr>

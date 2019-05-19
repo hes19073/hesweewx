@@ -7,11 +7,14 @@
 <html lang="de">
  <head>
      <meta charset="utf-8"> 
+     <meta http-equiv="cache-control" content="no-cache">
      <meta name='viewport' content='width=device-width' />
      <meta name="robots" content="all" />
      <meta name="keywords" content="weather, Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
-     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim 
-                 mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, 
+                                       bei Schwerin im Landkreis Ludwiglust-Parchim 
+                                       mit aktuellen Temperaturen und Prognosen für 
+                                       die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
      <meta name="author"           content="Hartmut Schweidler" />
      <meta name="revisit-after"    content="5 minutes" />
 
@@ -61,6 +64,7 @@
 
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
+  <section>
 
 #include "links_forecast.inc"
 
@@ -705,6 +709,10 @@
     <td class='hes1_mon'>$almanac.moon.set</td>
   </tr>
   <tr>
+    <td class='hes1_mon'>&nbsp;</td>
+    <td class='hes1_mon'>&nbsp;</td>
+  </tr>
+  <tr>
     <td class='hes1_mon'>$almanac.moon_phase</td>
     <td class='hes1_mon'>$almanac.moon_fullness %</td>
   </tr>
@@ -749,10 +757,10 @@
     <td class='hes1_mon'>$almanac.next_full_moon</td>
    </tr>
   #end if
-   <tr>
+  <!--  <tr>
     <td class='hes1_mon'>&nbsp;</td>
     <td class='hes1_mon'>&nbsp;</td>
-   </tr>
+   </tr> -->
 </table>
 </div>
 </div> <!-- ende  mond -->

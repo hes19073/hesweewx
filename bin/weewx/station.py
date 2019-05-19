@@ -5,6 +5,8 @@
 #
 """Defines (mostly static) information about a station."""
 from __future__ import absolute_import
+
+import sys
 import time
 
 import weeutil.weeutil
@@ -12,9 +14,9 @@ import weewx.units
 
 class StationInfo(object):
     """Readonly class with static station information. It has no formatting information. Just a POS.
-    
+
     Attributes:
-    
+
     altitude_vt:     Station altitude as a ValueTuple
     hardware:        A string holding a hardware description
     rain_year_start: The start of the rain year (1=January)
@@ -58,19 +60,19 @@ class StationInfo(object):
 
 class Station(object):
     """Formatted version of StationInfo."""
-    
+
     def __init__(self, stn_info, formatter, converter, skin_dict):
-        
+
         # Store away my instance of StationInfo
         self.stn_info = stn_info
         self.formatter = formatter
         self.converter = converter
-        
+
         # Add a bunch of formatted attributes:
         label_dict = skin_dict.get('Labels', {})
         hemispheres    = label_dict.get('hemispheres', ('N','S','E','W'))
         latlon_formats = label_dict.get('latlon_formats')
-        self.latitude  = weeutil.weeutil.latlon_string(stn_info.latitude_f,  
+        self.latitude  = weeutil.weeutil.latlon_string(stn_info.latitude_f,
                                                        hemispheres[0:2],
                                                        'lat', latlon_formats)
         self.longitude = weeutil.weeutil.latlon_string(stn_info.longitude_f,
@@ -83,8 +85,10 @@ class Station(object):
 
         self.version = weewx.__version__
 
+        self.python_version = "%d.%d.%d" % sys.version_info[:3]
+
     @property
-    def uptime(self):        
+    def uptime(self):
         """Lazy evaluation of weewx uptime."""
         delta_time = time.time() - weewx.launchtime_ts if weewx.launchtime_ts else None
 
@@ -139,5 +143,5 @@ class Station(object):
         if name in ['__call__', 'has_key']:
             raise AttributeError
         # For anything that is not an explicit attribute of me, try
-        # my instance of StationInfo. 
+        # my instance of StationInfo.
         return getattr(self.stn_info, name)

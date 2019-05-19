@@ -61,22 +61,23 @@
   <li><input type="button" value=" Rad " onclick="openURL('indexRad.html')" /></li>
   <li><input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <ul>
-    <li><input type="button" value=" Heiz-GDD " onclick="openURL('heatdeg.html')" /></li>
-    <li><input type="button" value=" Kühl-GDD " onclick="openURL('cooldeg.html')" /></li>
-    <li><input type="button" value=" Home-GDD " onclick="openURL('homedeg.html')" /></li> 
-    <li><input type="button" value=" WTG  4°C " onclick="openURL('gdd_4.html')" /></li>
-    <li><input type="button" value=" WTG  5°C " onclick="openURL('gdd_5.html')" /></li>
-    <li><input type="button" value=" WTG  6°C " onclick="openURL('gdd_6.html')" /></li>
     <li><input type="button" value=" WTG 10°C " onclick="openURL('Cydia/C_growth.html')" /></li>
     <li><input type="button" value=" GLT      " onclick="openURL('Cydia/C_green.html')" /></li>
     <li><input type="button" value=" Cydia    " onclick="openURL('Cydia/C_pomonella.html')" /></li>
+    <li><input type="button" value=" WTG  4°C " onclick="openURL('gdd_4.html')" /></li>
+    <li><input type="button" value=" WTG  5°C " onclick="openURL('gdd_5.html')" /></li>
+    <li><input type="button" value=" WTG  6°C " onclick="openURL('gdd_6.html')" /></li>
+    <li><input type="button" value=" Heiz-GDD " onclick="openURL('heatdeg.html')" /></li>
+    <li><input type="button" value=" Kühl-GDD " onclick="openURL('cooldeg.html')" /></li>
+    <li><input type="button" value=" Home-GDD " onclick="openURL('homedeg.html')" /></li> 
    </ul>
   </li>
   <li><input type="button" value=" Tag " onclick="openURL('day.html')" />
    <ul>
     <li><input type="button" value=" Temperatur " onclick="openURL('temp.html')" /></li>
     <li><input type="button" value=" Niederschlag " onclick="openURL('rain.html')" /></li>
-    <li><input type="button" value=" Wind Böen " onclick="openURL('wind.html')" /></li>
+    <li><input type="button" value=" Wind  Böen " onclick="openURL('wind.html')" /></li>
+    <li><input type="button" value=" Sonnetage  " onclick="openURL('sola.html')" /></li>
     <li><input type="button" value=" 24 Stunden " onclick="openURL('trend.html')" /></li>
     <!-- <li><input type="button" value=" wx-obs " onclick="openURL('index.php')" /></li> -->
     <li><input type="button" value=" Diagramm" onclick="openURL('daya.html')" /></li>
@@ -86,8 +87,8 @@
    <ul>
     <li><input type="button" value=" Prognose Weewx " onclick="openURL('forecastT.html')" /></li>
     <li><input type="button" value=" WetterWarnung  " onclick="openURL('indexWarn.html')" /></li>
-    <li><input type="button" value=" Wetter Infos " onclick="openURL('indexInfo.html')" /></li>
-    <li><input type="button" value=" WetterWissen " onclick="openURL('wissen.html')" /></li>
+    <li><input type="button" value=" Wetter  Infos " onclick="openURL('indexInfo.html')" /></li>
+    <li><input type="button" value=" Wetter Wissen " onclick="openURL('wissen.html')" /></li>
     <li><input type="button" value=" ISS &Uuml;berflug " onclick="openURL('indexISS.html')" /></li> 
     <!-- <li><input type="button" value="  IMECKLEN20    " onclick="openURL('http://www.wunderground.com/cgi-bin/findweather/hdfForecast?query=53.606%2C11.341&amp;sp=IMECKLEN20')" /></li> -->
    </ul>
@@ -155,6 +156,7 @@
     <li><input type="button" value=" wetter.com " onclick="openURL('http://www.wetter.com/wetter_aktuell/wetternetzwerk/station/12853/dashboard/')" /></li>
     <li><input type="button" value=" weathercloud " onclick="openURL('http://app.weathercloud.net/d0653105008')" /></li>
     <li><input type="button" value=" AWEKAS " onclick="openURL('http://www.awekas.at/de/instrument.php?id=11042')" /></li>
+    <li><input type="button" value=" windy.com " onclick="openURL('https://www.windy.com/53.600/11.334?53.227,11.334,9,m:e8vagt2')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" WEEWX " onclick="openURL('http://www.weewx.com')" />

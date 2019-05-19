@@ -70,10 +70,10 @@
 #set $sowidm = $sowisec //60
 #set $sowisec %= 60
 
-<p>Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres
+<p>Aktuell ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres
 <b>&nbsp;$current.dateTime.format("%Y")&nbsp;</b>
 #if len($day00) > 3
-     und es ist <b>$day00 .</b>
+     und Heute: <b>$day00.</b>
 #end if
 <br />
 

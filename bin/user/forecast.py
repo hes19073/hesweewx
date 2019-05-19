@@ -4066,7 +4066,7 @@ class XTideForecast(Forecast):
             self.location, dur=self.duration, prog=self.tideprog)
         if lines is None:
             return None
-        records = self.parse(lines, self.location)
+        records = self.parse(lines, location=self.location)
         if records is None:
             return None
         logdbg('%s: tide matrix: %s' % (self.method_id, records))
@@ -4079,10 +4079,10 @@ class XTideForecast(Forecast):
             now = int(time.time())
         records = []
         for line in lines:
-            line = line.rstrip(line)
+            line = line.rstrip()
             if not line:
                 continue
-            fields = line.split(line, ',')
+            fields = line.split(',')
             if len(fields) != 5:
                 logdbg("expected 5 fields, found %s: %s" % (len(fields), line))
                 continue

@@ -91,13 +91,12 @@
       </tr>
      </table>
   #end if
+
   #if $day.snowTotal.max.raw > 0
      <hr />
-     <h3>Aktuell liegen ca. $current.snowTotal Schnee.</h3>
-     
+     <h3>Aktuell liegen ca. $current.snowTotal Schnee.</h3>   
   #end if
   
-
   #if $day.rain.sum.raw > 0
     <hr />
     <h3>Die letzten 24 Stunden</h3>
@@ -315,8 +314,46 @@ Niederschlägen ab 0,2 mm.</p>
  </table>
 
 <hr />
+<h3>Wasserbilanz nach Jahren</h3>
+<p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
+ <table>
+    <tr>
+     <td>Jahr&nbsp;</td><td>Bilanz</td>
+     <td>Jan</td><td>Feb</td><td>Mär</td>
+     <td>Apr</td><td>Mai</td><td>Jun</td>
+     <td>Jul</td><td>Aug</td><td>Sep</td>
+     <td>Okt</td><td>Nov</td><td>Dez</td>
+    </tr>
+ #for $year in $alltime.years
+    #if int($year.dateTime.format("%Y")) > 2016
+    <tr>
+      <td>$year.dateTime.format("%Y")</td>
+      #set $was_year = $year.rain.sum.raw - $year.ET.sum.raw
+      #set $WasYear = ("{:.2f}".format($was_year))
+      <td><b>$WasYear</b></td>
+      #for $month in $year.months
+          #if $month.rain.sum.raw is not None and $month.ET.sum.raw is not None
+             #set $was_month = $month.rain.sum.raw - $month.ET.sum.raw
+             #set $WasMonth = ("{:.2f}".format($was_month))
+             #if $was_month < 0.0
+                 <td style="background-color: coral">$WasMonth </td>
+             #elif $was_month == 0.0
+                 <td class="hest00">$WasMonth </td>
+             #elif $was_month  > 0.0
+                 <td style="background-color: limegreen">$WasMonth </td>
+             #end if
+          #else
+                 <td class="hest00">-</td>
+          #end if
+       #end for
+    </tr>
+    #end if
+ #end for
+ </table>
+<hr />
 
-<h3>Regenmengen nach Jahreszeiten</h3>
+<h3>Wassermengen nach Jahreszeiten</h3>
+<p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
 <p>&nbsp;</p>
 <table>
     <tr>
@@ -340,6 +377,37 @@ Niederschlägen ab 0,2 mm.</p>
      <td>$autumm.rain.sum.formatted </td>
      <td>$winter.rain.sum.formatted </td>
     </tr>
+    <tr>
+      <td>&nbsp;</td>
+     <td>Frühlings-Verdunstung</td>
+     <td>Sommern-Verdunstung</td>
+     <td>Herbst-Verdunstung</td>
+     <td>Winter-Verdunstung</td>
+    </tr>
+    <tr>
+     <td>$year.dateTime.format("%Y")</td>
+     <td>$spring.ET.sum.formatted </td>
+     <td>$summer.ET.sum.formatted </td>
+     <td>$autumm.ET.sum.formatted </td>
+     <td>$winter.ET.sum.formatted </td>
+    </tr>
+    <tr><td colspan='5'>Bilanz</td></tr>
+    <tr>
+     <td>$year.dateTime.format("%Y")</td>
+      #set $was_spring = $spring.rain.sum.raw - $spring.ET.sum.raw
+      #set $WasSpring = ("{:.2f}".format($was_spring))
+      #set $was_summer = $summer.rain.sum.raw - $summer.ET.sum.raw
+      #set $WasSummer = ("{:.2f}".format($was_summer))
+      #set $was_autumm = $autumm.rain.sum.raw - $autumm.ET.sum.raw
+      #set $WasAutumm = ("{:.2f}".format($was_autumm))
+      #set $was_winter = $winter.rain.sum.raw - $winter.ET.sum.raw
+      #set $WasWinter = ("{:.2f}".format($was_winter));
+     <td>$WasSpring </td>
+     <td>$WasSummer </td>
+     <td>$WasAutumm </td>
+     <td>$WasWinter </td>
+    </tr>
+
 </table>
 <hr />
   <h3>Perioden von Trockenheit und Regentagen</h3>

@@ -73,80 +73,80 @@ function topFunction() {
    
     #include $Extras.chart
 
-        <p>&nbsp;</p>
+    <p>&nbsp;</p>
 
-        <div id="radar_img1">
-          <p>Wetterwarnung DWD</p>
-           <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
-           <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" alt="WetterWarn" /></a>
-        </div>
-        <div id="radar_img2">
-         <p>Wetterbild Dach</p>
-          <a href="xicons/wet/snapshot.jpg">
-          <img src="xicons/wet/snapshot.jpg" alt="wetterDach" /></a>
-        </div>
+    <div id="radar_img1">
+      <p>Wetterwarnung DWD</p>
+       <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html">
+       <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" alt="WetterWarn" /></a>
+    </div>
+    <div id="radar_img2">
+     <p>Wetterbild Dach</p>
+      <a href="xicons/wet/snapshot.jpg">
+      <img src="xicons/wet/snapshot.jpg" alt="wetterDach" /></a>
+    </div>
 
-        #if $Extras.has_key('radar_img')
-        <div id="radar_img3">
-              <a  href="$Extras.radar_url"> 
-              <img src="$Extras.radar_img" alt="Radar" /></a>
-              <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>
-        </div>
-        #end if
-        <p>&nbsp;</p>
-        #if $Extras.has_key('radar_local_img')
-         <div id="radar_local_img">
-          <a  href='$Extras.radar_local_img'>
-          <img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
-          <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>     
-         </div>
-        #end if
-         <div id="radar_blitz">
-           <a href="http://www.lightningmaps.org/realtime?lang=de" title="Quelle der Blitzkarte">
-           <img src="http://images.blitzortung.org/Images/image_b_de.png" title="Blitzkarte für Deutschland" alt="Blitzkarte Deutschland" /></a>
-         </div> <!--End Blitzkarte -->
-         <div id="radar_wetter">
-           <a href="http://niederschlagsradar.de/" title="Quelle des Niederschlagsradar">
-           <img src="http://niederschlagsradar.de/image.ashx?type=loop3stunde&jaar=-2&regio=homepage&tijdid=201511212239&time=&bliksem=0" title="Niederschlagsradar Deutschland" alt="Niederschlagsradar(Wetterradar) Deutschland" /></a>
-         </div> <!-- End Wetterradar -->
-         <div id="radar_iso">
-           <a href="http://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html#buehneTop" title="Bodenluftdruck / Fronten / Wetter">
-           <img src="http://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png" alt="bild" />
-           </a>
-        </div>
-        <div>
-           #include $Extras.about
-       </div>
+    #if $Extras.has_key('radar_img')
+     <div id="radar_img3">
+      <a  href="$Extras.radar_url"> 
+      <img src="$Extras.radar_img" alt="Radar" /></a>
+      <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>
+     </div>
+    #end if
+    <p>&nbsp;</p>
+    #if $Extras.has_key('radar_local_img')
+     <div id="radar_local_img">
+      <a  href='$Extras.radar_local_img'>
+      <img class='radar' src='$Extras.radar_local_img' alt='radar'/></a>
+      <p>Vergr&ouml;&szlig;ern, einfach Anklicken</p>     
+     </div>
+    #end if
+     <div id="radar_blitz">
+       <a href="http://www.lightningmaps.org/realtime?lang=de" title="Quelle der Blitzkarte">
+       <img src="http://images.blitzortung.org/Images/image_b_de.png" title="Blitzkarte für Deutschland" alt="Blitzkarte Deutschland" /></a>
+     </div> <!--End Blitzkarte -->
+     <div id="radar_wetter">
+       <a href="http://niederschlagsradar.de/" title="Quelle des Niederschlagsradar">
+       <img src="http://niederschlagsradar.de/image.ashx?type=loop3stunde&jaar=-2&regio=homepage&tijdid=201511212239&time=&bliksem=0" title="Niederschlagsradar Deutschland" alt="Niederschlagsradar(Wetterradar) Deutschland" /></a>
+     </div> <!-- End Wetterradar -->
+     <div id="radar_iso">
+       <a href="http://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html#buehneTop" title="Bodenluftdruck / Fronten / Wetter">
+       <img src="http://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png" alt="bild" />
+       </a>
+     </div>
+     <div>
+       #include $Extras.about
+     </div>
     </div> <!--End class "stats_group" -->
-      <div id="content">
-        <div id="about">
-          <div class="header">
-            <h3>T&auml;gliche Statistik und Diagramme</h3>
-          </div>
-        </div> <!-- End id "about" -->
+    <div id="content">
+     <div id="about">
+      <div class="header">
+       <h3>T&auml;gliche Statistik und Diagramme</h3>
+      </div>
+     </div> <!-- End id "about" -->
 
-        <div id="hes">  <!-- align="center"> -->
+     <div id="hes">  <!-- align="center"> -->
 
-      #include 'zeitdiff.inc'
+     #include 'zeitdiff.inc'
 
      </div>
-       <hr />
-       <div id="plots">
-        <table>
-          <tr>
-           <td>
-            <canvas id="temout" width="250" height="250"></canvas>
-            </td>
-            <td>$trend.outTemp</td>
-            <td><img src="daytemp.png"   alt="temperatures" /></td>
-          </tr>
-          <tr>
-           <td>
-            <canvas id="dewpo" width="250" height="250"></canvas>
-           </td>
-           <td>$trend.dewpoint<br />  </td>
-           <td><img src="daydewpoint.png" alt="dewpoint" /></td>
-          </tr>
+     <hr />
+     <div id="plots">
+      <table>
+       <tr>
+        <td>
+         <canvas id="temout" width="250" height="250"></canvas>
+        </td>
+         <td>$trend.outTemp</td>
+         <td><img src="daytemp.png"   alt="temperatures" /></td>
+       </tr>
+       <tr>
+        <td>
+         <canvas id="dewpo" width="250" height="250"></canvas>
+        </td>
+        <td>$trend.dewpoint<br />  </td>
+        <td><img src="daydewpoint.png" alt="dewpoint" /></td>
+       </tr>
           <tr>
            <td>
             <canvas id="wici" width="250" height="250"></canvas>
@@ -216,6 +216,11 @@ function topFunction() {
              <td>ET Verdunstung</td>
              <td>$current.ET</td>
              <td><img src="dayET.png" alt="Verdunstung" /></td>
+            </tr>
+            <tr>
+             <td>Regen - Verdunstung</td>
+             <td>&nbsp;</td>
+             <td><img src="dayrain_ET.png" alt="Regen_Verdunstung" /></td>
             </tr>
           <tr>
            <td>Windgeschwindigkeit:&nbsp;$current.windSpeed<br /><br /><br />

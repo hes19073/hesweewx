@@ -9,10 +9,11 @@
 ##FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 ##details.
 ##
-## Version: 1.2.0b1                                    Date: 1 August 2015
+## Version: 1.3.0                                    Date: 1 May 2019
 ##
 ## Revision History
-##  ?? August 2015        v1.2.0    -revised for Weewx v3.2.0
+##  1 May 2019            v1.3.0    -python 3 delete WU
+##  10 August 2015        v1.2.0    -revised for Weewx v3.2.0
 ##                                  -moved __main__ code to weewxwd_config utility
 ##                                  -now uses appTemp and humidex as provided by
 ##                                   StdWXCalculate
@@ -53,7 +54,6 @@ import ephem
 
 from math import sin
 from datetime import datetime
-#from urllib import urlopen
 
 try:
     # Python 3
@@ -105,7 +105,7 @@ from weewx.units import convert, obs_group_dict
 from weeutil.weeutil import to_bool, accumulateLeaves
 from weewx.units import CtoF, CtoK, mps_to_mph, kph_to_mph
 
-WEEWXWD_VERSION = '3.2.1'
+WEEWXWD_VERSION = '1.3.0'
 
 # Define a dictionary to look up Davis forecast rule
 # and return forecast text
@@ -345,10 +345,10 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['outTempDay'], data_x['outTempNight'] = (None, None)
 
-        if 'outTemp' in event.packet and 'outHumidity' in event.packet:
-            data_x['summersimmerIndex'] = weewx.wxformulas.sumsimIndex_C(event.packet['outTemp'], event.packet['outHumidity'])
+        if 'rain' in event.packet and 'ET' in event.packet:
+            data_x['rain_ET'] = event.packet['rain'] - event.packet['ET']
         else:
-            data_x['summersimmerIndex'] = None
+            data_x['rain_ET'] = None
 
         if 'outTemp' in event.packet:
             data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 18.333)
@@ -364,11 +364,6 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 15.0)
         else:
             data_x['homedeg'] = None
-
-        if 'outTemp' in event.packet:
-            data_x['wdd_deg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 10.0)
-        else:
-            data_x['wdd_deg'] = None
 
         if 'outTemp' in event.packet:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['outTemp'])
@@ -405,12 +400,6 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['GDD10'] = None
 
-        if 'outTemp' in event.packet and 'pressure' in event.packet:
-            data_x['densityA'] = weewx.wxformulas.da_Metric(event.packet['outTemp'], event.packet['pressure'])
-        else:
-            data_x['densityA'] = None
-
-
 
 
         event.packet.update(data_x)
@@ -422,15 +411,10 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['outTempDay'], data_x['outTempNight'] = (None, None)
 
-        if 'outTemp' in event.record and 'outHumidity' in event.record:
-            data_x['summersimmerIndex'] = weewx.wxformulas.sumsimIndex_C(event.record['outTemp'], event.record['outHumidity'])
+        if 'rain' in event.record and 'ET' in event.record:
+            data_x['rain_ET'] = event.record['rain'] - event.record['ET']
         else:
-            data_x['summersimmerIndex'] = None
-
-        if 'outTemp' in event.record and 'pressure' in event.record:
-            data_x['densityA'] = weewx.wxformulas.da_Metric(event.record['outTemp'], event.record['pressure'])
-        else:
-            data_x['densityA'] = None
+            data_x['rain_ET'] = None
 
         if 'outTemp' in event.record:
             data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 18.333)
@@ -446,11 +430,6 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 15.0)
         else:
             data_x['homedeg'] = None
-
-        if 'outTemp' in event.record:
-            data_x['wdd_deg'] = weewx.wxformulas.heating_degrees(event.record['outTemp'], 10.0)
-        else:
-            data_x['wdd_deg'] = None
 
         if 'outTemp' in event.record:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['outTemp'])
@@ -520,12 +499,9 @@ class WdArchive(weewx.engine.StdService):
         self.setup_database(config_dict)
 
         # set the unit groups for our obs
-        obs_group_dict["humidex"] = "group_temperature"
-        obs_group_dict["appTemp"] = "group_temperature"
-        obs_group_dict["summersimmerIndex"] = "group_temperature"
         obs_group_dict["outTempDay"] = "group_temperature"
         obs_group_dict["outTempNight"] = "group_temperature"
-        obs_group_dict['densityA'] = "group_altitude"
+        obs_group_dict["rain_ET"] = "group_rain"
 
         # bind ourselves to NEW_ARCHIVE_RECORD event
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -669,7 +645,6 @@ class WdSuppArchive(weewx.engine.StdService):
                 self.db_retry_wait = config_dict['Weewx-WD']['Supplementary'].get('database_retry_wait', 2)
                 self.db_retry_wait = int(self.db_retry_wait)
                 # help for supp
-                earthquake_file = "/home/weewx/archive/earthquake.json"
 
                 # initialise a few things
                 # setup our database if needed
@@ -688,7 +663,6 @@ class WdSuppArchive(weewx.engine.StdService):
                 obs_group_dict["tempRecordLowYear"] = "group_count"
                 obs_group_dict["stormRain"] = "group_rain"
                 obs_group_dict["stormStart"] = "group_time"
-                obs_group_dict["maxSolarRad"] = "group_radiation"
                 obs_group_dict["forecastIcon"] = "group_count"
                 obs_group_dict["currentIcon"] = "group_count"
                 obs_group_dict["vantageForecastIcon"] = "group_count"
@@ -799,7 +773,6 @@ class WdSuppArchive(weewx.engine.StdService):
                 - forecast rule (Vantage only)(Note returns full text forecast)
                 - stormRain (Vantage only)
                 - stormStart (Vantage only)
-                - current theoretical max solar radiation
         """
 
         # holder dictionary for our gathered data
@@ -821,8 +794,7 @@ class WdSuppArchive(weewx.engine.StdService):
         # Vantage stormStart
         if 'stormStart' in self.loop_packet:
             _data['stormStart'] = self.loop_packet['stormStart']
-        # theoretical solar radiation value
-        #_data['maxSolarRad'] = self.loop_packet['maxSolarRad']
+
         return _data
 
     @staticmethod
@@ -923,10 +895,7 @@ class WdSuppArchive(weewx.engine.StdService):
                 self.loop_packet['stormStart'] = event.packet['stormStart']
             else:
                 self.loop_packet['stormStart'] = None
-            #if 'maxSolarRad' in event.packet:
-            #    self.loop_packet['maxSolarRad'] = event.packet['maxSolarRad']
-            #else:
-            #    self.loop_packet['maxSolarRad'] = None
+
         except:
             loginf("WdSuppArchive:", "new_loop_packet: Loop packet data error. Cannot decode packet: %s" % (e, ))
 

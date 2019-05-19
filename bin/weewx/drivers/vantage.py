@@ -17,6 +17,7 @@ import sys
 import time
 
 from six.moves import map
+from six.moves import range
 from six.moves import zip
 from six import int2byte, indexbytes, byte2int
 

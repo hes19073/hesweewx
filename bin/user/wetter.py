@@ -51,28 +51,37 @@ def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
 class Wetter(weewx.restx.StdRESTful):
-    def __init__(self, engine, config_dict):
         """This service recognizes standard restful options plus the following:
 
         username: username
 
         password: password
         """
-        super(Wetter, self).__init__(engine, config_dict)
-        loginf("service version is %s" % VERSION)
+    _SERVER_URL = 'http://interface.wetterarchiv.de/weather'
+
+    def __init__(self, engine, cfg_dict):
+        super(Wetter, self).__init__(engine, cfg_dict)
+        loginf("version is %s" % VERSION)
         loginf("wetter API version is %s" % API_VERSION)
-        site_dict = weewx.restx.check_enable(
-            config_dict, 'Wetter', 'username', 'password')
+        site_dict = weewx.restx.get_site_dict(cfg_dict, 'Wetter',
+                                              'username', 'password')
         if site_dict is None:
             return
+        site_dict.setdefault('server_url', Wetter._SERVER_URL)
 
-        site_dict['manager_dict'] = weewx.manager.get_manager_dict_from_config(
-            config_dict, 'wx_binding')
+        # FIXME: we should not have to do this here!
+        binding = site_dict.pop('binding', 'wx_binding')
+        mgr_dict = weewx.manager.get_manager_dict_from_config(
+            cfg_dict, binding)
 
-        self.archive_queue = queue.Queue()
-        self.archive_thread = WetterThread(self.archive_queue, **site_dict)
+        self.archive_queue = Queue()
+        self.archive_thread = WetterThread(self.archive_queue,
+                                          manager_dict=mgr_dict,
+                                          **site_dict)
+
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
+        loginf("Data will be uploaded to %s" % site_dict['server_url'])
         loginf("Data will be uploaded for station id %s" % site_dict['username'])
 
     def new_archive_record(self, event):
@@ -100,14 +109,9 @@ class WetterThread(weewx.restx.RESTThread):
                  #'tes': ('soilTemp1',   '%.1f', 1.0)  # C
                  #}
 
-    try:
-        max_integer = sys.maxint	# python 2
-    except AttributeError:
-        max_integer = sys.maxsize	# python 3
-
-    def __init__(self, queue, username, password, manager_dict,
-                 server_url=_SERVER_URL, skip_upload=False,
-                 post_interval=None, max_backlog=max_integer, stale=None,
+    def __init__(self, queue, username, password, manager_dict=None,
+                 server_url=Wetter._SERVER_URL, skip_upload=False,
+                 post_interval=None, max_backlog=sys.maxsize, stale=None,
                  log_success=True, log_failure=True,
                  timeout=60, max_tries=3, retry_wait=5):
         super(WetterThread, self).__init__(queue,

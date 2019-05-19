@@ -122,6 +122,22 @@ class xMyFeier(SearchList):
             day00 = u'Neujahr'
         elif today == datetime.date(_years, 5, 1):
             day00 = u'1. Mai'
+        elif today == datetime.date(_years, 5, 11):
+            day00 = u'Eisheilige Mamertus'
+        elif today == datetime.date(_years, 5, 12):
+            day00 = u'Eisheilige Pankratius'
+        elif today == datetime.date(_years, 5, 13):
+            day00 = u'Eisheilige Servatius'
+        elif today == datetime.date(_years, 5, 14):
+            day00 = u'Eisheilige Bonifatius'
+        elif today == datetime.date(_years, 5, 15):
+            day00 = u'Eisheilige Sophia'
+        elif today == datetime.date(_years, 6, 4):
+            day00 = u'Beginn Schafskälte'
+        elif today == datetime.date(_years, 6, 27):
+            day00 = u'Siebenschläfer'
+        elif today == datetime.date(_years, 7, 23):
+            day00 = u'Beginn Hundstage'
         elif today == datetime.date(_years, 10, 3):
             day00 = u'Tag der deutschen Einheit'
         elif today == datetime.date(_years, 10, 31):

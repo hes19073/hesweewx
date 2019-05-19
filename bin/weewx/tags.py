@@ -26,11 +26,11 @@ class TimeBinder(object):
     def __init__(self, db_lookup, report_time,
                  formatter=weewx.units.Formatter(), converter=weewx.units.Converter(), **option_dict):
         """Initialize an instance of DatabaseBinder.
-        
+
         db_lookup: A function with call signature db_lookup(data_binding), which
         returns a database manager and where data_binding is an optional binding
         name. If not given, then a default binding will be used.
-        
+
         report_time: The time for which the report should be run.
 
         formatter: An instance of weewx.units.Formatter() holding the formatting
@@ -51,7 +51,7 @@ class TimeBinder(object):
         self.option_dict  = option_dict
 
     # What follows is the list of time period attributes:
-    
+
     def trend(self, time_delta=None, time_grace=None, data_binding=None):
         """Returns a TrendObj that is bound to the trend parameters."""
         if time_delta is None:
@@ -63,10 +63,10 @@ class TimeBinder(object):
 
     def hour(self, data_binding=None, hours_ago=0):
         return TimespanBinder(weeutil.weeutil.archiveHoursAgoSpan(self.report_time, hours_ago=hours_ago), 
-                              self.db_lookup, data_binding=data_binding, 
+                              self.db_lookup, data_binding=data_binding,
                               context='day', formatter=self.formatter, converter=self.converter,
                               **self.option_dict)
-        
+
     def day(self, data_binding=None, days_ago=0):
         return TimespanBinder(weeutil.weeutil.archiveDaySpan(self.report_time, days_ago=days_ago), 
                               self.db_lookup, data_binding=data_binding, 

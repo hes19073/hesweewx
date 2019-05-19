@@ -33,7 +33,10 @@
 #if $latest($data_binding='wdsupp_binding').visibility_km.has_data
     Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km
 #end if
-    <br>Wetter: $current_obs_summary
+    <br />
+    <br>Wetter:
+    <a href='https://darksky.net/poweredby/' target='_blank'><b> Powerd by Dark Sky</b></a>
+    <br>$day_summary
     <br>Prognose erstellt:&nbsp;$forecast_updated&nbsp;Uhr
   </p>
   <hr />
@@ -64,7 +67,6 @@
    <p><font color='red'>Sonne</font>&nbsp;<font color='blue'>Mond</font></p>
    <img src="daySonne.png" alt="Sonnenstand" style="width:300px; height:175px;" />
    <hr />
-   <p>WeeWX: $station.version<br>
-      Python: $station.python_version</p>
+   <p>Python: $station.python_version</p>
  </div>
 </div>

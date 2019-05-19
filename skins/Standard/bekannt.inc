@@ -4,10 +4,12 @@
 #encoding UTF-8
 
    <p>
-    <!-- <a href = 'http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=IMECKLEN20'>
-         <img style="width: 88px; height: 48px;" alt="wunderground" src="xicons/logo/wundergroundLogo_4c.png"  /></a> -->
+    <a href = 'https://www.wunderground.com/dashboard/pws/IMECKLEN20'>
+         <img style="width: 160px; height: 55px;" alt="wunderground" src="xicons/logo/wundergroundLogo_4c.png"  /></a> 
+    <!-- <a href="https://www.wunderground.com/dashboard/pws/IMECKLEN20">
+         <img src="http://banners.wunderground.com/cgi-bin/banner/ban/wxBanner?bannertype=WeatherStationCount&weatherstationcount=IMECKLEN20" height="160" width="163" border="0" alt="Weather Underground PWS IMECKLEN20" /></a> -->
     <a href = 'http://www.pwsweather.com/obs/heskrfrr38.html'>
-         <img style="width: 147px; height: 48px;" alt="pws" src="xicons/logo/PWSWX.jpg"  /></a>
+         <img style="width: 78px; height: 55px;" alt="pws" src="xicons/logo/stnicon_basic.png"  /></a>
     <a href = 'http://www.findu.com/cgi-bin/wxpage.cgi?call=EW3693'>
          <img style="width: 48px; height: 48px;" alt="findu" src="xicons/logo/CWOP.jpg"  /></a>
     <a href = 'http://www.windfinder.com/forecast/klein-rogahn'>
@@ -24,6 +26,8 @@
          <img style="width: 88px; height: 48px;" alt="weather365" src="xicons/logo/logo_weather365.png"  /></a> 
     <a href = 'http://www.weewx.com/stations'>
          <img style="width: 48px; height: 48px;" alt="weewx" src="weewx.png"  /></a>
+    <a href = 'https://darksky.net/poweredby/'>
+         <img style="height: 3rem;" alt="Dark Sky" src="xicons/logo/poweredby.png"  /></a>
     <a href = 'https://www.skywarn.de/'>
          <img style="width: 48px; height: 48px;" alt="weewx" src="xicons/logo/Skywarn.jpg"  /></a>
     <a href = 'https://www.dwd.de/'>

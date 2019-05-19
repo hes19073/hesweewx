@@ -39,7 +39,9 @@
     <div class="header"><h2>Sonnenschein</h2></div>
      <hr />
      <h3>Die letzten 24 Stunden</h3>
-    #if $day.radiation.sum.raw > 0
+    #if $day.radiation.sum is None
+        <p>Keine Sonne</p>
+    #elif $day.radiation.sum.raw > 0
      <table>
       #for $zeit in range(24)
           <tr><td>Sonne vor</td><td>$zeit</td><td>h</td>

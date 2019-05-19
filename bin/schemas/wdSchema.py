@@ -9,10 +9,11 @@
 ##FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 ##details.
 ##
-## Version: 1.2.0b1                                    Date: 1 August 2015
+## Version: 1.3.0                                    Date: 1 May 2019
 ##
 ## Revision History
-##  ?? August 2015      v1.2.0      -removed Weewx-WD schema data from
+##  01 May 2019         v1.3.0      - DS for WU
+##  01 August 2015      v1.2.0      -removed Weewx-WD schema data from
 ##                                   weewxwd3.py
 ##
 """The Weewx-WD schemas"""
@@ -53,7 +54,9 @@ weewxwd_schema = [
     ('GDD4',         'REAL'),
     ('GDD6',         'REAL'),
     ('GDD10',        'REAL'),
-    ('densityA',     'REAL'),
+    ('thwIndex',     'REAL'),
+    ('thswIndex',    'REAL'),
+    ('rain_ET',      'REAL'),
     ]
 
 # Define schema for supp table
@@ -76,7 +79,6 @@ wdsupp_schema = [
     ('vantageForecastRule', 'VARCHAR(256)'),
     ('stormRain',           'REAL'),
     ('stormStart',          'INTEGER'),
-    ('maxSolarRad',         'REAL'),
     ('visibility_km',       'REAL'),
     ('pop',                 'REAL'),
     ('vantageForecastNumber', 'REAL'),

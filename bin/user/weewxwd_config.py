@@ -54,7 +54,7 @@ from weeutil.weeutil import timestamp_to_string
 
 # Weewx-WD imports
 import user.weewxwd3
-import user.wdSearchX3
+#import user.wdSearchX3
 #import user.wdAstroSearchX3
 #import user.wdTaggedStats3
 #import user.imageStackedWindRose3
@@ -512,7 +512,7 @@ def clear_v2_data(config_dict, db_binding_wx):
         
         # do we actually have any extraTemp1 and extraTemp2 fields with data in them?
         #_row = dbmanager_wx.getSql("SELECT COUNT(windrun) FROM %s" % dbmanager_wx.table_name)
-        _row = dbmanager_wx.getSql("SELECT COUNT(outTemp), COUNT(extraTemp2) FROM %s" % dbmanager_wx.table_name)
+        _row = dbmanager_wx.getSql("SELECT COUNT(outTemp), COUNT(outHumidity) FROM %s" % dbmanager_wx.table_name)
         print "datebase of row %s" % (_row)
         if _row:
             # we have an answer
@@ -603,7 +603,7 @@ def clear_v2_data(config_dict, db_binding_wx):
                         else:
                             wi1 = 0
                         dbmanager_wx.updateValue(_rec['dateTime'], 'windDruck', wi1)
-                        """
+
 
                         if _rec['outTemp'] <> 0:
                             hdg = weewx.wxformulas.heating_degrees(_rec['outTemp'], 18.333)
@@ -652,7 +652,17 @@ def clear_v2_data(config_dict, db_binding_wx):
                         else:
                            avpin = None
 
-                        dbmanager_wx.updateValue(_rec['dateTime'], 'AVPin', avpin)
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'AVPin', avpin)"""
+
+                        if _rec['outTemp'] is None or _rec['outHumidity'] is None or _rec['radiation'] is None or _rec['windSpeed'] is None:
+                            et1 = 0.0
+                        else:
+                            et1 = weewx.wxformulas.evapotranspiration_Metric(_rec['outTemp'], _rec['outTemp'],
+                                                                            _rec['outHumidity'], _rec['outHumidity'],
+                                                                            _rec['radiation'], _rec['windSpeed'],
+                                                                            10.6, 53.6059563, 11.341407, 53.6, _rec['dateTime'])
+
+                        dbmanager_wx.updateValue(_rec['dateTime'], 'ET', et1)
 
 
                         """ Muster original

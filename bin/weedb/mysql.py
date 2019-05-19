@@ -9,6 +9,10 @@ import decimal
 
 import six
 import MySQLdb
+try:
+    from MySQLdb import DatabaseError as MySQLDatabaseError
+except ImportError:
+    from _mysql_exceptions import DatabaseError as MySQLDatabaseError
 
 from weeutil.weeutil import to_bool
 import weedb
@@ -39,17 +43,11 @@ def guard(fn):
     def guarded_fn(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except MySQLdb.DatabaseError as e:
+        except MySQLDatabaseError as e:
             # Get the MySQL exception number out of e:
             try:
-                errno = e[0]
-            except TypeError:
-                try:
-                    # The package mysqlclient uses an attribute 'args':
-                    errno = e.args[0]
-                except (IndexError, AttributeError):
-                    errno = None
-            except IndexError:
+                errno = e.args[0]
+            except (IndexError, AttributeError):
                 errno = None
             # Default exception is weedb.DatabaseError
             klass = exception_map.get(errno, weedb.DatabaseError)

@@ -209,9 +209,9 @@ A2 is a one byte write command.
 It is used as: A200 1A20 A2AA 0020 to indicate a data refresh.
 The WH1080 acknowledges the write with an 8 byte chunk: A5A5 A5A5.
 """
+
 from __future__ import absolute_import
 from __future__ import print_function
-
 import datetime
 import sys
 import time
@@ -267,7 +267,7 @@ def getvalues(station, name, value):
     if type(value) is tuple:
         values[name] = station.get_fixed_block(name.split('.'))
     elif type(value) is dict:
-        for x in list(value.keys()):
+        for x in value.keys():
             n = x
             if len(name) > 0:
                 n = name + '.' + x
@@ -284,11 +284,11 @@ def raw_dump(date, pos, data):
 def table_dump(date, data, showlabels=False):
     if showlabels:
         print('# date time', end=' ')
-        for key in list(data.keys()):
+        for key in data.keys():
             print(key, end=' ')
         print()
     print(date, end=' ')
-    for key in list(data.keys()):
+    for key in data.keys():
         print(data[key], end=' ')
     print()
 
@@ -421,7 +421,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
                  'display_settings':[], 'alarm_settings':[]}
         for x in sorted(val.keys()):
             if type(val[x]) is dict:
-                for y in list(val[x].keys()):
+                for y in val[x].keys():
                     label = x + '.' + y
                     s = fmtparam(label, val[x][y])
                     slist = stash(slist, s)
@@ -523,7 +523,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
             v = self.station.get_fixed_block(['data_count'], True)
             print("Records in memory:", v)
             if prompt:
-                ans = eval(input("Clear console memory (y/n)? "))
+                ans = input("Clear console memory (y/n)? ")
             else:
                 print('Clearing console memory')
                 ans = 'y'
@@ -540,7 +540,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
         while ans not in ['y', 'n']:
             print("Interval is", v)
             if prompt:
-                ans = eval(input("Set interval to %d minutes (y/n)? " % interval))
+                ans = input("Set interval to %d minutes (y/n)? " % interval)
             else:
                 print("Setting interval to %d minutes" % interval)
                 ans = 'y'
@@ -558,7 +558,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
             print("Station clock is", v)
             now = datetime.datetime.now()
             if prompt:
-                ans = eval(input("Set station clock to %s (y/n)? " % now))
+                ans = input("Set station clock to %s (y/n)? " % now)
             else:
                 print("Setting station clock to %s" % now)
                 ans = 'y'
@@ -659,7 +659,7 @@ def pywws2weewx(p, ts, last_rain, last_rain_ts, max_rain_rate):
     packet['dateTime'] = ts
 
     # everything else...
-    for k in list(keymap.keys()):
+    for k in keymap.keys():
         if keymap[k][0] in p and p[keymap[k][0]] is not None:
             packet[k] = p[keymap[k][0]] * keymap[k][1]
         else:
@@ -798,7 +798,7 @@ def _decode(raw, fmt):
         return None
     if isinstance(fmt, dict):
         result = {}
-        for key, value in list(fmt.items()):
+        for key, value in fmt.items():
             result[key] = _decode(raw, value)
     else:
         pos, typ, scale = fmt

@@ -323,6 +323,7 @@ USUnits = ListOfDicts({"group_altitude"    : "foot",
                        "group_druck3"      : "kg_per_meter_qubic",
                        "group_gram"        : "g_per_meter_qubic",
                        "group_radio"       : "nSv_per_hour",
+                       "group_resistance"  : "ohm",
                        "group_cpm"         : "cpm",
                        "group_length"      : "inch"})
 
@@ -365,6 +366,7 @@ MetricUnits = ListOfDicts({"group_altitude"    : "meter",
                            "group_druck3"      : "kg_per_meter_qubic",
                            "group_gram"        : "g_per_meter_qubic",
                            "group_radio"       : "nSv_per_hour",
+                           "group_resistance"  : "ohm",
                            "group_cpm"         : "cpm",
                            "group_length"      : "cm"})
 
@@ -484,7 +486,15 @@ conversionDict = {
       'mSv_per_hour'     : {'microSv_per_hour' : lambda x : x * 1000,
                             'nSv_per_hour'     : lambda x : x * 1000000},
       'microSv_per_hour' : {'mSv_per_hour'     : lambda x : x / 1000,
-                            'nSv_per_hour'     : lambda x : x * 1000}
+                            'nSv_per_hour'     : lambda x : x * 1000},
+      'amp'              : {'m_amp'            : lambda x : x * 1000},
+      'm_amp'            : {'amp'              : lambda x : x * 0.001},
+      'ohm'              : {'kohm'             : lambda x : x / 1000.0,
+                            'Mohm'             : lambda x : x / 1000000.0},
+      'kohm'             : {'ohm'              : lambda x : x * 1000.0,
+                            'Mohm'             : lambda x : x / 1000.0},
+      'Mohm'             : {'ohm'              : lambda x : x * 1000000.0,
+                            'kohm'             : lambda x : x * 1000.0},
       }
 
 
@@ -548,6 +558,9 @@ default_unit_format_dict = {"amp"                : "%.1f",
                             "nSv_per_hour"           : "%.2f",
                             "microSv_per_hour"       : "%.4f",
                             "mSv_per_hour"           : "%.1f",
+                            "ohm"                    : "%.1f",
+                            "kohm"                   : "%.1f",
+                            "Mohm"                   : "%.3f",
                             "NONE"                   : "   N/A"}
 
 # Default unit labels to be used in the absence of a skin configuration file
@@ -610,6 +623,9 @@ default_unit_label_dict = { "amp"               : u" A",
                             "nSv_per_hour"           : u" nSv/h",
                             "microSv_per_hour"       : u" µSv/h", #\xc2\xb5Sv/h",
                             "mSv_per_hour"           : u" mSv/h",
+                            "ohm"                    : u" Ohm",
+                            "kohm"                   : u" kohm",
+                            "Mohm"                   : u" Mohm",
                             "NONE"                   : u" " }
 
 # Default strftime formatting to be used in the absence of a skin
