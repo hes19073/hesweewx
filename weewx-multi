@@ -31,7 +31,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
 # this is a space-delimited string that contains all weewx instances
-WEEWX_INSTANCES="no_instances_specified"
+WEEWX_INSTANCES="vantage cmon"
 WEEWX_USER=root:root
 WEEWX_BINDIR=/home/weewx/bin
 DESC=weewx

@@ -24,12 +24,15 @@ Nach / after
 install from debian testing (Python3.7.3)
 
 sudo apt-get install python3-pil
+sudo apt-get install python3-imaging
 sudo apt-get install python3-configobj
+sudo apt-get install python3-cheetah
 
 # As of this writing, Cheetah 3 can only be installed using pip:
 sudo apt-get install python3-pip
 sudo apt-get install python3-dev
-sudo pip3 install cheetah3
+
+sudo apt-get install ftp
 
 # Required if hardware is serial or USB, respectively:
 sudo apt-get install python3-serial
@@ -42,7 +45,7 @@ sudo apt-get install python3-mysqldb
 # Optional for extended almanac information:
 sudo pip3 install pyephem
     
-also 
+also for OWFS - driver or service
 sudo apt-get install python3-ow
 
 and 

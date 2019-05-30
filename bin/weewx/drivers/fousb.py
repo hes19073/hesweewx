@@ -267,7 +267,7 @@ def getvalues(station, name, value):
     if type(value) is tuple:
         values[name] = station.get_fixed_block(name.split('.'))
     elif type(value) is dict:
-        for x in value.keys():
+        for x in list(value.keys()):
             n = x
             if len(name) > 0:
                 n = name + '.' + x
@@ -284,11 +284,11 @@ def raw_dump(date, pos, data):
 def table_dump(date, data, showlabels=False):
     if showlabels:
         print('# date time', end=' ')
-        for key in data.keys():
+        for key in list(data.keys()):
             print(key, end=' ')
         print()
     print(date, end=' ')
-    for key in data.keys():
+    for key in list(data.keys()):
         print(data[key], end=' ')
     print()
 
@@ -421,7 +421,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
                  'display_settings':[], 'alarm_settings':[]}
         for x in sorted(val.keys()):
             if type(val[x]) is dict:
-                for y in val[x].keys():
+                for y in list(val[x].keys()):
                     label = x + '.' + y
                     s = fmtparam(label, val[x][y])
                     slist = stash(slist, s)
@@ -523,7 +523,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
             v = self.station.get_fixed_block(['data_count'], True)
             print("Records in memory:", v)
             if prompt:
-                ans = input("Clear console memory (y/n)? ")
+                ans = eval(input("Clear console memory (y/n)? "))
             else:
                 print('Clearing console memory')
                 ans = 'y'
@@ -540,7 +540,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
         while ans not in ['y', 'n']:
             print("Interval is", v)
             if prompt:
-                ans = input("Set interval to %d minutes (y/n)? " % interval)
+                ans = eval(input("Set interval to %d minutes (y/n)? " % interval))
             else:
                 print("Setting interval to %d minutes" % interval)
                 ans = 'y'
@@ -558,7 +558,7 @@ class FOUSBConfigurator(weewx.drivers.AbstractConfigurator):
             print("Station clock is", v)
             now = datetime.datetime.now()
             if prompt:
-                ans = input("Set station clock to %s (y/n)? " % now)
+                ans = eval(input("Set station clock to %s (y/n)? " % now))
             else:
                 print("Setting station clock to %s" % now)
                 ans = 'y'
@@ -659,7 +659,7 @@ def pywws2weewx(p, ts, last_rain, last_rain_ts, max_rain_rate):
     packet['dateTime'] = ts
 
     # everything else...
-    for k in keymap.keys():
+    for k in list(keymap.keys()):
         if keymap[k][0] in p and p[keymap[k][0]] is not None:
             packet[k] = p[keymap[k][0]] * keymap[k][1]
         else:
@@ -798,7 +798,7 @@ def _decode(raw, fmt):
         return None
     if isinstance(fmt, dict):
         result = {}
-        for key, value in fmt.items():
+        for key, value in list(fmt.items()):
             result[key] = _decode(raw, value)
     else:
         pos, typ, scale = fmt
@@ -1172,8 +1172,10 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
 #==============================================================================
 
     def _read_usb_block(self, address):
-        addr1 = (address / 256) & 0xff
+        addr1 = (address // 256) & 0xff
+        #addr1 = address // 265
         addr2 = address & 0xff
+        #addr2 = address % 265
         self.devh.controlMsg(usb.TYPE_CLASS + usb.RECIP_INTERFACE,
                              0x0000009,
                              [0xA1,addr1,addr2,0x20,0xA1,addr1,addr2,0x20],
@@ -1194,7 +1196,7 @@ class FineOffsetUSB(weewx.drivers.AbstractDevice):
         return list(data)
 
     def _write_usb(self, address, data):
-        addr1 = (address / 256) & 0xff
+        addr1 = (address // 256) & 0xff
         addr2 = address & 0xff
         buf = [0xA2,addr1,addr2,0x20,0xA2,data,0,0x20]
         result = self.devh.controlMsg(
