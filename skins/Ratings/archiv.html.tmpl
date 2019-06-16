@@ -51,8 +51,41 @@ function topFunction() {
   <div id="hes">  <!-- align="center"> -->
     <h2>Archiv Wetterdaten</h2>
      <hr />
+
+     <h2>Jahresarchive seit 2013 </h2>
+     <p>Datenquelle: einigen Aufzeichnungen</p>
+ #for $year in $alltime.years
+     #set $yr = $year.dateTime.format("%Y")
+     #set $hesweby = "Archiv/KR-" + $yr + "-table.html"
+     #set $heslisy = $yr
+     <input type="button" value="$heslisy" onclick="openURL('$hesweby')" />
+ #end for
+     <hr />
+
+     <h2>Monatsarchive seit 2013</h2>
+     <p>Datenquelle: einigen Aufzeichnungen</p>
+     <table>
+ #for $year in $alltime.years
+    <tr>
+     <td>$year.dateTime.format("%Y")</td>
+     #set $yearhes = $year.dateTime.format("%Y")
+     #for $month in $year.months
+        #if $month.outTemp.avg.raw is not None:
+           #set $monthes = $month.dateTime.format("%m")
+           #set $montheb = $month.dateTime.format("%b")
+           #set $hesweb = "Archiv/KR-" + $yearhes + "-" +  $monthes + "-table.html"
+           <td><input type="button" value="$montheb" onclick="openURL('$hesweb')" /></td>
+        #else
+           <td>-</td>
+        #end if
+     #end for
+     </tr>
+ #end for
+     </table>
+     <hr />
+
      <h2>Jahresarchive 1999 bis 2013</h2>
-     <p>Datenquelle: eigene Aufzeichnungen</p>
+     <p>Datenquelle: eigene Aufzeichnungen per Hand in Datentabellen</p>
       <input type="button" value="1999" onclick="openURL('Archiv/KR-1999-table.html')" /><br />
       <input type="button" value="2000" onclick="openURL('Archiv/KR-2000-table.html')" />
       <input type="button" value="2001" onclick="openURL('Archiv/KR-2001-table.html')" />
@@ -69,7 +102,7 @@ function topFunction() {
       <input type="button" value="2012" onclick="openURL('Archiv/KR-2012-table.html')" />
       <input type="button" value="2013" onclick="openURL('Archiv/KR-2013-table.html')" />
      <hr />
-     <h2>Monatsarchive 1998 bis 2013</h2>
+     <h2>Monatsarchive 1999 bis 2013</h2>
      <p>Datenquelle: eigene Aufzeichnungen</p>
      <table>
     <tr>
@@ -297,38 +330,6 @@ function topFunction() {
            <td><input type="button" value="Nov" onclick="openURL('Archiv/KR-2013-11-table.html')" /></td>
            <td><input type="button" value="Dez" onclick="openURL('Archiv/KR-2013-12-table.html')" /></td>
      </tr>
-     </table>
-
-     <hr />
-     <h2>Jahresarchive seit 2013 </h2>
-     <p>Datenquelle: einigen Aufzeichnungen</p>
- #for $year in $alltime.years
-     #set $yr = $year.dateTime.format("%Y")
-     #set $hesweby = "Archiv/KR-" + $yr + "-table.html"
-     #set $heslisy = $yr
-     <input type="button" value="$heslisy" onclick="openURL('$hesweby')" />
- #end for
-     <hr />
-
-     <h2>Monatsarchive seit 2013</h2>
-     <p>Datenquelle: einigen Aufzeichnungen</p>
-     <table>
- #for $year in $alltime.years
-    <tr>
-     <td>$year.dateTime.format("%Y")</td>
-     #set $yearhes = $year.dateTime.format("%Y")
-     #for $month in $year.months
-        #if $month.outTemp.avg.raw is not None:
-           #set $monthes = $month.dateTime.format("%m")
-           #set $montheb = $month.dateTime.format("%b")  
-           #set $hesweb = "Archiv/KR-" + $yearhes + "-" +  $monthes + "-table.html"
-           <td><input type="button" value="$montheb" onclick="openURL('$hesweb')" /></td>
-        #else
-           <td>-</td>
-        #end if
-     #end for
-     </tr>
- #end for
      </table>
      <hr />
 

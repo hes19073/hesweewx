@@ -34,9 +34,10 @@
     Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km
 #end if
     <br />
-    <br>Wetter:
+    Wetter:
     <a href='https://darksky.net/poweredby/' target='_blank'><b> Powerd by Dark Sky</b></a>
-    <br>$day_summary
+    <br>Heute:&nbsp;$day_summary
+    <br>Woche:&nbsp;$week_summary
     <br>Prognose erstellt:&nbsp;$forecast_updated&nbsp;Uhr
   </p>
   <hr />
@@ -62,7 +63,6 @@
   <h3>Wetter Kamera Richtung SW</h3>
    <a href="xicons/wet/snapshot.jpg">
    <img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
-
    <hr />
    <p><font color='red'>Sonne</font>&nbsp;<font color='blue'>Mond</font></p>
    <img src="daySonne.png" alt="Sonnenstand" style="width:300px; height:175px;" />

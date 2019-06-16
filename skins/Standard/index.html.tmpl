@@ -594,7 +594,7 @@
  #end if
     </tr>
     <tr>
-     <td><span class='hes1_m'>Tagesprognose</span></td>
+     <td><span class='hes1_m'>theor. Strahlung</span></td>
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$current.maxSolarRad.formatted</span></td>
      <td><span class="hes1_m">erreicht</span></td>
@@ -607,13 +607,8 @@
      <td><span class='templo'>$anteil %</span></td>
     </tr>
     <tr>
-     <td><span class='hes1_m'>Gestern</span></td>
-     <td><span class='hes1_m'>max</span></td>
-     #set $sonne = $yesterday.maxSolarRad.sum.raw
-     #set $son = locale.format('%.2f', $sonne, 1)
-     <td><span class='temphi'>$son</span></td>
-     <td><span class='hes1_m'>Sonne</span></td>
-     <td><span class='temphi'>$yesterday.sunshineS.sum.hour</span></td>
+     <td colspan='2'><span class='hes1_m'>Heute Sonnenschein</span></td>
+     <td colspan='3'><span class='hes1_m'>$day.sunshineS.sum.hour</span></td>
     </tr>
    </table>
    <hr />
@@ -633,10 +628,6 @@
  <tr>
     <td class='hes1_nam'>Tageslicht</td>
     <td class='hes1_nam'>$daylight_h_str&nbsp;Stunden&nbsp;$daylight_m_str&nbsp;Minuten</td>
- </tr>
- <tr>
-    <td class='hes1_nam'>Sonnenstunden</td>
-    <td class='hes1_nam'>$day.sunshineS.sum.hour</td>
  </tr>
    <tr>
     <td class='hes1_nam'>Entfernung&nbsp;</td>
@@ -693,7 +684,10 @@
  <tr>
     <td class="hes1_sol">
        <a href="astro.html">Mond</a></td>
-    <td><img src='xicons/mond.png' class='legend-img' alt='M' title='Mond' />
+    #set $moonn = str($moonDays)
+    #set $mooni = 'xicons/moon/' + $moonn + '.png'
+    <td><img src=$mooni width='70px' height='70px' alt='M' title='Mond' /> 
+    <!-- <td><img src='xicons/mond.png' class='legend-img' alt='M' title='Mond' /> -->
     </td>
  </tr>
  <tr>
@@ -795,10 +789,6 @@
    <td class='re_data'>$day.windrun.sum</td>
   </tr>
   <tr>
-   <td>Sonnenstunden</td>
-   <td>$day.sunshineS.sum.hour</td>    
-  </tr>
-  <tr>
    <td>Wachstumstage Monat</td>
    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   <tr>
@@ -895,6 +885,15 @@
   <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
  </div>
 </div> <!-- end dwd.de wetter -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <table><tr><td>
+ <iframe src="//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="180" align="left" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365">
+    <p>Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie können die eingebettete Seite über den folgenden Verweis aufrufen: <a href="http://www.weather365.net"> WEATHER365.net </a></p> </iframe>
+  </td></tr></table>
+ </div>
+</div> <!-- end weather365_net -->
 
 <div class="hes">
  <div class='hesbox'>

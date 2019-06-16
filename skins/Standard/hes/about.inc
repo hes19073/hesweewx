@@ -35,6 +35,10 @@
       <td class="data">Blitz AS3935</td>
     </tr>
     <tr>
+      <td class="label">Hardware</td>
+      <td class="data">PM 2.5 SDS011</td>
+    </tr>
+    <tr>
       <td class="label">Software</td>
       <td class="data">WeeWX $station.version</td>
     </tr>

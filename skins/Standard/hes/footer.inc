@@ -22,6 +22,7 @@
      weewx  Version:&nbsp; $station.version<br />
      Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
      Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus<br />
+     Luftmessung: Laser PM2.5 Sensor, Modell: SDS011<br />
 #if $varExists('$year00')
      Weewx Zeit: $year00&nbsp;.
 #end if
@@ -42,7 +43,7 @@
    <input type="button" value=" Air   " onclick="openURL('indexAir.html')" />
    <input type="button" value=" Rad   " onclick="openURL('indexRad.html')" />
    <input type="button" value=" GDD   " onclick="openURL('index3.html')" />
-   <input type="button" value=" Heute " onclick="openURL('daya.html')" />
+   <input type="button" value=" Heute " onclick="openURL('day.html')" />
    <input type="button" value=" Prognose " onclick="openURL('forecast.html')" />
    <input type="button" value=" Statistik " onclick="openURL('statistik.html')" />
    <input type="button" value=" Woche " onclick="openURL('week.html')" />

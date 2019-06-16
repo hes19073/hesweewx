@@ -10,10 +10,10 @@
 # FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 # details.
 #
-# Version: 1.2.1                                  Date: 15 May 2019
+# Version: 1.2.0b2                                  Date: 5 September 2015
 #
 # Revision History
-#  05 September 2015  v1.2.0    - Initial implementation, based upon portions of
+#  ?? September 2015  v1.2.0    - Initial implementation, based upon portions of
 #                                 weewxwd3.py
 #
 """Manage the databases used by Weewx-WD"""
@@ -61,7 +61,7 @@ import user.weewxwd3
 
 from user.weewxwd3 import WdGenerateDerived
 
-WEEWXWD_CONFIG_VERSION = '1.2.1'
+WEEWXWD_CONFIG_VERSION = '1.2.0b2'
 
 description = """Manage the Weewx-WD database. This utility performs many of the functions
 on the Weewx-WD database that the wee_database utility performs on the weewx

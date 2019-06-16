@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2016 Chris Davies-Barnard <weewx@davies-barnard.co.uk>
-# python 2 ony
+#
 # See the file LICENSE.txt for your full rights.
 #
 

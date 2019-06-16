@@ -35,11 +35,12 @@ import weeutil.weeutil
 import weewx.reportengine
 import weewx.units
 
-import Image
-import ImageDraw
-import ImageFont
+#import Image
+#import ImageDraw
+#import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
-WEEWXWD_STACKED_WINDROSE_VERSION = '1.0.0'
+WEEWXWD_STACKED_WINDROSE_VERSION = '3.0.0'
 
 #===============================================================================
 #                    Class ImageStackedWindRoseGenerator

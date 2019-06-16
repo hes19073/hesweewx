@@ -62,16 +62,16 @@
     <td class="stats_label">Luftfeuchte<br />&nbsp;</td>
     <td class="stats_data">$current.outHumidity</td>
    </tr>
-#if $current.extraHumid1 is not None
+#if $latest($data_binding='air_binding').inHumidity is not None
    <tr>
     <td class="stats_label">Luftfeuchte<br />Garten</td>
-    <td class="stats_data">$current.extraHumid1</td>
+    <td class="stats_data">$latest($data_binding='air_binding').inHumidity</td>
    </tr>
 #end if
-#if $current.extraHumid2 is not None
+#if $latest($data_binding='airCar_binding').humiAir is not None
    <tr>
     <td class="stats_label">Luftfeuchte<br />Carport</td>
-    <td class="stats_data">$current.extraHumid2</td>
+    <td class="stats_data">$latest($data_binding='airCar_binding').humiAir</td>
    </tr>
 #end if
    <tr>
@@ -97,6 +97,24 @@
      &nbsp;&nbsp; $decorator_text('barotrend', $trend.barometer.raw)
     </td>
    </tr>
+#if $latest($data_binding='airCar_binding').presAir is not None
+   <tr>
+    <td class="stats_label">Luftdruck<br />Carport (BMP 180)</td>
+    <td class="stats_data">$latest($data_binding='airCar_binding').presAir</td>
+   </tr>
+#end if
+#if $latest($data_binding='airCar_binding').slp_A is not None
+   <tr>
+    <td class="stats_label">Luftdruck SLP<br />Carport (BMP 180)</td>
+    <td class="stats_data">$latest($data_binding='airCar_binding').slp_A</td>
+   </tr>
+#end if
+#if $latest($data_binding='airCar_binding').altiAir is not None
+   <tr>
+    <td class="stats_label">Altitude<br />Carport (BMP 180)</td>
+    <td class="stats_data">$latest($data_binding='airCar_binding').altiAir</td>
+   </tr>
+#end if
    <tr>
     <td class="stats_label">Luftdichte<br />&nbsp;</td>
     <td class="stats_data">$current.airDensity</td>
@@ -205,6 +223,13 @@
     #end if
   </tr>
   <tr><td>1-Wire OWFS USB<br />Temperatur</td><td>Seit dem 10.08.2015&nbsp;</td></tr>
+#if $latest($data_binding='airCar_binding').tem_A is not None
+   <tr>
+    <td class="stats_label">Temperatur<br />Carport (BMP 180)</td>
+    <td class="stats_data" style="$decorator_color('tempO', $latest($data_binding='airCar_binding').tem_A.raw)">
+             $latest($data_binding='airCar_binding').tem_A</td>
+   </tr>
+#end if
   #if $day.extraTemp9.has_data
   <tr>
    <td class="stats_label">Carport<br />&nbsp;</td>

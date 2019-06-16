@@ -410,6 +410,18 @@ function topFunction() {
             </tr>
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>AirPi Gassensor</td></tr>
           <tr>
+           <td colspan='2' style='$decorator_color('pm_25', $current($data_binding='aqiCar_binding').aqi_pm2_5_category.raw)'>
+                      $decorator_text('pm_25', $current($data_binding='aqiCar_binding').aqi_pm2_5_category.raw) </td>
+           <!-- <td>&nbsp;</td> -->
+           <td><img src="dayAqiPM25.png" alt="Air-Quality-Index" /></td>
+          </tr>
+          <tr>
+           <td>AirQualityIndex&nbsp; $latest($data_binding='aqiCar_binding').aqi_pm2_5
+           </td>
+           <td>&nbsp;</td>
+           <td><img src="dayAqiPM25C.png" alt="Air-Quality-Index" /></td>
+          </tr>
+          <tr>
            <td>
             Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor
            </td>
@@ -456,12 +468,30 @@ function topFunction() {
           </tr>
           <tr>
            <td>
+            PM 2.5 Sensor&nbsp; $latest($data_binding='airCar_binding').pm_25
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayPM25C.png" alt="PM 2.5 Quality" /></td>
+          </tr>
+          <tr>
+           <td>
             PM 10 Sensor&nbsp; $latest($data_binding='air2_binding').pm_10
            </td>
            <td>
             &nbsp;
            </td>
            <td><img src="dayPM10.png" alt="PM 10 Quality" /></td>
+          </tr>
+          <tr>
+           <td>
+            PM 10 Sensor&nbsp; $latest($data_binding='airCar_binding').pm_10
+           </td>
+           <td>
+            &nbsp;
+           </td>
+           <td><img src="dayPM10C.png" alt="PM 10 Quality" /></td>
           </tr>
           <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
           <tr>
@@ -584,13 +614,13 @@ function topFunction() {
              <td>Zerfall je Minute<br />
              $latest($data_binding='geiger_binding').rad_cpm</td>
              <td></td>
-             <td><img src="dayGeigerK.png" alt="Geige- Station" /></td>
+             <td><img src="dayGeiger.png" alt="Geige- Station" /></td>
             </tr>
             <tr>
              <td>Radioaktivität:&nbsp;<br />
              $latest($data_binding='geiger_binding').rad_nsvh</td>
              <td></td>
-             <td><img src="dayGeigerSK.png" alt="Geige Signal " /></td>
+             <td><img src="dayGeigerS.png" alt="Geige Signal " /></td>
             </tr>
             <tr>
              <td>Heiz Grad Tag</td>

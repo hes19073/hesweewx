@@ -22,7 +22,7 @@
          <img style="width: 48px; height: 48px;" alt="weathercloud" src="xicons/logo/wcloud.jpg"  /></a>
     <a href = 'http://www.awekas.at/de/instrument.php?id=11042'>
          <img style="width: 48px; height: 48px;" alt="awekas" src="xicons/logo/AWEKAS.jpg"  /></a>
-    <a href = 'http://www.weather365.net'>
+    <a href = 'https://stations.weather365.net/wetter-bulletin-1.1/index.php?station_id=23'>
          <img style="width: 88px; height: 48px;" alt="weather365" src="xicons/logo/logo_weather365.png"  /></a> 
     <a href = 'http://www.weewx.com/stations'>
          <img style="width: 48px; height: 48px;" alt="weewx" src="weewx.png"  /></a>

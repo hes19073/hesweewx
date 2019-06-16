@@ -125,9 +125,10 @@ class getForecast(SearchList):
         current_windGust = (data["currently"]["windGust"] * 3.6)
         current_windDir = deg2dir(data["currently"]["windBearing"])
         current_visibility = data["currently"]["visibility"]
-        current_week_summary = data["daily"]["summary"]
-        current_day_summary = data["daily"]["data"][0]["summary"]
-        day_summary = data["hourly"]["summary"]
+        cur_now_summary = data["hourly"]["summary"]
+        cur_week_summary = data["daily"]["summary"]
+        cur_day_summary = data["daily"]["data"][0]["summary"]
+
 
 
         if data["currently"]["icon"] == "partly-cloudy-night":
@@ -235,7 +236,9 @@ class getForecast(SearchList):
                                   'current_windGust': current_windGust,
                                   'current_windDir': current_windDir,
                                   'current_visibility': current_visibility,
-                                  'day_summary': current_day_summary,
+                                  'day_summary': cur_day_summary,
+                                  'now_summary': cur_now_summary,
+                                  'week_summary': cur_week_summary,
                                   'forecastHTML' : html_output
                                  }
 

@@ -11,9 +11,9 @@
  <div class='hesbox'>
   #if $forecast.label('Zambretti', $forecast.zambretti.code) is not None
   <p><b>Zambretti:</b>&nbsp;$forecast.label('Zambretti', $forecast.zambretti.code)<br />
-   Prognose erstellt am:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts.format('%d.%m.%Y %H:%M'))&nbsp;Uhr</p>
+   Prognose erstellt:&nbsp;$forecast.label('Zambretti', $forecast.zambretti.event_ts.format('%d.%m.%Y %H:%M'))&nbsp;Uhr</p>
   #else
-  <p><b>Zambretti:</b> Keine Daten</p>
+  <p><b>Zambretti:</b></p>
   #end if
 <hr />
 
@@ -30,6 +30,15 @@
     in Spitzen: $forecast.label('Weather', $summaryDS.windGust)<br>
     Windrichtung: <b>$windDS_text</b><br>
     Regenrisiko: $forecast.label('Weather', $summaryDS.pop)<br>
+#if $latest($data_binding='wdsupp_binding').visibility_km.has_data
+    Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km
+#end if
+    <br />
+    Wetter:
+    <a href='https://darksky.net/poweredby/' target='_blank'><b> Powerd by Dark Sky</b></a>
+    <br>Heute:&nbsp;$day_summary
+    <br>Woche:&nbsp;$week_summary
+    <br>Prognose erstellt:&nbsp;$forecast_updated&nbsp;Uhr
   </p>
   <hr />
 
@@ -47,15 +56,17 @@
     #end if
 
    <p><img alt="Wetter" src="$VPnumber" /><br>
-   <b>VantagePro 2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw</p>
+   <b>VantagePro 2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw<br>
+       Prognose erstellt:&nbsp;$latest($data_binding='wdsupp_binding').dateTime&nbsp;Uhr</p>
 
   <hr />
   <h3>Wetter Kamera Richtung SW</h3>
    <a href="xicons/wet/snapshot.jpg">
    <img src="xicons/wet/snapshot.jpg" width="300" height="180" alt="Wetter aktuell" /></a>
-
    <hr />
    <p><font color='red'>Sonne</font>&nbsp;<font color='blue'>Mond</font></p>
    <img src="daySonne.png" alt="Sonnenstand" style="width:300px; height:175px;" />
+   <hr />
+   <p>Python: $station.python_version</p>
  </div>
 </div>

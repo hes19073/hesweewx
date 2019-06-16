@@ -396,7 +396,7 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['GDD6'] = None
 
         if 'outTemp' in event.packet:
-            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 10.0)
+            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 5.0)
         else:
             data_x['GDD10'] = None
 
@@ -462,7 +462,7 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['GDD6'] = None
 
         if 'outTemp' in event.record:
-            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 10.0)
+            data_x['GDD10'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 5.0)
         else:
             data_x['GDD10'] = None
 
