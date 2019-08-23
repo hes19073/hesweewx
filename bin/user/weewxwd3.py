@@ -43,8 +43,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+import logging
 
-import syslog
 import threading
 import urllib.request, urllib.error, urllib.parse
 import math
@@ -58,29 +58,15 @@ from datetime import datetime
 try:
     # Python 3
     from io import StringIO
+    from urllib.request import Request, urlopen
+    from urllib.error import URLError
+    from http.client import BadStatusLine, IncompleteRead
+
 except ImportError:
     # Python 2
     from StringIO import StringIO
-
-try:
-    # Python 3
-    from urllib.request import Request, urlopen
-except ImportError:
-    # Python 2
     from urllib2 import Request, urlopen
-
-try:
-    # Python 3
-    from urllib.error import URLError
-except ImportError:
-    # Python 2
     from urllib2 import URLError
-
-try:
-    # Python 3
-    from http.client import BadStatusLine, IncompleteRead
-except ImportError:
-    # Python 2
     from httplib import BadStatusLine, IncompleteRead
 
 try:
@@ -95,6 +81,8 @@ except (ImportError, AttributeError):
 
 import weewx
 import weedb
+import weeutil.config
+import weeutil.logger
 import weewx.engine
 import weewx.manager
 import weewx.wxformulas
@@ -102,10 +90,13 @@ import weewx.almanac
 import weeutil.weeutil
 
 from weewx.units import convert, obs_group_dict
-from weeutil.weeutil import to_bool, accumulateLeaves
+from weeutil.config import search_up, accumulateLeaves
+from weeutil.weeutil import to_bool
 from weewx.units import CtoF, CtoK, mps_to_mph, kph_to_mph
 
-WEEWXWD_VERSION = '1.3.0'
+log = logging.getLogger(__name__)
+
+WEEWXWD_VERSION = '1.3.1'
 
 # Define a dictionary to look up Davis forecast rule
 # and return forecast text
@@ -309,21 +300,6 @@ davis_fr_dict= {
         196 : 'Meist heiter und kälter.',
         }
 
-def logmsg(level, src, msg):
-    syslog.syslog(level, '%s %s' % (src, msg))
-
-def logdbg(src, msg):
-    logmsg(syslog.LOG_DEBUG, src, msg)
-
-def logdbg2(src, msg):
-    if weewx.debug >= 2:
-        logmsg(syslog.LOG_DEBUG, src, msg)
-
-def loginf(src, msg):
-    logmsg(syslog.LOG_INFO, src, msg)
-
-def logerr(src, msg):
-    logmsg(syslog.LOG_ERR, src, msg)
 
 #===============================================================================
 #                            Class WdWXCalculate
@@ -364,6 +340,11 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 15.0)
         else:
             data_x['homedeg'] = None
+
+        if 'outTemp' in event.packet:
+            data_x['wdd_deg'] = weewx.wxformulas.cooling_degrees(event.packet['outTemp'], 10.0)
+        else:
+            data_x['wdd_deg'] = None
 
         if 'outTemp' in event.packet:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.packet['outTemp'])
@@ -432,6 +413,11 @@ class WdWXCalculate(weewx.engine.StdService):
             data_x['homedeg'] = None
 
         if 'outTemp' in event.record:
+            data_x['wdd_deg'] = weewx.wxformulas.cooling_degrees(event.record['outTemp'], 10.0)
+        else:
+            data_x['wdd_deg'] = None
+
+        if 'outTemp' in event.record:
             data_x['SVP'] = weewx.uwxutils.TWxUtils.SaturationVaporPressure(event.record['outTemp'])
         else:
             data_x['SVP'] = None
@@ -493,7 +479,7 @@ class WdArchive(weewx.engine.StdService):
         else:
             self.data_binding_wx = 'wx_binding'
 
-        loginf("WdArchive:", "WdArchive will use data binding %s" % self.data_binding)
+        log.info("WdArchive will use data binding %s", self.data_binding)
 
         # setup our database if needed
         self.setup_database(config_dict)
@@ -525,7 +511,7 @@ class WdArchive(weewx.engine.StdService):
         # This will create the database if it doesn't exist, then return an
         # opened instance of the database manager.
         dbmanager = self.engine.db_binder.get_manager(self.data_binding, initialize=True)
-        loginf("WdArchive:", "Using binding '%s' to database '%s'" % (self.data_binding, dbmanager.database_name))
+        log.info("WdArchive using binding '%s' to database '%s'", self.data_binding, dbmanager.database_name)
 
         # Check if we have any historical data to suck in from Weewx main archive
         # get a dbmanager for the Weewx archive
@@ -533,14 +519,14 @@ class WdArchive(weewx.engine.StdService):
 
 
         # Back fill the daily summaries.
-        loginf("WdArchive:", "Starting backfill of daily summaries")
+        log.info("WD_Starting backfill of daily summaries")
         t1 = time.time()
         nrecs, ndays = dbmanager.backfill_day_summary()
         tdiff = time.time() - t1
         if nrecs:
-            loginf("WdArchive:", "Processed %d records to backfill %d day summaries in %.2f seconds" % (nrecs, ndays, tdiff))
+            log.info("WdArchive Processed %d records to backfill %d day summaries in %.2f seconds",  nrecs, ndays, tdiff)
         else:
-            loginf("WdArchive:", "Daily summaries up to date.")
+            log.info("WdArchive Daily summaries up to date.")
 
 #===============================================================================
 #                              Class WeeArchive
@@ -559,7 +545,7 @@ class WeeArchive(weewx.engine.StdService):
         else:
             self.data_binding = 'wee_binding'
 
-        loginf("Weewx-Archive:", "Weewx-Archive will use data binding %s" % self.data_binding)
+        log.info("Weewx-Archive will use data binding %s", self.data_binding)
 
         # setup our database if needed
         self.setup_database(config_dict)
@@ -582,7 +568,7 @@ class WeeArchive(weewx.engine.StdService):
         # This will create the database if it doesn't exist, then return an
         # opened instance of the database manager.
         dbmanager = self.engine.db_binder.get_manager(self.data_binding, initialize=True)
-        loginf("Weewx-Archive:", "Using binding '%s' to database '%s'" % (self.data_binding, dbmanager.database_name))
+        log.info("Weewx-Archive using binding '%s' to database '%s'", self.data_binding, dbmanager.database_name)
 
 
 #===============================================================================
@@ -631,7 +617,7 @@ class WdSuppArchive(weewx.engine.StdService):
                 # we have a [[Supplementary]] stanza so we can initialise wdsupp db
                 # get our binding, if it's missing use a default
                 self.binding = config_dict['Weewx-WD']['Supplementary'].get('data_binding', 'wdsupp_binding')
-                loginf("WdSuppArchive:", "WdSuppArchive will use data binding '%s'" % self.binding)
+                log.info("WdSuppArchive will use data binding '%s'", self.binding)
                 # how long to keep records in our db (default 8 days)
                 self.max_age = config_dict['Weewx-WD']['Supplementary'].get('max_age', 691200)
                 self.max_age = toint('max_age', self.max_age, 691200)
@@ -669,6 +655,13 @@ class WdSuppArchive(weewx.engine.StdService):
                 obs_group_dict["visibility_km"] = "group_distance"
                 obs_group_dict["pop"] = "group_count"
                 obs_group_dict["vantageForecastNumber"] = "group_count"
+                obs_group_dict["windSpeed10"] = "group_speed"
+                obs_group_dict["dayRain"] = "group_rain"
+                obs_group_dict["monthRain"] = "group_rain"
+                obs_group_dict["yearRain"] = "group_rain"
+                obs_group_dict["dayET"] = "group_rain"
+                obs_group_dict["monthET"] = "group_rain"
+                obs_group_dict["yearET"] = "group_rain"
 
                 # event bindings
                 # bind to NEW_LOOP_PACKET so we can capture Davis Vantage forecast
@@ -787,13 +780,35 @@ class WdSuppArchive(weewx.engine.StdService):
                 _data['vantageForecastNumber'] = self.loop_packet['forecastRule']
             except:
                 _data['vantageForecastRule'] = ""
-                logdbg2("WdSuppArchive:", 'Could not decode Vantage forecast code')
+                log.info("WdSuppArchive Could not decode Vantage forecast code")
         # Vantage stormRain
         if 'stormRain' in self.loop_packet:
             _data['stormRain'] = self.loop_packet['stormRain']
         # Vantage stormStart
         if 'stormStart' in self.loop_packet:
             _data['stormStart'] = self.loop_packet['stormStart']
+        # data Vantage pro 2
+        if 'windSpeed10' in self.loop_packet:
+            _data['windSpeed10'] = self.loop_packet['windSpeed10']
+
+        if 'dayRain' in self.loop_packet:
+            _data['dayRain'] = self.loop_packet['dayRain']
+
+        if 'monthRain' in self.loop_packet:
+            _data['monthRain'] = self.loop_packet['monthRain']
+
+        if 'yearRain' in self.loop_packet:
+            _data['yearRain'] = self.loop_packet['yearRain']
+
+        if 'dayET' in self.loop_packet:
+            _data['dayET'] = self.loop_packet['dayET']
+
+        if 'monthET' in self.loop_packet:
+            _data['monthET'] = self.loop_packet['monthET']
+
+        if 'yearET' in self.loop_packet:
+            _data['yearET'] = self.loop_packet['yearET']
+
 
         return _data
 
@@ -808,9 +823,8 @@ class WdSuppArchive(weewx.engine.StdService):
                 dbm.addRecord(_data_record)
                 break
             except Exception as e:
-                logerr("WdSuppArchive:", 'save failed (attempt %d of %d): %s' %
-                       ((count + 1), max_tries, e))
-                logerr("WdSuppArchive:", 'waiting %d seconds before retry' % (retry_wait, ))
+                log.error("WdSuppArchive save failed (attempt %d of %d): %s", (count + 1), max_tries, e)
+                log.error("WdSuppArchive waiting %d seconds before retry", retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('save failed after %d attempts' % max_tries)
@@ -826,8 +840,8 @@ class WdSuppArchive(weewx.engine.StdService):
                 dbm.getSql(sql)
                 break
             except Exception as e:
-                logerr("WdSuppArchive:", 'prune failed (attempt %d of %d): %s' % ((count+1), max_tries, e))
-                logerr("WdSuppArchive:", 'waiting %d seconds before retry' % (retry_wait, ))
+                log.error("WdSuppArchive prune failed (attempt %d of %d): %s", (count+1), max_tries, e)
+                log.error("WdSuppArchive waiting %d seconds before retry", retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('prune failed after %d attemps' % max_tries)
@@ -850,10 +864,10 @@ class WdSuppArchive(weewx.engine.StdService):
         try:
             dbm.getSql('vacuum')
         except Exception as e:
-            logerr("WdSuppArchive:", 'Vacuuming database % failed: %s' % (dbm.database_name, e))
+            log.error("WdSuppArchive Vacuuming database % failed: %s", dbm.database_name, e)
 
         t2 = time.time()
-        logdbg("WdSuppArchive:", "vacuum_database executed in %0.9f seconds" % (t2-t1))
+        log.info("WdSuppArchive vacuum_database executed in %0.9f seconds",  (t2 - t1))
 
     def setup_database(self, config_dict):
         """ Setup the database table we will be using.
@@ -863,8 +877,8 @@ class WdSuppArchive(weewx.engine.StdService):
         # then return an opened instance of the database manager.
         dbmanager = self.engine.db_binder.get_database(self.binding,
                                                        initialize = True)
-        loginf("WdSuppArchive:", "Using binding '%s' to database '%s'" %
-                                        (self.binding, dbmanager.database_name))
+        log.info("WdSuppArchive using binding '%s' to database '%s'",
+                                        self.binding, dbmanager.database_name)
 
     def new_loop_packet(self, event):
         """ Save Davis Console forecast data that arrives in loop packets so
@@ -883,21 +897,60 @@ class WdSuppArchive(weewx.engine.StdService):
                 self.loop_packet['forecastIcon'] = event.packet['forecastIcon']
             else:
                 self.loop_packet['forecastIcon'] = None
+
             if 'forecastRule' in event.packet:
                 self.loop_packet['forecastRule'] = event.packet['forecastRule']
             else:
                 self.loop_packet['forecastRule'] = None
+
             if 'stormRain' in event.packet:
                 self.loop_packet['stormRain'] = event.packet['stormRain']
             else:
                 self.loop_packet['stormRain'] = None
+
             if 'stormStart' in event.packet:
                 self.loop_packet['stormStart'] = event.packet['stormStart']
             else:
                 self.loop_packet['stormStart'] = None
 
+            if 'windSpeed10' in event.packet:
+                self.loop_packet['windSpeed10'] = event.packet['windSpeed10']
+            else:
+                self.loop_packet['windSpeed10'] = None
+
+            if 'dayRain' in event.packet:
+                self.loop_packet['dayRain'] = event.packet['dayRain']
+            else:
+                self.loop_packet['dayRain'] = None
+
+            if 'monthRain' in event.packet:
+                self.loop_packet['monthRain'] = event.packet['monthRain']
+            else:
+                self.loop_packet['monthRain'] = None
+
+            if 'yearRain' in event.packet:
+                self.loop_packet['yearRain'] = event.packet['yearRain']
+            else:
+                self.loop_packet['yearRain'] = None
+
+            if 'dayET' in event.packet:
+                self.loop_packet['dayET'] = event.packet['dayET']
+            else:
+                self.loop_packet['dayET'] = None
+
+            if 'monthET' in event.packet:
+                self.loop_packet['monthET'] = event.packet['monthET']
+            else:
+                self.loop_packet['monthET'] = None
+
+            if 'yearET' in event.packet:
+                self.loop_packet['yearET'] = event.packet['yearET']
+            else:
+                self.loop_packet['yearET'] = None
+
+
         except:
-            loginf("WdSuppArchive:", "new_loop_packet: Loop packet data error. Cannot decode packet: %s" % (e, ))
+            log.info("WdSuppArchive Loop packet data error. Cannot decode packet: %s", e)
 
     def shutDown(self):
         pass
@@ -925,7 +978,7 @@ def toint(label, value_tbc, default_value):
         try:
             value_tbc = int(value_tbc)
         except Exception as e:
-            logerr("weewxwd3:toint:", "bad value '%s' for %s" % (value_tbc, label))
+            log.error("weewxwd3 bad value '%s' for %s", value_tbc, label)
             value_tbc = default_value
     return value_tbc
 
@@ -967,7 +1020,7 @@ def check_enable(cfg_dict, service, *args):
     try:
         wdsupp_dict = accumulateLeaves(cfg_dict[service], max_level = 1)
     except KeyError:
-        logdbg2("weewxwd3:check_enable:", "%s: No config info. Skipped." % service)
+        log.debug("weewxwd3 check_enable: '%s' No config info. Skipped.", service)
         return None
 
     # Check to see whether all the needed options exist, and none of them have
@@ -977,7 +1030,7 @@ def check_enable(cfg_dict, service, *args):
             if wdsupp_dict[option] == 'replace_me':
                 raise KeyError(option)
     except KeyError as e:
-        logdbg2("weewxwd3:check_enable:", "%s: Missing option %s" % (service, e))
+        log.debug("weewxwd3 check_enable: '%s' Missing option '%s'",  service, e)
         return None
 
     return wdsupp_dict

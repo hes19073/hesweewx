@@ -11,9 +11,12 @@ Upload data to weather365.net
         stationid = INSERT_STATIONID_HERE
         password  = INSERT_PASSWORD_HERE
 """
+
+from __future__ import absolute_import
+
+import logging
 import re
 import sys
-import syslog
 import time
 
 # Python 2/3 compatiblity
@@ -27,27 +30,20 @@ except ImportError:
     from urllib.request import Request      # python 3
 
 import weewx
+import weeutil.logger
 import weewx.restx
 import weewx.units
-from weeutil.weeutil import to_bool, accumulateLeaves
+from weeutil.config import search_up, accumulateLeaves
+from weeutil.weeutil import to_bool
+
+log = logging.getLogger(__name__)
+
 
 VERSION = "1.4.2"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
                                    weewx.__version__)
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'restx: Weather365: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 class Weather365(weewx.restx.StdRESTbase):
     def __init__(self, engine, config_dict):
@@ -60,21 +56,21 @@ class Weather365(weewx.restx.StdRESTbase):
         Default is station latitude
 
         longitude: Station longitude in decimal degrees
-        Default is station longitude        
+        Default is station longitude
         """
-        super(Weather365, self).__init__(engine, config_dict)        
-        loginf("service version is %s" % VERSION)
+        super(Weather365, self).__init__(engine, config_dict)
+        log.info("service version is %s", VERSION)
         try:
             site_dict = config_dict['StdRESTful']['Weather365']
             site_dict = accumulateLeaves(site_dict, max_level=1)
-            site_dict['stationid']     
-            site_dict['password']   
+            site_dict['stationid']
+            site_dict['password']
         except KeyError as e:
-            logerr("Data will not be posted: Missing option %s" % e)
+            log.error("Data will not be posted: Missing option %s", e)
             return
         site_dict.setdefault('latitude', engine.stn_info.latitude_f)
         site_dict.setdefault('longitude', engine.stn_info.longitude_f)
-        site_dict.setdefault('altitude', engine.stn_info.altitude_vt[0])            
+        site_dict.setdefault('altitude', engine.stn_info.altitude_vt[0])
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
 
@@ -82,7 +78,7 @@ class Weather365(weewx.restx.StdRESTbase):
         self.archive_thread = Weather365Thread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("Data will be uploaded for station id %s" % site_dict['stationid'])
+        log.info("Data will be uploaded for station id %s", site_dict['stationid'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -124,8 +120,8 @@ class Weather365Thread(weewx.restx.RESTThread):
                  'temp3':         ('extraTemp2',  '%.1f', 1.0), # C
                  'temp4':         ('extraTemp3',  '%.1f', 1.0), # C
                  'humidity2':     ('extraHumid1', '%.0f', 1.0), # %
-                 'humidity3':     ('extraHumid2', '%.0f', 1.0), # %                 
-                 'txbattery':     ('txBatteryStatus', '%.0f', 1.0), # %  
+                 'humidity3':     ('extraHumid2', '%.0f', 1.0), # %
+                 'txbattery':     ('txBatteryStatus', '%.0f', 1.0), # %
                  }
 
     try:
@@ -133,7 +129,7 @@ class Weather365Thread(weewx.restx.RESTThread):
     except AttributeError:
         max_integer = sys.maxsize    # python 3
 
-    def __init__(self, queue, 
+    def __init__(self, queue,
                  stationid, password, latitude, longitude, altitude,
                  manager_dict,
                  server_url=_SERVER_URL, skip_upload=False,
@@ -153,7 +149,7 @@ class Weather365Thread(weewx.restx.RESTThread):
                                            retry_wait=retry_wait)
         self.latitude = float(latitude)
         self.longitude = float(longitude)
-        self.altitude = float(altitude)                                      
+        self.altitude = float(altitude)
         self.stationid = stationid
         self.server_url = server_url
         self.skip_upload = to_bool(skip_upload)
@@ -163,10 +159,10 @@ class Weather365Thread(weewx.restx.RESTThread):
         data = self.get_data(r)
         url_data = urlencode(data).encode('utf-8')
         if self.skip_upload:
-            loginf("skipping upload")
+            log.info("skipping upload")
             return
         req = Request(self.server_url, url_data)
-        #loginf("Data uploaded to %s is: (%s)" % (self.server_url, url_data))
+        #log.info("Data uploaded to %s is: (%s)", self.server_url, url_data)
         req.get_method = lambda: 'POST'
         req.add_header("User-Agent", "weewx/%s" % weewx.__version__)
         self.post_with_retries(req)
@@ -183,7 +179,7 @@ class Weather365Thread(weewx.restx.RESTThread):
         record = weewx.units.to_METRIC(in_record)
 
         # put data into expected scaling, structure, and format
-        values = {}      
+        values = {}
         values['lat']  = str(self.latitude)
         values['long'] = str(self.longitude)
         values['alt']  = str(self.altitude) # meter

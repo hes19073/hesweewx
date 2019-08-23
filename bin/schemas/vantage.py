@@ -110,5 +110,15 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
           ('AVPin',                'REAL'),
           ('densityA',             'REAL'),
           ('thwIndex',             'REAL'),
-          ('thswIndex',            'REAL')]
+          ('thswIndex',            'REAL'),
+          ('windSpeed10',          'REAL'),
+          ('windSpeed2',           'REAL'),
+          ('windGust10',           'REAL'),
+          ('windGustDir10',        'REAL'),
+          ('THSW',                 'REAL'),
+          ('dayRain',              'REAL'),
+          ('rain15',               'REAL'),
+          ('rain24',               'REAL'),
+          ('hourRain',             'REAL'),
+          ('dayET',                'REAL')]
 

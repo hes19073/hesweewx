@@ -8,9 +8,11 @@
 
 schema = [
     ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
-    ('usUnits', 'INTEGER NOT NULL'),
+    ('usUnits',  'INTEGER NOT NULL'),
     ('interval', 'INTEGER NOT NULL'),
-    ('pm_25','INTEGER'),
-    ('pm_10','INTEGER'),
+    ('pm_25',    'REAL'),
+    ('pm_10',    'REAL'),
+    ('tempOut',  'REAL'),
+    ('baroOut',  'REAL'),
     ]
 

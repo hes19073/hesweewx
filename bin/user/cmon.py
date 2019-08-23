@@ -112,20 +112,28 @@ then load it using this configuration:
 # FIXME: deal with MB/GB in memory sizes
 # FIXME: save the counts or save the differences?  for now the differences
 
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
+import logging
 import os
 import math
 import platform
 import re
-import syslog
+#import syslog
 import time
 from subprocess import Popen, PIPE
 
 import weewx
+import weecfg
 import weeutil.weeutil
+import weeutil.config
+from weeutil.weeutil import to_int
 from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
+
+log = logging.getLogger(__name__)
 
 DRIVER_NAME = "ComputerMonitor"
 DRIVER_VERSION = "0.14"
@@ -255,18 +263,6 @@ IGNORED_MOUNTS = [
     ]
 
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'cmon: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
 
 def get_collector(hardware=[], ignored_mounts=IGNORED_MOUNTS):
     # see what we are running on
@@ -327,7 +323,7 @@ class Collector(object):
                     if m:
                         record['ups_time'] = float(m.group())
         except (ValueError, IOError, KeyError) as e:
-            logerr('apcups_info failed: %s' % e)
+            log.error('apcups_info failed: %s', e)
         return record
 
     _RPI_VCGENCMD = '/opt/vc/bin/vcgencmd'
@@ -358,7 +354,7 @@ class Collector(object):
                 if m:
                     record[m.group(1) + '_mem'] = float(m.group(2))
         except (ValueError, IOError, KeyError) as e:
-            logerr('rpi_info failed: %s' % e)
+            log.error('rpi_info failed: %s', e)
         return record
 
     """ Test Banania Pi test
@@ -396,7 +392,7 @@ class Collector(object):
                 if m:
                     record[m.group(1) + '_mem'] = float(m.group(2))
         except (ValueError, IOError, KeyError), e:
-            logerr('bpi_info failed: %s' % e)
+            log.error('bpi_info failed: %s', e)
         return record """
 
 # this should work on any linux running kernel 2.2 or later
@@ -405,14 +401,14 @@ class LinuxCollector(Collector):
         super(LinuxCollector, self).__init__(hardware)
 
         # provide info about the system on which we are running
-        loginf('sysinfo: %s' % ' '.join(os.uname()))
+        log.info('sysinfo: %s', ' '.join(os.uname()))
         fn = '/proc/cpuinfo'
         try:
             cpuinfo = self._readproc_dict(fn)
             for key in cpuinfo:
-                loginf('cpuinfo: %s: %s' % (key, cpuinfo[key]))
+                log.info('cpuinfo: %s: %s', key, cpuinfo[key])
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
 
         self.ignored_mounts = ignored_mounts
         self.last_cpu = dict()
@@ -477,7 +473,7 @@ class LinuxCollector(Collector):
                 record['swap_free'] = int(meminfo['SwapFree'].split()[0]) # kB
                 record['swap_used'] = record['swap_total'] - record['swap_free']
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
 
         # get cpu usage
         fn = '/proc/stat'
@@ -490,7 +486,7 @@ class LinuxCollector(Collector):
                         record['cpu_' + k] = int(values[i]) - self.last_cpu[k]
                     self.last_cpu[k] = int(values[i])
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
 
         # get network usage
         fn = '/proc/net/dev'
@@ -512,7 +508,7 @@ class LinuxCollector(Collector):
                             record['net_' + iface + '_' + k] = x
                         self.last_net[iface][k] = int(values[i])
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
 
 #        uptimestr = _readproc_line('/proc/uptime')
 #        (uptime,idletime) = uptimestr.split()
@@ -530,7 +526,7 @@ class LinuxCollector(Collector):
                 record['proc_active'] = int(num_proc)
                 record['proc_total'] = int(tot_proc)
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
 
         # read cpu temperature
         tdir = '/sys/class/hwmon/hwmon0'
@@ -546,14 +542,14 @@ class LinuxCollector(Collector):
                             t_C = int(s) / 1000.0 # degree C
                             record['cpu_' + n] = t_C
             except Exception as e:
-                logdbg("read failed for %s: %s" % (tdir, e))
+                log.debug("read failed for %s: %s", tdir, e)
         #elif os.path.exists(tfile):
         #    try:
         #        s = self._readproc_line(tfile)
         #        t_C = int(s) / 1000 # degree C
         #        record['cpu_temp'] = t_C
         #    except Exception, e:
-        #        logdbg("read failed for %s: %s" % (tfile, e))
+        #        log.debug("read failed for %s: %s", tfile, e)
 
         if os.path.exists(tfile):
             try:
@@ -561,7 +557,7 @@ class LinuxCollector(Collector):
                 t_C = int(s) / 1000.0 # degree C
                 record['cpu_temp'] = t_C
             except Exception as e:
-                logdbg("read failed for %s: %s" % (tfile, e))
+                log.debug("read failed for %s: %s", tfile, e)
 
 
         # read cpu Banania Pi Temp Volt Ampere Kern1 Kern2
@@ -579,49 +575,49 @@ class LinuxCollector(Collector):
                 t_kern1 = float(s) / 1000. # takt cpu 0 kHz
                 record['cpu_kern1'] = t_kern1
             except Exception as e:
-                logdbg("read failed for %s: %s" % (c1_dir, e))
+                log.debug("read failed for %s: %s", c1_dir, e)
         if os.path.exists(c2_dir):
             try:
                 s = self._readproc_line(c2_dir)
                 t_kern2 = float(s) / 1000. # takt cpu 2 kHz
                 record['cpu_kern2'] = t_kern2
             except Exception as e:
-                logdbg("read failed for %s: %s" % (c2_dir, e))
+                log.debug("read failed for %s: %s", c2_dir, e)
         if os.path.exists(t_bpi):
             try:
                 s = self._readproc_line(t_bpi)
                 tC = float(s) / 1000. # degree C
                 record['cpu_temp'] = tC
             except Exception as e:
-                logdbg("read failed for %s: %s" % (t_bpi, e))
+                log.debug("read failed for %s: %s", t_bpi, e)
         if os.path.exists(v_bpi):
             try:
                 s = self._readproc_line(v_bpi)
                 tVolt = float(s) / 1000000. # Volt / 1.000.000
                 record['cpu_volt'] = tVolt
             except Exception as e:
-                logdbg("read failed for %s: %s" % (v_bpi, e))
+                log.debug("read failed for %s: %s", v_bpi, e)
         if os.path.exists(a_bpi):
             try:
                 s = self._readproc_line(a_bpi)
                 tAmpere = float(s) / 1000. # mA / 1.000 
                 record['cpu_ampere'] = tAmpere
             except Exception as e:
-                logdbg("read failed for %s: %s" % (a_bpi, e))
+                log.debug("read failed for %s: %s", a_bpi, e)
         if os.path.exists(v1_bpi):
             try:
                 s = self._readproc_line(v1_bpi)
                 t_Volt = float(s) / 1000000. # Volt / 1.000.00
                 record['usb_volt'] = t_Volt
             except Exception as e:
-                logdbg("read failed for %s: %s" % (v1_bpi, e))
+                log.debug("read failed for %s: %s", v1_bpi, e)
         if os.path.exists(a1_bpi):
             try:
                 s = self._readproc_line(a1_bpi)
                 t_Ampere = float(s) / 1000. # mA / 1.000
                 record['usb_ampere'] = t_Ampere
             except Exception as e:
-                logdbg("read failed for %s: %s" % (a1_bpi, e))
+                log.debug("read failed for %s: %s", a1_bpi, e)
 
         if os.path.exists(a1_bpi):
             record['powerR'] = tVolt * tAmpere / 1000.0
@@ -647,7 +643,7 @@ class LinuxCollector(Collector):
                     if not ignore:
                         disks.append(mntpt)
         except Exception as e:
-            logdbg("read failed for %s: %s" % (fn, e))
+            log.debug("read failed for %s: %s", fn, e)
         for disk in disks:
             label = disk.replace('/', '_')
             if label == '_':
@@ -670,9 +666,9 @@ class ComputerMonitorDriver(AbstractDevice):
     """Driver for collecting computer health data."""
 
     def __init__(self, **stn_dict):
-        loginf('driver version is %s' % DRIVER_VERSION)
+        log.info('driver version is %s', DRIVER_VERSION)
         self.polling_interval = int(stn_dict.get('polling_interval', 10))
-        loginf('polling interval is %s' % self.polling_interval)
+        log.info('polling interval is %s', self.polling_interval)
 
         self.ignored_mounts = stn_dict.get('ignored_mounts', IGNORED_MOUNTS)
         self.hardware = stn_dict.get('hardware', [None])
@@ -697,7 +693,7 @@ class ComputerMonitor(StdService):
 
     def __init__(self, engine, config_dict):
         super(ComputerMonitor, self).__init__(engine, config_dict)
-        loginf("service version is %s" % DRIVER_VERSION)
+        log.info("service version is %s", DRIVER_VERSION)
 
         d = config_dict.get('ComputerMonitor', {})
         self.max_age = weeutil.weeutil.to_int(d.get('max_age', 2592000))
@@ -734,7 +730,7 @@ class ComputerMonitor(StdService):
         now = int(time.time() + 0.5)
         delta = now - event.record['dateTime']
         if delta > event.record['interval'] * 60:
-            logdbg("Skipping record: time difference %s too big" % delta)
+            log.debug("Skipping record: time difference %s too big", delta)
             return
         if self.last_ts is not None:
             self.save_data(self.get_data(now, self.last_ts))
@@ -774,7 +770,15 @@ if __name__ == "__main__":
     def main():
         import optparse
         import weecfg
-        syslog.openlog('wee_cmon', syslog.LOG_PID | syslog.LOG_CONS)
+
+        import weewx
+        import weeutil.logger
+
+        #weewx.debug = 1
+
+        weeutil.logger.setup('cmon', {})
+
+        #syslog.openlog('wee_cmon', syslog.LOG_PID | syslog.LOG_CONS)
         parser = optparse.OptionParser(usage=usage)
         parser.add_option('--config', dest='cfgfn', type=str, metavar="FILE",
                           help="Use configuration file FILE. Default is /etc/weewx/weewx.conf or /home/weewx/weewx.conf")
@@ -800,6 +804,21 @@ if __name__ == "__main__":
             test_driver()
         elif options.ts:
             test_service()
+
+        # This will use default logger:
+        #log.info("Attempting to read config file from %s' % config_path)
+
+        # Get the config_dict to use
+        #config_path, config_dict = weecfg.read_config(options.config_path, args)
+
+        # Set weewx.debug as necessary:
+        #weewx.debug = to_int(config_dict.get('debug', 0))
+
+        # Now we can set up the user customized system:
+        #weeutil.logger.setup('cmon', config_dict)
+
+        # This will use the customized logger:
+        #log.info("Successfully read in weewx.conf")
 
     def update_to_v3(config_dict, db_binding):
         import weedb

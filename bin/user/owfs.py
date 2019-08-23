@@ -160,32 +160,25 @@ Hobby-Boards with Inspeed wind instrument
 
 # FIXME: automatically detect each sensor type
 # FIXME: automatically detect per-sensor units
+from __future__ import absolute_import
+import logging
 
-import syslog
+#import syslog
 import time
 import ow
 
 import weewx
+import weeutil.logger
 
 from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
+#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 DRIVER_NAME = 'OWFS'
 DRIVER_VERSION = "0.21"
 
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'owfs: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 def get_float(path):
     sv = ow.owfs_get(path)
@@ -459,12 +452,12 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
         self.last_data = {}
         self.units = weewx.US if self.unit_system == 'us' else weewx.METRIC
 
-        loginf('driver version is %s' % DRIVER_VERSION)
-        loginf('interface is %s' % self.interface)
-        loginf('sensor map is %s' % self.sensor_map)
-        loginf('sensor type map is %s' % self.sensor_type)
-        loginf('polling interval is %s' % str(self.polling_interval))
-        loginf('sensor unit system is %s' % self.unit_system)
+        log.info('driver version is %s', DRIVER_VERSION)
+        log.info('interface is %s', self.interface)
+        log.info('sensor map is %s', self.sensor_map)
+        log.info('sensor type map is %s', self.sensor_type)
+        log.info('polling interval is %s', str(self.polling_interval))
+        log.info('sensor unit system is %s', self.unit_system)
         ow.init(self.interface)
 
     @property
@@ -487,10 +480,9 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
                         p[s] = func(s, self.sensor_map[s],
                                     last_data, p['dateTime'])
                     except (ow.exError, ValueError) as e:
-                        logerr("Failed to get sensor data for %s (%s): %s" %
-                               (s, st, e))
+                        log.error("Failed to get sensor data for %s (%s): %s", s, st, e)
                 else:
-                    logerr("unknown sensor type '%s' for %s" % (st, s))
+                    log.error("unknown sensor type '%s' for %s", st, s)
             self.last_data.update(last_data)
             yield p
             time.sleep(self.polling_interval)
@@ -524,12 +516,12 @@ class OWFSService(weewx.engine.StdService):
         self.last_data = {}
         self.units = weewx.US if self.unit_system == 'us' else weewx.METRIC
 
-        loginf('service version is %s' % DRIVER_VERSION)
-        loginf('binding is %s' % self.binding)
-        loginf('interface is %s' % self.interface)
-        loginf('sensor map is %s' % self.sensor_map)
-        loginf('sensor type map is %s' % self.sensor_type)
-        loginf('sensor unit system is %s' % self.unit_system)
+        log.info('service version is %s', DRIVER_VERSION)
+        log.info('binding is %s', self.binding)
+        log.info('interface is %s', self.interface)
+        log.info('sensor map is %s', self.sensor_map)
+        log.info('sensor type map is %s', self.sensor_type)
+        log.info('sensor unit system is %s', self.unit_system)
 
         ow.init(self.interface)
         if self.binding == 'loop':
@@ -547,7 +539,7 @@ class OWFSService(weewx.engine.StdService):
     def handle_new_archive(self, event):
         delta = time.time() - event.record['dateTime']
         if delta > event.record['interval'] * 60:
-            logdbg("Skipping record: time difference %s too big" % delta)
+            log.debug("Skipping record: time difference %s too big", delta)
             return
         data = self.getData(event.record)
         event.record.update(data)
@@ -570,10 +562,9 @@ class OWFSService(weewx.engine.StdService):
                                 last_data, packet['dateTime'])
 
                 except (ow.exError, ValueError) as e:
-                    logerr("Failed to get onewire data for %s (%s): %s" %
-                           (s, st, e))
+                    log.error("Failed to get onewire data for %s (%s): %s", s, st, e)
             else:
-                logerr("unknown sensor type '%s' for %s" % (st, s))
+                log.error("unknown sensor type '%s' for %s", st, s)
         self.last_data.update(last_data)
 
         if packet['usUnits'] != self.units:
@@ -593,7 +584,11 @@ if __name__ == '__main__':
 
     def main():
         import optparse
-        syslog.openlog('wee_owfs', syslog.LOG_PID | syslog.LOG_CONS)
+
+        # Set defaults for logging:
+        weeutil.logger.setup('owfs', {})
+
+        #syslog.openlog('wee_owfs', syslog.LOG_PID | syslog.LOG_CONS)
         parser = optparse.OptionParser(usage=usage)
         parser.add_option('--version', dest='version', action='store_true',
                           help='display driver version')
@@ -616,10 +611,15 @@ if __name__ == '__main__':
         # default to usb for the interface
         iface = options.iface if options.iface is not None else 'u'
 
-        if options.debug is not None:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        if options.verbose:
+            weewx.debug = 1
+            weeutil.logger.setup('owfs', {})
         else:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+            logging.disable(logging.INFO)
+        #if options.debug is not None:
+        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        #else:
+        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
         if options.sensors:
             ow.init(iface)

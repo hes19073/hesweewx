@@ -11,30 +11,31 @@ Cydia pomonella Flight-Model.
 from __future__ import absolute_import
 from __future__ import division
 
+import logging
 import os.path
 import time
 import datetime
 import csv
 import math
-import syslog
 import configobj
 
 import six
 import Cheetah.Template
 import Cheetah.Filters
 
+import weeutil.logger
 import weeplot.genplot
 import weeutil.weeutil
 import weewx.units
 import weewx.reportengine
 
-#import dd_table.py
-
 from weewx.units import ValueTuple
 from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
 from weeutil.config import search_up
-from weeutil.log import logdbg, loginf, logerr, logcrt
+#from weeutil.log import logdbg, loginf, logerr, logcrt
+
+log = logging.getLogger(__name__)
 
 ZERO = 0
 SPACE = ' '
@@ -105,21 +106,6 @@ default_search_list = [
     "weewx.cheetahgenerator.UnitInfo",
     "weewx.cheetahgenerator.Extras"]
 
-def logmsg(lvl, msg):
-    syslog.syslog(lvl, 'Cydiagenerator: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
-def logcrt(msg):
-    logmsg(syslog.LOG_CRIT, msg)
-
 # =============================================================================
 #                    Class CydiaGenerator
 # =============================================================================
@@ -174,8 +160,8 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
 
         for species_name in self.cydia_dict.sections:
             # Get the path that the image is going to be saved to:
-            plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict['year_images'])
-            species_options = weeutil.weeutil.accumulateLeaves(self.cydia_dict[species_name])
+            plot_options = weeutil.config.accumulateLeaves(self.image_dict['year_images'])
+            species_options = weeutil.config.accumulateLeaves(self.cydia_dict[species_name])
             plot_options.update(species_options)
 
             date_string = plot_options.get('end_date')
@@ -247,11 +233,11 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                     image.save(img_file)
                     ngen += 1
                 except IOError as e:
-                    syslog.syslog(syslog.LOG_CRIT, "cydiagenerator: Unable to save to file '%s' %s:" % (img_file, e))
+                    #log.crt("cydiagenerator: Unable to save to file '%s' %s:" % (img_file, e))
+                    log.info("cydiagenerator: Unable to save to file '%s' %s:", img_file, e)
                 t2 = time.time()
                 if self.log_success:
-                    syslog.syslog(syslog.LOG_INFO, "cydiagenerator: Generated %d images for %s in %.2f seconds" % \
-                        (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
+                    log.info("Generated %d images for %s in %.2f seconds", ngen, self.skin_dict['REPORT_NAME'], t2 - t1)
 
         return self
 
@@ -366,7 +352,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             gap_fraction = to_float(line_options.get('line_gap_fraction'))
         if gap_fraction is not None:
             if not ZERO < gap_fraction < 1:
-                syslog.syslog(syslog.LOG_ERR, "imagegenerator: Gap fraction %5.3f outside range 0 to 1. Ignored." % gap_fraction)
+                log.error("Gap fraction %5.3f outside range 0 to 1. Ignored.", gap_fraction)
                 gap_fraction = None
 
         # Get the type of line (only 'solid' or 'none' for now)
@@ -444,7 +430,8 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                         except TypeError:
                             pass
         except IOError as e:
-            syslog.syslog(syslog.LOG_CRIT, "cydiagenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
+            #logcrt("cydiagenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
+            log.info("Unable to read file '%s' %s:", csv_file_name, e)
 
         return result
 
@@ -691,8 +678,8 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
 
         elapsed_time = time.time() - t1
         if log_success:
-            loginf("Generated %d files for report %s in %.2f seconds" %
-                   (ngen, self.skin_dict['REPORT_NAME'], elapsed_time))
+            log.info("Generated %d files for report %s in %.2f seconds",
+                       ngen, self.skin_dict['REPORT_NAME'], elapsed_time)
 
     def setup(self):
         
@@ -718,7 +705,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             search_list.extend(search_list_ext)
 
         # provide feedback about the requested search list objects
-        logdbg("using search list %s" % search_list)
+        log.debug("using search list %s", search_list)
 
         # Now go through search_list (which is a list of strings holding the
         # names of the extensions):
@@ -763,7 +750,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                               self.skin_dict['SKIN_ROOT'],
                               self.skin_dict['skin']))
 
-        report_dict = weeutil.weeutil.accumulateLeaves(cydia_dict[species_name])
+        report_dict = weeutil.config.accumulateLeaves(cydia_dict[species_name])
         
         (template, dest_dir, encoding, default_binding) = self._prepGen(species_name, report_dict)
         (dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
@@ -775,7 +762,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             start_ts = self.recs[ZERO]['date'].raw
             stop_ts = self.recs[-1]['date'].raw
         else:
-            loginf('Skipping template %s: cannot find start time' % section['template'])
+            log.info('Skipping template %s: cannot find start time', section['template'])
             return ngen
 
 
@@ -787,8 +774,8 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             try:
                 last_mod = os.path.getmtime(dest_file)
                 if t_now - last_mod < stale:
-                    logdbg("Skip '%s': last_mod=%s age=%s stale=%s" %
-                        (dest_file, last_mod, t_now - last_mod, stale))
+                    log.debug("Skip '%s': last_mod=%s age=%s stale=%s",
+                                dest_file, last_mod, t_now - last_mod, stale)
                     return ngen
             except os.error:
                 pass
@@ -839,9 +826,9 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             # are no hooks to intercept the source and spit it out.  So
             # the best we can do is indicate the template that was being
             # processed when the failure ocurred.
-            logerr("Generate failed with exception '%s'" % type(e))
-            logerr("**** Ignoring template %s" % template)
-            logerr("**** Reason: %s" % e)
+            log.error("Generate failed with exception '%s'", type(e))
+            log.error("**** Ignoring template %s", template)
+            log.error("**** Reason: %s", e)
             weeutil.weeutil.log_traceback("****  ")
         else:
             ngen += 1

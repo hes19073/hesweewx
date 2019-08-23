@@ -4,38 +4,31 @@
 # Copyright 2019 Hartmut Schweidler
 # DDW Pollen Flug
 
+from __future__ import absolute_import
+
 import datetime
+import logging
 import time
 import calendar
 import json
 import os
-import syslog
 import re
 
 import weewx
 import weecfg
+import weeutil.logger
 import weeutil.weeutil
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'DWD Pollen Vorhersage Extension: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 # Print version in syslog
 VERSION = "3.0.1"
 
-loginf("version %s" % VERSION)
+log.info("DWD-Pollen Version: %s", VERSION)
 
 
 class DWD(SearchList):
@@ -79,8 +72,7 @@ class DWD(SearchList):
         ts = weeutil.weeutil.startOfDay(now) + 41400
         if now < ts:
             ts -= 86400
-            logdbg('DWD: Pollen was already calculated for %s' %
-                   (weeutil.weeutil.timestamp_to_string(ts)))
+            log.debug('DWD: Pollen was already calculated for %s', weeutil.weeutil.timestamp_to_string(ts))
             pollen_is_stale = False
 
         # File is stale, download a new copy
@@ -88,7 +80,7 @@ class DWD(SearchList):
             import urllib.request, urllib.error, urllib.parse
             urllib.request.urlretrieve(pollen_url, pollen_file)
 
-            loginf("New DWD Pollenflug data downloaded to %s" % pollen_file)
+            log.info("New DWD Pollenflug data downloaded to %s", pollen_file)
 
         with open(pollen_file, encoding="utf8") as read_file:
             data = json.loads(read_file.read())
@@ -102,12 +94,12 @@ class DWD(SearchList):
         last_date = re.sub(r' Uhr$', '', last_date)
         format = '%Y-%m-%d %H:%M'
         las_up = time.mktime(datetime.datetime.strptime(last_date, format).timetuple())
-        #syslog.syslog(syslog.LOG_INFO, "Pollen-Uhr: LAST Generated in %.2f seconds" % las_up)
+        #log.info("Pollen-Uhr: LAST Generated in %.2f seconds", las_up)
 
         next_date = re.sub(r' Uhr$', '', next_date)
         format = '%Y-%m-%d %H:%M'
         new_up = time.mktime(datetime.datetime.strptime(next_date, format).timetuple())
-        #syslog.syslog(syslog.LOG_INFO, "Pollen-Uhr: NEW  Generated in %.2f seconds" % new_up)
+        #log.info("Pollen-Uhr: NEW  Generated in %.2f seconds", new_up)
 
 
         for obj in data['content']:
@@ -175,4 +167,3 @@ class DWD(SearchList):
 
         # Return our json data
         return [search_list_extension]
-

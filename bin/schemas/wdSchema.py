@@ -57,6 +57,13 @@ weewxwd_schema = [
     ('thwIndex',     'REAL'),
     ('thswIndex',    'REAL'),
     ('rain_ET',      'REAL'),
+    ('windSpeed10',  'REAL'),
+    ('dayRain',      'REAL'),
+    ('monthRain',    'REAL'),
+    ('yearRain',     'REAL'),
+    ('dayET',        'REAL'),
+    ('monthET',      'REAL'),
+    ('yearET',       'REAL'),
     ]
 
 # Define schema for supp table
@@ -82,5 +89,12 @@ wdsupp_schema = [
     ('visibility_km',       'REAL'),
     ('pop',                 'REAL'),
     ('vantageForecastNumber', 'REAL'),
+    ('windSpeed10',           'REAL'),
+    ('dayRain',               'REAL'),
+    ('monthRain',             'REAL'),
+    ('yearRain',              'REAL'),
+    ('dayET',                 'REAL'),
+    ('monthET',               'REAL'),
+    ('yearET',                'REAL'),
     ]
 

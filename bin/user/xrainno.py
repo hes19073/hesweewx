@@ -8,14 +8,19 @@
 
               regentage
 """
+
+from __future__ import absolute_import
+
 import datetime
+import logging
 import time
 import calendar
 import os
 import sys
-import syslog
 import itertools
+
 import weewx
+import weeutil.logger
 import weewx.units
 import weeutil.weeutil
 
@@ -24,20 +29,10 @@ from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan, genDaySpans
 from weewx.units import ValueHelper, getStandardUnitType
 from datetime import date, timedelta
+#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'xrainno: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
+log = logging.getLogger(__name__)
 
 
 def get_first_day(dt, d_years=0, d_months=0):
@@ -370,6 +365,6 @@ class MyXRainNo(SearchList):
                                  'year_con_wetS_days_time' : _year_wetS_time_vh,
                                  'alltime_con_wetS_days_time' : _alltime_wetS_time_vh}
         t2 = time.time()
-        logdbg("MyXRainNo SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyXRainNo SLE executed in %0.3f seconds",  t2 - t1)
 
         return [search_list_extension]

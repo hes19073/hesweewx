@@ -3,36 +3,29 @@
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
 
+from __future__ import absolute_import
+
 import datetime
+import logging
 import time
 import calendar
 import json
 import os
-import syslog
 
 import weewx
 import weecfg
+import weeutil.logger
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'ISS watch Extension: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 # Print version in syslog for easier troubleshooting
 VERSION = "0.3"
 
-loginf("ISS - version %s" % VERSION)
+log.info("ISS - version %s", VERSION)
 
 class getdata(SearchList):
     def __init__(self, generator):
@@ -72,7 +65,7 @@ class getdata(SearchList):
             import urllib.request, urllib.error, urllib.parse
             urllib.request.urlretrieve(iss_url, iss_file)
 
-            loginf( "New ISS data downloaded to %s" % iss_file )
+            log.info("New ISS data downloaded to %s", iss_file)
 
         with open(iss_file, encoding="utf8") as read_file:
             issdata = json.loads(read_file.read())
@@ -99,6 +92,3 @@ class getdata(SearchList):
 
         # Finally, return our extension as a list:
         return [search_list_extension]
-
-
-

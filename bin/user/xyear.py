@@ -19,7 +19,6 @@ import datetime
 import time
 import os
 import sys
-import syslog
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
@@ -27,7 +26,6 @@ from weeutil.weeutil import TimeSpan
 from datetime import date
 from datetime import timedelta
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
-
 
 class xMyEaster(SearchList):
     """calc easter for year"""

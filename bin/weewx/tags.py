@@ -63,7 +63,7 @@ class TimeBinder(object):
 
     def hour(self, data_binding=None, hours_ago=0):
         return TimespanBinder(weeutil.weeutil.archiveHoursAgoSpan(self.report_time, hours_ago=hours_ago), 
-                              self.db_lookup, data_binding=data_binding,
+                              self.db_lookup, data_binding=data_binding, 
                               context='day', formatter=self.formatter, converter=self.converter,
                               **self.option_dict)
 
@@ -219,8 +219,7 @@ class TimespanBinder(object):
         for span in weeutil.weeutil.intervalgen(self.timespan.start, self.timespan.stop, interval):
             yield TimespanBinder(span, self.db_lookup, self.data_binding,
                                  context, self.formatter, self.converter, **self.option_dict)
-
-
+    
     # Iterate over hours in the time period:
     def hours(self):
         return TimespanBinder._seqGenerator(weeutil.weeutil.genHourSpans, self.timespan,
@@ -442,24 +441,31 @@ class CurrentObj(object):
         if obs_type in ['__call__', 'has_key']:
             raise AttributeError
 
-        # If we are not specifying a data binding, and we have a current record with the right
+        # If no data binding has been specified, and we have a current record with the right
         # timestamp at hand, we don't have to hit the database.
-        if not self.data_binding and self.record and obs_type in self.record and self.record['dateTime'] == self.current_time:
+        if not self.data_binding and self.record and obs_type in self.record \
+                and self.record['dateTime'] == self.current_time:
+            # Use the record given to us to form a ValueTuple
             vt = weewx.units.as_value_tuple(self.record, obs_type)
         else:
-            # No. We have to retrieve the record from the database
+            # A binding has been specified, or we don't have a record, or the observation type
+            # is not in the record, or the timestamp is wrong.
             try:
-                # Get the appropriate database manager ...
+                # Get the appropriate database manager
                 db_manager = self.db_lookup(self.data_binding)
             except weewx.UnknownBinding:
+                # Don't recognize the binding.
                 vt = weewx.units.UnknownType(self.data_binding)
             else:
-                # ... get the current record from it ...  
-                record  = db_manager.getRecord(self.current_time, max_delta=self.max_delta)
-                # ... form a ValueTuple ...
-                vt = weewx.units.as_value_tuple(record, obs_type)
-            # ... and then finally, return a ValueHelper
+                # Does the type exist in the database? If not, it's an unknown type
+                if obs_type not in db_manager.sqlkeys:
+                    vt = weewx.units.UnknownType(obs_type)
+                else:
+                    # Get the record from the database
+                    record = db_manager.getRecord(self.current_time, max_delta=self.max_delta)
+                    vt = weewx.units.as_value_tuple(record, obs_type)
 
+        # Finally, return a ValueHelper
         return weewx.units.ValueHelper(vt, 'current',
                                        self.formatter,
                                        self.converter)

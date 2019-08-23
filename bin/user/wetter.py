@@ -13,7 +13,6 @@ Upload data to wetter.com
 
 import re
 import sys
-import syslog
 import time
 
 # Python 2/3 compatiblity
@@ -30,6 +29,7 @@ import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 VERSION = "0.6"
 API_VERSION = "0.5"
@@ -38,17 +38,6 @@ if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
                                    weewx.__version__)
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'restx: Wetter: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 class Wetter(weewx.restx.StdRESTful):
         """This service recognizes standard restful options plus the following:

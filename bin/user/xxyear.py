@@ -11,7 +11,6 @@ import datetime
 import time
 import os
 import sys
-import syslog
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder

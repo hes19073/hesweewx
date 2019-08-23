@@ -12,10 +12,9 @@ import copy
 import datetime
 import ftplib
 import glob
+import logging
 import os.path
 import socket
-#import sys
-import syslog
 import threading
 import time
 import traceback
@@ -25,11 +24,14 @@ from six.moves import zip
 import configobj
 
 # WeeWX imports:
+import weeutil.config
+import weeutil.logger
 import weeutil.weeutil
 import weewx.defaults
 import weewx.manager
-from weeutil.config import search_up
 from weeutil.weeutil import to_bool
+
+log = logging.getLogger(__name__)
 
 # spans of valid values for each CRON like field
 MINUTES = (0, 59)
@@ -64,6 +66,7 @@ SPANS = (MINUTES, HOURS, DOM, MONTHS, DOW)
 NAMES = ((), (), (), MONTH_NAMES, DAY_NAMES)
 # list of name maps for CRON like fields
 MAPS = ((), (), (), MONTH_NAME_MAP, DAY_NAME_MAP)
+
 
 # =============================================================================
 #                    Class StdReportEngine
@@ -115,12 +118,10 @@ class StdReportEngine(threading.Thread):
         Runs through the list of reports. """
 
         if self.gen_ts:
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "reportengine: Running reports for time %s" %
-                          weeutil.weeutil.timestamp_to_string(self.gen_ts))
+            log.debug("reportengine: Running reports for time %s",
+                      weeutil.weeutil.timestamp_to_string(self.gen_ts))
         else:
-            syslog.syslog(syslog.LOG_DEBUG, "reportengine: "
-                                            "Running reports for latest time in the database.")
+            log.debug("reportengine: Running reports for latest time in the database.")
 
         # Iterate over each requested report
         for report in self.config_dict['StdReport'].sections:
@@ -132,18 +133,16 @@ class StdReportEngine(threading.Thread):
             # See if this report is disabled
             enabled = to_bool(self.config_dict['StdReport'][report].get('enable', True))
             if not enabled:
-                syslog.syslog(syslog.LOG_DEBUG,
-                              "reportengine: Report '%s' not enabled. Skipping." % report)
+                log.debug("reportengine: Report '%s' not enabled. Skipping.", report)
                 continue
 
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "reportengine: Running report '%s'" % report)
+            log.debug("reportengine: Running report '%s'", report)
 
             # Fetch and build the skin_dict:
             try:
                 skin_dict = self._build_skin_dict(report)
             except SyntaxError:
-                syslog.syslog(syslog.LOG_ERR, "        ****  Report ignored")
+                log.error("        ****  Report ignored")
                 continue
 
             # Default action is to run the report. Only reason to not run it is
@@ -171,16 +170,12 @@ class StdReportEngine(threading.Thread):
                         if timing.is_triggered(_ts, _ts - _interval) is False:
                             # report timing was valid but not triggered so do
                             # not run the report.
-                            syslog.syslog(syslog.LOG_DEBUG,
-                                          "reportengine: Report '%s' skipped due to report_timing setting" %
-                                          (report,))
+                            log.debug("reportengine: Report '%s' skipped due to report_timing setting", report)
                             continue
                     else:
-                        syslog.syslog(syslog.LOG_DEBUG,
-                                      "reportengine: "
-                                      "Invalid report_timing setting for report '%s', "
-                                      "running report anyway" % report)
-                        syslog.syslog(syslog.LOG_DEBUG, "        ****  %s" % timing.validation_error)
+                        log.debug("reportengine: Invalid report_timing setting for report '%s', "
+                                  "running report anyway", report)
+                        log.debug("       ****  %s", timing.validation_error)
 
             if 'Generators' in skin_dict and 'generator_list' in skin_dict['Generators']:
                 for generator in weeutil.weeutil.option_as_list(skin_dict['Generators']['generator_list']):
@@ -195,12 +190,10 @@ class StdReportEngine(threading.Thread):
                             self.stn_info,
                             self.record)
                     except Exception as e:
-                        syslog.syslog(
-                            syslog.LOG_CRIT, "reportengine: "
-                                             "Unable to instantiate generator '%s'" % generator)
-                        syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % e)
-                        weeutil.weeutil.log_traceback("        ****  ")
-                        syslog.syslog(syslog.LOG_CRIT, "        ****  Generator ignored")
+                        log.error("reportengine: Unable to instantiate generator '%s'", generator)
+                        log.error("        ****  %s", e)
+                        weeutil.logger.log_traceback(log.error, "        ****  ")
+                        log.error("        ****  Generator ignored")
                         traceback.print_exc()
                         continue
 
@@ -211,29 +204,22 @@ class StdReportEngine(threading.Thread):
                     except Exception as e:
                         # Caught unrecoverable error. Log it, continue on to the
                         # next generator.
-                        syslog.syslog(
-                            syslog.LOG_CRIT, "reportengine: "
-                                             "Caught unrecoverable exception in generator '%s'"
-                                             % generator)
-                        syslog.syslog(syslog.LOG_CRIT, "        ****  %s" % e)
-                        weeutil.weeutil.log_traceback("        ****  ")
-                        syslog.syslog(syslog.LOG_CRIT, "        ****  Generator terminated")
+                        log.error("reportengine: Caught unrecoverable exception in generator '%s'", generator)
+                        log.error("        ****  %s", e)
+                        weeutil.logger.log_traceback(log.error, "        ****  ")
+                        log.error("        ****  Generator terminated")
                         traceback.print_exc()
                         continue
 
                     finally:
                         obj.finalize()
             else:
-                syslog.syslog(syslog.LOG_DEBUG, "reportengine: "
-                                                "No generators specified for report '%s'" % report)
+                log.debug("reportengine: No generators specified for report '%s'", report)
 
     def _build_skin_dict(self, report):
         """Find and build the skin_dict for the given report"""
 
         # Start with the defaults in the defaults module. Because we will be modifying it, we need to make a deep
-        # copy. We can do this by applying the .dict() member function, which returns a copy as a plain old
-        # dictionary, then converting that into a ConfigObj. This will lose the comments, but we don't care about
-        # that now.
         # copy.
         skin_dict = copy.deepcopy(weewx.defaults.defaults)
 
@@ -251,22 +237,15 @@ class StdReportEngine(threading.Thread):
         # there is no file - everything for a skin might be defined in the weewx configuration.
         try:
             merge_dict = configobj.ConfigObj(skin_config_path, file_error=True, encoding='utf-8')
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "reportengine: "
-                          "Found configuration file %s for report '%s'"
-                          % (skin_config_path, report))
+            log.debug("reportengine: Found configuration file %s for report '%s'", skin_config_path, report)
             # Merge the skin config file in:
-            weeutil.weeutil.merge_config(skin_dict, merge_dict)
+            weeutil.config.merge_config(skin_dict, merge_dict)
         except IOError as e:
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "reportengine: "
-                          "Cannot read skin configuration file %s for report '%s': %s"
-                          % (skin_config_path, report, e))
+            log.debug("reportengine: Cannot read skin configuration file %s for report '%s': %s",
+                      skin_config_path, report, e)
         except SyntaxError as e:
-            syslog.syslog(syslog.LOG_ERR,
-                          "reportengine: "
-                          "Failed to read skin configuration file %s for report '%s': %s"
-                          % (skin_config_path, report, e))
+            log.error("reportengine: Failed to read skin configuration file %s for report '%s': %s",
+                      skin_config_path, report, e)
             raise
 
         # Now add on the [StdReport][[Defaults]] section, if present:
@@ -325,7 +304,7 @@ class FtpGenerator(ReportGenerator):
         import weeutil.ftpupload
 
         # determine how much logging is desired
-        log_success = to_bool(search_up(self.skin_dict, 'log_success', True))
+        log_success = to_bool(weeutil.config.search_up(self.skin_dict, 'log_success', True))
 
         t1 = time.time()
         try:
@@ -345,23 +324,19 @@ class FtpGenerator(ReportGenerator):
                 debug=int(self.skin_dict.get('debug', 0)),
                 secure_data=to_bool(self.skin_dict.get('secure_data', True)))
         except KeyError:
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "ftpgenerator: FTP upload not requested. Skipped.")
+            log.debug("ftpgenerator: FTP upload not requested. Skipped.")
             return
 
         try:
             n = ftp_data.run()
         except (socket.timeout, socket.gaierror, ftplib.all_errors, IOError) as e:
-            syslog.syslog(syslog.LOG_ERR, "ftpgenerator: "
-                                          "Caught exception '%s': %s" % (type(e), e))
-            weeutil.weeutil.log_traceback("        ****  ")
+            log.error("ftpgenerator: Caught exception '%s': %s", type(e), e)
+            weeutil.logger.log_traceback(log.error, "        ****  ")
             return
 
         if log_success:
             t2 = time.time()
-            syslog.syslog(syslog.LOG_INFO,
-                          "ftpgenerator: ftp'd %d files in %0.2f seconds" %
-                          (n, (t2 - t1)))
+            log.info("ftpgenerator: Ftp'd %d files in %0.2f seconds", n, (t2 - t1))
 
 
 # =============================================================================
@@ -389,17 +364,15 @@ class RsyncGenerator(ReportGenerator):
                 ssh_options=self.skin_dict.get('ssh_options'),
                 compress=to_bool(self.skin_dict.get('compress', False)),
                 delete=to_bool(self.skin_dict.get('delete', False)),
-                log_success=to_bool(search_up(self.skin_dict, 'log_success', True)))
+                log_success=to_bool(weeutil.config.search_up(self.skin_dict, 'log_success', True)))
         except KeyError:
-            syslog.syslog(syslog.LOG_DEBUG,
-                          "rsyncgenerator: rsync upload not requested. Skipped.")
+            log.debug("rsyncgenerator: Rsync upload not requested. Skipped.")
             return
 
         try:
             rsync_data.run()
         except IOError as e:
-            syslog.syslog(syslog.LOG_ERR, "rsyncgenerator: "
-                                          "Caught exception '%s': %s" % (type(e), e))
+            log.error("rsyncgenerator: Caught exception '%s': %s", type(e), e)
 
 
 # =============================================================================
@@ -415,7 +388,7 @@ class CopyGenerator(ReportGenerator):
     def run(self):
         copy_dict = self.skin_dict['CopyGenerator']
         # determine how much logging is desired
-        log_success = to_bool(search_up(copy_dict, 'log_success', True))
+        log_success = to_bool(weeutil.config.search_up(copy_dict, 'log_success', True))
 
         copy_list = []
 
@@ -451,8 +424,7 @@ class CopyGenerator(ReportGenerator):
             for path in glob.glob(pattern):
                 ncopy += weeutil.weeutil.deep_copy_path(path, html_dest_dir)
         if log_success:
-            syslog.syslog(syslog.LOG_INFO, "copygenerator: "
-                                           "copied %d files to %s" % (ncopy, html_dest_dir))
+            log.info("copygenerator: Copied %d files to %s", ncopy, html_dest_dir)
 
 
 # ===============================================================================

@@ -8,14 +8,20 @@
 
               Frosttage
 """
+from __future__ import absolute_import
+
+import logging
 import datetime
 import time
 import calendar
 import os
 import sys
-import syslog
 import itertools
 import weewx
+
+# WeeWX imports:
+import weeutil.config
+import weeutil.logger
 import weewx.units
 import weeutil.weeutil
 
@@ -24,19 +30,9 @@ from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan, genDaySpans
 from weewx.units import ValueHelper, getStandardUnitType
 from datetime import date, timedelta
+#from weeutil.log import logdbg, loginf, logerr, logcrt
 
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'MyFrostDays: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 WEEWX_FROST_DAYS_VERSION = '0.0.1'
 
@@ -350,8 +346,6 @@ class MyFrostDays(SearchList):
 
 
         t2= time.time()
-        logdbg("MyFrostDays SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyFrostDays SLE executed in %0.3f seconds", (t2 - t1))
 
         return [search_list_extension]
-
-

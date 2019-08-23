@@ -25,19 +25,24 @@
 ##  20 July 2013     v0.1       -Initial implementation
 ##
 
+from __future__ import absolute_import
+
+import logging
 import time
 import datetime
-import syslog
 import os.path
 import math
 
 import weeutil.weeutil
+import weeutil.config
 import weewx.reportengine
 import weewx.units
 
 import Image
 import ImageDraw
 import ImageFont
+
+log = logging.getLogger(__name__)
 
 WEEWXWD_STACKED_WINDROSE_VERSION = '1.0.0'
 
@@ -126,7 +131,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
             # Now, loop over all plot names in this time span class:
             for plotname in self.image_dict[timespan].sections :
                 # Accumulate all options from parent nodes:
-                plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict[timespan][plotname])
+                plot_options = weeutil.config.accumulateLeaves(self.image_dict[timespan][plotname])
                 # Get the database archive
                 default_archive = self.db_binder.get_manager(self.data_binding)
 #                archivedb = self._getArchive(plot_options['archive_database'])
@@ -161,7 +166,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                 for line_name in self.image_dict[timespan][plotname].sections:
 
                     # Accumulate options from parent nodes. 
-                    line_options = weeutil.weeutil.accumulateLeaves(self.image_dict[timespan][plotname][line_name])
+                    line_options = weeutil.config.accumulateLeaves(self.image_dict[timespan][plotname][line_name])
                     
                     # See if a plot title has been explicitly requested.
                     # 'label' used for consistency in skin.conf with 
@@ -367,7 +372,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                 image.save(img_file)
                 ngen += 1
         t2 = time.time()
-        syslog.syslog(syslog.LOG_INFO, "imageStackedWindRose: Generated %d images for %s in %.2f seconds" % (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
+        log.info("imageStackedWindRose: Generated %d images for %s in %.2f seconds", ngen, self.skin_dict['REPORT_NAME'], t2 - t1)
 
 def WindRoseImageSetup(self):
     """Create image object for us to draw on.
@@ -532,7 +537,7 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     # Images without a time_length must be skipped every time and a syslog
     # entry added.
     if time_length is None:
-        syslog.syslog(syslog.LOG_INFO, "imageStackedWindRose: Plot "+plotname+" ignored, no time_length specified")
+        log.info("imageStackedWindRose: Plot '%s' ignored, no time_length specified", plotname)
         return True
 
     # The image definitely has to be generated if it doesn't exist.

@@ -25,20 +25,25 @@
 ##  20 July 2013     v0.1       -Initial implementation
 ##
 
+from __future__ import absolute_import
+
+# System imports:
+import logging
 import time
 import datetime
-import syslog
 import os.path
 import math
 
+# WeeWX imports:
+import weeutil.config
+import weeutil.logger
 import weeutil.weeutil
 import weewx.reportengine
 import weewx.units
 
-#import Image
-#import ImageDraw
-#import ImageFont
 from PIL import Image, ImageDraw, ImageFont
+
+log = logging.getLogger(__name__)
 
 WEEWXWD_STACKED_WINDROSE_VERSION = '3.0.0'
 
@@ -91,10 +96,10 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
         # names, set any 0xBGR to their numeric value and leave colour names
         # alone
         i = 0
-        while i<len(self.petal_colors):
+        while i < len(self.petal_colors):
             try:
                 # Can it be converted to a number?
-                self.petal_colors[i] = int(self.petal_colors[i],0)
+                self.petal_colors[i] = int(self.petal_colors[i], 0)
             except ValueError:  # Cannot convert to a number, assume it is
                                 # a colour word so leave it
                 pass
@@ -107,7 +112,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
         # Boundaries for speed range bands, these mark the colour boundaries
         # on the stacked bar in the legend. 7 elements only (ie 0, 10% of max,
         # 20% of max...100% of max)
-        self.speedFactor = [0.0,0.1,0.2,0.3,0.5,0.7,1.0]
+        self.speedFactor = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0]
 
     def genImages(self, gen_ts):
         """Generate the images.
@@ -126,7 +131,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
             # Now, loop over all plot names in this time span class:
             for plotname in self.image_dict[timespan].sections :
                 # Accumulate all options from parent nodes:
-                plot_options = weeutil.weeutil.accumulateLeaves(self.image_dict[timespan][plotname])
+                plot_options = weeutil.config.accumulateLeaves(self.image_dict[timespan][plotname])
                 # Get the database archive
                 default_archive = self.db_binder.get_manager(self.data_binding)
 #                archivedb = self._getArchive(plot_options['archive_database'])
@@ -161,7 +166,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                 for line_name in self.image_dict[timespan][plotname].sections:
 
                     # Accumulate options from parent nodes.
-                    line_options = weeutil.weeutil.accumulateLeaves(self.image_dict[timespan][plotname][line_name])
+                    line_options = weeutil.config.accumulateLeaves(self.image_dict[timespan][plotname][line_name])
 
                     # See if a plot title has been explicitly requested.
                     # 'label' used for consistency in skin.conf with
@@ -213,7 +218,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                     # Loop though each speed range boundary and store in
                     # speedList[0]
                     i = 1
-                    while i<7:
+                    while i < 7:
                         speedList[0][i] = self.speedFactor[i]*maxSpeedRange
                         i += 1
                     # Setup 2D list for wind direction
@@ -234,7 +239,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                     i = 0
                     while i < samples:
                         if (data_windSpeed[0][i] is None) or (data_windDir[0][i] is None):
-                            windBin[16][6] +=1
+                            windBin[16][6] += 1
                         else:
                             bin = int((data_windDir[0][i]+11.25)/22.5)%16
                             if data_windSpeed[0][i] > speedList[0][5]:
@@ -260,9 +265,9 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                     # through each petal speed range and increment direction
                     # independent speed ranges as necessary
                     j = 0
-                    while j<7:
+                    while j < 7:
                         i = 0
-                        while i<16:
+                        while i < 16:
                             speedBin[j] += windBin[i][j]
                             i += 1
                         j += 1
@@ -278,17 +283,17 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                     if sum(windBin[6])/float(samples) <= 0.3*self.maxRingValue:
                         labelDir = 6        # If so take it
                     else:                   # If not lets loop through the others
-                        for i in [10,2,14]:
+                        for i in [10, 2, 14]:
                             # Is SW, NE or NW clear
                             if sum(windBin[i])/float(samples) <= 0.3*self.maxRingValue:
                                 labelDir = i    # If so let's take it
                                 break           # And exit for loop
                         else:                   # If none are free then let's
                                                 # take the smallest of the four
-                            labelCount = samples+1  # Set max possible number of
-                                                    # readings+1
-                            i = 2                   # Start at NE
-                            for i in [2,6,10,14]:   # Loop through directions
+                            labelCount = samples + 1  # Set max possible number of
+                                                      # readings+1
+                            i = 2                     # Start at NE
+                            for i in [2, 6, 10, 14]:  # Loop through directions
                                 # If this direction has fewer obs than previous
                                 # best (least)
                                 if sum(windBin[i]) < labelCount:
@@ -368,7 +373,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                 image.save(img_file)
                 ngen += 1
         t2 = time.time()
-        syslog.syslog(syslog.LOG_INFO, "imageStackedWindRose: Generated %d images for %s in %.2f seconds" % (ngen, self.skin_dict['REPORT_NAME'], t2 - t1))
+        log.info("WindRose generated %d images for '%s' in %.2f seconds",  ngen, self.skin_dict['REPORT_NAME'], t2 - t1)
 
 def WindRoseImageSetup(self):
     """Create image object for us to draw on.
@@ -456,7 +461,7 @@ def LegendSetup(self, draw, speedList, speedBin):
     bulbDiameter = int(round(1.2*self.windrose_legend_bar_width,0))
     #draw stacked bar and label with values/percentages
     i = 6
-    while i>0:
+    while i > 0:
         draw.rectangle(((labelX,labelY-(0.85*self.roseMaxDiameter*self.speedFactor[i])),(labelX+self.windrose_legend_bar_width,labelY)), fill=speedList[1][i], outline='black')
         textWidth, textHeight = draw.textsize(str(speedList[0][i]), font=self.legendFont)
         draw.text((labelX+1.5*self.windrose_legend_bar_width,labelY-textHeight/2-(0.85*self.roseMaxDiameter*self.speedFactor[i])),str(int(round(speedList[0][i],0)))+' ('+str(int(round(100*speedBin[i]/sum(speedBin),0)))+'%)', fill=self.windrose_legend_font_color, font=self.legendFont)
@@ -533,7 +538,7 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     # Images without a time_length must be skipped every time and a syslog
     # entry added.
     if time_length is None:
-        syslog.syslog(syslog.LOG_INFO, "imageStackedWindRose: Plot "+plotname+" ignored, no time_length specified")
+        log.info("imageStackedWindRose: Plot "+plotname+" ignored, no time_length specified")
         return True
 
     # The image definitely has to be generated if it doesn't exist.

@@ -22,30 +22,21 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from array import array
+import logging
 import math
 import datetime
 import time
-import syslog
 import bisect
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
+#from weeutil.log import logdbg, loginf, logerr, logcrt
+
+log = logging.getLogger(__name__)
 
 ASTRO_SLE_VERSION = '1.0.1'
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'Astro: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 class MyXMoonApsis(SearchList):
     """Weewx Search List Extension to provide various lunar apogee/perigee
@@ -372,7 +363,7 @@ class MyXMoonApsis(SearchList):
                                  'min_perigee'          : min_perigee}
 
         t2 = time.time()
-        logdbg("MyXMoonApsis SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyXMoonApsis SLE executed in %0.3f seconds",  t2 - t1)
 
         return [search_list_extension]
 
@@ -581,7 +572,7 @@ class MyXEclipse(SearchList):
                                  'next_lunar_eclipse_type' : next_lunar_eclipse_type}
 
         t2 = time.time()
-        logdbg("MyXEclipse SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyXEclipse SLE executed in %0.3f seconds", t2 - t1)
 
         return [search_list_extension]
 
@@ -661,7 +652,7 @@ class MyXEarthApsis(SearchList):
                                  'next_aphelion'   : next_aphelion_ts_vh}
 
         t2 = time.time()
-        logdbg("MyXEarthApsis SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyXEarthApsis SLE executed in %0.3f seconds",  t2 - t1)
 
         return [search_list_extension]
 
@@ -721,6 +712,6 @@ class MyXChineseNewYear(SearchList):
         search_list_extension = {'next_cny' : cny}
 
         t2 = time.time()
-        logdbg("MyXChineseNewyear SLE executed in %0.3f seconds" % (t2-t1))
+        log.debug("MyXChineseNewyear SLE executed in %0.3f seconds", t2 - t1)
 
         return [search_list_extension]

@@ -101,13 +101,6 @@ class Simulator(weewx.drivers.AbstractDevice):
         # The following doesn't make much meteorological sense, but it is
         # easy to program!
         self.observations = {
-            'extraTemp1' : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
-            'soilMoist1' : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
-            'soilTemp1'  : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
-            'soilTempO1' : Observation(magnitude=15.0,  average= 58.0, period=24.0, phase_lag=12.0, start=start_ts),
-            'leafTemp1'  : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
-            'leafTemp2'  : Observation(magnitude=15.0,  average= 58.0, period=24.0, phase_lag=12.0, start=start_ts),
-            'leafWet1'   : Observation(magnitude=15.0,  average= 58.0, period=24.0, phase_lag=12.0, start=start_ts),
             'outTemp'    : Observation(magnitude=20.0,  average= 50.0, period=24.0, phase_lag=14.0, start=start_ts),
             'inTemp'     : Observation(magnitude=5.0,   average= 68.0, period=24.0, phase_lag=12.0, start=start_ts),
             'barometer'  : Observation(magnitude=1.0,   average= 30.1, period=48.0, phase_lag= 0.0, start=start_ts),

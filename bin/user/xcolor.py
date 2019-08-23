@@ -5,7 +5,12 @@
 from __future__ import absolute_import
 
 from weewx.cheetahgenerator import SearchList
+#from weeutil.log import logdbg, loginf, logerr, logcrt
+
+import weeutil.config
 import weeutil.weeutil
+
+#log = logging.getLogger(__name__)
 
 class MyDecorator(SearchList):
     """My search list extension"""
@@ -15,7 +20,7 @@ class MyDecorator(SearchList):
         self.table_dict = generator.skin_dict['IndexColors']
 
     def decoratorColorStub(self, type, value):
-        table_options = weeutil.weeutil.accumulateLeaves(self.table_dict[type])
+        table_options = weeutil.config.accumulateLeaves(self.table_dict[type])
         table = list(zip(table_options['maxvalues'], table_options['colors']))
         value = self.decoFunction(value, table)
 
@@ -28,7 +33,7 @@ class MyDecorator(SearchList):
         return htmlLine
 
     def decoratorTextStub(self, type, value):
-        table_options = weeutil.weeutil.accumulateLeaves(self.table_dict[type])
+        table_options = weeutil.config.accumulateLeaves(self.table_dict[type])
         table = list(zip(table_options['maxvalues'], table_options['text1']))
         htmlLine = self.decoFunction(value, table)
 

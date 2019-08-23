@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -8,11 +8,10 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-
+import logging
 import collections
 
 import math
-import syslog
 import time
 import ephem
 import weewx.uwxutils
@@ -22,6 +21,9 @@ from datetime import datetime
 
 from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
 from weewx.units import CtoK, CtoF, FtoC
+
+log = logging.getLogger(__name__)
+
 
 INHG_PER_MBAR = 0.0295299830714
 METER_PER_FOOT = 0.3048
@@ -85,7 +87,7 @@ def dewpointC(T, R):
 
 def windchillF(T_F, V_mph):
     """Calculate wind chill.
-    http://www.nws.noaa.gov/om/cold/windchill.shtml
+    http://www.nws.noaa.gov/om/cold/wind_chill.shtml
 
     T_F: Temperature in Fahrenheit
 
@@ -246,7 +248,7 @@ def calculate_rain(newtotal, oldtotal):
         if newtotal >= oldtotal:
             delta = newtotal - oldtotal
         else:
-            syslog.syslog(syslog.LOG_INFO, "wxformulas: rain counter reset detected: new=%s old=%s" % (newtotal, oldtotal))
+            log.info("Rain counter reset detected: new=%s old=%s", newtotal, oldtotal)
             delta = None
     else:
         delta = None
@@ -267,7 +269,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     Example:
 
     >>> for t in range(0,24):
-    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471)
+    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471) 
     0.00
     0.00
     0.00
@@ -370,9 +372,9 @@ def solar_rad_RS(lat, lon, altitude_m, ts=None, atc=0.8):
         el = alm.sun.alt  # solar elevation degrees from horizon
         R = alm.sun.earth_distance
         z = altitude_m
-        nrel = 1367.0     # NREL solar constant, W/m^2
+        nrel = 1367.0  # NREL solar constant, W/m^2
         sinal = math.sin(math.radians(el))
-        if sinal >= 0:    # sun must be above horizon
+        if sinal >= 0:  # sun must be above horizon
             rm = math.pow((288.0 - 0.0065 * z) / 288.0, 5.256) / (sinal + 0.15 * math.pow(el + 3.885, -1.253))
             toa = nrel * sinal / (R * R)
             sr = toa * math.pow(atc, rm)
@@ -539,6 +541,7 @@ def beaufort(ws_kts):
         return 11
     return 12
 
+
 def equation_of_time(doy):
     """Equation of time in minutes. Plus means sun leads local time.
 
@@ -677,6 +680,7 @@ def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
 
     return Rnl
 
+    
 def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
                               ws_mps, wind_height_m, latitude_deg, longitude_deg, altitude_m,
                               timestamp):
@@ -713,6 +717,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mps=3.3, wind_height_m=2,
     ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8, timestamp=timestamp)
     ET0 = 0.63 mm/hr
+    
     Another example, this time for night
     >>> sr_mean_wpm2 = 0.0        # night time
     >>> timestamp = 1475294400    # 1-Oct-2016 at 04:00UTC (0300 local)

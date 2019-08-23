@@ -3,37 +3,30 @@
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
 
+
+from __future__ import absolute_import
+
 import datetime
+import logging
 import time
 import calendar
 import json
 import os
-import syslog
 
 import weewx
 import weecfg
+import weeutil.logger
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'Erdbeben Extension: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 # Print version in syslog for easier troubleshooting
 VERSION = "1.0"
 
-loginf("version %s" % VERSION)
+log.info("version %s", VERSION)
 
 
 class getEarthquake(SearchList):
@@ -73,7 +66,7 @@ class getEarthquake(SearchList):
             import urllib.request, urllib.error, urllib.parse
             urllib.request.urlretrieve(earthquake_url, earthquake_file)
 
-            loginf( "New earthquake data downloaded to %s" % earthquake_file )
+            log.info("New earthquake data downloaded to %s", earthquake_file)
 
 
         with open(earthquake_file, encoding="utf8") as read_file:

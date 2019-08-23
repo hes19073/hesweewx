@@ -26,6 +26,9 @@ copy 'dwdmon.py' to /home/weewx/bin/user
 
 """
 
+from __future__ import absolute_import
+
+import logging
 import calendar
 import configobj
 import datetime
@@ -37,7 +40,6 @@ import re
 import socket
 import string
 import subprocess
-import syslog
 import threading
 import time
 import urllib.request, urllib.error, urllib.parse
@@ -63,21 +65,10 @@ import weeutil.weeutil
 from weewx.engine import StdService
 from weewx.cheetahgenerator import SearchList
 
+log = logging.getLogger(__name__)
 
 VERSION = "3.3.1"
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'DWD-Pollen-Forecast: %s: %s' %
-                  (threading.currentThread().getName(), msg))
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 def mkdir_p(path):
     """equivalent to 'mkdir -p'"""
@@ -147,7 +138,7 @@ class DWDPollen(StdService):
     def __init__(self, engine, config_dict, fid,
                  interval=1800, max_age=604800):
         super(DWDPollen, self).__init__(engine, config_dict)
-        loginf('%s: DWD version %s' % (fid, VERSION))
+        log.info('%s: DWD version %s',  fid, VERSION)
         self.method_id = fid
 
         # single database for all different types of dwdpollens
@@ -224,8 +215,8 @@ class DWDPollen(StdService):
             try:
                 value = int(value)
             except ValueError:
-                logerr("%s: bad value '%s' for %s" %
-                       (method, value, label))
+                log.error("%s: bad value '%s' for %s",
+                            method, value, label)
                 value = default_value
         return value
 
@@ -235,8 +226,8 @@ class DWDPollen(StdService):
             try:
                 return int(s)
             except (ValueError, TypeError) as e:
-                logerr("%s: conversion error for %s from '%s': %s" %
-                       (method, n, s, e))
+                log.error("%s: conversion error for %s from '%s': %s",
+                            method, n, s, e)
         return None
 
     @staticmethod
@@ -245,8 +236,8 @@ class DWDPollen(StdService):
             try:
                 return float(s)
             except (ValueError, TypeError) as e:
-                logerr("%s: conversion error for %s from '%s': %s" %
-                       (method, n, s, e))
+                log.error("%s: conversion error for %s from '%s': %s",
+                            method, n, s, e)
         return None
 
     @staticmethod
@@ -284,14 +275,14 @@ class DWDPollen(StdService):
         if self.single_thread:
             self.do_dwdpollen(event)
         elif self.updating:
-            logdbg('%s: update thread already running' % self.method_id)
+            log.debug('%s: update thread already running', self.method_id)
         elif time.time() - self.interval > self.last_ts:
             t = DwdpollenThread(self.do_dwdpollen, event)
             t.setName(self.method_id + 'Thread')
-            logdbg('%s: starting thread' % self.method_id)
+            log.debug('%s: starting thread', self.method_id)
             t.start()
         else:
-            logdbg('%s: not yet time to do the dwdpollen' % self.method_id)
+            log.debug('%s: not yet time to do the dwdpollen', self.method_id)
 
     def do_dwdpollen(self, event):
         self.updating = True
@@ -318,10 +309,10 @@ class DWDPollen(StdService):
                 if self.vacuum:
                     DWDPollen.vacuum_database(dbm, self.method_id)
         except Exception as e:
-            logerr('%s: DWD failure: %s' % (self.method_id, e))
-            weeutil.weeutil.log_traceback(loglevel=syslog.LOG_DEBUG)
+            log.error('%s: DWD failure: %s', self.method_id, e)
+            #weeutil.weeutil.log_traceback(loglevel=syslog.LOG_DEBUG)
         finally:
-            logdbg('%s: terminating thread' % self.method_id)
+            log.debug('%s: terminating thread', self.method_id)
             self.updating = False
 
     def get_dwdpollen(self, event):
@@ -334,27 +325,27 @@ class DWDPollen(StdService):
         r = dbm.getSql(sql)
         if r is None:
             return None
-        logdbg('%s: last DWDPollen issued %s, requested %s' %
-               (method_id,
-                weeutil.weeutil.timestamp_to_string(r[1]),
-                weeutil.weeutil.timestamp_to_string(r[0])))
+        log.debug('%s: last DWDPollen issued %s, requested %s',
+                    method_id,
+                    weeutil.weeutil.timestamp_to_string(r[1]),
+                    weeutil.weeutil.timestamp_to_string(r[0]))
         return int(r[0])
 
     @staticmethod
     def save_dwdpollen(dbm, records, method_id, max_tries=3, retry_wait=10):
         for count in range(max_tries):
             try:
-                logdbg('%s: saving %d DWDPollen records' %
-                       (method_id, len(records)))
+                log.debug('%s: saving %d DWDPollen records',
+                            method_id, len(records))
                 dbm.addRecord(records, log_level=syslog.LOG_DEBUG)
-                loginf('%s: saved %d dwdpollen records' %
-                       (method_id, len(records)))
+                log.info('%s: saved %d dwdpollen records',
+                           method_id, len(records))
                 break
             except weedb.DatabaseError as e:
-                logerr('%s: save failed (attempt %d of %d): %s' %
-                       (method_id, (count + 1), max_tries, e))
-                logdbg('%s: waiting %d seconds before retry' %
-                       (method_id, retry_wait))
+                log.error('%s: save failed (attempt %d of %d): %s',
+                            method_id, (count + 1), max_tries, e)
+                log.debug('%s: waiting %d seconds before retry',
+                            method_id, retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('save failed after %d attempts' % max_tries)
@@ -367,15 +358,15 @@ class DWDPollen(StdService):
             dbm.table_name, method_id, ts)
         for count in range(max_tries):
             try:
-                logdbg('%s: deleting dwdpollens prior to %d' % (method_id, ts))
+                log.debug('%s: deleting dwdpollens prior to %d', method_id, ts)
                 dbm.getSql(sql)
-                loginf('%s: deleted dwdpollens prior to %d' % (method_id, ts))
+                log.info('%s: deleted dwdpollens prior to %d', method_id, ts)
                 break
             except weedb.DatabaseError as e:
-                logerr('%s: prune failed (attempt %d of %d): %s' %
-                       (method_id, (count + 1), max_tries, e))
-                logdbg('%s: waiting %d seconds before retry' %
-                       (method_id, retry_wait))
+                log.error('%s: prune failed (attempt %d of %d): %s',
+                             method_id, (count + 1), max_tries, e)
+                log.debug('%s: waiting %d seconds before retry',
+                             method_id, retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('prune failed after %d attemps' % max_tries)
@@ -387,10 +378,10 @@ class DWDPollen(StdService):
         # we prune records from the database.  it should be ok to run this
         # on a mysql database - it will silently fail.
         try:
-            logdbg('%s: vacuuming the database' % method_id)
+            log.debug('%s: vacuuming the database', method_id)
             dbm.getSql('vacuum')
         except weedb.DatabaseError as e:
-            logdbg('%s: vacuuming failed: %s' % (method_id, e))
+            log.debug('%s: vacuuming failed: %s', method_id, e)
 
     # this method is used only by the unit tests
     @staticmethod
@@ -426,8 +417,8 @@ class DWD(DWDPollen):
         d = config_dict.get('DWDPollen', {}).get(Z_KEY, {})
         # keep track of the last time for which we issued a dwdpollen
         self.last_event_ts = 0
-        loginf('%s: interval=%s max_age=%s' %
-               (Z_KEY, self.interval, self.max_age))
+        log.info('%s: interval=%s max_age=%s',
+                   Z_KEY, self.interval, self.max_age)
         self._bind()
 
     def get_dwdpollen(self, event):
@@ -438,17 +429,17 @@ class DWD(DWDPollen):
         if now < ts:
             ts -= 86400
         if self.last_event_ts == ts:
-            logdbg('DWDPollen: Pollen was already calculated for %s' %
-                   (weeutil.weeutil.timestamp_to_string(ts)))
+            log.debug('DWDPollen: Pollen was already calculated for %s',
+                       weeutil.weeutil.timestamp_to_string(ts))
             return None
 
-        logdbg('DWDPollen: generating Pollen for %s' %
-               (weeutil.weeutil.timestamp_to_string(ts)))
+        log.debug('DWDPollen: generating Pollen for %s',
+                    weeutil.weeutil.timestamp_to_string(ts))
 
         dwd_file = "/home/weewx/archive/s31fg.json"
         dwd_url = 'https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json'
 
-        syslog.syslog(syslog.LOG_INFO, "Pollen-Forecast: NEW  Data dy DWD in %.2f " % ts)
+        log.info("Pollen-Forecast: NEW  Data dy DWD in %.2f ", ts)
 
         #Daten from opendata 'DWD' download
         req = urllib2.Request(dwd_url)
@@ -469,12 +460,12 @@ class DWD(DWDPollen):
         last_date = re.sub(' Uhr$', '', last_date)
         format = '%Y-%m-%d %H:%M'
         las_up = time.mktime(datetime.datetime.strptime(last_date, format).timetuple())
-        syslog.syslog(syslog.LOG_INFO, "Pollen-Uhr: LAST Generated in %.2f seconds" % las_up)
+        log.info("Uhr: LAST Generated in %.2f seconds", las_up)
 
         next_date = re.sub(' Uhr$', '', next_date)
         format = '%Y-%m-%d %H:%M'
         new_up = time.mktime(datetime.datetime.strptime(next_date, format).timetuple())
-        syslog.syslog(syslog.LOG_INFO, "Pollen-Uhr: NEW  Generated in %.2f seconds" % new_up)
+        log.info("Uhr: NEW  Generated in %.2f seconds", new_up)
 
         self.last_event_ts = ts
 
@@ -522,9 +513,9 @@ class DWD(DWDPollen):
 
         t2 = time.time()
 
-        syslog.syslog(syslog.LOG_INFO, "Pollen: Generated in %.2f seconds" % (t2 - t1))
+        log.info("Pollen: Generated in %.2f seconds", t2 - t1)
 
-        loginf('%s: generated 1 forecast record' % Z_KEY)
+        log.info('%s: generated 1 forecast record', Z_KEY)
 
         return record
 

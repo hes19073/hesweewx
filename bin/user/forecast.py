@@ -514,6 +514,7 @@ $summary.obvis           array
 from __future__ import absolute_import
 from __future__ import print_function
 
+import logging
 import calendar
 import configobj
 import datetime
@@ -523,10 +524,9 @@ import os, errno
 import re
 import socket
 import subprocess
-import syslog
+#import syslog
 import threading
 import time
-#import urllib.request
 
 # Python 2/3 compatiblity shims
 import six
@@ -539,6 +539,7 @@ from io import BytesIO
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 from http.client import BadStatusLine, IncompleteRead
+#from weeutil.log import log.debug, log.info, log.error, logcrt
 
 try:
     import cjson as json
@@ -552,25 +553,16 @@ except (ImportError, AttributeError):
 
 import weewx
 import weedb
+import weeutil.logger
 import weewx.manager
 import weeutil.weeutil
 from weewx.engine import StdService
 from weewx.cheetahgenerator import SearchList
 
+log = logging.getLogger(__name__)
+
 VERSION = "3.4.0"
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'forecast: %s: %s' %
-                  (threading.currentThread().getName(), msg))
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 def mkdir_p(path):
     """equivalent to 'mkdir -p'"""
@@ -997,7 +989,7 @@ class Forecast(StdService):
     def __init__(self, engine, config_dict, fid,
                  interval=1800, max_age=604800):
         super(Forecast, self).__init__(engine, config_dict)
-        loginf('%s: forecast version %s' % (fid, VERSION))
+        log.info('%s: forecast version %s', fid, VERSION)
         self.method_id = fid
 
         # single database for all different types of forecasts
@@ -1097,8 +1089,8 @@ class Forecast(StdService):
             try:
                 value = int(value)
             except ValueError:
-                logerr("%s: bad value '%s' for %s" %
-                       (method, value, label))
+                log.error("%s: bad value '%s' for %s",
+                            method, value, label)
                 value = default_value
         return value
 
@@ -1108,8 +1100,8 @@ class Forecast(StdService):
             try:
                 return int(s)
             except (ValueError, TypeError) as e:
-                logerr("%s: conversion error for %s from '%s': %s" %
-                       (method, n, s, e))
+                log.error("%s: conversion error for %s from '%s': %s",
+                           method, n, s, e)
         return None
 
     @staticmethod
@@ -1118,8 +1110,8 @@ class Forecast(StdService):
             try:
                 return float(s)
             except (ValueError, TypeError) as e:
-                logerr("%s: conversion error for %s from '%s': %s" %
-                       (method, n, s, e))
+                log.error("%s: conversion error for %s from '%s': %s",
+                           method, n, s, e)
         return None
 
     @staticmethod
@@ -1248,22 +1240,20 @@ class Forecast(StdService):
         if self.single_thread:
             self.do_forecast(event)
         elif self.updating:
-            logdbg('%s: update thread already running' % self.method_id)
+            log.debug('%s: update thread already running', self.method_id)
         elif self.last_ts is None:
-            t = ForecastThread(self.do_forecast, event)
-            t.setName(self.method_id + 'Thread')
-            logdbg('%s: starting thread' % self.method_id)
-            t.start()
+            log.info('%s: starting thread', self.method_id)
+            self.do_forecast(event)
         elif time.time() - self.interval > self.last_ts:
             #t = ForecastThread(self.do_forecast, event)
             #t.setName(self.method_id + 'Thread')
-            #logdbg('%s: starting thread' % self.method_id)
-            loginf('%s: starting thread' % self.method_id)
+            #log.debug('%s: starting thread' % self.method_id)
+            log.info('%s: starting thread', self.method_id)
             #t.start()
             self.do_forecast(event)
         else:
-            logdbg('%s: not yet time to do the forecast' % self.method_id)
-            loginf('%s: not yet time to do the forecast' % self.method_id)
+            log.debug('%s: not yet time to do the forecast', self.method_id)
+            log.info('%s: not yet time to do the forecast', self.method_id)
 
     def do_forecast(self, event):
         self.updating = True
@@ -1290,10 +1280,10 @@ class Forecast(StdService):
                 if self.vacuum:
                     Forecast.vacuum_database(dbm, self.method_id)
         except Exception as e:
-            logerr('%s: forecast failure: %s' % (self.method_id, e))
-            weeutil.weeutil.log_traceback(loglevel=syslog.LOG_DEBUG)
+            log.error('%s: forecast failure: %s', self.method_id, e)
+            #weeutil.weeutil.log_traceback()
         finally:
-            logdbg('%s: terminating thread' % self.method_id)
+            log.debug('%s: terminating thread', self.method_id)
             self.updating = False
 
     def get_forecast(self, event):
@@ -1307,27 +1297,27 @@ class Forecast(StdService):
         r = dbm.getSql(sql)
         if r is None:
             return None
-        logdbg('%s: last forecast issued %s, requested %s' %
-               (method_id,
-                weeutil.weeutil.timestamp_to_string(r[1]),
-                weeutil.weeutil.timestamp_to_string(r[0])))
+        log.debug('%s: last forecast issued %s, requested %s',
+                    method_id,
+                    weeutil.weeutil.timestamp_to_string(r[1]),
+                    weeutil.weeutil.timestamp_to_string(r[0]))
         return int(r[0])
 
     @staticmethod
     def save_forecast(dbm, records, method_id, max_tries=3, retry_wait=10):
         for count in range(max_tries):
             try:
-                logdbg('%s: saving %d forecast records' %
-                       (method_id, len(records)))
-                dbm.addRecord(records, log_level=syslog.LOG_DEBUG)
-                loginf('%s: saved %d forecast records' %
-                       (method_id, len(records)))
+                log.debug('%s: saving %d forecast records',
+                            method_id, len(records))
+                dbm.addRecord(records)
+                log.info('%s: saved %d forecast records',
+                           method_id, len(records))
                 break
             except weedb.DatabaseError as e:
-                logerr('%s: save failed (attempt %d of %d): %s' %
-                       (method_id, (count + 1), max_tries, e))
-                logdbg('%s: waiting %d seconds before retry' %
-                       (method_id, retry_wait))
+                log.error('%s: save failed (attempt %d of %d): %s',
+                            method_id, (count + 1), max_tries, e)
+                log.debug('%s: waiting %d seconds before retry',
+                            method_id, retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('save failed after %d attempts' % max_tries)
@@ -1340,15 +1330,15 @@ class Forecast(StdService):
             dbm.table_name, method_id, ts)
         for count in range(max_tries):
             try:
-                logdbg('%s: deleting forecasts prior to %d' % (method_id, ts))
+                log.debug('%s: deleting forecasts prior to %d', method_id, ts)
                 dbm.getSql(sql)
-                loginf('%s: deleted forecasts prior to %d' % (method_id, ts))
+                log.info('%s: deleted forecasts prior to %d', method_id, ts)
                 break
             except weedb.DatabaseError as e:
-                logerr('%s: prune failed (attempt %d of %d): %s' %
-                       (method_id, (count + 1), max_tries, e))
-                logdbg('%s: waiting %d seconds before retry' %
-                       (method_id, retry_wait))
+                log.error('%s: prune failed (attempt %d of %d): %s',
+                            method_id, (count + 1), max_tries, e)
+                log.debug('%s: waiting %d seconds before retry',
+                            method_id, retry_wait)
                 time.sleep(retry_wait)
         else:
             raise Exception('prune failed after %d attemps' % max_tries)
@@ -1360,10 +1350,10 @@ class Forecast(StdService):
         # we prune records from the database.  it should be ok to run this
         # on a mysql database - it will silently fail.
         try:
-            logdbg('%s: vacuuming the database' % method_id)
+            log.debug('%s: vacuuming the database', method_id)
             dbm.getSql('vacuum')
         except weedb.DatabaseError as e:
-            logdbg('%s: vacuuming failed: %s' % (method_id, e))
+            log.debug('%s: vacuuming failed: %s', method_id, e)
 
     # this method is used only by the unit tests
     @staticmethod
@@ -1427,10 +1417,10 @@ class ZambrettiForecast(Forecast):
         self.pressure_period = int(d.get('pressure_period', 10800))
         # keep track of the last time for which we issued a forecast
         self.last_event_ts = 0
-        loginf('%s: interval=%s max_age=%s winddir_period=%s pressure_period=%s hemisphere=%s lower_pressure=%s upper_pressure=%s' %
-               (Z_KEY, self.interval, self.max_age,
-                self.winddir_period, self.pressure_period,
-                self.hemisphere, self.lower_pressure, self.upper_pressure))
+        log.info('%s: interval=%s max_age=%s winddir_period=%s pressure_period=%s hemisphere=%s lower_pressure=%s upper_pressure=%s',
+                    Z_KEY, self.interval, self.max_age,
+                    self.winddir_period, self.pressure_period,
+                    self.hemisphere, self.lower_pressure, self.upper_pressure)
         self._bind()
 
     def get_forecast(self, event):
@@ -1441,20 +1431,20 @@ class ZambrettiForecast(Forecast):
         if now < ts:
             ts -= 86400
         if self.last_event_ts == ts:
-            logdbg('%s: forecast was already calculated for %s' %
-                   (Z_KEY, weeutil.weeutil.timestamp_to_string(ts)))
+            log.debug('%s: forecast was already calculated for %s',
+                        Z_KEY, weeutil.weeutil.timestamp_to_string(ts))
             return None
 
-        logdbg('%s: generating forecast for %s' %
-               (Z_KEY, weeutil.weeutil.timestamp_to_string(ts)))
-        logdbg('%s: using winddir from %s to %s' %
-               (Z_KEY,
-                weeutil.weeutil.timestamp_to_string(ts - self.winddir_period),
-                weeutil.weeutil.timestamp_to_string(ts)))
-        logdbg('%s: using pressure from %s to %s' %
-               (Z_KEY,
-                weeutil.weeutil.timestamp_to_string(ts - self.pressure_period),
-                weeutil.weeutil.timestamp_to_string(ts)))
+        log.debug('%s: generating forecast for %s',
+                    Z_KEY, weeutil.weeutil.timestamp_to_string(ts))
+        log.debug('%s: using winddir from %s to %s',
+                    Z_KEY,
+                    weeutil.weeutil.timestamp_to_string(ts - self.winddir_period),
+                    weeutil.weeutil.timestamp_to_string(ts))
+        log.debug('%s: using pressure from %s to %s',
+                    Z_KEY,
+                    weeutil.weeutil.timestamp_to_string(ts - self.pressure_period),
+                    weeutil.weeutil.timestamp_to_string(ts))
 
         try:
             dbm_dict = weewx.manager.get_manager_dict(
@@ -1482,11 +1472,11 @@ class ZambrettiForecast(Forecast):
                                (dbm.table_name, ts - self.pressure_period, ts))
                 last_p = r[1]
         except weedb.DatabaseError as e:
-            loginf('%s: skipping forecast: %s' % (Z_KEY, e))
+            log.info('%s: skipping forecast: %s', Z_KEY, e)
             return None
 
-        logdbg('%s: units=%s winddir=%s pressure=%s first_p=%s last_p=%s'
-               % (Z_KEY, units, winddir, pressure, first_p, last_p))
+        log.debug('%s: units=%s winddir=%s pressure=%s first_p=%s last_p=%s',
+                    Z_KEY, units, winddir, pressure, first_p, last_p)
 
         # pressures need to be in mbar
         if units == weewx.US:
@@ -1514,12 +1504,12 @@ class ZambrettiForecast(Forecast):
         tt = time.gmtime(ts)
         month = tt.tm_mon - 1  # month is [0-11]
         north = self.hemisphere.lower() != 'south'
-        logdbg('%s: pressure=%s month=%s winddir=%s trend=%s north=%s' %
-               (Z_KEY, pressure, month, winddir, trend, north))
+        log.debug('%s: pressure=%s month=%s winddir=%s trend=%s north=%s',
+                    Z_KEY, pressure, month, winddir, trend, north)
         code = ZambrettiCode(pressure, month, winddir, trend, north,
                              baro_bottom=self.lower_pressure,
                              baro_top=self.upper_pressure)
-        logdbg('%s: code is %s' % (Z_KEY, code))
+        log.debug('%s: code is %s', Z_KEY, code)
         if code is None:
             return None
 
@@ -1531,7 +1521,7 @@ class ZambrettiForecast(Forecast):
         record['issued_ts'] = now
         record['event_ts'] = ts
         record['zcode'] = code
-        loginf('%s: generated 1 forecast record' % Z_KEY)
+        log.info('%s: generated 1 forecast record', Z_KEY)
         return [record]
 
 zambretti_label_dict = {
@@ -1757,29 +1747,29 @@ class NWSForecast(Forecast):
             errmsg.append('forecast office ID (foid) is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (NWS_KEY, e))
-            logerr('%s: forecast will not be run' % NWS_KEY)
+                log.error("%s: %s", NWS_KEY, e)
+            log.error('%s: forecast will not be run', NWS_KEY)
             return
 
-        loginf('%s: interval=%s max_age=%s lid=%s foid=%s' %
-               (NWS_KEY, self.interval, self.max_age, self.lid, self.foid))
+        log.info('%s: interval=%s max_age=%s lid=%s foid=%s',
+                   NWS_KEY, self.interval, self.max_age, self.lid, self.foid)
         self._bind()
 
     def get_forecast(self, dummy_event):
         text = NWSDownloadForecast(self.foid, url=self.url,
                                    max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no PFM data for %s from %s' %
-                   (NWS_KEY, self.foid, self.url))
+            log.error('%s: no PFM data for %s from %s',
+                        NWS_KEY, self.foid, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='nws-raw')
         matrix = NWSParseForecast(text, self.lid)
         if matrix is None:
-            logerr('%s: no PFM found for %s in forecast from %s' %
-                   (NWS_KEY, self.lid, self.foid))
+            log.error('%s: no PFM found for %s in forecast from %s',
+                        NWS_KEY, self.lid, self.foid)
             return None
-        logdbg('%s: forecast matrix: %s' % (NWS_KEY, matrix))
+        log.debug('%s: forecast matrix: %s', NWS_KEY, matrix)
         records = NWSProcessForecast(self.foid, self.lid, matrix)
         if len(records) == 0 and self.save_failed:
             self.save_failed_forecast(text, basename='nws-fail')
@@ -1787,7 +1777,7 @@ class NWSForecast(Forecast):
         if 'desc' in matrix or 'location' in matrix:
             msg += ' for %s %s' % (matrix.get('desc', ''),
                                    matrix.get('location', ''))
-        loginf('%s: %s' % (NWS_KEY, msg))
+        log.info('%s: %s', NWS_KEY, msg)
         return records
 
 # mapping of NWS names to database fields
@@ -1833,17 +1823,17 @@ def NWSDownloadForecast(foid, url=NWS_DEFAULT_PFM_URL, max_tries=3):
         u = '%s&issuedby=%s' % (url, foid)
     elif url == NWS_DEFAULT_PFM_URL_v3:
         u = url % foid
-    loginf("%s: downloading forecast from '%s'" % (NWS_KEY, u))
+    log.info("%s: downloading forecast from '%s'", NWS_KEY, u)
     for count in range(max_tries):
         try:
             response = urllib.request.urlopen(u)
             text = response.read()
             return text
         except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-            logerr('%s: failed attempt %d to download NWS forecast: %s' %
-                   (NWS_KEY, count + 1, e))
+            log.error('%s: failed attempt %d to download NWS forecast: %s',
+                        NWS_KEY, count + 1, e)
     else:
-        logerr('%s: failed to download forecast' % NWS_KEY)
+        log.error('%s: failed to download forecast', NWS_KEY)
     return None
 
 def NWSExtractLocation(text, lid):
@@ -1901,12 +1891,12 @@ def NWSParseForecast(text, lid):
             elif mode == 6:
                 rows6[nws_schema_dict[label]] = row
             else:
-                loginf("%s: mode unset for label '%s'" % (NWS_KEY, label))
+                log.info("%s: mode unset for label '%s'", NWS_KEY, label)
         else:
-            logdbg("%s: ignore label '%s'" % (NWS_KEY, label))
+            log.debug("%s: ignore label '%s'", NWS_KEY, label)
 
     if ts is None:
-        loginf("%s: no time string found for %s" % (NWS_KEY, lid))
+        log.info("%s: no time string found for %s", NWS_KEY, lid)
         return None
     day_ts = weeutil.weeutil.startOfDay(ts)
 
@@ -2163,14 +2153,14 @@ class DSForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (DS_KEY, e))
-            logerr('%s: forecast will not be run' % DS_KEY)
+                log.error("%s: %s", DS_KEY, e)
+            log.error('%s: forecast will not be run', DS_KEY)
             return
 
-        loginf('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s' %
-               (DS_KEY, self.interval, self.max_age,
-                self.obfuscate(self.api_key), self.location,
-                self.forecast_type))
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s',
+                   DS_KEY, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location,
+                   self.forecast_type)
         self._bind()
 
     def get_forecast(self, dummy_event):
@@ -2181,8 +2171,8 @@ class DSForecast(Forecast):
                              extend=self.extend, language=self.language,
                              compression=self.use_compression)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (DS_KEY, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        DS_KEY, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='ds-raw')
@@ -2190,7 +2180,7 @@ class DSForecast(Forecast):
                                    location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='ds-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (DS_KEY, len(records)))
+        log.info('%s: got %d forecast records', DS_KEY, len(records))
         return records
 
     @staticmethod
@@ -2233,11 +2223,13 @@ class DSForecast(Forecast):
             # build the optional parameters string, first get the exclude string
             exclude = ','.join([x for x in DS_BLOCKS if x != fc_type])
             # now build the optional string
-            optional_str = DSForecast._build_optional(exclude=exclude,
-                                                      extend=extend,
-                                                      language=language,
-                                                      units=units)
+            #optional_str = DSForecast._build_optional(exclude=exclude,
+            #                                          extend=extend,
+            #                                          language=language,
+            #                                          units=units)
             # construct the final URL including optional parameters
+            # ?exclude=currently,minutely,daily,alerts,flags&extend=hourly&lang=en&units=us
+            optional_str = 'exclude=currently,minutely,daily,alerts,flags&extend=hourly&lang=en&units=us'
             u = '?'.join([u, optional_str]) if len(optional_str) > 0 else u
         else:
             u = url
@@ -2245,7 +2237,7 @@ class DSForecast(Forecast):
         if compression:
             request.add_header('Accept-Encoding', 'gzip')
         masked = Forecast.get_masked_url(u, api_key)
-        loginf("%s: downloading forecast from '%s'" % (DS_KEY, masked))
+        log.info("%s: downloading forecast from '%s'", DS_KEY, masked)
         for count in range(max_tries):
             try:
                 response = urlopen(request)
@@ -2259,10 +2251,10 @@ class DSForecast(Forecast):
                 #text = response.read()
                 return text
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (DS_KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            DS_KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % DS_KEY)
+            log.error('%s: failed to download forecast', DS_KEY)
         return None
 
     @staticmethod
@@ -2296,7 +2288,7 @@ class DSForecast(Forecast):
         obj = json.loads(text.decode('utf-8'))
         if fc_type not in obj:
             msg = "%s: no '%s' forecast in json object" % (DS_KEY, fc_type)
-            logerr(msg)
+            log.error(msg)
             return [], [msg]
         fc = obj[fc_type]
 
@@ -2321,7 +2313,7 @@ class DSForecast(Forecast):
                                                                  location=location)
         else:
             msg = "%s: cannot find 'hourly' or 'daily' forecast" % DS_KEY
-            logerr(msg)
+            log.error(msg)
             msgs.append(msg)
         return records, msgs
 
@@ -2425,7 +2417,7 @@ class DSForecast(Forecast):
                 msg = '%s: failure in daily forecast period %d: %s' % (
                     DS_KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         return records, msgs
 
     @staticmethod
@@ -2511,7 +2503,7 @@ class DSForecast(Forecast):
                 msg = '%s: failure in hourly forecast period %d: %s' % (
                     DS_KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         return records, msgs
 
 
@@ -2660,7 +2652,8 @@ class DSForecast(Forecast):
 # -----------------------------------------------------------------------------
 
 WU_KEY = 'WU'
-WU_DEFAULT_URL = 'http://api.wunderground.com/api'
+#WU_DEFAULT_URL = 'http://api.wunderground.com/api'
+WU_DEFAULT_URL = 'https://api.weather.com/v3/wx/forecast/daily/5day?'
 
 class WUForecast(Forecast):
 
@@ -2686,14 +2679,14 @@ class WUForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (WU_KEY, e))
-            logerr('%s: forecast will not be run' % WU_KEY)
+                log.error("%s: %s", WU_KEY, e)
+            log.error('%s: forecast will not be run', WU_KEY)
             return
 
-        loginf('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s' %
-               (WU_KEY, self.interval, self.max_age,
-                self.obfuscate(self.api_key), self.location,
-                self.forecast_type))
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s',
+                   WU_KEY, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location,
+                   self.forecast_type)
         self._bind()
 
     def get_forecast(self, dummy_event):
@@ -2701,15 +2694,15 @@ class WUForecast(Forecast):
                              fc_type=self.forecast_type,
                              max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (WU_KEY, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        WU_KEY, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='wu-raw')
         records, msgs = self.parse(text, location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='wu-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (WU_KEY, len(records)))
+        log.info('%s: got %d forecast records', WU_KEY, len(records))
         return records
 
     @staticmethod
@@ -2731,35 +2724,37 @@ class WUForecast(Forecast):
         max_tries - how many times to try before giving up
         """
 
-        u = '%s/%s/%s/q/%s.json' % (url, api_key, fc_type, location) \
+        #u = '%s/%s/%s/q/%s.json' % (url, api_key, fc_type, location) \
+        u = '%sgeocode=%s&format=json&units=e&language=en-US&apiKey=%s' % (url, location, api_key) \
             if url == WU_DEFAULT_URL else url
         masked = Forecast.get_masked_url(u, api_key)
-        loginf("%s: download forecast from '%s'" % (WU_KEY, masked))
+        log.info("%s: download forecast from '%s'", WU_KEY, masked)
         for count in range(max_tries):
             try:
                 response = urlopen(u)
                 text = response.read()
                 return text
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (WU_KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            WU_KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % WU_KEY)
+            log.error('%s: failed to download forecast', WU_KEY)
         return None
 
     @staticmethod
     def parse(text, issued_ts=None, now=None, location=None):
         obj = json.loads(text.decode('utf-8'))
-        if not 'response' in obj:
-            msg = "%s: no 'response' in json object" % WU_KEY
-            logerr(msg)
+
+        if not 'dayOfWeek' in obj:
+            msg = "%s: no 'dayOfWeek' in json object" % WU_KEY
+            log.error(msg)
             return [], [msg]
-        response = obj['response']
-        if 'error' in response:
+        #response = obj['response']
+        if 'error' in obj:
             msg = '%s: error in response: %s: %s' % (
                 WU_KEY, response['error']['type'],
                 response['error']['description'])
-            logerr(msg)
+            log.error(msg)
             return [], [msg]
 
         if issued_ts is None or now is None:
@@ -2777,10 +2772,92 @@ class WUForecast(Forecast):
         elif 'forecast' in obj:
             records, msgs = WUForecast.create_records_from_daily(
                 obj, issued_ts, now, location=location)
+        elif 'validTimeUtc' in obj:
+            records, msgs = WUForecast.create_records_from_2019WUAPI(
+                obj, issued_ts, now, location=location)
+            log.debug('New WU API returned %s records', len(records))
         else:
             msg = "%s: cannot find 'hourly_forecast' or 'forecast'" % WU_KEY
-            logerr(msg)
+            log.error(msg)
             msgs.append(msg)
+        return records, msgs
+
+    @staticmethod
+    def create_records_from_2019WUAPI(fc, issued_ts, now, location=None):
+        """create from hourly10day"""
+        msgs = []
+        records = []
+        cnt = 0
+        log.debug('Parsing WU new file format len %d', len(fc['dayOfWeek']))
+        for period in range(0,2*len(fc['dayOfWeek'])-1):
+            try:
+                cnt += 1
+                r = {}
+                DayPart=fc['daypart'][0]
+                log.debug('Parsing WU record %d', period)
+                r['method'] = WU_KEY
+                r['usUnits'] = weewx.US
+                r['dateTime'] = now
+                r['issued_ts'] = issued_ts
+                r['event_ts'] = Forecast.str2int(
+                    'epoch', fc['validTimeUtc'][0]+12*3600*period, WU_KEY)
+                log.debug('event_ts %d', r['event_ts'])
+                r['duration'] = 12*3600
+                log.debug('duration %d', r['duration'])
+                log.debug('raw clouds %s', DayPart['cloudCover'][period])
+                clouds=DayPart['cloudCover'][period]
+                if clouds:
+                    r['clouds'] = Forecast.pct2clouds(DayPart['cloudCover'][period])
+                    log.debug('clouds %s', r['clouds'])
+                log.debug('raw temp %s', DayPart['temperature'])
+                temp=DayPart['temperature'][period]
+                if temp:
+                    r['temp'] = Forecast.str2float('temp', temp, WU_KEY)
+                #r['dewpoint'] = Forecast.str2float(
+                #    'dewpoint', period['dewpoint']['english'], WU_KEY)
+                humidity = DayPart['relativeHumidity'][period]
+                log.debug('raw humidity %s', humidity)
+                if humidity:
+                    r['humidity'] = Forecast.str2int('humidity', humidity, WU_KEY)
+                windspeed=DayPart['windSpeed'][period]
+                log.debug('raw windspeed %s', windspeed)
+                if windspeed:
+                    r['windSpeed'] = Forecast.str2float(
+                        'wspd', windspeed, WU_KEY)
+                winddir=DayPart['windDirectionCardinal'][period]
+                log.debug('raw winddir %s', winddir)
+                if winddir:
+                    r['windDir'] = winddir
+                pop = DayPart['precipChance'][period]
+                log.debug('raw pop %s', pop)
+                if pop:
+                    r['pop'] = Forecast.str2int('pop', pop, WU_KEY)
+                qpf = DayPart['qpf'][period]
+                log.debug('raw qpf %s', qpf)
+                if qpf:
+                    r['qpf'] = Forecast.str2float(
+                        'qpf', qpf, WU_KEY)
+                qsf = DayPart['qpfSnow'][period]
+                log.debug('raw qsf %s', qsf)
+                if qsf:
+                    r['qsf'] = Forecast.str2float('snow', qsf, WU_KEY)
+                #r['obvis'] = WUForecast.wu2obvis(period)
+                #r['uvIndex'] = Forecast.str2int('uvi', period['uvi'], WU_KEY)
+                #r.update(WUForecast.wu2precip(period))
+                log.debug('location %s', location)
+                if location is not None:
+                    r['location'] = location
+                records.append(r)
+                #log.info('New forecast record %d %s', cnt,r)
+            except KeyError as e:
+                msg = '%s: failure in forecast period %d: %s' % (
+                    WU_KEY, cnt, e)
+                msgs.append(msg)
+                log.error(msg)
+            except:
+                log.debug("Oops! %s", sys.exc_info()[0])
+
+
         return records, msgs
 
     @staticmethod
@@ -2832,7 +2909,7 @@ class WUForecast(Forecast):
                 msg = '%s: failure in hourly forecast period %d: %s' % (
                     WU_KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         return records, msgs
 
     @staticmethod
@@ -2880,7 +2957,7 @@ class WUForecast(Forecast):
                 msg = '%s: failure in daily forecast period %d: %s' % (
                     WU_KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         return records, msgs
 
     WU_DIR_DICT = {
@@ -3133,14 +3210,14 @@ class OWMForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (self.method_id, e))
-            logerr('%s: forecast will not be run' % self.method_id)
+                log.error("%s: %s", self.method_id, e)
+            log.error('%s: forecast will not be run',  self.method_id)
             return
 
-        loginf('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s' %
-               (self.method_id, self.interval, self.max_age,
-                self.obfuscate(self.api_key), self.location,
-                self.forecast_type))
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s fc=%s',
+                   self.method_id, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location,
+                   self.forecast_type)
         self._bind()
 
     def get_forecast(self, dummy_event):
@@ -3148,15 +3225,15 @@ class OWMForecast(Forecast):
                              url=self.url, fc_type=self.forecast_type,
                              max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (self.method_id, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        self.method_id, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='owm-raw')
         records, msgs = self.parse(text, location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='owm-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (self.method_id, len(records)))
+        log.info('%s: got %d forecast records',  self.method_id, len(records))
         return records
 
     @staticmethod
@@ -3182,17 +3259,17 @@ class OWMForecast(Forecast):
         u = '%s?APPID=%s&%s' % (url, api_key, locstr) \
             if url == OWMForecast.DEFAULT_URL else url
         masked = Forecast.get_masked_url(u, api_key)
-        loginf("%s: download forecast from '%s'" % (OWMForecast.KEY, masked))
+        log.info("%s: download forecast from '%s'", OWMForecast.KEY, masked)
 
         for count in range(max_tries):
             try:
                 response = urlopen(u)
                 return response.read()
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (OWMForecast.KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            OWMForecast.KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % OWMForecast.KEY)
+            log.error('%s: failed to download forecast', OWMForecast.KEY)
         return None
 
     @staticmethod
@@ -3253,7 +3330,7 @@ class OWMForecast(Forecast):
                 msg = '%s: failure in forecast period %d: %s' % (
                     OWMForecast.KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         if total != cnt:
             msgs.append('record mismatch: total=%s != parsed=%s' % (total, cnt))
         return records, msgs
@@ -3357,28 +3434,28 @@ class UKMOForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (self.method_id, e))
-            logerr('%s: forecast will not be run' % self.method_id)
+                log.error("%s: %s", self.method_id, e)
+            log.error('%s: forecast will not be run', self.method_id)
             return
 
-        loginf('%s: interval=%s max_age=%s api_key=%s location=%s' %
-               (self.method_id, self.interval, self.max_age,
-                self.obfuscate(self.api_key), self.location))
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s',
+                   self.method_id, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location)
         self._bind()
 
     def get_forecast(self, dummy_event):
         text = self.download(self.api_key, self.location,
                              url=self.url, max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (self.method_id, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        self.method_id, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='ukmo-raw')
         records, msgs = self.parse(text, location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='ukmo-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (self.method_id, len(records)))
+        log.info('%s: got %d forecast records', self.method_id, len(records))
         return records
 
     @staticmethod
@@ -3400,17 +3477,17 @@ class UKMOForecast(Forecast):
         u = '%s%s?res=3hourly&key=%s' % (url, location, api_key) \
             if url == UKMOForecast.DEFAULT_URL else url
         masked = Forecast.get_masked_url(u, api_key)
-        loginf("%s: download forecast from '%s'" % (UKMOForecast.KEY, masked))
+        log.info("%s: download forecast from '%s'", UKMOForecast.KEY, masked)
 
         for count in range(max_tries):
             try:
                 response = urlopen(u)
                 return response.read()
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (UKMOForecast.KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            UKMOForecast.KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % UKMOForecast.KEY)
+            log.error('%s: failed to download forecast', UKMOForecast.KEY)
         return None
 
     @staticmethod
@@ -3426,10 +3503,10 @@ class UKMOForecast(Forecast):
             fc['SiteRep']['DV']['Location']['Period']
             loc = fc['SiteRep']['DV']['Location']['i']
             if loc != location:
-                loginf("%s: location mismatch: %s != %s" %
-                       (UKMOForecast.KEY, loc, location))
+                log.info("%s: location mismatch: %s != %s",
+                           UKMOForecast.KEY, loc, location)
         except KeyError as e:
-            logerr("%s: missing field %s" % (UKMOForecast.KEY, e))
+            log.error("%s: missing field %s", UKMOForecast.KEY, e)
             return records, msgs
         issued_ts = UKMOForecast.dd2ts(fc['SiteRep']['DV']['dataDate'])
         for period in fc['SiteRep']['DV']['Location']['Period']:
@@ -3470,7 +3547,7 @@ class UKMOForecast(Forecast):
                     msg = '%s: failure in forecast period %d: %s' % (
                         UKMOForecast.KEY, cnt, e)
                     msgs.append(msg)
-                    logerr(msg)
+                    log.error(msg)
         return records, msgs
 
     @staticmethod
@@ -3593,14 +3670,14 @@ class AerisForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (self.method_id, e))
-            logerr('%s: forecast will not be run' % self.method_id)
+                log.error("%s: %s", self.method_id, e)
+            log.error('%s: forecast will not be run', self.method_id)
             return
 
-        loginf('%s: interval=%s max_age=%s client_id=%s client_secret=%s location=%s' %
-               (self.method_id, self.interval, self.max_age,
-                self.obfuscate(self.client_id),
-                self.obfuscate(self.client_secret), self.location))
+        log.info('%s: interval=%s max_age=%s client_id=%s client_secret=%s location=%s',
+                   self.method_id, self.interval, self.max_age,
+                   self.obfuscate(self.client_id),
+                   self.obfuscate(self.client_secret), self.location)
         self._bind()
 
     def get_forecast(self, dummy_event):
@@ -3608,15 +3685,15 @@ class AerisForecast(Forecast):
                              self.forecast_type,
                              url=self.url, max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (self.method_id, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        self.method_id, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='aeris-raw')
         records, msgs = self.parse(text, location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='aeris-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (self.method_id, len(records)))
+        log.info('%s: got %d forecast records', self.method_id, len(records))
         return records
 
     _LATLON = re.compile('[\d\+\-]+,[\d\+\-]+')
@@ -3655,17 +3732,17 @@ class AerisForecast(Forecast):
             client_id, client_secret, location, fc_type, url)
         masked = Forecast.get_masked_url(u, client_id)
         masked = Forecast.get_masked_url(masked, client_secret)
-        loginf("%s: download forecast from '%s'" % (AerisForecast.KEY, masked))
+        log.info("%s: download forecast from '%s'", AerisForecast.KEY, masked)
 
         for count in range(max_tries):
             try:
                 response = urlopen(u)
                 return response.read()
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (AerisForecast.KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            AerisForecast.KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % AerisForecast.KEY)
+            log.error('%s: failed to download forecast', AerisForecast.KEY)
         return None
 
     @staticmethod
@@ -3676,13 +3753,13 @@ class AerisForecast(Forecast):
         obj = json.loads(text.decode('utf-8'))
         if not ('response' in obj and 'success' in obj and 'error' in obj):
             msg = "%s: no response/success/error in reply" % AerisForecast.KEY
-            logerr(msg)
+            log.error(msg)
             return [], [msg]
         if obj['error'] is not None:
             msg = '%s: %s: %s' % (
                 AerisForecast.KEY,
                 obj['error']['code'], obj['error']['description'])
-            logerr(msg)
+            log.error(msg)
             msgs.append(msg)
         if obj['success'] != True:
             return [], [msg]
@@ -3770,7 +3847,7 @@ class AerisForecast(Forecast):
                 msg = '%s: failure in forecast period %d: %s' % (
                     AerisForecast.KEY, cnt, e)
                 msgs.append(msg)
-                logerr(msg)
+                log.error(msg)
         return records, msgs
 
     @staticmethod
@@ -3864,28 +3941,28 @@ class WWOForecast(Forecast):
             errmsg.append('location is not specified')
         if errmsg:
             for e in errmsg:
-                logerr("%s: %s" % (self.method_id, e))
-            logerr('%s: forecast will not be run' % self.method_id)
+                log.error("%s: %s", self.method_id, e)
+            log.error('%s: forecast will not be run', self.method_id)
             return
 
-        loginf('%s: interval=%s max_age=%s api_key=%s location=%s' %
-               (self.method_id, self.interval, self.max_age,
-                self.obfuscate(self.api_key), self.location))
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s',
+                   self.method_id, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location)
         self._bind()
 
     def get_forecast(self, dummy_event):
         text = self.download(self.api_key, self.location, self.forecast_type,
                              url=self.url, max_tries=self.max_tries)
         if text is None:
-            logerr('%s: no forecast data for %s from %s' %
-                   (self.method_id, self.location, self.url))
+            log.error('%s: no forecast data for %s from %s',
+                        self.method_id, self.location, self.url)
             return None
         if self.save_raw:
             self.save_raw_forecast(text, basename='wwo-raw')
         records, msgs = self.parse(text, location=self.location)
         if self.save_failed and len(msgs) > 0:
             self.save_failed_forecast(text, basename='wwo-fail', msgs=msgs)
-        loginf('%s: got %d forecast records' % (self.method_id, len(records)))
+        log.info('%s: got %d forecast records', self.method_id, len(records))
         return records
 
     @staticmethod
@@ -3920,17 +3997,17 @@ class WWOForecast(Forecast):
 
         u = WWOForecast.build_url(api_key, location, fc_type, url)
         masked = Forecast.get_masked_url(u, api_key)
-        loginf("%s: download forecast from '%s'" % (WWOForecast.KEY, masked))
+        log.info("%s: download forecast from '%s'", WWOForecast.KEY, masked)
 
         for count in range(max_tries):
             try:
                 response = urlopen(u)
                 return response.read()
             except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
-                logerr('%s: failed attempt %d to download forecast: %s' %
-                       (WWOForecast.KEY, count + 1, e))
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            WWOForecast.KEY, count + 1, e)
         else:
-            logerr('%s: failed to download forecast' % WWOForecast.KEY)
+            log.error('%s: failed to download forecast', WWOForecast.KEY)
         return None
 
     @staticmethod
@@ -3940,11 +4017,11 @@ class WWOForecast(Forecast):
             msg = "%s: %s: %s" % (WWOForecast.KEY,
                                   obj['results']['error']['type'],
                                   obj['results']['error']['message'])
-            logerr(msg)
+            log.error(msg)
             return [], [msg]
         if not 'data' in obj or not 'weather' in obj['data']:
             msg = "%s: no data.weather in reply" % WWOForecast.KEY
-            logerr(msg)
+            log.error(msg)
             return [], [msg]
 
         if issued_ts is None or now is None:
@@ -4012,7 +4089,7 @@ class WWOForecast(Forecast):
                     msg = '%s: failure in forecast period %d: %s' % (
                         WWOForecast.KEY, cnt, e)
                     msgs.append(msg)
-                    logerr(msg)
+                    log.error(msg)
         return records, msgs
 
     @staticmethod
@@ -4023,6 +4100,280 @@ class WWOForecast(Forecast):
     def str2int(pkt, label):
         return Forecast.str2int(label, pkt[label], WWOForecast.KEY)
 
+# -----------------------------------------------------------------------------
+# XU forecast
+#
+# condition codes
+# code    condition
+# 395     Moderate or heavy snow in area with thunder
+# 392     Patchy light snow in area with thunder
+# 389     Moderate or heavy rain in area with thunder
+# 386     Patchy light rain in area with thunder
+# 377     Moderate or heavy showers of ice pellets
+# 374     Light showers of ice pellets
+# 371     Moderate or heavy snow showers
+# 368     Light snow showers
+# 365     Moderate or heavy sleet showers
+# 362     Light sleet showers
+# 359     Torrential rain shower
+# 356     Moderate or heavy rain shower
+# 353     Light rain shower
+# 350     Ice pellets
+# 338     Heavy snow
+# 335     Patchy heavy
+# 332     Moderate snow
+# 329     Patchy moderate snow
+# 326     Light snow
+# 323     Patchy light snow
+# 320     Moderate or heavy sleet
+# 317     Light sleet
+# 314     Moderate or Heavy freezing rain
+# 311     Light freezing rain
+# 308     Heavy rain
+# 305     Heavy rain at times
+# 302     Moderate rain
+# 299     Moderate rain at times
+# 296     Light rain
+# 293     Patchy light rain
+# 284     Heavy freezing drizzle
+# 281     Freezing drizzle
+# 266     Light drizzle
+# 263     Patchy light drizzle
+# 260     Freezing fog
+# 248     Fog
+# 230     Blizzard
+# 227     Blowing snow
+# 200     Thundery outbreaks in nearby
+# 185     Patchy freezing drizzle nearby
+# 182     Patchy sleet nearby
+# 179     Patchy snow nearby
+# 176     Patchy rain nearby
+# 143     Mist
+# 122     Overcast
+# 119     Cloudy
+# 116     Partly Cloudy
+# 113     Clear/Sunny
+
+# condition codes to icons on apixu-icons
+# code     icon
+
+# 1000     113
+# 1003     116
+# 1006     119
+# 1009     122
+# 1030     143
+# 1063     176
+# 1066     179
+# 1069     182
+# 1072     185
+# 1087     200
+# 1114     227
+# 1117     230
+# 1135     248
+# 1147     260
+# 1150     263
+# 1153     266
+# 1168     281
+# 1171     284
+# 1180     293
+# 1183     296
+# 1186     299
+# 1189     302
+# 1192     305
+# 1195     308
+# 1198     311
+# 1201     314
+# 1204     317
+# 1207     320
+# 1210     323
+# 1213     326
+# 1216     329
+# 1219     332
+# 1222     335
+# 1225     338
+# 1237     350
+# 1240     353
+# 1243     356
+# 1246     359
+# 1249     362
+# 1252     365
+# 1255     368
+# 1258     371
+# 1261     374
+# 1264     377
+# 1273     386
+# 1276     389
+# 1279     392
+# 1282     395
+
+class XUForecast(Forecast):
+
+    KEY = 'XU'
+    DEFAULT_URL = 'http://api.apixu.com'
+
+    def __init__(self, engine, config_dict):
+        super(XUForecast, self).__init__(engine, config_dict,
+                                          XUForecast.KEY, interval=10800)
+        d = config_dict.get('Forecast', {}).get(XUForecast.KEY, {})
+        self.url = d.get('url', self.DEFAULT_URL)
+        self.max_tries = int(d.get('max_tries', 3))
+        self.api_key = d.get('api_key', None)
+        self.location = d.get('location', None)
+        # forecast_type = days for forecast
+        self.forecast_type = int(d.get('forecast_type', 7))
+        #self.lang = d.get('lang', None)
+        if self.location is None:
+            self.location = Forecast.get_loc_from_station(config_dict)
+
+        errmsg = []
+        if json is None:
+            errmsg.append('json is not installed')
+        if self.api_key is None or self.api_key.startswith('INSERT_'):
+            errmsg.append('API key (api_key) is not specified')
+        if self.location is None:
+            errmsg.append('location is not specified')
+        if errmsg:
+            for e in errmsg:
+                log.error("%s: %s", self.method_id, e)
+            log.error('%s: forecast will not be run', self.method_id)
+            return
+
+        log.info('%s: interval=%s max_age=%s api_key=%s location=%s',
+                   self.method_id, self.interval, self.max_age,
+                   self.obfuscate(self.api_key), self.location)
+        self._bind()
+
+    def get_forecast(self, dummy_event):
+        text = self.download(self.api_key, self.location, self.forecast_type,
+                             url=self.url, max_tries=self.max_tries)
+
+        #log.info('%s: got %s forecast new records', self.method_id, text)
+        if text is None:
+            log.error('%s: no forecast data for %s from %s',
+                        self.method_id, self.location, self.url)
+            return None
+        if self.save_raw:
+            self.save_raw_forecast(text, basename='XU-raw')
+        records, msgs = self.parse(text, location=self.location)
+        if self.save_failed and len(msgs) > 0:
+            self.save_failed_forecast(text, basename='XU-fail', msgs=msgs)
+        log.info('%s: got %d forecast records', self.method_id, len(records))
+        return records
+
+    @staticmethod
+    def build_url(api_key, location, fc_type, url):
+        opts = ['key=%s' % api_key,
+                'q=%s' % location,
+                'days=7',
+                'lang=de']
+        #opts = ['key=%s' % api_key,
+        #        'q=%s' % location,
+        #        'days=%s' % fc_type,
+        #        'lang=de']
+
+        u = '%s/v1/forecast.json?%s' % (url, '&'.join(opts)) \
+            if url == XUForecast.DEFAULT_URL else url
+        return u
+
+    @staticmethod
+    def download(api_key, location, fc_type=3, url=DEFAULT_URL, max_tries=3):
+        """Download a forecast from XU
+
+        api_key - credentials for downloading
+
+        location - location identifier
+
+        fc_type - can be one of 3, 6, 10
+
+        url - URL to the forecast service.  if anything other than the default
+              is specified, that entire URL is used.  if the default is
+              specified, it is used as the base and other items are added to it.
+
+        max_tries - how many times to try before giving up
+        """
+
+        u = XUForecast.build_url(api_key, location, fc_type, url)
+        masked = Forecast.get_masked_url(u, api_key)
+        log.info("%s: download forecast from '%s'", XUForecast.KEY, masked)
+        #log.info("%s: download forecast from '%s'", XUForecast.KEY, u)
+
+        for count in range(max_tries):
+            try:
+                response = urlopen(u)
+                return response.read()
+            except (socket.error, URLError, BadStatusLine, IncompleteRead) as e:
+                log.error('%s: failed attempt %d to download forecast: %s',
+                            XUForecast.KEY, count + 1, e)
+        else:
+            log.error('%s: failed to download forecast', XUForecast.KEY)
+        return None
+
+    @staticmethod
+    def parse(text, issued_ts=None, now=None, location=None):
+        obj = json.loads(text.decode('utf-8'))
+        #obj = json.loads(text)
+        #if 'results' in obj and 'error' in obj['results']:
+        #    msg = "%s: %s: %s" % (XUForecast.KEY,
+        #                          obj['results']['error']['type'],
+        #                          obj['results']['error']['message'])
+        #    log.error(msg)
+        #    return [], [msg]
+        if not 'forecast' in obj:
+            msg = "%s: no data.weather in reply" % XUForecast.KEY
+            log.error(msg)
+            return [], [msg]
+
+        if issued_ts is None or now is None:
+            n = int(time.time())
+            if issued_ts is None:
+                issued_ts = n
+            if now is None:
+                now = n
+
+        msgs = []
+        records = []
+        cnt = 0
+        ival = 3 # FIXME
+
+        for day in obj['forecast']['forecastday']:
+            try:
+                cnt += 1
+                r = {}
+                r['method'] = XUForecast.KEY
+                r['usUnits'] = weewx.US
+                r['dateTime'] = now
+                r['issued_ts'] = issued_ts
+                r['event_ts'] = Forecast.str2int('date_epoch', day['date_epoch'], XUForecast.KEY)
+                r['duration'] = ival * 3600 # FIXME
+                r['tempMax'] = Forecast.str2int('maxtemp_f', day['day']['maxtemp_f'], XUForecast.KEY)
+                r['tempMin'] = Forecast.str2float('mintemp_f', day['day']['mintemp_f'], XUForecast.KEY)
+                r['temp'] = Forecast.str2float('avgtemp_f', day['day']['avgtemp_f'], XUForecast.KEY)
+                # r['clouds'] = Forecast.pct2clouds(p['cloudcover'])
+                # r['dewpoint'] = XUForecast.str2float(p, 'DewPointF')
+                # feelslike
+                # r['heatIndex'] = XUForecast.str2float(p, 'HeatIndexF')
+                r['humidity'] = Forecast.str2float('avghumidity', day['day']['avghumidity'], XUForecast.KEY)
+                r['qpf'] = Forecast.str2float('totalprecip_in', day['day']['totalprecip_in'], XUForecast.KEY)
+                r['windSpeed'] = Forecast.str2float('maxwind_mph', day['day']['maxwind_mph'], XUForecast.KEY)
+                r['uvIndex'] = Forecast.str2float('uv', day['day']['uv'], XUForecast.KEY)
+                r['visibility'] = Forecast.str2float('avgvis_miles', day['day']['avgvis_miles'], XUForecast.KEY)
+                if location is not None:
+                    r['location'] = location
+                records.append(r)
+            except KeyError as e:
+                msg = '%s: failure in forecast period %d: %s' % (
+                    XUForecast.KEY, cnt, e)
+                msgs.append(msg)
+                log.error(msg)
+        return records, msgs
+
+    @staticmethod
+    def str2float(pkt, label):
+        return Forecast.str2float(label, pkt[label], XUForecast.KEY)
+
+    @staticmethod
+    def str2int(pkt, label):
+        return Forecast.str2int(label, pkt[label], XUForecast.KEY)
 
 # -----------------------------------------------------------------------------
 # xtide tide predictor
@@ -4052,13 +4403,13 @@ class XTideForecast(Forecast):
         self.location = weeutil.weeutil.list_as_string(d.get('location', None))
 
         if self.location is None or self.location.startswith('INSERT_'):
-            logerr('%s: location (location) has not been specified' % XT_KEY)
-            logerr('%s: forecast will not be run' % XT_KEY)
+            log.error('%s: location (location) has not been specified', XT_KEY)
+            log.error('%s: forecast will not be run', XT_KEY)
             return
 
-        loginf("%s: interval=%s max_age=%s location='%s' duration=%s" %
-               (XT_KEY, self.interval, self.max_age,
-                self.location, self.duration))
+        log.info("%s: interval=%s max_age=%s location='%s' duration=%s",
+                   XT_KEY, self.interval, self.max_age,
+                   self.location, self.duration)
         self._bind()
 
     def get_forecast(self, dummy_event):
@@ -4069,7 +4420,7 @@ class XTideForecast(Forecast):
         records = self.parse(lines, location=self.location)
         if records is None:
             return None
-        logdbg('%s: tide matrix: %s' % (self.method_id, records))
+        log.debug('%s: tide matrix: %s', self.method_id, records)
         return records
 
     @staticmethod
@@ -4084,7 +4435,7 @@ class XTideForecast(Forecast):
                 continue
             fields = line.split(',')
             if len(fields) != 5:
-                logdbg("expected 5 fields, found %s: %s" % (len(fields), line))
+                log.debug("expected 5 fields, found %s: %s", len(fields), line)
                 continue
 
             if fields[4] == 'High Tide' or fields[4] == 'Low Tide':
@@ -4098,7 +4449,7 @@ class XTideForecast(Forecast):
                     vt = (float(ofields[0]), 'meter', 'group_altitude')
                     offset = weewx.units.convertStd(vt, weewx.US)[0]
                 else:
-                    logerr("%s: unknown units '%s'" % (XT_KEY, ofields[1]))
+                    log.error("%s: unknown units '%s'", XT_KEY, ofields[1])
                     continue
                 record = {}
                 record['method'] = XT_KEY
@@ -4126,18 +4477,18 @@ class XTideForecast(Forecast):
         cmd = "%s -fc -df'%%Y.%%m.%%d' -tf'%%H:%%M' -l'%s' -b'%s' -e'%s'" % (
             prog, location, st, et)
         try:
-            loginf('%s: generating tides from %s to %s' %
-                   (XT_KEY,
-                    weeutil.weeutil.timestamp_to_string(sts),
-                    weeutil.weeutil.timestamp_to_string(ets)))
-            logdbg("%s: running command '%s'" % (XT_KEY, cmd))
+            log.info('%s: generating tides from %s to %s',
+                       XT_KEY,
+                       weeutil.weeutil.timestamp_to_string(sts),
+                       weeutil.weeutil.timestamp_to_string(ets))
+            log.debug("%s: running command '%s'", XT_KEY, cmd)
             p = subprocess.Popen(cmd, shell=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             rc = p.returncode
             if rc is not None:
-                logerr("%s: generate forecast failed: loc='%s' code=%s" %
-                       (XT_KEY, location, -rc))
+                log.error("%s: generate forecast failed: loc='%s' code=%s",
+                            XT_KEY, location, -rc)
                 return None
 
             # look for comma-delimited output.  we expect lines like this:
@@ -4148,18 +4499,18 @@ class XTideForecast(Forecast):
                 if line.count(',') == 4:
                     out.append(line)
                 else:
-                     logdbg("%s: ignoring line: %s" % (XT_KEY, line))
+                     log.debug("%s: ignoring line: %s", XT_KEY, line)
             if out:
-                logdbg("%s: got %d lines of output" % (XT_KEY, len(out)))
+                log.debug("%s: got %d lines of output", XT_KEY, len(out))
                 fields = out[0].split(',')
                 loc = fields[0].replace('|', ',')
                 loc = loc.replace(' - READ flaterco.com/pol.html', '')
 
                 if loc != location:
-                    loginf("%s: location mismatch: '%s' != '%s'" %
-                           (XT_KEY, location, loc))
+                    log.info("%s: location mismatch: '%s' != '%s'",
+                               XT_KEY, location, loc)
                 return out
-            loginf("%s: got no tidal events" % XT_KEY)
+            log.info("%s: got no tidal events", XT_KEY)
 
             # we got no recognizable output, so try to make sense of any errors
             err = []
@@ -4178,11 +4529,11 @@ class XTideForecast(Forecast):
             if idx >= 0:
                 errmsg = errmsg[idx:]
             if len(errmsg):
-                logerr('%s: generate forecast failed: %s' % (XT_KEY, errmsg))
+                log.error('%s: generate forecast failed: %s', XT_KEY, errmsg)
 
             return None
         except OSError as e:
-            logerr('%s: generate forecast failed: %s' % (XT_KEY, e))
+            log.error('%s: generate forecast failed: %s', XT_KEY, e)
         return None
 
 
@@ -4362,7 +4713,7 @@ def _parse_precip_qty(s):
             x = (xmax + xmin) / 2
             return x, xmin, xmax
         except (ValueError, TypeError, AttributeError) as e:
-            logerr("unrecognized precipitation quantity '%s': %s" % (s, e))
+            log.error("unrecognized precipitation quantity '%s': %s", s, e)
     else:
         try:
             x = float(s)
@@ -4370,7 +4721,7 @@ def _parse_precip_qty(s):
             xmax = x
             return x, xmin, xmax
         except ValueError as e:
-            logerr("unrecognized precipitation quantity '%s': %s" % (s, e))
+            log.error("unrecognized precipitation quantity '%s': %s", s, e)
     return None, None, None
 
 def _create_from_histogram(histogram):
@@ -4439,7 +4790,7 @@ def _get_stats(key, a, b):
                     _max = float(_m)
                 b[key + 'Max'] = max(b[key + 'Max'], _max)
     except (ValueError, TypeError) as e:
-        logdbg("_get_stats: %s" % e)
+        log.debug("_get_stats: %s", e)
 
 def _get_sum(key, a, b):
     y = b.get(key, None)
@@ -4455,7 +4806,7 @@ def _get_sum(key, a, b):
             if x is not None:
                 return x
     except (ValueError, TypeError) as e:
-        logdbg("_get_sum: %s" % e)
+        log.debug("_get_sum: %s", e)
     return y
 
 def _get_min(key, a, b):
@@ -4469,7 +4820,7 @@ def _get_min(key, a, b):
             if b.get(key, None) is None or x < b[key]:
                 return x
     except (ValueError, TypeError) as e:
-        logdbg("_get_min: %s" % e)
+        log.debug("_get_min: %s", e)
     return b.get(key, None)
 
 def _get_max(key, a, b):
@@ -4483,7 +4834,7 @@ def _get_max(key, a, b):
             if b.get(key, None) is None or x > b[key]:
                 return x
     except (ValueError, TypeError) as e:
-        logdbg("_get_max: %s" % e)
+        log.debug("_get_max: %s", e)
     return b.get(key, None)
 
 
@@ -4558,10 +4909,10 @@ class ForecastVariables(SearchList):
                         records.append(r)
                     return records
                 except (IndexError, weedb.DatabaseError) as e:
-                    logerr('get tides failed (attempt %d of %d): %s' %
-                           ((count + 1), self.db_max_tries, e))
-                    logdbg('waiting %d seconds before retry' %
-                           self.db_retry_wait)
+                    log.error('get tides failed (attempt %d of %d): %s',
+                               (count + 1), self.db_max_tries, e)
+                    log.debug('waiting %d seconds before retry',
+                               self.db_retry_wait)
                     time.sleep(self.db_retry_wait)
         return []
 
@@ -4590,10 +4941,10 @@ class ForecastVariables(SearchList):
                         records.append(r)
                     return records
                 except (IndexError, weedb.DatabaseError) as e:
-                    logerr('get %s failed (attempt %d of %d): %s' %
-                           (fid, (count + 1), self.db_max_tries, e))
-                    logdbg('waiting %d seconds before retry' %
-                           self.db_retry_wait)
+                    log.error('get %s failed (attempt %d of %d): %s',
+                                fid, (count + 1), self.db_max_tries, e)
+                    log.debug('waiting %d seconds before retry',
+                                self.db_retry_wait)
                     time.sleep(self.db_retry_wait)
         return []
 
@@ -4605,15 +4956,15 @@ class ForecastVariables(SearchList):
             if value_str in [None, 'None', '']:
                 pass
             elif value_str in ['A', 'W', 'Y']:
-                logdbg("ignoring value for %s: '%s' (%s:%s)" %
-                       (label, value_str, fid, context))
+                log.debug("ignoring value for %s: '%s' (%s:%s)",
+                            label, value_str, fid, context)
             elif group == 'group_time':
                 v = int(value_str)
             else:
                 v = float(value_str)
         except ValueError as e:
-            logerr("cannot create value for %s from '%s' (%s:%s): %s" %
-                   (label, value_str, fid, context, e))
+            log.error("cannot create value for %s from '%s' (%s:%s): %s",
+                        label, value_str, fid, context, e)
         if units is None:
             units = DEFAULT_UNITS[unit_system][group]
         vt = weewx.units.ValueTuple(v, units, group)
@@ -4676,10 +5027,10 @@ class ForecastVariables(SearchList):
                         return {'dateTime': th, 'issued_ts': th,
                                 'event_ts': th, 'code': code, 'text': text}
                 except (KeyError, weedb.DatabaseError) as e:
-                    logerr('get zambretti failed (attempt %d of %d): %s' %
-                           ((count + 1), self.db_max_tries, e))
-                    logdbg('waiting %d seconds before retry' %
-                           self.db_retry_wait)
+                    log.error('get zambretti failed (attempt %d of %d): %s',
+                                (count + 1), self.db_max_tries, e)
+                    log.debug('waiting %d seconds before retry',
+                                self.db_retry_wait)
                     time.sleep(self.db_retry_wait)
         return {'dateTime': '', 'issued_ts': '',
                 'event_ts': '', 'code': '', 'text': ''}
@@ -5014,7 +5365,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                 'source': s,
                 'issued_since': ts}
         if not request:
-            loginf("generator abort: no plots requested")
+            log.info("generator abort: no plots requested")
             return
 
         # we will end up with an array of plot specs.  each plot has a name,
@@ -5024,7 +5375,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
         max_ts = 0
 
         # scan the old database for the issued timestamps that we need to plot
-        logdbg("scan forecast database")
+        log.debug("scan forecast database")
         src_dbm_dict = weewx.manager.get_manager_dict(
             self.config_dict['DataBindings'],
             self.config_dict['Databases'],
@@ -5040,7 +5391,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                         sql = "select distinct issued_ts from archive where method='%s' and issued_ts >= %s" % (s, request[p]['issued_since'])
                     else: # just the latest one
                         sql = "select max(issued_ts) from archive where method='%s'" % s
-                    logdbg("find issue dates for plot %s source %s" % (p, s))
+                    log.debug("find issue dates for plot %s source %s", p, s)
                     for r in src_dbm.genSql(sql):
                         if r and r[0] is not None:
                             issued.append(r[0])
@@ -5051,16 +5402,16 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                         data_type = "%s_%s_%s" % (
                             request[p]['data_type'], s, tstr)
                         request[p]['plots'].append((label, data_type, ts, s))
-                    logdbg("found %s:%s: %s" % (p, s, issued))
+                    log.debug("found %s:%s: %s", p, s, issued)
 
             try:
                 os.remove(self.DBFN)
-                logdbg('delete leftover temporary database %s' % self.DBFN)
+                log.debug('delete leftover temporary database %s', self.DBFN)
             except OSError:
                 pass
 
             # set up and create the temporary database
-            logdbg("create schema for temporary database")
+            log.debug("create schema for temporary database")
             dst_dbm_dict = dict(self.MANAGER_DICT)
             dst_dbm_dict['schema'] = [
                 ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
@@ -5070,7 +5421,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                 for (label, data_type, issued_ts, src) in request[p]['plots']:
                     if (data_type, 'REAL') not in dst_dbm_dict['schema']:
                         dst_dbm_dict['schema'].append((data_type, 'REAL'))
-            logdbg("create temporary database %s" % self.DBFN)
+            log.debug("create temporary database %s", self.DBFN)
             with weewx.manager.open_manager(dst_dbm_dict, initialize=True) as x:
                 pass
 
@@ -5086,13 +5437,13 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                     for (_, data_type, issued_ts, src) in request[p]['plots']:
                         sql = "select event_ts,%s from archive where issued_ts=%s and method='%s'" % (request[p]['data_type'], issued_ts, src)
                         data = []
-                        logdbg("get data for %s from source %s at %s" %
-                               (request[p]['data_type'], src, issued_ts))
+                        log.debug("get data for %s from source %s at %s",
+                                    request[p]['data_type'], src, issued_ts)
                         for r in src_dbm.genSql(sql):
                             data.append(r)
                         interval = 0
-                        logdbg("insert %d records into %s (%s of %s)" %
-                               (len(data), data_type, completed, todo))
+                        log.debug("insert %d records into %s (%s of %s)",
+                                    len(data), data_type, completed, todo)
                         for (ts, v) in data:
                             if v is None:
                                 v = 'NULL'
@@ -5107,7 +5458,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                                 max_ts = ts
                         completed += 1
 
-        logdbg("set up for image generation")
+        log.debug("set up for image generation")
         # allocate a dictionary for the image generator configuration
         cfg = dict()
         # get parameters for the image generator
@@ -5152,12 +5503,12 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                 'driver': 'weedb.sqlite',
                 'SQLITE_ROOT': '/var/tmp'}}
 
-        logdbg('run the image generator')
+        log.debug('run the image generator')
         g = weeutil.weeutil._get_object('weewx.imagegenerator.ImageGenerator')(
             cfg_dict, img_dict, max_ts, self.first_run, self.stn_info)
         g.run()
 
-        logdbg('delete temporary database %s' % self.DBFN)
+        log.debug('delete temporary database %s', self.DBFN)
         os.remove(self.DBFN)
 
 
@@ -5177,7 +5528,8 @@ if __name__ == "__main__":
 
     def main():
         import optparse
-        syslog.openlog('wee_forecast', syslog.LOG_PID | syslog.LOG_CONS)
+        #syslog.openlog('wee_forecast', syslog.LOG_PID | syslog.LOG_CONS)
+        weeutil.logger.setup('wee_forecast', {})
         parser = optparse.OptionParser(usage=usage)
         parser.add_option('--version', dest='version', action='store_true',
                           help='display the version')
@@ -5218,10 +5570,16 @@ if __name__ == "__main__":
             print("forecast version %s" % VERSION)
             exit(0)
 
-        if options.debug:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
-        else:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+        #if options.debug:
+        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        #else:
+        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+
+        # Set weewx.debug as necessary:
+        weewx.debug = to_int(config_dict.get('debug', 0))
+
+        # Now we can set up the user customized system:
+        weeutil.logger.setup('wee_forecast', config_dict)
 
         if options.action == 'download':
             if not options.method:

@@ -29,16 +29,21 @@ Add the following to weewx.conf:
 
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
+
+import logging
 import serial, struct, sys
 import os
 import platform
 import re
-import syslog
+
 import time
 import weewx
 import weeutil.weeutil
 from weewx.engine import StdService
+
+log = logging.getLogger(__name__)
 
 VERSION = "0.1"
 
@@ -53,17 +58,6 @@ schema = [
     ('rad_nsvh','INTEGER'),
     ]
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'Geiger_weewx: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 def getCPM(ser):
     ser.write(b'<GETCPM>>')
@@ -75,7 +69,7 @@ class GeigerMonitor(StdService):
 
     def __init__(self, engine, config_dict):
         super(GeigerMonitor, self).__init__(engine, config_dict)
-        loginf("Geiger-Service version is %s" % VERSION)
+        log.info("Geiger-Service version is %s", VERSION)
 
         d = config_dict.get('Geiger', {})
         # get PORT and BAUD of Geiger
@@ -96,8 +90,8 @@ class GeigerMonitor(StdService):
             raise Exception('Geiger schema mismatch: %s != %s' % (dbcol, memcol))
 
         # provide info about the system on which we are running
-        loginf('Geiger-sysinfo PORT: %s ' % self._port)
-        loginf('Geiger-sysinfo baud: %s ' % self._baud)
+        log.info('Geiger-sysinfo PORT: %s ', self._port)
+        log.info('Geiger-sysinfo baud: %s ', self._baud)
 
         self.last_ts = None
 
@@ -114,7 +108,7 @@ class GeigerMonitor(StdService):
         now = int(time.time() + 0.5)
         delta = now - event.record['dateTime']
         if delta > event.record['interval'] * 60:
-            logdbg("Skipping record: time difference %s too big" % delta)
+            log.debug("Skipping record: time difference %s too big", delta)
             return
         if self.last_ts is not None:
             self.save_data(self.get_data(now, self.last_ts))
@@ -158,7 +152,7 @@ class GeigerMonitor(StdService):
             ser.close()
 
         except serial.SerialException as e:
-            loginf.critical(e)
+            log.info("critical", e)
 
         record['rad_cpm'] = rad_cpm
         record['rad_nsvh'] = rad_cpm * 6.5

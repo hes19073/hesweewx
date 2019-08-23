@@ -8,35 +8,40 @@
 or VantageVue weather station"""
 
 
-from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
+
 import datetime
+import logging
 import struct
 import sys
 import time
 
-from six.moves import map
-from six.moves import range
-from six.moves import zip
 from six import int2byte, indexbytes, byte2int
+from six.moves import map
+from six.moves import zip
 
-from weewx.crc16 import crc16
-from weeutil.weeutil import to_int
-from weeutil.log import logdbg, logerr, loginf
 import weeutil.weeutil
 import weewx.drivers
-import weewx.units
 import weewx.engine
+import weewx.units
+from weeutil.weeutil import to_int
+from weewx.crc16 import crc16
+
+log = logging.getLogger(__name__)
 
 DRIVER_NAME = 'Vantage'
-DRIVER_VERSION = '3.1.2'
+DRIVER_VERSION = '3.2.0'
+
 
 def loader(config_dict, engine):
     return VantageService(engine, config_dict)
 
+
 def configurator_loader(config_dict):  # @UnusedVariable
     return VantageConfigurator()
+
 
 def confeditor_loader():
     return VantageConfEditor()
@@ -45,6 +50,7 @@ def confeditor_loader():
 # A few handy constants:
 _ack    = b'\x06'
 _resend = b'\x15' # NB: The Davis documentation gives this code as 0x21, but it's actually decimal 21
+
 
 #===============================================================================
 #                           class BaseWrapper
@@ -57,7 +63,16 @@ class BaseWrapper(object):
         
         self.wait_before_retry = wait_before_retry
         self.command_delay = command_delay
-        
+
+    def read(self, nbytes=1):
+        raise NotImplementedError
+
+    def write(self, buf):
+        raise NotImplementedError
+
+    def flush_input(self):
+        raise NotImplementedError
+
     #===============================================================================
     #          Primitives for working with the Davis Console
     #===============================================================================
@@ -82,7 +97,7 @@ class BaseWrapper(object):
                 _resp = self.read(2)
                 if _resp == b'\n\r':  # LF, CR = 0x0a, 0x0d
                     # We're done; the console accepted our cancel LOOP command; nothing to flush
-                    logdbg("Gentle wake up of console successful")
+                    log.debug("Gentle wake up of console successful")
                     return
                 # That didn't work. Try a rude wake up.
                 # Flush any pending LOOP packets
@@ -90,16 +105,16 @@ class BaseWrapper(object):
                 # Look for the acknowledgment of the sent '\n'
                 _resp = self.read(2)
                 if _resp == b'\n\r':
-                    logdbg("Rude wake up of console successful")
+                    log.debug("Rude wake up of console successful")
                     return
                 print("Unable to wake up console... sleeping")
                 time.sleep(self.wait_before_retry)
                 print("Unable to wake up console... retrying")
             except weewx.WeeWxIOError:
                 pass
-            logdbg("Retry  #%d failed" % count)
+            log.debug("Retry  #%d failed", count)
 
-        logerr("Unable to wake up console")
+        log.error("Unable to wake up console")
         raise weewx.WakeupError("Unable to wake up Vantage console")
 
     def send_data(self, data):
@@ -115,7 +130,7 @@ class BaseWrapper(object):
         # Look for the acknowledging ACK character
         _resp = self.read()
         if _resp != _ack: 
-            logerr("No <ACK> received from console")
+            log.error("No <ACK> received from console")
             raise weewx.WeeWxIOError("No <ACK> received from Vantage console")
     
     def send_data_with_crc16(self, data, max_tries=3):
@@ -140,9 +155,9 @@ class BaseWrapper(object):
                     return
             except weewx.WeeWxIOError:
                 pass
-            logdbg("send_data_with_crc16; try #%d" % (count + 1,))
+            log.debug("send_data_with_crc16; try #%d", count + 1)
 
-        logerr("Unable to pass CRC16 check while sending data")
+        log.error("Unable to pass CRC16 check while sending data")
         raise weewx.CRCError("Unable to pass CRC16 check while sending data to Vantage console")
 
     def send_command(self, command, max_tries=3):
@@ -171,9 +186,9 @@ class BaseWrapper(object):
             except weewx.WeeWxIOError:
                 # Caught an error. Keep trying...
                 pass
-            logdbg("send_command; try #%d failed" % (count + 1,))
+            log.debug("send_command; try #%d failed", count + 1)
         
-        logerr("Max retries exceeded while sending command %s" % command)
+        log.error("Max retries exceeded while sending command %s", command)
         raise weewx.RetriesExceeded("Max retries exceeded while sending command %s" % command)
     
         
@@ -204,16 +219,16 @@ class BaseWrapper(object):
                 _buffer = self.read(nbytes)
                 if crc16(_buffer) == 0:
                     return _buffer
-                logdbg("get_data_with_crc16; try #%d failed. CRC error" % (count + 1,))
+                log.debug("Get_data_with_crc16; try #%d failed. CRC error", count + 1)
             except weewx.WeeWxIOError as e:
-                logdbg("get_data_with_crc16; try #%d failed: %s" % (count + 1, e))
+                log.debug("Get_data_with_crc16; try #%d failed: %s", count + 1, e)
             first_time = False
 
         if _buffer:
-            logerr("Unable to pass CRC16 check while getting data")
+            log.error("Unable to pass CRC16 check while getting data")
             raise weewx.CRCError("Unable to pass CRC16 check while getting data")
         else:
-            logdbg("Timeout in get_data_with_crc16")
+            log.debug("Timeout in get_data_with_crc16")
             raise weewx.WeeWxIOError("Timeout in get_data_with_crc16")
 
 #===============================================================================
@@ -263,9 +278,9 @@ class SerialWrapper(BaseWrapper):
         try:
             _buffer = self.serial_port.read(chars)
         except serial.serialutil.SerialException as e:
-            logerr("SerialException on read.")
-            logerr("   ****  %s" % e)
-            logerr("   ****  Is there a competing process running??")
+            log.error("SerialException on read.")
+            log.error("   ****  %s", e)
+            log.error("   ****  Is there a competing process running??")
             # Reraise as a Weewx error I/O error:
             raise weewx.WeeWxIOError(e)
         N = len(_buffer)
@@ -278,8 +293,8 @@ class SerialWrapper(BaseWrapper):
         try:
             N = self.serial_port.write(data)
         except serial.serialutil.SerialException as e:
-            logerr("SerialException on write.")
-            logerr("   ****  %s" % e)
+            log.error("SerialException on write.")
+            log.error("   ****  %s", e)
             # Reraise as a Weewx error I/O error:
             raise weewx.WeeWxIOError(e)
         # Python version 2.5 and earlier returns 'None', so it cannot be used to test for completion.
@@ -290,8 +305,7 @@ class SerialWrapper(BaseWrapper):
         import serial
         # Open up the port and store it
         self.serial_port = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
-        logdbg("Opened up serial port %s; baud %d; timeout %.2f" % 
-                      (self.port, self.baudrate, self.timeout))
+        log.debug("Opened up serial port %s; baud %d; timeout %.2f", self.port, self.baudrate, self.timeout)
 
     def closePort(self):
         try:
@@ -325,14 +339,14 @@ class EthernetWrapper(BaseWrapper):
             self.socket.settimeout(self.timeout)
             self.socket.connect((self.host, self.port))
         except (socket.error, socket.timeout, socket.herror) as ex:
-            logerr("Socket error while opening port %d to ethernet host %s." % (self.port, self.host))
+            log.error("Socket error while opening port %d to ethernet host %s.", self.port, self.host)
             # Reraise as a weewx I/O error:
             raise weewx.WeeWxIOError(ex)
         except:
-            logerr("Unable to connect to ethernet host %s on port %d." % (self.host, self.port))
+            log.error("Unable to connect to ethernet host %s on port %d.", self.host, self.port)
             raise
-        logdbg("Opened up ethernet host %s on port %d. timeout=%s, tcp_send_delay=%s" %
-                      (self.host, self.port, self.timeout, self.tcp_send_delay))
+        log.debug("Opened up ethernet host %s on port %d. timeout=%s, tcp_send_delay=%s",
+                  self.host, self.port, self.timeout, self.tcp_send_delay)
 
     def closePort(self):
         import socket
@@ -388,7 +402,7 @@ class EthernetWrapper(BaseWrapper):
             try:
                 _recv = self.socket.recv(_N)
             except (socket.timeout, socket.error) as ex:
-                logerr("ip-read error: %s" % ex)
+                log.error("ip-read error: %s", ex)
                 # Reraise as a weewx I/O error:
                 raise weewx.WeeWxIOError(ex)
             _nread = len(_recv)
@@ -407,9 +421,10 @@ class EthernetWrapper(BaseWrapper):
             # Note: a delay of 0.5 s is required for wee_device --logger=logger_info
             time.sleep(self.tcp_send_delay)
         except (socket.timeout, socket.error) as ex:
-            logerr("ip-write error: %s" % ex)
+            log.error("ip-write error: %s", ex)
             # Reraise as a weewx I/O error:
             raise weewx.WeeWxIOError(ex)
+
 
 #===============================================================================
 #                           class Vantage
@@ -468,22 +483,25 @@ class Vantage(weewx.drivers.AbstractDevice):
         
         iss_id: The station number of the ISS [Optional. Default is 1]
         
-        model_type: Vantage Pro model type. 1 := Vantage Pro; 2 := Vantage Pro2
+        model_type: Vantage Pro model type. 1=Vantage Pro; 2=Vantage Pro2
         [Optional. Default is 2]
+
+        loop_request: Requested packet type. 1=LOOP; 2=LOOP2; 3=both.
         """
 
-        logdbg('Driver version is %s' % DRIVER_VERSION)
+        log.debug('Driver version is %s', DRIVER_VERSION)
 
         self.hardware_type = None
 
         # These come from the configuration dictionary:
-        self.max_tries  = int(vp_dict.get('max_tries', 4))
+        self.max_tries  = to_int(vp_dict.get('max_tries', 4))
         self.iss_id     = to_int(vp_dict.get('iss_id'))
-        self.model_type = int(vp_dict.get('model_type', 2))
+        self.model_type = to_int(vp_dict.get('model_type', 2))
         if self.model_type not in list(range(1, 3)):
             raise weewx.UnsupportedFeature("Unknown model_type (%d)" % self.model_type)
+        self.loop_request = to_int(vp_dict.get('loop_request', 1))
 
-        self.save_monthRain = None
+        self.save_day_rain = None
         self.max_dst_jump = 7200
 
         # Get an appropriate port, depending on the connection type:
@@ -494,7 +512,7 @@ class Vantage(weewx.drivers.AbstractDevice):
 
         # Read the EEPROM and fill in properties in this instance
         self._setup()
-        logdbg("Hardware name: %s" % self.hardware_name)
+        log.debug("Hardware name: %s", self.hardware_name)
         
     def openPort(self):
         """Open up the connection to the console"""
@@ -516,10 +534,10 @@ class Vantage(weewx.drivers.AbstractDevice):
                     for _loop_packet in self.genDavisLoopPackets(200):
                         yield _loop_packet
                 except weewx.WeeWxIOError as e:
-                    logerr("LOOP try #%d; error: %s" % (count + 1, e))
+                    log.error("LOOP try #%d; error: %s", count + 1, e)
                     break
 
-        logerr("LOOP max tries (%d) exceeded." % self.max_tries)
+        log.error("LOOP max tries (%d) exceeded.", self.max_tries)
         raise weewx.RetriesExceeded("Max tries exceeded while getting LOOP data.")
 
     def genDavisLoopPackets(self, N=1):
@@ -531,14 +549,14 @@ class Vantage(weewx.drivers.AbstractDevice):
         read or CRC error).
         """
 
-        logdbg("Requesting %d LOOP packets." % N)
+        log.debug("Requesting %d LOOP packets.", N)
         
         self.port.wakeup_console(self.max_tries)
         
-        # Request N packets:
-        self.port.send_data(b"LOOP %d\n" % N)
+        # Request N packets of type "loop_request":
+        self.port.send_data(b"LPS %d %d\n" % (self.loop_request, N))
 
-        for loop in range(N):  # @UnusedVariable
+        for loop in range(N):
             # Fetch a packet...
             _buffer = self.port.read(99)
             # ... see if it passes the CRC test ...
@@ -571,9 +589,9 @@ class Vantage(weewx.drivers.AbstractDevice):
             except weewx.WeeWxIOError as e:
                 # Problem. Increment retry count
                 count += 1
-                logerr("DMPAFT try #%d; error: %s" % (count, e))
+                log.error("DMPAFT try #%d; error: %s", count, e)
 
-        logerr("DMPAFT max tries (%d) exceeded." % self.max_tries)
+        log.error("DMPAFT max tries (%d) exceeded.", self.max_tries)
         raise weewx.RetriesExceeded("Max tries exceeded while getting archive data.")
 
     def genDavisArchiveRecords(self, since_ts):
@@ -587,10 +605,10 @@ class Vantage(weewx.drivers.AbstractDevice):
             # From experimentation, 2000 seems to be right, at least for the newer models:
             _vantageDateStamp = since_tt[2] + (since_tt[1] << 5) + ((since_tt[0] - 2000) << 9)
             _vantageTimeStamp = since_tt[3] * 100 + since_tt[4]
-            logdbg('Getting archive packets since %s' % weeutil.weeutil.timestamp_to_string(since_ts))
+            log.debug('Getting archive packets since %s', weeutil.weeutil.timestamp_to_string(since_ts))
         else:
             _vantageDateStamp = _vantageTimeStamp = 0
-            logdbg('Getting all archive packets')
+            log.debug('Getting all archive packets')
      
         # Pack the date and time into a string, little-endian order
         _datestr = struct.pack("<HH", _vantageDateStamp, _vantageTimeStamp)
@@ -609,7 +627,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         _buffer = self.port.get_data_with_crc16(6, max_tries=1)
       
         (_npages, _start_index) = struct.unpack("<HH", _buffer[:4])
-        logdbg("Retrieving %d page(s); starting index= %d" % (_npages, _start_index))
+        log.debug("Retrieving %d page(s); starting index= %d", _npages, _start_index)
 
         # Cycle through the pages...
         for ipage in range(_npages):
@@ -624,8 +642,7 @@ class Vantage(weewx.drivers.AbstractDevice):
                 # by looking at the first 4 bytes (the date and time):
                 if _record_string[0:4] == 4 * b'\xff' or _record_string[0:4] == 4 * b'\x00':
                     # This record has never been used. We're done.
-                    logdbg("Empty record page %d; index %d" \
-                                  % (ipage, _index))
+                    log.debug("Empty record page %d; index %d", ipage, _index)
                     return
                 
                 # Unpack the archive packet from the string buffer:
@@ -635,10 +652,10 @@ class Vantage(weewx.drivers.AbstractDevice):
                 # signal that we are done. 
                 if _record['dateTime'] is None or _record['dateTime'] <= _last_good_ts - self.max_dst_jump:
                     # The time stamp is declining. We're done.
-                    logdbg("DMPAFT complete: page timestamp %s less than final timestamp %s"\
-                                  % (weeutil.weeutil.timestamp_to_string(_record['dateTime']),
-                                     weeutil.weeutil.timestamp_to_string(_last_good_ts)))
-                    logdbg("Catch up complete.")
+                    log.debug("DMPAFT complete: page timestamp %s less than final timestamp %s",
+                              weeutil.weeutil.timestamp_to_string(_record['dateTime']),
+                              weeutil.weeutil.timestamp_to_string(_last_good_ts))
+                    log.debug("Catch up complete.")
                     return
                 # Set the last time to the current time, and yield the packet
                 _last_good_ts = _record['dateTime']
@@ -659,7 +676,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         # ... request a dump...
         self.port.send_data(b'DMP\n')
 
-        logdbg("Dumping all records.")
+        log.debug("Dumping all records.")
         
         # Cycle through the pages...
         for ipage in range(512):
@@ -674,8 +691,7 @@ class Vantage(weewx.drivers.AbstractDevice):
                 # by looking at the first 4 bytes (the date and time):
                 if _record_string[0:4] == 4 * b'\xff' or _record_string[0:4] == 4 * b'\x00':
                     # This record has never been used. Skip it
-                    logdbg("Empty record page %d; index %d" \
-                                  % (ipage, _index))
+                    log.debug("Empty record page %d; index %d", ipage, _index)
                     continue
                 # Unpack the raw archive packet:
                 _record = self._unpackArchivePacket(_record_string)
@@ -707,7 +723,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         # ... request a dump...
         self.port.send_data(b'DMP\n')
 
-        logdbg("Starting logger summary.")
+        log.debug("Starting logger summary.")
         
         # Cycle through the pages...
         for _ipage in range(512):
@@ -733,7 +749,7 @@ class Vantage(weewx.drivers.AbstractDevice):
                     h  = timestamp // 100             # hour
                     mn = timestamp % 100              # minute
                 yield (_ipage, _index, y, mo, d, h, mn, time_ts)
-        logdbg("Vantage: Finished logger summary.")
+        log.debug("Vantage: Finished logger summary.")
 
     def getTime(self):
         """Get the current time from the console, returning it as timestamp"""
@@ -760,7 +776,7 @@ class Vantage(weewx.drivers.AbstractDevice):
             except weewx.WeeWxIOError:
                 # Caught an error. Keep retrying...
                 continue
-        logerr("Max retries exceeded while getting time")
+        log.error("Max retries exceeded while getting time")
         raise weewx.RetriesExceeded("While getting console time")
             
     def setTime(self):
@@ -783,12 +799,12 @@ class Vantage(weewx.drivers.AbstractDevice):
 
                 # Complete the setTime command
                 self.port.send_data_with_crc16(_buffer, max_tries=1)
-                loginf("Clock set to %s" % weeutil.weeutil.timestamp_to_string(time.mktime(newtime_tt)))
+                log.info("Clock set to %s", weeutil.weeutil.timestamp_to_string(time.mktime(newtime_tt)))
                 return
             except weewx.WeeWxIOError:
                 # Caught an error. Keep retrying...
                 continue
-        logerr("Max retries exceeded while setting time")
+        log.error("Max retries exceeded while setting time")
         raise weewx.RetriesExceeded("While setting console time")
     
     def setDST(self, dst='auto'):
@@ -851,7 +867,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_data(b"NEWSETUP\n")
 
         self._setup()
-        loginf("Wind cup type set to %d (%s)" % (self.wind_cup_type, self.wind_cup_size))
+        log.info("Wind cup type set to %d (%s)", self.wind_cup_type, self.wind_cup_size)
 
     def setBucketType(self, new_bucket_code):
         """Set the rain bucket type.
@@ -871,7 +887,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_data(b"NEWSETUP\n")
         
         self._setup()
-        loginf("Rain bucket type set to %d (%s)" % (self.rain_bucket_type, self.rain_bucket_size))
+        log.info("Rain bucket type set to %d (%s)", self.rain_bucket_type, self.rain_bucket_size)
 
     def setRainYearStart(self, new_rain_year_start):
         """Set the start of the rain season.
@@ -887,7 +903,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_data_with_crc16(int2byte(new_rain_year_start), max_tries=1)
 
         self._setup()
-        loginf("Rain year start set to %d" % (self.rain_year_start,))
+        log.info("Rain year start set to %d", self.rain_year_start)
 
     def setBarData(self, new_barometer_inHg, new_altitude_foot):
         """Set the internal barometer calibration and altitude settings in the console.
@@ -902,7 +918,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         command = b"BAR=%d %d\n" % (new_barometer, new_altitude)
         self.port.send_command(command)
         self._setup()
-        loginf("Set barometer calibration.")
+        log.info("Set barometer calibration.")
         
     def setLatitude(self, latitude_dg):
         """Set the stations latitude.
@@ -916,11 +932,11 @@ class Vantage(weewx.drivers.AbstractDevice):
         # Tell the console to put one byte in hex location 0x0B
         self.port.send_data(b"EEBWR 0B 02\n")
         # Follow it up with the data:
-        self.port.send_data_with_crc16(struct.pack('<BB', latitude & 0x00ff, (latitude // 256) & 0x00ff), max_tries=1)
+        self.port.send_data_with_crc16(struct.pack('<BB', latitude & 0xff, (latitude // 256) & 0xff), max_tries=1)
         # Then call NEWSETUP to get it to stick:
         self.port.send_data(b"NEWSETUP\n")
 
-        loginf("Station latitude set to %.1f degree" % (latitude_dg,))
+        log.info("Station latitude set to %.1f degree", latitude_dg)
 
     def setLongitude(self, longitude_dg):
         """Set the stations longitude.
@@ -934,11 +950,11 @@ class Vantage(weewx.drivers.AbstractDevice):
         # Tell the console to put one byte in hex location 0x0D
         self.port.send_data(b"EEBWR 0D 02\n")
         # Follow it up with the data:
-        self.port.send_data_with_crc16(struct.pack('<BB', longitude & 0x00ff, (longitude // 256) & 0x00ff), max_tries = 1)
+        self.port.send_data_with_crc16(struct.pack('<BB', longitude & 0xff, (longitude // 256) & 0xff), max_tries = 1)
         # Then call NEWSETUP to get it to stick:
         self.port.send_data(b"NEWSETUP\n")
 
-        loginf("Station longitude set to %.1f degree" % (longitude_dg,))
+        log.info("Station longitude set to %.1f degree", longitude_dg)
 
     def setArchiveInterval(self, archive_interval_seconds):
         """Set the archive interval of the Vantage.
@@ -955,7 +971,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_command(command, max_tries=self.max_tries)
 
         self._setup()
-        loginf("Archive interval set to %d seconds" % (archive_interval_seconds,))
+        log.info("Archive interval set to %d seconds", archive_interval_seconds)
     
     def setLamp(self, onoff='OFF'):
         """Set the lamp on or off"""
@@ -967,7 +983,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         _command = b"LAMPS %s\n" % _setting
         self.port.send_command(_command, max_tries=self.max_tries)
 
-        loginf("Lamp set to '%s'" % onoff)
+        log.info("Lamp set to '%s'", onoff)
         
     def setTransmitterType(self, new_channel, new_transmitter_type, new_extra_temp, new_extra_hum, new_repeater):
         """Set the transmitter type for one of the eight channels."""
@@ -1018,8 +1034,10 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_data(b"NEWSETUP\n")
         
         self._setup()
-        loginf("Transmitter type for channel %d set to %d (%s), repeater: %s, %s" %
-                      (new_channel, new_transmitter_type, self.transmitter_type_dict[new_transmitter_type], self.repeater_dict[new_repeater], self.listen_dict[usetx]))
+        log.info("Transmitter type for channel %d set to %d (%s), repeater: %s, %s",
+                 new_channel, new_transmitter_type,
+                 self.transmitter_type_dict[new_transmitter_type],
+                 self.repeater_dict[new_repeater], self.listen_dict[usetx])
 
     def setRetransmit(self, new_channel):
         """Set console retransmit channel."""
@@ -1032,9 +1050,9 @@ class Vantage(weewx.drivers.AbstractDevice):
         
         self._setup()
         if new_channel != 0:
-            loginf("Retransmit set to 'ON' at channel: %d" % new_channel)
+            log.info("Retransmit set to 'ON' at channel: %d", new_channel)
         else:
-            loginf("Retransmit set to 'OFF'")
+            log.info("Retransmit set to 'OFF'")
     
     def setTempLogging(self, new_tempLogging='AVERAGE'):
         """Set console temperature logging to 'AVERAGE' or 'LAST'."""
@@ -1050,7 +1068,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         # Then call NEWSETUP to get it to stick:
         self.port.send_data(b"NEWSETUP\n")
 
-        loginf("Console temperature logging set to '%s'" % new_tempLogging.upper())
+        log.info("Console temperature logging set to '%s'", new_tempLogging.upper())
     
     def setCalibrationWindDir(self, offset):
         """Set the on-board wind direction calibration."""
@@ -1060,7 +1078,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.port.send_data(b"EEBWR 4D 02\n")
         # Follow it up with the data:
         self.port.send_data_with_crc16(struct.pack("<h", offset), max_tries=1)
-        loginf("Wind calibration set to %d" % (offset))
+        log.info("Wind calibration set to %d", offset)
 
     def setCalibrationTemp(self, variable, offset):
         """Set an on-board temperature calibration."""
@@ -1083,22 +1101,23 @@ class Vantage(weewx.drivers.AbstractDevice):
             self.port.send_data_with_crc16(byte, max_tries=1)
         else:
             raise weewx.ViolatedPrecondition("Variable name %s not known" % variable)
-        loginf("Temperature calibration %s set to %.1f" % (variable, offset))
+        log.info("Temperature calibration %s set to %.1f", variable, offset)
 
     def setCalibrationHumid(self, variable, offset):
         """Set an on-board humidity calibration."""
         # Offset is in percentage points.
-        if -100 <= offset <= 100:
+        if not -100 <= offset <= 100:
             raise weewx.ViolatedPrecondition("Offset %d out of range [-100, 100]." % offset)
         byte = struct.pack("b", offset)
         variable_dict = { 'inHumid': 0x44, 'outHumid': 0x45 }
-        for i in range(1, 8): variable_dict['extraHumid%d' % i] = 0x45 + i 
+        for i in range(1, 8):
+            variable_dict['extraHumid%d' % i] = 0x45 + i
         if variable in variable_dict:
             self.port.send_data(b"EEBWR %X 01\n" % variable_dict[variable])
             self.port.send_data_with_crc16(byte, max_tries=1)
         else:
             raise weewx.ViolatedPrecondition("Variable name %s not known" % variable)
-        loginf("Humidity calibration %s set to %d" % (variable, offset))
+        log.info("Humidity calibration %s set to %d", variable, offset)
 
     def clearLog(self):
         """Clear the internal archive memory in the Vantage."""
@@ -1106,12 +1125,12 @@ class Vantage(weewx.drivers.AbstractDevice):
             try:
                 self.port.wakeup_console(max_tries=self.max_tries)
                 self.port.send_data(b"CLRLOG\n")
-                loginf("Archive memory cleared.")
+                log.info("Archive memory cleared.")
                 return
             except weewx.WeeWxIOError:
                 # Caught an error. Keey trying...
                 continue
-        logerr("Max retries exceeded while clearing log")
+        log.error("Max retries exceeded while clearing log")
         raise weewx.RetriesExceeded("While clearing log")
     
     def getRX(self):
@@ -1206,7 +1225,7 @@ class Vantage(weewx.drivers.AbstractDevice):
             wind) = self._getEEPROM_value(0x32, "<27bh")
         # inTempComp is 1's complement of inTemp.
         if inTemp + inTempComp != -1:
-            logerr("Inconsistent EEPROM calibration values")
+            log.error("Inconsistent EEPROM calibration values")
             return None
         # Temperatures are in tenths of a degree F; Humidity in 1 percent.
         return {
@@ -1271,14 +1290,14 @@ class Vantage(weewx.drivers.AbstractDevice):
             try:
                 self.port.send_data(b"WRD\x12\x4d\n")
                 self.hardware_type = byte2int(self.port.read())
-                logdbg("Hardware type is %d" % self.hardware_type)
+                log.debug("Hardware type is %d", self.hardware_type)
                 # 16 = Pro, Pro2, 17 = Vue
                 return self.hardware_type
             except weewx.WeeWxIOError:
                 pass
-            logdbg("_determine_hardware; retry #%d" % (count,))
+            log.debug("_determine_hardware; retry #%d", count)
 
-        logerr("Unable to read hardware type; raise WeeWxIOError")
+        log.error("Unable to read hardware type; raise WeeWxIOError")
         raise weewx.WeeWxIOError("Unable to read hardware type")
 
     def _setup(self):
@@ -1317,20 +1336,6 @@ class Vantage(weewx.drivers.AbstractDevice):
         self.wind_cup_size    = Vantage.wind_cup_dict[self.wind_cup_type]
         self.rain_bucket_size = Vantage.rain_bucket_dict[self.rain_bucket_type]
         
-        # Adjust the translation maps to reflect the rain bucket size:
-        if self.rain_bucket_type == 1:
-            _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
-                _loop_map['monthRain'] = _loop_map['yearRain'] = _bucket_1
-            _loop_map['rainRate'] = _bucket_1_None
-        elif self.rain_bucket_type == 2:
-            _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
-                _loop_map['monthRain'] = _loop_map['yearRain'] = _bucket_2
-            _loop_map['rainRate'] = _bucket_2_None
-        else:
-            _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
-                _loop_map['monthRain'] = _loop_map['yearRain'] = _val100
-            _loop_map['rainRate'] = _big_val100
-
         # Try to guess the ISS ID for gauging reception strength.
         if self.iss_id is None:
             stations = self.getStnTransmitters()
@@ -1354,7 +1359,7 @@ class Vantage(weewx.drivers.AbstractDevice):
                     else:
                         self.iss_id = 1  # Pick a reasonable default.
 
-        logdbg("ISS ID is %s" % self.iss_id)
+        log.debug("ISS ID is %s", self.iss_id)
 
     def _getEEPROM_value(self, offset, v_format="B"):
         """Return a list of values from the EEPROM starting at a specified offset, using a specified format"""
@@ -1378,7 +1383,7 @@ class Vantage(weewx.drivers.AbstractDevice):
             except weewx.WeeWxIOError:
                 continue
         
-        logerr("Max retries exceeded while getting EEPROM data at address 0x%X" % offset)
+        log.error("Max retries exceeded while getting EEPROM data at address 0x%X", offset)
         raise weewx.RetriesExceeded("While getting EEPROM data value at address 0x%X" % offset)
         
     @staticmethod
@@ -1405,182 +1410,238 @@ class Vantage(weewx.drivers.AbstractDevice):
                                    wait_before_retry, command_delay)
         raise weewx.UnsupportedFeature(vp_dict['type'])
 
-    def _unpackLoopPacket(self, raw_loop_string):
+    def _unpackLoopPacket(self, raw_loop_buffer):
         """Decode a raw Davis LOOP packet, returning the results as a dictionary in physical units.
         
-        raw_loop_string: The loop packet data buffer, passed in as a string. 
+        raw_loop_buffer: The loop packet data buffer, passed in as
+        a string (Python 2), or a byte array (Python 3).
         
         returns:
         
         A dictionary. The key will be an observation type, the value will be
         the observation in physical units."""
-    
-        # Unpack the data, using the compiled stuct.Struct string 'loop_fmt'
-        data_tuple = loop_fmt.unpack(raw_loop_string)
 
-        # Put the results in a dictionary. The values will not be in physical units yet,
-        # but rather using the raw values from the console.
-        raw_loop_packet = dict(list(zip(loop_types, data_tuple)))
-    
-        # Detect the kind of LOOP packet. Type 'A' has the character 'P' in this
-        # position. Type 'B' contains the 3-hour barometer trend in this position.
-        if raw_loop_packet['loop_type'] == byte2int(b'P'):
-            raw_loop_packet['trendIcon'] = None
-            raw_loop_packet['loop_type'] = 'A'
+        # Get the packet type. It's in byte 4.
+        packet_type = indexbytes(raw_loop_buffer, 4)
+        if packet_type == 0:
+            loop_struct = loop1_struct
+            loop_types = loop1_types
+        elif packet_type == 1:
+            loop_struct = loop2_struct
+            loop_types = loop2_types
         else:
-            raw_loop_packet['trendIcon'] = raw_loop_packet['loop_type']
-            raw_loop_packet['loop_type'] = 'B'
-    
-        loop_packet = {'dateTime': int(time.time() + 0.5),
-                       'usUnits': weewx.US}
-        
+            raise weewx.WeeWxIOError("Unknown LOOP packet type %s" % packet_type)
+
+        # Unpack the data, using the appropriate compiled stuct.Struct buffer.
+        # The result will be a long tuple with just the raw values from the console.
+        data_tuple = loop_struct.unpack(raw_loop_buffer)
+
+        # Combine it with the data types. The result will be a long iterable of 2-way
+        # tuples: (type, raw-value)
+        raw_loop_tuples = zip(loop_types, data_tuple)
+
+        # Convert to a dictionary:
+        raw_loop_packet = dict(raw_loop_tuples)
+        # Add the bucket type. It's needed to decode rain bucket tips.
+        raw_loop_packet['bucket_type'] = self.rain_bucket_type
+
+        loop_packet = {
+            'dateTime': int(time.time() + 0.5),
+            'usUnits' : weewx.US
+        }
+        # Now we need to map the raw values to physical units.
         for _type in raw_loop_packet:
-            # Get the mapping function for this type:
-            func = _loop_map.get(_type)
-            # It it exists, apply it:
-            if func:
-                # Call the function, with the raw value as an argument:
-                val = func(raw_loop_packet[_type])
-                # Skip all null values
-                if val is not None:
-                    loop_packet[_type] = val
-            
+            # Get the mapping function for this type. If there is
+            # no such function, supply a lambda function that returns None
+            func = _loop_map.get(_type, lambda p, k: None)
+            # Apply the function
+            val = func(raw_loop_packet, _type)
+            # Ignore None values:
+            if val is not None:
+                loop_packet[_type] = val
+
         # Adjust sunrise and sunset:
         start_of_day = weeutil.weeutil.startOfDay(loop_packet['dateTime'])
-        loop_packet['sunrise'] += start_of_day
-        loop_packet['sunset']  += start_of_day
-        
+        if 'sunrise' in loop_packet:
+            loop_packet['sunrise'] += start_of_day
+        if 'sunset' in loop_packet:
+            loop_packet['sunset'] += start_of_day
+
         # Because the Davis stations do not offer bucket tips in LOOP data, we
         # must calculate it by looking for changes in rain totals. This won't
         # work for the very first rain packet.
-        if self.save_monthRain is None:
+        if self.save_day_rain is None:
             delta = None
         else:
-            delta = loop_packet['monthRain'] - self.save_monthRain
+            delta = loop_packet['dayRain'] - self.save_day_rain
             # If the difference is negative, we're at the beginning of a month.
             if delta < 0: delta = None
         loop_packet['rain'] = delta
-        self.save_monthRain = loop_packet['monthRain']
+        self.save_day_rain = loop_packet['dayRain']
 
         return loop_packet
-    
-    def _unpackArchivePacket(self, raw_archive_string):
+
+    def _unpackArchivePacket(self, raw_archive_buffer):
         """Decode a Davis archive packet, returning the results as a dictionary.
-        
-        raw_archive_string: The archive packet data buffer, passed in as a string. This will be unpacked and 
-        the results placed a dictionary"""
+
+        raw_archive_buffer: The archive record data buffer, passed in as
+        a string (Python 2), or a byte array (Python 3).
+
+        returns:
+
+        A dictionary. The key will be an observation type, the value will be
+        the observation in physical units."""
     
-        # Figure out the packet type:
-        packet_type = indexbytes(raw_archive_string, 42)
+        # Get the record type. It's in byte 42.
+        record_type = indexbytes(raw_archive_buffer, 42)
         
-        if packet_type == 0xff:
+        if record_type == 0xff:
             # Rev A packet type:
-            archive_format = rec_fmt_A
-            dataTypes = rec_types_A
-        elif packet_type == 0x00:
+            rec_struct = rec_A_struct
+            rec_types = rec_types_A
+        elif record_type == 0x00:
             # Rev B packet type:
-            archive_format = rec_fmt_B
-            dataTypes = rec_types_B
+            rec_struct = rec_B_struct
+            rec_types = rec_types_B
         else:
-            raise weewx.UnknownArchiveType("Unknown archive type = 0x%x" % (packet_type,)) 
+            raise weewx.UnknownArchiveType("Unknown archive type = 0x%x" % (record_type,))
             
-        data_tuple = archive_format.unpack(raw_archive_string)
+        data_tuple = rec_struct.unpack(raw_archive_buffer)
         
-        raw_archive_packet = dict(list(zip(dataTypes, data_tuple)))
+        raw_archive_record = dict(zip(rec_types, data_tuple))
+        raw_archive_record['bucket_type'] = self.rain_bucket_type
         
-        archive_packet = {'dateTime': _archive_datetime(raw_archive_packet['date_stamp'], raw_archive_packet['time_stamp']),
-                          'usUnits': weewx.US}
+        archive_record = {
+            'dateTime': _archive_datetime(raw_archive_record['date_stamp'],
+                                          raw_archive_record['time_stamp']),
+            'usUnits': weewx.US,
+            # Divide archive interval by 60 to keep consistent with wview
+            'interval': int(self.archive_interval // 60),
+        }
+
+        archive_record['rxCheckPercent'] = _rxcheck(self.model_type,
+                                                    archive_record['interval'],
+                                                    self.iss_id,
+                                                    raw_archive_record['number_of_wind_samples'])
+
+        for _type in raw_archive_record:
+            # Get the mapping function for this type. If there is no such
+            # function, supply a lambda function that will just return None
+            func = _archive_map.get(_type, lambda p, k: None)
+            # Call the function:
+            val = func(raw_archive_record, _type)
+            # Skip all null values
+            if val is not None:
+                archive_record[_type] = val
         
-        for _type in raw_archive_packet:
-            # Get the mapping function for this type:
-            func = _archive_map.get(_type)
-            # It it exists, apply it:
-            if func:
-                # Call the function, with the raw value as an argument:
-                val = func(raw_archive_packet[_type])
-                # Skip all null values
-                if val is not None:
-                    archive_packet[_type] = val
-        
-        # Divide archive interval by 60 to keep consistent with wview
-        archive_packet['interval']   = int(self.archive_interval // 60)
-        archive_packet['rxCheckPercent'] = _rxcheck(self.model_type, archive_packet['interval'], 
-                                                    self.iss_id, raw_archive_packet['number_of_wind_samples'])
-        return archive_packet
+        return archive_record
     
 #===============================================================================
 #                                 LOOP packet
 #===============================================================================
 
-# A list of all the types held in a Vantage LOOP packet in their native order.
-loop_format = [('loop',              '3s'), ('loop_type',          'b'), ('packet_type',        'B'),
-               ('next_record',        'H'), ('barometer',          'H'), ('inTemp',             'h'),
-               ('inHumidity',         'B'), ('outTemp',            'h'), ('windSpeed',          'B'),
-               ('windSpeed10',        'B'), ('windDir',            'H'), ('extraTemp1',         'B'),
-               ('extraTemp2',         'B'), ('extraTemp3',         'B'), ('extraTemp4',         'B'),
-               ('extraTemp5',         'B'), ('extraTemp6',         'B'), ('extraTemp7',         'B'), 
-               ('soilTemp1',          'B'), ('soilTemp2',          'B'), ('soilTemp3',          'B'),
-               ('soilTemp4',          'B'), ('leafTemp1',          'B'), ('leafTemp2',          'B'),
-               ('leafTemp3',          'B'), ('leafTemp4',          'B'), ('outHumidity',        'B'),
-               ('extraHumid1',        'B'), ('extraHumid2',        'B'), ('extraHumid3',        'B'),
-               ('extraHumid4',        'B'), ('extraHumid5',        'B'), ('extraHumid6',        'B'),
-               ('extraHumid7',        'B'), ('rainRate',           'H'), ('UV',                 'B'),
-               ('radiation',          'H'), ('stormRain',          'H'), ('stormStart',         'H'),
-               ('dayRain',            'H'), ('monthRain',          'H'), ('yearRain',           'H'),
-               ('dayET',              'H'), ('monthET',            'H'), ('yearET',             'H'),
-               ('soilMoist1',         'B'), ('soilMoist2',         'B'), ('soilMoist3',         'B'),
-               ('soilMoist4',         'B'), ('leafWet1',           'B'), ('leafWet2',           'B'),
-               ('leafWet3',           'B'), ('leafWet4',           'B'), ('insideAlarm',        'B'),
-               ('rainAlarm',          'B'), ('outsideAlarm1',      'B'), ('outsideAlarm2',      'B'),
-               ('extraAlarm1',        'B'), ('extraAlarm2',        'B'), ('extraAlarm3',        'B'),
-               ('extraAlarm4',        'B'), ('extraAlarm5',        'B'), ('extraAlarm6',        'B'),
-               ('extraAlarm7',        'B'), ('extraAlarm8',        'B'), ('soilLeafAlarm1',     'B'),
-               ('soilLeafAlarm2',     'B'), ('soilLeafAlarm3',     'B'), ('soilLeafAlarm4',     'B'),
-               ('txBatteryStatus',    'B'), ('consBatteryVoltage', 'H'), ('forecastIcon',       'B'),
-               ('forecastRule',       'B'), ('sunrise',            'H'), ('sunset',             'H')]
 
-# Extract the types and struct.Struct formats for the LOOP packets:
-loop_types, fmt = list(zip(*loop_format))
-loop_fmt = struct.Struct('<' + ''.join(fmt))
+# A list of all the types held in a Vantage LOOP packet in their native order.
+loop1_schema = [
+    ('loop',              '3s'), ('rev_type',           'b'), ('packet_type',        'B'),
+    ('next_record',        'H'), ('barometer',          'H'), ('inTemp',             'h'),
+    ('inHumidity',         'B'), ('outTemp',            'h'), ('windSpeed',          'B'),
+    ('windSpeed10',        'B'), ('windDir',            'H'), ('extraTemp1',         'B'),
+    ('extraTemp2',         'B'), ('extraTemp3',         'B'), ('extraTemp4',         'B'),
+    ('extraTemp5',         'B'), ('extraTemp6',         'B'), ('extraTemp7',         'B'),
+    ('soilTemp1',          'B'), ('soilTemp2',          'B'), ('soilTemp3',          'B'),
+    ('soilTemp4',          'B'), ('leafTemp1',          'B'), ('leafTemp2',          'B'),
+    ('leafTemp3',          'B'), ('leafTemp4',          'B'), ('outHumidity',        'B'),
+    ('extraHumid1',        'B'), ('extraHumid2',        'B'), ('extraHumid3',        'B'),
+    ('extraHumid4',        'B'), ('extraHumid5',        'B'), ('extraHumid6',        'B'),
+    ('extraHumid7',        'B'), ('rainRate',           'H'), ('UV',                 'B'),
+    ('radiation',          'H'), ('stormRain',          'H'), ('stormStart',         'H'),
+    ('dayRain',            'H'), ('monthRain',          'H'), ('yearRain',           'H'),
+    ('dayET',              'H'), ('monthET',            'H'), ('yearET',             'H'),
+    ('soilMoist1',         'B'), ('soilMoist2',         'B'), ('soilMoist3',         'B'),
+    ('soilMoist4',         'B'), ('leafWet1',           'B'), ('leafWet2',           'B'),
+    ('leafWet3',           'B'), ('leafWet4',           'B'), ('insideAlarm',        'B'),
+    ('rainAlarm',          'B'), ('outsideAlarm1',      'B'), ('outsideAlarm2',      'B'),
+    ('extraAlarm1',        'B'), ('extraAlarm2',        'B'), ('extraAlarm3',        'B'),
+    ('extraAlarm4',        'B'), ('extraAlarm5',        'B'), ('extraAlarm6',        'B'),
+    ('extraAlarm7',        'B'), ('extraAlarm8',        'B'), ('soilLeafAlarm1',     'B'),
+    ('soilLeafAlarm2',     'B'), ('soilLeafAlarm3',     'B'), ('soilLeafAlarm4',     'B'),
+    ('txBatteryStatus',    'B'), ('consBatteryVoltage', 'H'), ('forecastIcon',       'B'),
+    ('forecastRule',       'B'), ('sunrise',            'H'), ('sunset',             'H')
+]
+
+
+loop2_schema = [
+    ('loop',              '3s'), ('trendIcon',          'b'), ('packet_type',        'B'),
+    ('_unused',            'H'), ('barometer',          'H'), ('inTemp',             'h'),
+    ('inHumidity',         'B'), ('outTemp',            'h'), ('windSpeed',          'B'),
+    ('_unused',            'B'), ('windDir',            'H'), ('windSpeed10',        'H'),
+    ('windSpeed2',         'H'), ('windGust10',         'H'), ('windGustDir10',      'H'),
+    ('_unused',            'H'), ('_unused',            'H'), ('dewpoint',           'h'),
+    ('_unused',            'B'), ('outHumidity',        'B'), ('_unused',            'B'),
+    ('heatindex',          'h'), ('windchill',          'h'), ('THSW',               'h'),
+    ('rainRate',           'H'), ('UV',                 'B'), ('radiation',          'H'),
+    ('stormRain',          'H'), ('stormStart',         'H'), ('dayRain',            'H'),
+    ('rain15',             'H'), ('hourRain',           'H'), ('dayET',              'H'),
+    ('rain24',             'H'), ('bar_reduction',      'B'), ('bar_offset',         'h'),
+    ('bar_calibration',    'h'), ('pressure_raw',       'H'), ('pressure',           'H'),
+    ('altimeter',          'H'), ('_unused',            'B'), ('_unused',            'B'),
+    ('_unused_graph',      'B'), ('_unused_graph',      'B'), ('_unused_graph',      'B'),
+    ('_unused_graph',      'B'), ('_unused_graph',      'B'), ('_unused_graph',      'B'),
+    ('_unused_graph',      'B'), ('_unused_graph',      'B'), ('_unused_graph',      'B'),
+    ('_unused_graph',      'B'), ('_unused',            'H'), ('_unused',            'H'),
+    ('_unused',            'H'), ('_unused',            'H'), ('_unused',            'H'),
+    ('_unused',            'H')
+]
+
+# Extract the types and struct.Struct formats for the two types of LOOP packets
+loop1_types, loop1_code = list(zip(*loop1_schema))
+loop1_struct = struct.Struct('<' + ''.join(loop1_code))
+loop2_types, loop2_code = list(zip(*loop2_schema))
+loop2_struct = struct.Struct('<' + ''.join(loop2_code))
 
 #===============================================================================
 #                              archive packet
 #===============================================================================
 
-rec_format_A =[('date_stamp',              'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
-               ('highOutTemp',             'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
-               ('rainRate',                'H'), ('barometer',     'H'), ('radiation',  'H'),
-               ('number_of_wind_samples',  'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
-               ('outHumidity',             'B'), ('windSpeed',     'B'), ('windGust',   'B'),
-               ('windGustDir',             'B'), ('windDir',       'B'), ('UV',         'B'),
-               ('ET',                      'B'), ('invalid_data',  'B'), ('soilMoist1', 'B'),
-               ('soilMoist2',              'B'), ('soilMoist3',    'B'), ('soilMoist4', 'B'),
-               ('soilTemp1',               'B'), ('soilTemp2',     'B'), ('soilTemp3',  'B'),
-               ('soilTemp4',               'B'), ('leafWet1',      'B'), ('leafWet2',   'B'),
-               ('leafWet3',                'B'), ('leafWet4',      'B'), ('extraTemp1', 'B'),
-               ('extraTemp2',              'B'), ('extraHumid1',   'B'), ('extraHumid2','B'),
-               ('readClosed',              'H'), ('readOpened',    'H'), ('unused',     'B')]
+rec_A_schema =[
+    ('date_stamp',              'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
+    ('highOutTemp',             'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
+    ('rainRate',                'H'), ('barometer',     'H'), ('radiation',  'H'),
+    ('number_of_wind_samples',  'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('outHumidity',             'B'), ('windSpeed',     'B'), ('windGust',   'B'),
+    ('windGustDir',             'B'), ('windDir',       'B'), ('UV',         'B'),
+    ('ET',                      'B'), ('invalid_data',  'B'), ('soilMoist1', 'B'),
+    ('soilMoist2',              'B'), ('soilMoist3',    'B'), ('soilMoist4', 'B'),
+    ('soilTemp1',               'B'), ('soilTemp2',     'B'), ('soilTemp3',  'B'),
+    ('soilTemp4',               'B'), ('leafWet1',      'B'), ('leafWet2',   'B'),
+    ('leafWet3',                'B'), ('leafWet4',      'B'), ('extraTemp1', 'B'),
+    ('extraTemp2',              'B'), ('extraHumid1',   'B'), ('extraHumid2','B'),
+    ('readClosed',              'H'), ('readOpened',    'H'), ('unused',     'B')
+]
 
-rec_format_B = [('date_stamp',             'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
-                ('highOutTemp',            'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
-                ('rainRate',               'H'), ('barometer',     'H'), ('radiation',  'H'),
-                ('number_of_wind_samples', 'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
-                ('outHumidity',            'B'), ('windSpeed',     'B'), ('windGust',   'B'),
-                ('windGustDir',            'B'), ('windDir',       'B'), ('UV',         'B'),
-                ('ET',                     'B'), ('highRadiation', 'H'), ('highUV',     'B'),
-                ('forecastRule',           'B'), ('leafTemp1',     'B'), ('leafTemp2',  'B'),
-                ('leafWet1',               'B'), ('leafWet2',      'B'), ('soilTemp1',  'B'),
-                ('soilTemp2',              'B'), ('soilTemp3',     'B'), ('soilTemp4',  'B'),
-                ('download_record_type',   'B'), ('extraHumid1',   'B'), ('extraHumid2','B'),
-                ('extraTemp1',             'B'), ('extraTemp2',    'B'), ('extraTemp3', 'B'),
-                ('soilMoist1',             'B'), ('soilMoist2',    'B'), ('soilMoist3', 'B'),
-                ('soilMoist4',             'B')]
+rec_B_schema = [
+    ('date_stamp',             'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
+    ('highOutTemp',            'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
+    ('rainRate',               'H'), ('barometer',     'H'), ('radiation',  'H'),
+    ('number_of_wind_samples', 'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('outHumidity',            'B'), ('windSpeed',     'B'), ('windGust',   'B'),
+    ('windGustDir',            'B'), ('windDir',       'B'), ('UV',         'B'),
+    ('ET',                     'B'), ('highRadiation', 'H'), ('highUV',     'B'),
+    ('forecastRule',           'B'), ('leafTemp1',     'B'), ('leafTemp2',  'B'),
+    ('leafWet1',               'B'), ('leafWet2',      'B'), ('soilTemp1',  'B'),
+    ('soilTemp2',              'B'), ('soilTemp3',     'B'), ('soilTemp4',  'B'),
+    ('download_record_type',   'B'), ('extraHumid1',   'B'), ('extraHumid2','B'),
+    ('extraTemp1',             'B'), ('extraTemp2',    'B'), ('extraTemp3', 'B'),
+    ('soilMoist1',             'B'), ('soilMoist2',    'B'), ('soilMoist3', 'B'),
+    ('soilMoist4',             'B')
+]
 
 # Extract the types and struct.Struct formats for the two types of archive packets:
-rec_types_A, fmt_A = list(zip(*rec_format_A))
-rec_types_B, fmt_B = list(zip(*rec_format_B))
-rec_fmt_A = struct.Struct('<' + ''.join(fmt_A))
-rec_fmt_B = struct.Struct('<' + ''.join(fmt_B))
+rec_types_A, fmt_A = list(zip(*rec_A_schema))
+rec_types_B, fmt_B = list(zip(*rec_B_schema))
+rec_A_struct = struct.Struct('<' + ''.join(fmt_A))
+rec_B_struct = struct.Struct('<' + ''.join(fmt_B))
 
 def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
     """Gives an estimate of the fraction of packets received.
@@ -1603,6 +1664,7 @@ def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
 #                      Decoding routines
 #===============================================================================
 
+
 def _archive_datetime(datestamp, timestamp):
     """Returns the epoch time of the archive packet."""
     try:
@@ -1622,13 +1684,15 @@ def _archive_datetime(datestamp, timestamp):
     except (OverflowError, ValueError, TypeError):
         ts = None
     return ts
-    
-def _loop_date(v):
+
+
+def _loop_date(p, k):
     """Returns the epoch time stamp of a time encoded in the LOOP packet, 
     which, for some reason, uses a different encoding scheme than the archive packet.
     Also, the Davis documentation isn't clear whether "bit 0" refers to the least-significant
     bit, or the most-significant bit. I'm assuming the former, which is the usual
     in little-endian machines."""
+    v = p[k]
     if v == 0xffff:
         return None
     time_tuple = ((0x007f & v) + 2000,  # year
@@ -1643,184 +1707,164 @@ def _loop_date(v):
         ts = None
     return ts
     
-def _stime(v):
-    h = v / 100
-    m = v % 100
-    # Return seconds since midnight
-    return 3600 * h + 60 * m
 
-def _big_val(v):
-    return float(v) if v != 0x7fff else None
+def _decode_rain(p, k):
+    if p['bucket_type'] == 0:
+        # 0.01 inch bucket
+        return p[k] / 100.0
+    elif p['bucket_type'] == 1:
+        # 0.2 mm bucket
+        return p[k] * 0.0078740157
+    elif p['bucket_type'] == 2:
+        # 0.1 mm bucket
+        return p[k] * 0.00393700787
+    else:
+        log.warn("Unknown bucket type $s" % p['bucket_type'])
 
-def _big_val10(v):
-    return float(v) / 10.0 if v != 0x7fff else None
 
-def _big_val100(v):
-    return float(v) / 100.0 if v != 0xffff else None
+def _decode_windSpeed_H(p, k):
+    """Decode 10-min average wind speed. It is encoded slightly
+    differently between type 0 and type 1 LOOP packets."""
+    if p['packet_type'] == 0:
+        return float(p[k]) if p[k] != 0xff else None
+    elif p['packet_type'] == 1:
+        return float(p[k]) / 10.0 if p[k] != 0xffff else None
+    else:
+        log.warn("Unknown LOOP packet type %s" % p['packet_type'])
 
-def _val100(v):
-    return float(v) / 100.0
-
-def _val1000(v):
-    return float(v) / 1000.0
-
-def _val1000Zero(v):
-    return float(v) / 1000.0 if v != 0 else None
-
-def _little_val(v):
-    return float(v) if v != 0x00ff else None
-
-def _little_val10(v):
-    return float(v) / 10.0 if v != 0x00ff else None
-    
-def _little_temp(v):
-    return float(v - 90) if v != 0x00ff else None
-
-def _null(v):
-    return v
-
-def _null_float(v):
-    return float(v)
-
-def _null_int(v):
-    return int(v)
-
-def _windDir(v):
-    return float(v) * 22.5 if v != 0x00ff else None
-
-# Rain bucket type "1", a 0.2 mm bucket
-def _bucket_1(v):
-    return float(v) * 0.00787401575
-
-def _bucket_1_None(v):
-    return float(v) * 0.00787401575 if v != 0xffff else None
-
-# Rain bucket type "2", a 0.1 mm bucket
-def _bucket_2(v):
-    return float(v) * 0.00393700787
-
-def _bucket_2_None(v):
-    return float(v) * 0.00393700787 if v != 0xffff else None
 
 # This dictionary maps a type key to a function. The function should be able to
 # decode a sensor value held in the LOOP packet in the internal, Davis form into US
 # units and return it.
-_loop_map = {'barometer'       : _val1000Zero,
-             'inTemp'          : _big_val10,
-             'inHumidity'      : _little_val,
-             'outTemp'         : _big_val10,
-             'windSpeed'       : _little_val,
-             'windSpeed10'     : _little_val,
-             'windDir'         : _big_val,
-             'extraTemp1'      : _little_temp,
-             'extraTemp2'      : _little_temp,
-             'extraTemp3'      : _little_temp,
-             'extraTemp4'      : _little_temp,
-             'extraTemp5'      : _little_temp,
-             'extraTemp6'      : _little_temp,
-             'extraTemp7'      : _little_temp,
-             'soilTemp1'       : _little_temp,
-             'soilTemp2'       : _little_temp,
-             'soilTemp3'       : _little_temp,
-             'soilTemp4'       : _little_temp,
-             'leafTemp1'       : _little_temp,
-             'leafTemp2'       : _little_temp,
-             'leafTemp3'       : _little_temp,
-             'leafTemp4'       : _little_temp,
-             'outHumidity'     : _little_val,
-             'extraHumid1'     : _little_val,
-             'extraHumid2'     : _little_val,
-             'extraHumid3'     : _little_val,
-             'extraHumid4'     : _little_val,
-             'extraHumid5'     : _little_val,
-             'extraHumid6'     : _little_val,
-             'extraHumid7'     : _little_val,
-             'rainRate'        : _big_val100,
-             'UV'              : _little_val10,
-             'radiation'       : _big_val,
-             'stormRain'       : _val100,
-             'stormStart'      : _loop_date,
-             'dayRain'         : _val100,
-             'monthRain'       : _val100,
-             'yearRain'        : _val100,
-             'dayET'           : _val1000,
-             'monthET'         : _val100,
-             'yearET'          : _val100,
-             'soilMoist1'      : _little_val,
-             'soilMoist2'      : _little_val,
-             'soilMoist3'      : _little_val,
-             'soilMoist4'      : _little_val,
-             'leafWet1'        : _little_val,
-             'leafWet2'        : _little_val,
-             'leafWet3'        : _little_val,
-             'leafWet4'        : _little_val,
-             'insideAlarm'     : _null,
-             'rainAlarm'       : _null,
-             'outsideAlarm1'   : _null,
-             'outsideAlarm2'   : _null,
-             'extraAlarm1'     : _null,
-             'extraAlarm2'     : _null,
-             'extraAlarm3'     : _null,
-             'extraAlarm4'     : _null,
-             'extraAlarm5'     : _null,
-             'extraAlarm6'     : _null,
-             'extraAlarm7'     : _null,
-             'extraAlarm8'     : _null,
-             'soilLeafAlarm1'  : _null,
-             'soilLeafAlarm2'  : _null,
-             'soilLeafAlarm3'  : _null,
-             'soilLeafAlarm4'  : _null,
-             'txBatteryStatus' : _null_int,
-             'consBatteryVoltage'  : lambda v : float((v * 300) >> 9) / 100.0,
-             'forecastIcon'    : _null,
-             'forecastRule'    : _null,
-             'sunrise'         : _stime,
-             'sunset'          : _stime,
-             'trendIcon'       : _null}
+_loop_map = {
+    'altimeter'       : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'barometer'       : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'consBatteryVoltage': lambda p, k: float((p[k] * 300) >> 9) / 100.0,
+    'dayET'           : lambda p, k: float(p[k]) / 1000.0,
+    'dayRain'         : lambda p, k: float(p[k]) / 100.0,
+    'dewpoint'        : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
+    'extraAlarm1'     : lambda p, k: p[k],
+    'extraAlarm2'     : lambda p, k: p[k],
+    'extraAlarm3'     : lambda p, k: p[k],
+    'extraAlarm4'     : lambda p, k: p[k],
+    'extraAlarm5'     : lambda p, k: p[k],
+    'extraAlarm6'     : lambda p, k: p[k],
+    'extraAlarm7'     : lambda p, k: p[k],
+    'extraAlarm8'     : lambda p, k: p[k],
+    'extraHumid1'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid2'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid3'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid4'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid5'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid6'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid7'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraTemp1'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp2'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp3'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp4'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp5'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp6'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp7'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'forecastIcon'    : lambda p, k: p[k],
+    'forecastRule'    : lambda p, k: p[k],
+    'heatindex'       : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
+    'inHumidity'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'insideAlarm'     : lambda p, k: p[k],
+    'inTemp'          : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
+    'leafTemp1'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafTemp2'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafTemp3'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafTemp4'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafWet1'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet2'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet3'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet4'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'monthET'         : lambda p, k: float(p[k]) / 100.0,
+    'monthRain'       : lambda p, k: float(p[k]) / 100.0,
+    'outHumidity'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'outsideAlarm1'   : lambda p, k: p[k],
+    'outsideAlarm2'   : lambda p, k: p[k],
+    'outTemp'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
+    'pressure'        : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'radiation'       : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
+    'rainAlarm'       : lambda p, k: p[k],
+    'rainRate'        : _decode_rain,
+    'soilLeafAlarm1'  : lambda p, k: p[k],
+    'soilLeafAlarm2'  : lambda p, k: p[k],
+    'soilLeafAlarm3'  : lambda p, k: p[k],
+    'soilLeafAlarm4'  : lambda p, k: p[k],
+    'soilMoist1'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist2'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist3'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist4'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilTemp1'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp2'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp3'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp4'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'stormRain'       : _decode_rain,
+    'stormStart'      : _loop_date,
+    'sunrise'         : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
+    'sunset'          : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
+    'THSW'            : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
+    'trendIcon'       : lambda p, k: p[k],
+    'txBatteryStatus' : lambda p, k: int(p[k]),
+    'UV'              : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
+    'windchill'       : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
+    'windDir'         : lambda p, k: (float(p[k]) if p[k] != 360 else 0) if p[k] and p[k] != 0x7fff else None,
+    'windGust10'      : _decode_windSpeed_H,
+    'windGustDir10'   : lambda p, k: (float(p[k]) if p[k] != 360 else 0) if p[k] and p[k] != 0x7fff else None,
+    'windSpeed'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'windSpeed2'      : _decode_windSpeed_H,
+    'windSpeed10'     : _decode_windSpeed_H,
+    'yearET'          : lambda p, k: float(p[k]) / 100.0,
+    'yearRain'        : lambda p, k: float(p[k]) / 100.0,
+}
 
 # This dictionary maps a type key to a function. The function should be able to
 # decode a sensor value held in the archive packet in the internal, Davis form into US
 # units and return it.
-_archive_map = {'barometer'      : _val1000Zero,
-                'inTemp'         : _big_val10,
-                'outTemp'        : _big_val10,
-                'highOutTemp'    : lambda v : float(v / 10.0) if v != -32768 else None,
-                'lowOutTemp'     : _big_val10,
-                'inHumidity'     : _little_val,
-                'outHumidity'    : _little_val,
-                'windSpeed'      : _little_val,
-                'windDir'        : _windDir,
-                'windGust'       : _null_float,
-                'windGustDir'    : _windDir,
-                'rain'           : _val100,
-                'rainRate'       : _val100,
-                'ET'             : _val1000,
-                'radiation'      : _big_val,
-                'highRadiation'  : _big_val,
-                'UV'             : _little_val10,
-                'highUV'         : _little_val10,
-                'extraTemp1'     : _little_temp,
-                'extraTemp2'     : _little_temp,
-                'extraTemp3'     : _little_temp,
-                'soilTemp1'      : _little_temp,
-                'soilTemp2'      : _little_temp,
-                'soilTemp3'      : _little_temp,
-                'soilTemp4'      : _little_temp,
-                'leafTemp1'      : _little_temp,
-                'leafTemp2'      : _little_temp,
-                'extraHumid1'    : _little_val,
-                'extraHumid2'    : _little_val,
-                'soilMoist1'     : _little_val,
-                'soilMoist2'     : _little_val,
-                'soilMoist3'     : _little_val,
-                'soilMoist4'     : _little_val,
-                'leafWet1'       : _little_val,
-                'leafWet2'       : _little_val,
-                'leafWet3'       : _little_val,
-                'leafWet4'       : _little_val,
-                'forecastRule'   : _null,
-                'readClosed'     : _null,
-                'readOpened'     : _null}
+_archive_map = {
+    'barometer'      : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'ET'             : lambda p, k: float(p[k]) / 1000.0,
+    'extraHumid1'    : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraHumid2'    : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'extraTemp1'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp2'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'extraTemp3'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'forecastRule'   : lambda p, k: p[k] if p[k] != 193 else None,
+    'highOutTemp'    : lambda p, k : float(p[k] / 10.0) if p[k] != -32768 else None,
+    'highRadiation'  : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
+    'highUV'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
+    'inHumidity'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'inTemp'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
+    'leafTemp1'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafTemp2'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'leafWet1'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet2'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet3'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'leafWet4'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'lowOutTemp'     : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
+    'outHumidity'    : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'outTemp'        : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
+    'radiation'      : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
+    'rain'           : _decode_rain,
+    'rainRate'       : _decode_rain,
+    'readClosed'     : lambda p, k: p[k],
+    'readOpened'     : lambda p, k: p[k],
+    'soilMoist1'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist2'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist3'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilMoist4'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+    'soilTemp1'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp2'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp3'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'soilTemp4'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
+    'UV'             : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
+    'windDir'        : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,
+    'windGust'       : lambda p, k: float(p[k]),
+    'windGustDir'    : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,
+    'windSpeed'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
+}
 
 #===============================================================================
 #                      class VantageService
@@ -1910,12 +1954,14 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
     def add_options(self, parser):
         super(VantageConfigurator, self).add_options(parser)
         parser.add_option("--info", action="store_true", dest="info",
-                          help="To print configuration, reception, and barometer calibration information about your weather station.")
+                          help="To print configuration, reception, and barometer "
+                               "calibration information about your weather station.")
         parser.add_option("--clear-memory", action="store_true", dest="clear_memory",
                           help="To clear the memory of your weather station.")
         parser.add_option("--set-interval", type=int, dest="set_interval",
                           metavar="MINUTES",
-                          help="Sets the archive interval to the specified number of minutes. Valid values are 1, 5, 10, 15, 30, 60, or 120.")
+                          help="Sets the archive interval to the specified number of minutes. "
+                               "Valid values are 1, 5, 10, 15, 30, 60, or 120.")
         parser.add_option("--set-latitude", type=float, dest="set_latitude",
                           metavar="DEGREE",
                           help="Sets the latitude of the station to the specified number of tenth degree.")
@@ -1927,23 +1973,31 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
                           help="Sets the altitude of the station to the specified number of feet.") 
         parser.add_option("--set-barometer", type=float, dest="set_barometer",
                           metavar="inHg",
-                          help="Sets the barometer reading of the station to a known correct value in inches of mercury. Specify 0 (zero) to have the console pick a sensible value.")
+                          help="Sets the barometer reading of the station to a known correct "
+                               "value in inches of mercury. Specify 0 (zero) to have the console "
+                               "pick a sensible value.")
         parser.add_option("--set-wind-cup", type=int, dest="set_wind_cup",
                           metavar="CODE",
                           help="Set the type of wind cup. Specify '0' for small size; '1' for large size")
         parser.add_option("--set-bucket", type=int, dest="set_bucket",
                           metavar="CODE",
-                          help="Set the type of rain bucket. Specify '0' for 0.01 inches; '1' for 0.2 mm; '2' for 0.1 mm")
+                          help="Set the type of rain bucket. Specify '0' for 0.01 inches; "
+                               "'1' for 0.2 mm; '2' for 0.1 mm")
         parser.add_option("--set-rain-year-start", type=int,
                           dest="set_rain_year_start", metavar="MM",
                           help="Set the rain year start (1=Jan, 2=Feb, etc.).")
         parser.add_option("--set-offset", type=str,
                           dest="set_offset", metavar="VARIABLE,OFFSET",
-                          help="Set the onboard offset for VARIABLE inTemp, outTemp, extraTemp[1-7], inHumid, outHumid, extraHumid[1-7], soilTemp[1-4], leafTemp[1-4], windDir) to OFFSET (Fahrenheit, %, degrees)")
+                          help="Set the onboard offset for VARIABLE inTemp, outTemp, extraTemp[1-7], "
+                               "inHumid, outHumid, extraHumid[1-7], soilTemp[1-4], leafTemp[1-4], windDir) "
+                               "to OFFSET (Fahrenheit, %, degrees)")
         parser.add_option("--set-transmitter-type", type=str,
                           dest="set_transmitter_type",
                           metavar="CHANNEL,TYPE,TEMP,HUM,REPEATER_ID",
-                          help="Set the transmitter type for CHANNEL (1-8), TYPE (0=iss, 1=temp, 2=hum, 3=temp_hum, 4=wind, 5=rain, 6=leaf, 7=soil, 8=leaf_soil, 9=sensorlink, 10=none), as extra TEMP station and extra HUM station (both 1-7, if applicable), REPEATER_ID ('A'-'H', if used)")
+                          help="Set the transmitter type for CHANNEL (1-8), TYPE (0=iss, 1=temp, 2=hum, "
+                               "3=temp_hum, 4=wind, 5=rain, 6=leaf, 7=soil, 8=leaf_soil, 9=sensorlink, 10=none), "
+                               "as extra TEMP station and extra HUM station (both 1-7, if applicable), "
+                               "REPEATER_ID ('A'-'H', if used)")
         parser.add_option("--set-retransmit", type=str, dest="set_retransmit",
                           metavar="OFF|ON|ON,CHANNEL",
                           help="Turn console retransmit function 'ON' or 'OFF'.")
@@ -1968,7 +2022,8 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
         parser.add_option("--stop", action="store_true",
                           help="Stop the logger.")
         parser.add_option("--dump", action="store_true",
-                          help="Dump all data to the archive. NB: This may result in many duplicate primary key errors.")
+                          help="Dump all data to the archive. "
+                               "NB: This may result in many duplicate primary key errors.")
         parser.add_option("--logger-summary", type="string",
                           dest="logger_summary", metavar="FILE",
                           help="Save diagnostic summary to FILE (for debugging the logger).")
@@ -2120,7 +2175,8 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
                     comment = "(as extra humidity %d)" % transmitter_list[transmitter_id]["hum"]
                 elif transmitter_type == 'none':
                     transmitter_type = "(N/A)"
-                print("         %d      %-8s    %-4s    %s %s" % (transmitter_id + 1, listen, repeater, transmitter_type, comment), file=dest)
+                print("         %d      %-8s    %-4s    %s %s"
+                      % (transmitter_id + 1, listen, repeater, transmitter_type, comment), file=dest)
             print("", file=dest)
         except weewx.RetriesExceeded:
             pass
@@ -2426,7 +2482,8 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
     def set_transmitter_type(station, transmitter_list, noprompt):
         """Set the transmitter type for one of the eight channels."""
 
-        transmitter_list = list(map((lambda x: int(x) if x.isdigit() else x if x != "" else None), transmitter_list.split(',')))
+        transmitter_list = list(map((lambda x: int(x) if x.isdigit() else x if x != "" else None),
+                                    transmitter_list.split(',')))
         channel = transmitter_list[0]
         if not 1 <= channel <= 8:
             print("Channel number must be between 1 and 8.")
@@ -2627,7 +2684,10 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
                     archive.addRecord(record)
                     nrecs += 1
                     if nrecs % 10 == 0:
-                        print("Records processed: %d; Timestamp: %s\r" % (nrecs, weeutil.weeutil.timestamp_to_string(record['dateTime'])), end=' ', file=sys.stdout)
+                        print("Records processed: %d; Timestamp: %s\r"
+                              % (nrecs, weeutil.weeutil.timestamp_to_string(record['dateTime'])),
+                              end=' ',
+                              file=sys.stdout)
                         sys.stdout.flush()
                 print("\nFinished dump. %d records added" % (nrecs,))
         else:
@@ -2653,7 +2713,8 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
                           % (nrecs, page, index), file=dest)
                 nrecs += 1
                 if nrecs % 10 == 0:
-                    print("Records processed: %d; Timestamp: %s\r" % (nrecs, weeutil.weeutil.timestamp_to_string(time_ts)), end=' ', file=sys.stdout)
+                    print("Records processed: %d; Timestamp: %s\r"
+                          % (nrecs, weeutil.weeutil.timestamp_to_string(time_ts)), end=' ', file=sys.stdout)
                     sys.stdout.flush()
         print("\nFinished download of logger summary to file '%s'. %d records processed." % (dest_path, nrecs))
 
@@ -2698,6 +2759,9 @@ class VantageConfEditor(weewx.drivers.AbstractConfEditor):
 
     # TCP send delay (when using the WeatherLinkIP):
     tcp_send_delay = 0.5
+
+    # The type of LOOP packet to request: 1 = LOOP1; 2 = LOOP2; 3 = both
+    loop_request = 1 
 
     # The id of your ISS station (usually 1). If you use a wind meter connected
     # to a anemometer transmitter kit, use its id
@@ -2745,15 +2809,19 @@ class VantageConfEditor(weewx.drivers.AbstractConfEditor):
 
 
 if __name__ == '__main__':
-    import syslog
     import optparse
+
+    import weewx
+    import weeutil.logger
+
+    weewx.debug = 1
+
+    weeutil.logger.setup('vantage', {})
 
     usage = """Usage: python -m weewx.drivers.vantage --help
        python -m weewx.drivers.vantage --version
        python -m weewx.drivers.vantage [--port=PORT]"""
 
-    syslog.openlog('vantage', syslog.LOG_PID | syslog.LOG_CONS)
-    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--version', action='store_true',
                       help='Display driver version')

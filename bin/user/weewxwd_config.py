@@ -49,7 +49,6 @@ import weewx.engine
 import weewx.wxformulas
 import weewx.almanac
 from weewx.units import convert, obs_group_dict
-from weeutil.weeutil import to_bool, accumulateLeaves
 from weeutil.weeutil import timestamp_to_string
 
 # Weewx-WD imports

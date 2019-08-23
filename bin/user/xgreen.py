@@ -14,16 +14,20 @@
 #
 # Version: 0.0.5                                    Date: 23 November 2017
 #
+from __future__ import absolute_import
 
+import logging
 import datetime
 import time
 import os
 import pickle
 import weewx
 import weedb
+
+import weeutil.config
+import weeutil.logger
 import weeutil.weeutil
 import weewx.units
-import syslog
 import weewx.tags
 
 from weewx.cheetahgenerator import SearchList
@@ -31,20 +35,11 @@ from weewx.tags import TimeBinder, TimespanBinder
 from weeutil.weeutil import TimeSpan, genDaySpans
 from weewx.units import ValueHelper, ValueTuple
 from datetime import date
+#from weeutil.log import logdbg, loginf, logerr, logcrt
+
+log = logging.getLogger(__name__)
 
 GREEN_VERSION = '0.0.5'
-
-def logmsg(level, msg):
-     syslog.syslog(level, 'xGreen: %s' % msg)
-
-def logdbg(msg):
-     logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-     logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-     logmsg(syslog.LOG_ERR, msg)
 
 class xGreenDay(SearchList):
 
@@ -124,7 +119,7 @@ class xGreenDay(SearchList):
                      tavg_ts = float(tavg_ts)
 
              except Exception as e:
-                 syslog.syslog(syslog.LOG_ERR, "greenDay: SYSLOG ERR cannot read green: %s" % e)
+                 log.error("greenDay cannot read green: %s", e)
 
          else:
              tavgS = 0.0
@@ -203,7 +198,7 @@ class xGreenDay(SearchList):
                      warmS = f.read()
                      warmS = float(warmS)
              except Exception as e:
-                 syslog.syslog(syslog.LOG_ERR, "warmSum: SYSLOG ERR cannot read xzwarmSum: %s" % e)
+                 log.error("warmSum cannot read zzwarmSum: %s", e)
 
          # call coolT_sum as sum of day.outTemp.avg less than 0 degree C
          #if maee_ano_ts < dat_ts < nov_ano_ts:
@@ -214,7 +209,7 @@ class xGreenDay(SearchList):
                      coolS = f.read()
                      coolS = float(coolS)
              except Exception as e:
-                 syslog.syslog(syslog.LOG_ERR, "collSum: SYSLOG ERR cannot read xzcoolSum: %s" % e)
+                 log.error("coolSum cannot read zzcoolSum: %s", e)
 
          else:
              if anomo > 10:
@@ -255,8 +250,8 @@ class xGreenDay(SearchList):
                                  }
 
          t2 = time.time()
-         logdbg("xGreenDay SLE executed in %0.3f seconds" % (t2-t1))
-         #loginf("xGreenDay SLE executed in %0.3f seconds" % (t2-t1))
+         log.debug("xGreenDay SLE executed in %0.3f seconds", t2 - t1)
+         #log.info("xGreenDay SLE executed in %0.3f seconds", t2 - t1)
 
          return [search_list_extension]
 

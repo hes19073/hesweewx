@@ -5,7 +5,6 @@
 #
 """Defines (mostly static) information about a station."""
 from __future__ import absolute_import
-
 import sys
 import time
 
@@ -72,7 +71,7 @@ class Station(object):
         label_dict = skin_dict.get('Labels', {})
         hemispheres    = label_dict.get('hemispheres', ('N','S','E','W'))
         latlon_formats = label_dict.get('latlon_formats')
-        self.latitude  = weeutil.weeutil.latlon_string(stn_info.latitude_f,
+        self.latitude  = weeutil.weeutil.latlon_string(stn_info.latitude_f,  
                                                        hemispheres[0:2],
                                                        'lat', latlon_formats)
         self.longitude = weeutil.weeutil.latlon_string(stn_info.longitude_f,
@@ -132,7 +131,20 @@ class Station(object):
                     libc.sysctlbyname("kern.boottime", ctypes.byref(buf), ctypes.byref(size), None, 0)
                     os_uptime_secs = time.time() - float(buf.value)
                 except (AttributeError, IOError, NameError):
-                    pass
+                    try:
+                        # For OpenBSD. See issue #428.
+                        import subprocess
+                        from datetime import datetime
+                        cmd = ['sysctl', 'kern.boottime']
+                        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        o, e = proc.communicate()
+                        time_t = o.decode('ascii').split()
+                        time_as_string = time_t[1] + " " + time_t[2] + " " + time_t[4][:4] + " " + time_t[3]
+                        os_time = datetime.strptime(time_as_string, "%b %d %Y %H:%M:%S")
+                        epoch_time = (os_time - datetime(1970, 1, 1)).total_seconds()
+                        os_uptime_secs = time.time() - epoch_time
+                    except:
+                        pass
 
         return weewx.units.ValueHelper(value_t=(os_uptime_secs, "second", "group_deltatime"),
                                        formatter=self.formatter,
@@ -143,5 +155,5 @@ class Station(object):
         if name in ['__call__', 'has_key']:
             raise AttributeError
         # For anything that is not an explicit attribute of me, try
-        # my instance of StationInfo.
+        # my instance of StationInfo. 
         return getattr(self.stn_info, name)

@@ -29,12 +29,12 @@ Add the following to weewx.conf:
 
 """
 
-
+from __future__ import absolute_import
+import logging
 
 import os
 import platform
 import re
-import syslog
 import time
 import math
 
@@ -46,6 +46,7 @@ import weeutil.weeutil
 from weewx.engine import StdService
 from weewx.almanac import Almanac
 
+log = logging.getLogger(__name__)
 
 VERSION = "0.2"
 
@@ -70,17 +71,6 @@ schema = [
     ('plu_alt','REAL'),
     ]
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'SunMon_weewx: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 
 class sunmonMonitor(StdService):
@@ -88,7 +78,7 @@ class sunmonMonitor(StdService):
 
     def __init__(self, engine, config_dict):
         super(sunmonMonitor, self).__init__(engine, config_dict)
-        loginf("SunMon-Service version is %s" % VERSION)
+        log.info("SunMon-Service version is %s", VERSION)
 
         d = config_dict.get('sunmon', {})
 
@@ -120,7 +110,7 @@ class sunmonMonitor(StdService):
         now = int(time.time() + 0.5)
         delta = now - event.record['dateTime']
         if delta > event.record['interval'] * 60:
-            logdbg("Skipping record: time difference %s too big" % delta)
+            log.debug("Skipping record: time difference %s too big", delta)
             return
         if self.last_ts is not None:
             self.save_data(self.get_data(now, self.last_ts))

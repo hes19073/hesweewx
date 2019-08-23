@@ -30,9 +30,8 @@ import datetime
 import re
 
 from urllib.request import urlopen
-from time import mktime
+from weeutil.log import logdbg, loginf, logerr, logcrt
 from weewx.cheetahgenerator import SearchList
-
 
 class ISSAlert(SearchList):
     """Retrieves data from an ISS Station RSS Feed and converts it into a variable that is available for templates."""
@@ -47,7 +46,11 @@ class ISSAlert(SearchList):
         issall = self.processAlertRSS(self.generator.config_dict['StdReport']['isswatch']['url'])
         #issall = self.processAlertRSS(self, 'https://spotthestation.nasa.gov/sightings/xml_files/Germany_None_Luneburg.xml')
 
-        # Now create a small dictionary with keys 'alltime' and 'seven_day':
+        #if len(issall) < 10:
+        #   search_list_extension = { 'issnext' : None, 'issall' : None }
+        #else:
+            # Now create a small dictionary :
+        #    search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
         search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
 
         # Finally, return our extension as a list:
@@ -77,7 +80,8 @@ class ISSAlert(SearchList):
             newsighting = {
                            'pubdate':sighting.find('pubDate').text,
                            'guid':sighting.find('guid').text,
-                          }
+                           'pubts':self.get_ts(sighting.find('pubDate').text),
+                }
 
             #Split the title to get just the object e.g. ISS, Dragon etc.
             title = sighting.find('title').text.split(" ",1)
@@ -94,39 +98,30 @@ class ISSAlert(SearchList):
 
             #Has the time passed?
             now = time.time()
-
+            from datetime import timedelta
             startDay = datetime.datetime.strptime(title[0],"%Y-%m-%d")
             newsighting['date'] = "{}.{}.{}".format(startDay.day,startDay.month,startDay.year)
+            m11 = newsighting['date']
+            m12 = newsighting['time']
+            dat_time = m11 + " " + m12
+            tmp = dat_time.split(" ")
+            format12 = '%H:%M'
+            format24 = '%H:%M'
+            my_hour = datetime.datetime.strptime(tmp[1], format12)
+            if (tmp[2] == 'PM'):
+                my_hour += timedelta(hours=12)
 
-            m2 = newsighting['time']
-            #dicti = {'1:':13,'2:':14,'3:':15,'4:':16,'5:':17,'6:':18,'7:':19,'8:':20,'9:':21,'10':22,'11':23,'12':12}
-            dicti = {'1:':'13:','2:':'14:','3:':'15:','4:':'16:','5:':'17:','6:':'18:','7:':'19:','8:':'20:','9:':'21:','10':'22:','11':'23:','12':'12:'}
-            #s = '12:40 PM'
-            if m2.endswith(' AM'):
-                if m2.startswith('12'):
-                    s1 = m2[:5]
-                    aa = s1.replace('12:','00:')
-                else:
-                    aa = m2[:5]
-            else:
-                s1 = m2[:5]
-                tim = str(m2[:2])
-                ora = str(dicti[tim])
-                aa = s1.replace(tim,ora)
+            newsighting['time'] = my_hour.strftime(format24)
 
-            newsighting['time'] = aa.strip()
-
-            #then = time.mktime(datetime.datetime.strptime(newsighting['date'],"%d.%m.%Y").timetuple())
             then = time.mktime(datetime.datetime.strptime(newsighting['date'] + " 00:00:00", "%d.%m.%Y %H:%M:%S").timetuple())
 
             newsighting['departure'] = (newsighting['departure']).replace('above', '&uuml;ber')
             newsighting['approach'] = (newsighting['approach']).replace('above', '&uuml;ber')
             newsighting['duration'] = (newsighting['duration']).replace('less than', 'weniger als')
 
-            #if then > now:
+            if then > now:
                 #Add this sighting to our list of all
-            #    issall.append(newsighting)
-            issall.append(newsighting)
+                issall.append(newsighting)
 
         return issall
 

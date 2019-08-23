@@ -6,18 +6,19 @@
 
 """Services specific to weather."""
 
-
 from __future__ import absolute_import
 
-import syslog
-import os.path
-import weedb
-import weewx.units
-import weewx.engine
-import weewx.wxformulas
-import weeutil.weeutil
+import logging
 
+import weedb
+import weeutil.logger
+import weeutil.weeutil
+import weewx.engine
+import weewx.units
+import weewx.wxformulas
 from weewx.units import FtoC, CtoF, mps_to_mph, kph_to_mph, METER_PER_FOOT
+
+log = logging.getLogger(__name__)
 
 class StdWXCalculate(weewx.engine.StdService):
     """Wrapper class for WXCalculate.
@@ -106,7 +107,7 @@ class WXCalculate(object):
             rain_period = 900           # for rain rate
             snow_period = 900           # for snow rate
             et_period = 3600            # for evapotranspiration
-            wind_height = 2.0           # for evapotranspiration
+            wind_height = 2.0           # for evapotranspiration. In meters.
             atc = 0.8                   # for solar radiation RS
             nfac = 2                    # for solar radiation Bras
             max_delta_12h = 1800
@@ -188,11 +189,11 @@ class WXCalculate(object):
         self.archive_snow_events = []
 
         # report about which values will be calculated...
-        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following values will be calculated: %s" %
-                      ', '.join(["%s=%s" % (k, self.calculations[k]) for k in self.calculations]))
+        log.info("The following values will be calculated: %s",
+                 ', '.join(["%s=%s" % (k, self.calculations[k]) for k in self.calculations]))
         # ...and which algorithms will be used.
-        syslog.syslog(syslog.LOG_INFO, "wxcalculate: The following algorithms will be used for calculations: %s" %
-                      ', '.join(["%s=%s" % (k, self.algorithms[k]) for k in self.algorithms]))
+        log.info("The following algorithms will be used for calculations: %s",
+                 ', '.join(["%s=%s" % (k, self.algorithms[k]) for k in self.algorithms]))
 
     def do_calculations(self, data_dict, data_type):
         if self.ignore_zero_wind:
@@ -225,8 +226,6 @@ class WXCalculate(object):
         if 'outTemp' in data and 'outHumidity' in data:
             data['dewpoint'] = weewx.wxformulas.dewpointF(
                 data['outTemp'], data['outHumidity'])
-        else:
-            data['dewpoint'] = None
 
     def calc_inDewpoint(self, data, data_type):  # @UnusedVariable
         if 'inTemp' in data and 'inHumidity' in data:
@@ -245,14 +244,13 @@ class WXCalculate(object):
 
     def calc_pressure(self, data, data_type):  # @UnusedVariable
         interval = self._get_archive_interval(data)
-        if (interval is not None and 'barometer' in data and
-            'outTemp' in data and 'outHumidity' in data):
-            temperature_12h_ago = self._get_temperature_12h(
-                data['dateTime'], interval)
-            if (data['barometer'] is not None and
-                data['outTemp'] is not None and
-                data['outHumidity'] is not None and
-                temperature_12h_ago is not None):
+        if (interval is not None and 'barometer' in data
+                and 'outTemp' in data and 'outHumidity' in data):
+            temperature_12h_ago = self._get_temperature_12h(data['dateTime'], interval)
+            if (data['barometer'] is not None
+                    and data['outTemp'] is not None
+                    and data['outHumidity'] is not None
+                    and temperature_12h_ago is not None):
                 data['pressure'] = weewx.uwxutils.uWxUtilsVP.SeaLevelToSensorPressure_12(
                     data['barometer'], self.altitude_ft,
                     data['outTemp'], temperature_12h_ago, data['outHumidity'])
@@ -411,7 +409,7 @@ class WXCalculate(object):
             T_max, T_min, rad_avg, wind_avg, rh_max, rh_min, std_unit_min, std_unit_max = r
             # Check for mixed units
             if std_unit_min != std_unit_max:
-                syslog.syslog(syslog.LOG_NOTICE, "wxservices: Mixed unit system not allowed in ET calculation")
+                log.info("Mixed unit system not allowed in ET calculation")
                 data['ET'] = None
                 return
             std_unit = std_unit_min
@@ -429,18 +427,17 @@ class WXCalculate(object):
                 T_min, T_max, rh_min, rh_max, rad_avg, wind_avg, height_ft,
                 self.latitude, self.longitude, self.altitude_ft, end_ts)
             # The formula returns inches/hour. We need the total ET over the
-            # archive
-            # interval, so multiply by the length of the archive interval in hours.
+            # archive interval, so multiply by the length of the archive
+            # interval in hours.
             data['ET'] = ET_rate * interval / 3600.0 if ET_rate is not None else None
         except ValueError as e:
-            weeutil.weeutil.log_traceback()
-            syslog.syslog(syslog.LOG_ERR, "wxservices: Calculation of evapotranspiration failed: %s" % e)
+            log.error("Calculation of evapotranspiration failed: %s", e)
+            weeutil.logger.log_traceback(log.error)
         except weedb.DatabaseError:
             pass
 
     def calc_windrun(self, data, data_type):
-        """Calculate the wind run since the beginning of the day.  Convert to
-        US if necessary since this service operates in US unit system."""
+        """Calculate the wind run for the archive interval. """
         # calculate windrun only for archive packets
         if data_type == 'loop':
             return

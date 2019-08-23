@@ -16,7 +16,6 @@ Thanks to Antonio Burriel for the dewpoint, longitude, and radiation fixes.
 
 import re
 import sys
-import syslog
 import time
 
 try:
@@ -33,6 +32,7 @@ import weewx
 import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool, accumulateLeaves
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 VERSION = "0.8.1"
 
@@ -40,17 +40,17 @@ if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
                                    weewx.__version__)
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'restx: OWM: %s' % msg)
+#def logmsg(level, msg):
+#    syslog.syslog(level, 'restx: OWM: %s' % msg)
 
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
+#def logdbg(msg):
+#    logmsg(syslog.LOG_DEBUG, msg)
 
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
+#def loginf(msg):
+#    logmsg(syslog.LOG_INFO, msg)
 
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+#def logerr(msg):
+#    logmsg(syslog.LOG_ERR, msg)
 
 
 def _obfuscate(s):

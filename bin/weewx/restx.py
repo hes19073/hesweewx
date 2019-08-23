@@ -84,10 +84,11 @@ of various RESTful services.
 from __future__ import absolute_import
 
 import datetime
+import logging
 import platform
 import re
 import socket
-import syslog
+import ssl
 import threading
 import time
 
@@ -98,14 +99,15 @@ from six.moves import queue
 from six.moves import urllib
 
 import weedb
+import weeutil.logger
 import weeutil.weeutil
 import weewx.engine
 import weewx.manager
 import weewx.units
-from weeutil.weeutil import to_int, to_float, to_bool, timestamp_to_string, search_up, \
-    accumulateLeaves, to_sorted_string
-from weeutil.log import logdbg, logerr, loginf, logcrt, logalt
+from weeutil.config import search_up, accumulateLeaves
+from weeutil.weeutil import to_int, to_float, to_bool, timestamp_to_string, to_sorted_string
 
+log = logging.getLogger(__name__)
 
 class FailedPost(IOError):
     """Raised when a post fails, and is unlikely to succeed if retried."""
@@ -125,6 +127,10 @@ class ConnectError(IOError):
 
 class SendError(IOError):
     """Raised when unable to send through a socket."""
+
+
+class CertificateError(Exception):
+    """Raised when there's a problem with an SSL certificate"""
 
 
 # ==============================================================================
@@ -152,9 +158,9 @@ class StdRESTful(weewx.engine.StdService):
             # Wait up to 20 seconds for the thread to exit:
             t.join(20.0)
             if t.isAlive():
-                logerr("Unable to shut down %s thread" % t.name)
+                log.error("Unable to shut down %s thread", t.name)
             else:
-                logdbg("Shut down %s thread." % t.name)
+                log.debug("Shut down %s thread.", t.name)
 
 
 # For backwards compatibility with early v2.6 alphas. In particular, the WeatherCloud uploader depends on it.
@@ -171,7 +177,7 @@ class RESTThread(threading.Thread):
                  manager_dict=None,
                  post_interval=None, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600,
+                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_certificate=3600,
                  softwaretype="weewx-%s" % weewx.__version__,
                  skip_upload=False):
         """Initializer for the class RESTThread
@@ -217,6 +223,9 @@ class RESTThread(threading.Thread):
           retry_login: How long to wait before retrying a login. Default
           is 3600 seconds (one hour).
           
+          retry_certificate: How long to wait before retrying after an SSL certicate error. Default
+          is 3600 seconds (one hour).
+
           softwaretype: Sent as field "softwaretype in the Ambient post.
           Default is "weewx-x.y.z where x.y.z is the weewx version.
 
@@ -241,6 +250,7 @@ class RESTThread(threading.Thread):
         self.timeout = to_int(timeout)
         self.retry_wait = to_int(retry_wait)
         self.retry_login = to_int(retry_login)
+        self.retry_certificate = to_int(retry_certificate)
         self.softwaretype = softwaretype
         self.lastpost = 0
         self.skip_upload = to_bool(skip_upload)
@@ -261,7 +271,7 @@ class RESTThread(threading.Thread):
         if dbmanager is None:
             # If we don't have a database, we can't do anything
             if self.log_failure:
-                logdbg("No database specified. Augmentation from database skipped.")
+                log.debug("No database specified. Augmentation from database skipped.")
             return record
 
         _time_ts = record['dateTime']
@@ -325,7 +335,7 @@ class RESTThread(threading.Thread):
                     _datadict['dayRain'] = None
 
         except weedb.OperationalError as e:
-            logdbg("%s: Database OperationalError '%s'" % (self.protocol_name, e))
+            log.debug("%s: Database OperationalError '%s'", self.protocol_name, e)
 
         return _datadict
 
@@ -369,31 +379,38 @@ class RESTThread(threading.Thread):
             except AbortedPost as e:
                 if self.log_success:
                     _time_str = timestamp_to_string(_record['dateTime'])
-                    loginf("%s: Skipped record %s: %s" % (self.protocol_name, _time_str, e))
+                    log.info("%s: Skipped record %s: %s", self.protocol_name, _time_str, e)
             except BadLogin:
                 if self.retry_login:
-                    logerr("%s: Bad login; waiting %s minutes then retrying"
-                           % (self.protocol_name, self.retry_login / 60.0))
+                    log.error("%s: Bad login; waiting %s minutes then retrying",
+                              self.protocol_name, self.retry_login / 60.0)
                     time.sleep(self.retry_login)
                 else:
-                    logerr("%s: Bad login; no retry specified. Terminating" % self.protocol_name)
+                    log.error("%s: Bad login; no retry specified. Terminating", self.protocol_name)
                     raise
             except FailedPost as e:
                 if self.log_failure:
                     _time_str = timestamp_to_string(_record['dateTime'])
-                    logerr("%s: Failed to publish record %s: %s"
-                           % (self.protocol_name, _time_str, e))
+                    log.error("%s: Failed to publish record %s: %s" % (self.protocol_name, _time_str, e))
+            except CertificateError as e:
+                if self.retry_certificate:
+                    log.error("%s: Bad SSL certificate (%s); waiting %s minutes then retrying",
+                              self.protocol_name, e, self.retry_certificate / 60.0)
+                    time.sleep(self.retry_certificate)
+                else:
+                    log.error("%s: Bad SSL certificate; no retry specified. Terminating", self.protocol_name)
+                    raise
             except Exception as e:
                 # Some unknown exception occurred. This is probably a serious
                 # problem. Exit.
-                logcrt("%s: Unexpected exception of type %s" % (self.protocol_name, type(e)))
-                weeutil.weeutil.log_traceback('*** ', syslog.LOG_DEBUG)
-                logcrt("%s: Thread terminating. Reason: %s" % (self.protocol_name, e))
+                log.error("%s: Unexpected exception of type %s", self.protocol_name, type(e))
+                weeutil.logger.log_traceback(log.error, '*** ')
+                log.critical("%s: Thread terminating. Reason: %s", self.protocol_name, e)
                 raise
             else:
                 if self.log_success:
                     _time_str = timestamp_to_string(_record['dateTime'])
-                    loginf("%s: Published record %s" % (self.protocol_name, _time_str))
+                    log.info("%s: Published record %s" % (self.protocol_name, _time_str))
 
     def process_record(self, record, dbmanager):
         """Default version of process_record.
@@ -447,10 +464,15 @@ class RESTThread(threading.Thread):
                 if _count:
                     # If this is not the first time through, sleep a bit before retrying
                     time.sleep(self.retry_wait)
-                # Do a single post. The function post_request() can be
-                # specialized by a RESTful service to catch any unusual
-                # exceptions.
-                _response = self.post_request(request, data)
+
+                try:
+                    # Do a single post. The function post_request() can be
+                    # specialized by a RESTful service to catch any unusual
+                    # exceptions.
+                    _response = self.post_request(request, data)
+                except ssl.CertificateError as e:
+                    raise CertificateError(str(e))
+
                 if 200 <= _response.code <= 299:
                     # No exception thrown and we got a good response code, but
                     # we're still not done.  Some protocols encode a bad
@@ -490,11 +512,12 @@ class RESTThread(threading.Thread):
 
     def handle_code(self, code, count):
         """Check code from HTTP post.  This simply logs the response."""
-        logdbg("%s: Failed upload attempt %d: Code %s" % (self.protocol_name, count, code))
+        log.debug("%s: Failed upload attempt %d: Code %s"
+                  % (self.protocol_name, count, code))
 
     def handle_exception(self, e, count):
         """Check exception from HTTP post.  This simply logs the exception."""
-        logdbg("%s: Failed upload attempt %d: %s" % (self.protocol_name, count, e))
+        log.debug("%s: Failed upload attempt %d: %s" % (self.protocol_name, count, e))
 
     def post_request(self, request, data=None):
         """Post a request object. This version does not catch any HTTP
@@ -519,17 +542,17 @@ class RESTThread(threading.Thread):
         if self.stale is not None:
             _how_old = time.time() - time_ts
             if _how_old > self.stale:
-                logdbg("%s: record %s is stale (%d > %d)."
-                       % (self.protocol_name, timestamp_to_string(time_ts), _how_old, self.stale))
+                log.debug("%s: record %s is stale (%d > %d).",
+                          self.protocol_name, timestamp_to_string(time_ts), _how_old, self.stale)
                 return True
 
         if self.post_interval is not None:
             # We don't want to post more often than the post interval
             _how_long = time_ts - self.lastpost
             if _how_long < self.post_interval:
-                logdbg("%s: wait interval (%d < %d) has not passed for record %s"
-                       % (self.protocol_name, _how_long,
-                          self.post_interval, timestamp_to_string(time_ts)))
+                log.debug("%s: wait interval (%d < %d) has not passed for record %s",
+                          self.protocol_name, _how_long,
+                          self.post_interval, timestamp_to_string(time_ts))
                 return True
 
         self.lastpost = time_ts
@@ -584,7 +607,7 @@ class StdWunderground(StdRESTful):
 
         _essentials_dict = search_up(config_dict['StdRESTful']['Wunderground'], 'Essentials', {})
 
-        logdbg("WU essentials: %s" % _essentials_dict)
+        log.debug("WU essentials: %s", _essentials_dict)
 
         # Get the manager dictionary:
         _manager_dict = weewx.manager.get_manager_dict_from_config(
@@ -607,7 +630,7 @@ class StdWunderground(StdRESTful):
                 **_ambient_dict)
             self.archive_thread.start()
             self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-            loginf("Wunderground-PWS: Data for station %s will be posted" % _ambient_dict['station'])
+            log.info("Wunderground-PWS: Data for station %s will be posted", _ambient_dict['station'])
 
         if do_rapidfire_post:
             _ambient_dict.setdefault('server_url', StdWunderground.rf_url)
@@ -626,16 +649,15 @@ class StdWunderground(StdRESTful):
                 **_ambient_dict)
             self.loop_thread.start()
             self.bind(weewx.NEW_LOOP_PACKET, self.new_loop_packet)
-            loginf("Wunderground-RF: Data for station %s will be posted" % _ambient_dict['station'])
+            log.info("Wunderground-RF: Data for station %s will be posted", _ambient_dict['station'])
 
     def new_loop_packet(self, event):
         """Puts new LOOP packets in the loop queue"""
         if weewx.debug >= 3:
-            logdbg("raw packet: %s" % to_sorted_string(event.packet))
+            log.debug("Raw packet: %s", to_sorted_string(event.packet))
         self.cached_values.update(event.packet, event.packet['dateTime'])
         if weewx.debug >= 3:
-            logdbg("cached packet: %s"
-                   % to_sorted_string(self.cached_values.get_packet(event.packet['dateTime'])))
+            log.debug("Cached packet: %s", to_sorted_string(self.cached_values.get_packet(event.packet['dateTime'])))
         self.loop_queue.put(
             self.cached_values.get_packet(event.packet['dateTime']))
 
@@ -714,7 +736,7 @@ class StdPWSWeather(StdRESTful):
                                             **_ambient_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("PWSWeather: Data for station %s will be posted" % _ambient_dict['station'])
+        log.info("PWSWeather: Data for station %s will be posted", _ambient_dict['station'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -753,7 +775,7 @@ class StdWOW(StdRESTful):
                                         **_ambient_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("WOW: Data for station %s will be posted" % _ambient_dict['station'])
+        log.info("WOW: Data for station %s will be posted", _ambient_dict['station'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -773,7 +795,7 @@ class AmbientThread(RESTThread):
                  essentials={},
                  post_interval=None, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600,
+                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_certificate=3600,
                  softwaretype="weewx-%s" % weewx.__version__,
                  skip_upload=False):
 
@@ -802,6 +824,7 @@ class AmbientThread(RESTThread):
                                             max_tries=max_tries,
                                             retry_wait=retry_wait,
                                             retry_login=retry_login,
+                                            retry_certificate=retry_certificate,
                                             softwaretype=softwaretype,
                                             skip_upload=skip_upload)
         self.station = station
@@ -811,37 +834,63 @@ class AmbientThread(RESTThread):
         if to_bool(post_indoor_observations):
             self.formats.update(AmbientThread._INDOOR_FORMATS)
 
-    # Types and formats of the data to be published:
-    _FORMATS = {'dateTime'   : 'dateutc=%s',
-                'barometer'  : 'baromin=%.3f',
-                'outTemp'    : 'tempf=%.1f',
-                'outHumidity': 'humidity=%03.0f',
-                'windSpeed'  : 'windspeedmph=%03.1f',
-                'windDir'    : 'winddir=%03.0f',
-                'windGust'   : 'windgustmph=%03.1f',
-                'dewpoint'   : 'dewptf=%.1f',
-                'hourRain'   : 'rainin=%.2f',
-                'dayRain'    : 'dailyrainin=%.2f',
-                'radiation'  : 'solarradiation=%.2f',
-                'UV'         : 'UV=%.2f',
-                # The following four formats have been commented out until the WU
-                # fixes the bug that causes them to be displayed as soil moisture.
-#                 'extraTemp1' : "temp2f=%.1f",
-#                 'extraTemp2' : "temp3f=%.1f",
-#                 'extraTemp3' : "temp4f=%.1f",
-#                 'extraTemp4' : "temp5f=%.1f",
-                'soilTemp1'  : "soiltempf=%.1f",
-                'soilTemp2'  : "soiltemp2f=%.1f",
-                'soilTemp3'  : "soiltemp3f=%.1f",
-                'soilTemp4'  : "soiltemp4f=%.1f",
-                'soilMoist1' : "soilmoisture=%03.0f",
-                'soilMoist2' : "soilmoisture2=%03.0f",
-                'soilMoist3' : "soilmoisture3=%03.0f",
-                'soilMoist4' : "soilmoisture4=%03.0f",
-                'leafWet1'   : "leafwetness=%03.0f",
-                'leafWet2'   : "leafwetness2=%03.0f",
-                'realtime'   : 'realtime=%d',
-                'rtfreq'     : 'rtfreq=%.1f'}
+    # Types and formats of the data to be published. See https://bit.ly/2TVl4t3
+    # for definitions.
+    # TODO: What is a reasonable formatting for the Aq numbers?
+    _FORMATS = {
+        'AqNO': 'AqNO=%f',
+        'AqNO2T': 'AqNO2T=%f',
+        'AqNO2': 'AqNO2=%f',
+        'AqNO2Y': 'AqNO2Y=%f',
+        'AqNOX': 'AqNOX=%f',
+        'AqNOY': 'AqNOY=%f',
+        'AqNO3': 'AqNO3=%f',
+        'AqSO4': 'AqSO4=%f',
+        'AqSO2': 'AqSO2=%f',
+        'AqSO2T': 'AqSO2T=%f',
+        'AqCO': 'AqCO=%f',
+        'AqCOT': 'AqCOT=%f',
+        'AqEC': 'AqEC=%f',
+        'AqOC': 'AqOC=%f',
+        'AqBC': 'AqBC=%f',
+        'AqUV': 'AqUV-AETH=%f',
+        'AqPM2_5': 'AqPM2.5=%.1f',
+        'AqPM10': 'AqPM10=%.1f',
+        'AqOZONE': 'AqOZONE=%f',
+        'barometer': 'baromin=%.3f',
+        'dateTime': 'dateutc=%s',
+        'dayRain': 'dailyrainin=%.2f',
+        'dewpoint': 'dewptf=%.1f',
+        'hourRain': 'rainin=%.2f',
+        'leafWet1': "leafwetness=%03.0f",
+        'leafWet2': "leafwetness2=%03.0f",
+        'outHumidity': 'humidity=%03.0f',
+        'outTemp': 'tempf=%.1f',
+        'radiation': 'solarradiation=%.2f',
+        'realtime': 'realtime=%d',
+        'rtfreq': 'rtfreq=%.1f',
+        'soilMoist1': "soilmoisture=%03.0f",
+        'soilMoist2': "soilmoisture2=%03.0f",
+        'soilMoist3': "soilmoisture3=%03.0f",
+        'soilMoist4': "soilmoisture4=%03.0f",
+        'soilTemp1': "soiltempf=%.1f",
+        'soilTemp2': "soiltemp2f=%.1f",
+        'soilTemp3': "soiltemp3f=%.1f",
+        'soilTemp4': "soiltemp4f=%.1f",
+        'UV': 'UV=%.2f',
+        'windDir': 'winddir=%03.0f',
+        'windGust': 'windgustmph=%03.1f',
+        'windGust10': 'windgustmph_10m=%03.1f',
+        'windGustDir10': 'windgustdir_10m=%03.0f',
+        'windSpeed': 'windspeedmph=%03.1f',
+        'windSpeed2': 'windspdmph_avg2m=%03.1f',
+        # The following four formats have been commented out until the WU
+        # fixes the bug that causes them to be displayed as soil moisture.
+        # 'extraTemp1' : "temp2f=%.1f",
+        # 'extraTemp2' : "temp3f=%.1f",
+        # 'extraTemp3' : "temp4f=%.1f",
+        # 'extraTemp4' : "temp5f=%.1f",
+    }
 
     _INDOOR_FORMATS = {
         'inTemp'    : 'indoortempf=%.1f',
@@ -878,7 +927,7 @@ class AmbientThread(RESTThread):
         _url = "%s?%s" % (self.server_url, _urlquery)
         # show the url in the logs for debug, but mask any password
         if weewx.debug >= 2:
-            logdbg("Ambient: url: %s" % re.sub(r"PASSWORD=[^\&]*", "PASSWORD=XXX", _url))
+            log.debug("Ambient: url: %s", re.sub(r"PASSWORD=[^\&]*", "PASSWORD=XXX", _url))
         return _url
 
     def check_response(self, response):
@@ -991,7 +1040,7 @@ class WOWThread(AmbientThread):
         _url = "%s?%s" % (self.server_url, _urlquery)
         # show the url in the logs for debug, but mask any password
         if weewx.debug >= 2:
-            logdbg("WOW: url: %s" % re.sub(r"siteAuthenticationKey=[^\&]*", "siteAuthenticationKey=XXX", _url))
+            log.debug("WOW: url: %s", re.sub(r"siteAuthenticationKey=[^\&]*", "siteAuthenticationKey=XXX", _url))
         return _url
 
     def post_request(self, request, data=None):  # @UnusedVariable
@@ -1042,7 +1091,7 @@ class StdCWOP(StdRESTful):
             # It does not. 
             _cwop_dict.setdefault('passcode', '-1')
         elif 'passcode' not in _cwop_dict:
-            loginf("APRS station %s requires passcode" % _cwop_dict['station'])
+            log.info("APRS station %s requires passcode", _cwop_dict['station'])
             return
 
         # Get the database manager dictionary:
@@ -1058,7 +1107,7 @@ class StdCWOP(StdRESTful):
                                          **_cwop_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("CWOP: Data for station %s will be posted" % _cwop_dict['station'])
+        log.info("CWOP: Data for station %s will be posted", _cwop_dict['station'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -1164,14 +1213,14 @@ class CWOPThread(RESTThread):
         _wt_list = []
         for _obs_type in ['windDir', 'windSpeed', 'windGust', 'outTemp']:
             _v = record.get(_obs_type)
-            _wt_list.append("%03d" % _v if _v is not None else '...')
+            _wt_list.append("%03d" % int(_v + 0.5) if _v is not None else '...')
         _wt_str = "_%s/%sg%st%s" % tuple(_wt_list)
 
         # Rain
         _rain_list = []
         for _obs_type in ['hourRain', 'rain24', 'dayRain']:
             _v = record.get(_obs_type)
-            _rain_list.append("%03d" % (_v * 100.0) if _v is not None else '...')
+            _rain_list.append("%03d" % int(_v * 100.0 + 0.5) if _v is not None else '...')
         _rain_str = "r%sp%sP%s" % tuple(_rain_list)
 
         # Barometer:
@@ -1183,23 +1232,23 @@ class CWOPThread(RESTThread):
             # they want the barometer in millibars.
             _baro_vt = weewx.units.convert((_baro, 'inHg', 'group_pressure'),
                                            'mbar')
-            _baro_str = "b%05d" % (_baro_vt[0] * 10.0)
+            _baro_str = "b%05d" % int(_baro_vt[0] * 10.0 + 0.5)
 
         # Humidity:
         _humidity = record.get('outHumidity')
         if _humidity is None:
             _humid_str = "h.."
         else:
-            _humid_str = ("h%02d" % _humidity) if _humidity < 100.0 else "h00"
+            _humid_str = ("h%02d" % int(_humidity + 0.5) ) if _humidity < 99.5 else "h00"
 
         # Radiation:
         _radiation = record.get('radiation')
         if _radiation is None:
             _radiation_str = ""
-        elif _radiation < 1000.0:
-            _radiation_str = "L%03d" % _radiation
-        elif _radiation < 2000.0:
-            _radiation_str = "l%03d" % (_radiation - 1000)
+        elif _radiation < 999.5:
+            _radiation_str = "L%03d" % int(_radiation + 0.5)
+        elif _radiation < 1999.5:
+            _radiation_str = "l%03d" % int(_radiation - 1000 + 0.5)
         else:
             _radiation_str = ""
 
@@ -1212,7 +1261,7 @@ class CWOPThread(RESTThread):
 
         # show the packet in the logs for debug
         if weewx.debug >= 2:
-            logdbg('CWOP: packet: %s' % _tnc_packet)
+            log.debug('CWOP: packet: %s', _tnc_packet)
 
         return _tnc_packet
 
@@ -1226,7 +1275,7 @@ class CWOPThread(RESTThread):
                 _server, _port_str = _serv_addr_str.split(":")
                 _port = int(_port_str)
             except ValueError:
-                logalt("%s: Bad server address: '%s'; ignored" % (self.protocol_name, _serv_addr_str))
+                log.error("%s: Bad server address: '%s'; ignored" , self.protocol_name, _serv_addr_str)
                 continue
 
             # Try each combination up to max_tries times:
@@ -1234,7 +1283,7 @@ class CWOPThread(RESTThread):
                 try:
                     # Get a socket connection:
                     _sock = self._get_connect(_server, _port)
-                    logdbg("%s: Connected to server %s:%d" % (self.protocol_name, _server, _port))
+                    log.debug("%s: Connected to server %s:%d", self.protocol_name, _server, _port)
                     try:
                         # Send the login ...
                         self._send(_sock, login, dbg_msg='login')
@@ -1244,11 +1293,11 @@ class CWOPThread(RESTThread):
                     finally:
                         _sock.close()
                 except ConnectError as e:
-                    logdbg("%s: Attempt %d to %s:%d. Connection error: %s"
-                           % (self.protocol_name, _count + 1, _server, _port, e))
+                    log.debug("%s: Attempt %d to %s:%d. Connection error: %s",
+                              self.protocol_name, _count + 1, _server, _port, e)
                 except SendError as e:
-                    logdbg("%s: Attempt %d to %s:%d. Socket send error: %s"
-                           % (self.protocol_name, _count + 1, _server, _port, e))
+                    log.debug("%s: Attempt %d to %s:%d. Socket send error: %s",
+                              self.protocol_name, _count + 1, _server, _port, e)
 
         # If we get here, the loop terminated normally, meaning we failed
         # all tries
@@ -1288,8 +1337,8 @@ class CWOPThread(RESTThread):
                 _resp = sock.recv(1024).decode('ascii')
                 return _resp
             except IOError as e:
-                logdbg("%s: Exception %s (%s) when looking for response to %s packet"
-                       % (self.protocol_name, type(e), e, dbg_msg))
+                log.debug("%s: Exception %s (%s) when looking for response to %s packet",
+                          self.protocol_name, type(e), e, dbg_msg)
                 return
 
 
@@ -1332,14 +1381,14 @@ class StdStationRegistry(StdRESTful):
 
         # Should the service be run?
         if not to_bool(_registry_dict.pop('register_this_station', False)):
-            loginf("StationRegistry: Registration not requested.")
+            log.info("StationRegistry: Registration not requested.")
             return
 
         # Registry requires a valid station url
         _registry_dict.setdefault('station_url',
                                   self.engine.stn_info.station_url)
         if _registry_dict['station_url'] is None:
-            loginf("StationRegistry: Station will not be registered: no station_url specified.")
+            log.info("StationRegistry: Station will not be registered: no station_url specified.")
             return
 
         _registry_dict.setdefault('station_type', config_dict['Station'].get('station_type', 'Unknown'))
@@ -1353,7 +1402,7 @@ class StdStationRegistry(StdRESTful):
                                                     **_registry_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("StationRegistry: Station will be registered.")
+        log.info("StationRegistry: Station will be registered.")
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -1565,7 +1614,7 @@ class StdAWEKAS(StdRESTful):
         self.archive_thread = AWEKASThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("AWEKAS: Data will be uploaded for user %s" % site_dict['username'])
+        log.info("AWEKAS: Data will be uploaded for user %s", site_dict['username'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -1595,7 +1644,8 @@ class AWEKASThread(RESTThread):
                  language='de', server_url=_SERVER_URL,
                  post_interval=300, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, skip_upload=False):
+                 timeout=10, max_tries=3, retry_wait=5,
+                 retry_login=3600, retry_certificate=3600, skip_upload=False):
         """Initialize an instances of AWEKASThread.
 
         Parameters specific to this class:
@@ -1639,6 +1689,7 @@ class AWEKASThread(RESTThread):
                                            max_tries=max_tries,
                                            retry_wait=retry_wait,
                                            retry_login=retry_login,
+                                           retry_certificate=retry_certificate,
                                            skip_upload=skip_upload)
         self.username = username
         # Calculate and save the password hash
@@ -1662,7 +1713,7 @@ class AWEKASThread(RESTThread):
         # If we don't have a database, we can't do anything
         if dbmanager is None:
             if self.log_failure:
-                logdbg("AWEKAS: No database specified. Augmentation from database skipped.")
+                log.debug("AWEKAS: No database specified. Augmentation from database skipped.")
             return record
 
         # If the database does not have rainRate in its schema, an exception will be raised.
@@ -1721,7 +1772,7 @@ class AWEKASThread(RESTThread):
 
         if weewx.debug >= 2:
             # show the url in the logs for debug, but mask any credentials
-            logdbg('AWEKAS: url: %s' % url.replace(self.password_hash, 'XXX'))
+            log.debug('AWEKAS: url: %s', url.replace(self.password_hash, 'XXX'))
 
         return url
 
@@ -1757,14 +1808,14 @@ def get_site_dict(config_dict, service, *args):
         site_dict = accumulateLeaves(config_dict['StdRESTful'][service],
                                      max_level=1)
     except KeyError:
-        loginf("%s: No config info. Skipped." % service)
+        log.info("%s: No config info. Skipped.", service)
         return None
 
     # If site_dict has the key 'enable' and it is False, then
     # the service is not enabled.
     try:
         if not to_bool(site_dict['enable']):
-            loginf("%s: Posting not enabled." % service)
+            log.info("%s: Posting not enabled.", service)
             return None
     except KeyError:
         pass
@@ -1777,7 +1828,7 @@ def get_site_dict(config_dict, service, *args):
             if site_dict[option] == 'replace_me':
                 raise KeyError(option)
     except KeyError as e:
-        logdbg("%s: Data will not be posted: Missing option %s" % (service, e))
+        log.debug("%s: Data will not be posted: Missing option %s", service, e)
         return None
 
     # If the site dictionary does not have a log_success or log_failure, get

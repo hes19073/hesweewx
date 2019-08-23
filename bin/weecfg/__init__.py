@@ -23,6 +23,7 @@ import configobj
 
 import weeutil.weeutil
 import weeutil.config
+import weeutil.logger
 
 major_comment_block = ["", "##############################################################################", ""]
 
@@ -31,7 +32,7 @@ major_comment_block = ["", "####################################################
 unit_systems = {
     'us': {'group_altitude': 'foot',
            'group_degree_day': 'degree_F_day',
-           'group_distance' : 'mile',
+           'group_distance': 'mile',
            'group_pressure': 'inHg',
            'group_rain': 'inch',
            'group_rainrate': 'inch_per_hour',
@@ -41,7 +42,7 @@ unit_systems = {
 
     'metric': {'group_altitude': 'meter',
                'group_degree_day': 'degree_C_day',
-               'group_distance' : 'km',
+               'group_distance': 'km',
                'group_pressure': 'mbar',
                'group_rain': 'cm',
                'group_rainrate': 'cm_per_hour',
@@ -51,7 +52,7 @@ unit_systems = {
 
     'metricwx': {'group_altitude': 'meter',
                  'group_degree_day': 'degree_C_day',
-                 'group_distance' : 'km',
+                 'group_distance': 'km',
                  'group_pressure': 'mbar',
                  'group_rain': 'mm',
                  'group_rainrate': 'mm_per_hour',
@@ -147,7 +148,7 @@ def find_file(file_path=None, args=None, locations=DEFAULT_LOCATIONS,
 
 
 def read_config(config_path, args=None, locations=DEFAULT_LOCATIONS,
-                file_name='weewx.conf'):
+                file_name='weewx.conf', interpolation='ConfigParser'):
     """Read the specified configuration file, return an instance of ConfigObj
     with the file contents. If no file is specified, look in the standard
     locations for weewx.conf. Returns the filename of the actual configuration
@@ -169,7 +170,9 @@ def read_config(config_path, args=None, locations=DEFAULT_LOCATIONS,
     config_path = find_file(config_path, args,
                             locations=locations, file_name=file_name)
     # Now open it up and parse it.
-    config_dict = configobj.ConfigObj(config_path, file_error=True,
+    config_dict = configobj.ConfigObj(config_path,
+                                      interpolation=interpolation,
+                                      file_error=True,
                                       encoding='utf-8',
                                       default_encoding='utf-8')
     return config_path, config_dict
@@ -329,6 +332,8 @@ def update_config(config_dict):
 
     update_to_v39(config_dict)
 
+    update_to_v40(config_dict)
+
 
 def merge_config(config_dict, template_dict):
     """Merge the template (distribution) dictionary into the user's dictionary.
@@ -352,7 +357,7 @@ def update_to_v25(config_dict):
     """
     major, minor = get_version_info(config_dict)
 
-    if major > '2' or minor >= '05':
+    if major + minor >= '205':
         return
 
     try:
@@ -479,7 +484,8 @@ def update_to_v26(config_dict):
     """
 
     major, minor = get_version_info(config_dict)
-    if major > '2' or minor >= '06':
+
+    if major + minor >= '206':
         return
 
     try:
@@ -687,7 +693,7 @@ def update_to_v30(config_dict):
 
     major, minor = get_version_info(config_dict)
 
-    if major >= '3':
+    if major + minor >= '300':
         return
 
     old_database = None
@@ -819,7 +825,7 @@ def update_to_v32(config_dict):
 
     major, minor = get_version_info(config_dict)
 
-    if major > '3' or minor > '02':
+    if major + minor >= '302':
         return
 
     # For interpolation to work, it's critical that WEEWX_ROOT not end
@@ -938,7 +944,7 @@ def update_to_v36(config_dict):
 
     major, minor = get_version_info(config_dict)
 
-    if major > '3' or minor > '06':
+    if major + minor >= '306':
         return
 
     # Perform the following only if the dictionary has a StdWXCalculate section
@@ -988,7 +994,7 @@ def update_to_v39(config_dict):
 
     major, minor = get_version_info(config_dict)
 
-    if major > '3' or minor > '09':
+    if major + minor >= '309':
         return
 
     # Add top-level log_success and log_failure if missing
@@ -1070,6 +1076,97 @@ def update_to_v39(config_dict):
            ]
 
     config_dict['version'] = '3.9.0'
+
+
+def update_to_v40(config_dict):
+    """Update a configuration file to V4.0
+
+    - Add option loop_request for Vantage users.
+    - Fix problems with DegreeDays and Trend in weewx.conf
+    - Add new option growing_base
+    - Add new option WU api_key
+    """
+
+    major, minor = get_version_info(config_dict)
+
+    if major + minor >= '400':
+        return
+
+    if 'Vantage' in config_dict \
+        and 'loop_request' not in config_dict['Vantage']:
+        config_dict['Vantage']['loop_request'] = 1
+        config_dict['Vantage'].comments['loop_request'] = \
+            ['', 'The type of LOOP packet to request: 1 = LOOP1; 2 = LOOP2; 3 = both']
+        reorder_scalars(config_dict['Vantage'].scalars, 'loop_request', 'iss_id')
+
+    if 'StdReport' in config_dict \
+            and 'Defaults' in config_dict['StdReport'] \
+            and 'Units' in config_dict['StdReport']['Defaults']:
+
+        # Both the DegreeDays and Trend subsections accidentally ended up
+        # in the wrong section
+        for key in ['DegreeDays', 'Trend']:
+
+            # Proceed only if the key has not already been moved, and exists in the incorrect spot:
+            if key not in config_dict['StdReport']['Defaults']['Units'] \
+                    and 'Ordinates' in config_dict['StdReport']['Defaults']['Units'] \
+                    and key in config_dict['StdReport']['Defaults']['Units']['Ordinates']:
+                # Save the old comment
+                old_comment = config_dict['StdReport']['Defaults']['Units']['Ordinates'].comments[key]
+
+                # Shallow copy the sub-section
+                config_dict['StdReport']['Defaults']['Units'][key] = \
+                    config_dict['StdReport']['Defaults']['Units']['Ordinates'][key]
+                # Delete it in from its old location
+                del config_dict['StdReport']['Defaults']['Units']['Ordinates'][key]
+
+                # Unfortunately, ConfigObj can't fix these things when doing a shallow copy:
+                config_dict['StdReport']['Defaults']['Units'][key].depth = \
+                    config_dict['StdReport']['Defaults']['Units'].depth + 1
+                config_dict['StdReport']['Defaults']['Units'][key].parent = \
+                    config_dict['StdReport']['Defaults']['Units']
+                config_dict['StdReport']['Defaults']['Units'].comments[key] = old_comment
+
+    # Now add the option "growing_base" if it hasn't already been added:
+    if 'StdReport' in config_dict \
+            and 'Defaults' in config_dict['StdReport'] \
+            and 'Units' in config_dict['StdReport']['Defaults'] \
+            and 'DegreeDays' in config_dict['StdReport']['Defaults']['Units'] \
+            and 'growing_base' not in config_dict['StdReport']['Defaults']['Units']['DegreeDays']:
+        config_dict['StdReport']['Defaults']['Units']['DegreeDays']['growing_base'] = [50.0, 'degree_F']
+        config_dict['StdReport']['Defaults']['Units']['DegreeDays'].comments['growing_base'] = \
+            ["Base temperature for growing days, with unit:"]
+
+    # Add the WU API key if it hasn't already been added
+    if 'StdRESTful' in config_dict \
+            and 'Wunderground' in config_dict['StdRESTful'] \
+            and 'api_key' not in config_dict['StdRESTful']['Wunderground']:
+        config_dict['StdRESTful']['Wunderground']['api_key'] = 'replace_me'
+        config_dict['StdRESTful']['Wunderground'].comments['api_key'] = \
+            ["", "If you plan on using wunderfixer, set the following", "to your API key:"]
+
+    # This section will inject a [Logging] section. Leave it commented out for now,
+    # until we gain more experience with it.
+
+    # if 'Logging' not in config_dict:
+    #     logging_dict = configobj.ConfigObj(StringIO(weeutil.logger.LOGGING_STR), interpolation=False)
+    #
+    #     # Delete some not needed (and dangerous) entries
+    #     try:
+    #         del logging_dict['Logging']['version']
+    #         del logging_dict['Logging']['disable_existing_loggers']
+    #     except KeyError:
+    #         pass
+    #
+    #     config_dict.merge(logging_dict)
+    #
+    #     # Move the new section to just before [Engine]
+    #     reorder_sections(config_dict, 'Logging', 'Engine')
+    #     config_dict.comments['Logging'] = \
+    #         major_comment_block + \
+    #         ['#   This section customizes logging', '']
+
+    config_dict['version'] = '4.0.0'
 
 
 def update_units(config_dict, unit_system_name, logger=None, debug=False):
@@ -1661,6 +1758,7 @@ UnitDefaults = u"""[StdReport]
 
                 group_altitude     = foot                 # Options are 'foot' or 'meter'
                 group_degree_day   = degree_F_day         # Options are 'degree_F_day' or 'degree_C_day'
+                group_distance     = mile                 # Options are 'mile' or 'km'
                 group_pressure     = inHg                 # Options are 'inHg', 'mmHg', 'mbar', or 'hPa'
                 group_rain         = inch                 # Options are 'inch', 'cm', or 'mm'
                 group_rainrate     = inch_per_hour        # Options are 'inch_per_hour', 'cm_per_hour', or 'mm_per_hour'

@@ -12,6 +12,9 @@
    lasteis_day
   Der letzte Regen am dd.mm.YYYY HH:MM das war vor xx Tagen, xx Stunden, xx Minuten
 """
+from __future__ import absolute_import
+
+#import logging
 import datetime
 import time
 
@@ -19,6 +22,9 @@ from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
+
+#log = logging.getLogger(__name__)
+
 
 class MyXLastrain(SearchList):
 

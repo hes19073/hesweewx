@@ -5,31 +5,25 @@
 # Die Erde und ihre Beben
 # Wetter by DarkSky
 
+
+from __future__ import absolute_import
+
 import datetime
+import logging
 import time
 import calendar
 import json
 import os
-import syslog
 
 import weewx
 import weecfg
+import weeutil.logger
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'Forecast DarkSky Extension: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
+log = logging.getLogger(__name__)
 
 def deg2dir(value):
         # map a decimal degree to a compass direction
@@ -61,7 +55,7 @@ def deg2dir(value):
 # Print version in syslog
 VERSION = "1.2.1"
 
-loginf("version %s" % VERSION)
+log.info("DS version %s", VERSION)
 
 class getForecast(SearchList):
     def __init__(self, generator):
@@ -110,7 +104,7 @@ class getForecast(SearchList):
             import urllib.request, urllib.error, urllib.parse
             urllib.request.urlretrieve(forecast_url, forecast_file)
 
-            loginf("New DarkSky Forecast data downloaded to %s" % forecast_file)
+            log.info("New DarkSky Forecast data downloaded to %s", forecast_file)
 
         with open(forecast_file, encoding="utf8") as read_file:
             data = json.loads(read_file.read())

@@ -1202,6 +1202,7 @@ import weewx.wxformulas
 import weeutil.weeutil
 
 from weewx.units import obs_group_dict
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 DRIVER_NAME = 'KlimaLogg'
 DRIVER_VERSION = '1.4.0'
@@ -1347,22 +1348,17 @@ def logmsg(dst, msg):
 	syslog.syslog(dst, 'KlimaLogg: %s: %s' %
 				  (threading.currentThread().getName(), msg))
 
-
 def logdbg(msg):
 	logmsg(syslog.LOG_DEBUG, msg)
-
 
 def loginf(msg):
 	logmsg(syslog.LOG_INFO, msg)
 
-
 def logcrt(msg):
 	logmsg(syslog.LOG_CRIT, msg)
 
-
 def logerr(msg):
 	logmsg(syslog.LOG_ERR, msg)
-
 
 def logtee(msg):
 	loginf(msg)

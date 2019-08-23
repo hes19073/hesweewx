@@ -16,22 +16,11 @@ import datetime
 import math
 import os
 import shutil
-import syslog
 import time
-import traceback
 
 # Compatibility shims
 import six
-from six.moves import StringIO, input
-
-# For backwards compatibility:
-from weeutil import config
-search_up        = config.search_up
-accumulateLeaves = config.accumulateLeaves
-merge_config     = config.merge_config
-patch_config     = config.patch_config
-comment_scalar   = config.comment_scalar
-conditional_merge= config.conditional_merge
+from six.moves import input
 
 
 def convertToFloat(seq):
@@ -860,7 +849,7 @@ def genYearSpans(start_ts, stop_ts):
 
     if (_stop_dt.month, _stop_dt.day, _stop_dt.hour,
         _stop_dt.minute, _stop_dt.second) == (1, 1, 0, 0, 0):
-            _stop_year -= 1
+        _stop_year -= 1
 
     for year in range(_start_year, _stop_year + 1):
         yield TimeSpan(time.mktime((year, 1, 1, 0, 0, 0, 0, 0, -1)),
@@ -1102,15 +1091,6 @@ def latlon_string(ll, hemi, which, format_list=None):
         format_list = ["%02d", "%03d", "%05.2f"]
     return ((format_list[0] if which == 'lat' else format_list[1]) % (deg,), format_list[2] % (minutes,),
             hemi[0] if ll >= 0 else hemi[1])
-
-
-def log_traceback(prefix='', loglevel=syslog.LOG_INFO):
-    """Log the stack traceback into syslog."""
-    sfd = StringIO()
-    traceback.print_exc(file=sfd)
-    sfd.seek(0)
-    for line in sfd:
-        syslog.syslog(loglevel, prefix + line)
 
 
 def _get_object(module_class):
@@ -1376,12 +1356,14 @@ class ListOfDicts(dict):
 
 class KeyDict(dict):
     """A dictionary that returns the key for an unsuccessful lookup."""
+
     def __missing__(self, key):
         return key
 
 
 def to_sorted_string(rec):
-    return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=str.lower)])
+    import locale
+    return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=locale.strxfrm)])
 
 
 def y_or_n(msg, noprompt=False):
@@ -1427,6 +1409,7 @@ def deep_copy_path(path, dest_dir):
         shutil.copy(path, d)
         ncopy += 1
     return ncopy
+
 
 if __name__ == '__main__':
     import doctest

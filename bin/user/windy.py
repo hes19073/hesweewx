@@ -17,6 +17,11 @@ Minimal configuration
         station = STATION_IDENTIFIER
 """
 
+from __future__ import absolute_import
+
+import logging
+
+
 # deal with differences between python 2 and python 3
 try:
     from Queue import Queue
@@ -27,12 +32,10 @@ try:
     from urllib import urlencode
 except ImportError:
     from urllib.parse import urlencode
-    #from urllib.request import Request
 
 from distutils.version import StrictVersion
 import json
 import sys
-import syslog
 import time
 import requests
 
@@ -41,6 +44,9 @@ import weewx.restx
 import weewx.units
 from weeutil.weeutil import to_bool
 
+log = logging.getLogger(__name__)
+
+
 VERSION = "0.31"
 
 REQUIRED_WEEWX = "3.8.0"
@@ -48,25 +54,13 @@ if StrictVersion(weewx.__version__) < StrictVersion(REQUIRED_WEEWX):
     raise weewx.UnsupportedFeature("weewx %s or greater is required, found %s"
                                    % (REQUIRED_WEEWX, weewx.__version__))
 
-def logmsg(level, msg):
-    syslog.syslog(level, 'restx: Windy: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
 
 class Windy(weewx.restx.StdRESTbase):
     _DEFAULT_URL = 'https://stations.windy.com/pws/update'
 
     def __init__(self, engine, cfg_dict):
         super(Windy, self).__init__(engine, cfg_dict)
-        loginf("version is %s" % VERSION)
+        log.info("version is %s", VERSION)
         site_dict = weewx.restx.get_site_dict(cfg_dict, 'Windy',
                                               'api_key', 'station')
         if site_dict is None:
@@ -85,7 +79,7 @@ class Windy(weewx.restx.StdRESTbase):
 
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("Data will be uploaded to %s" % site_dict['server_url'])
+        log.info("Data will be uploaded to %s", site_dict['server_url'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -118,7 +112,7 @@ class WindyThread(weewx.restx.RESTThread):
         """Return an URL for doing a POST to windy"""
         url = '%s/%s' % (self.server_url, self.api_key)
         if weewx.debug >= 2:
-            logdbg("url: %s" % url)
+            log.debug("url: %s", url)
 
         #url = url + '?'
         #data = self.get_post_body(self)
@@ -156,7 +150,7 @@ class WindyThread(weewx.restx.RESTThread):
             'observations': [data]
         }
         if weewx.debug >= 2:
-            logdbg("JSON: %s" % body)
+            log.debug("JSON: %s", body)
 
         return json.dumps(body), 'application/json'
 

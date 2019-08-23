@@ -22,10 +22,11 @@ Minimal Configuration:
         station_id = WINDFINDER_STATION_ID
         password = WINDFINDER_PASSWORD
 """
+from __future__ import absolute_import
 
+import logging
 import re
 import sys
-import syslog
 import time
 
 # Python 2/3 compatiblity
@@ -41,25 +42,16 @@ except ImportError:
 import weewx
 import weewx.restx
 import weewx.units
-from weeutil.weeutil import to_bool, accumulateLeaves
+from weeutil.config import search_up, accumulateLeaves
+from weeutil.weeutil import to_bool
+
+log = logging.getLogger(__name__)
 
 VERSION = "0.9"
 
 if weewx.__version__ < "3":
     raise weewx.UnsupportedFeature("weewx 3 is required, found %s" %
                                    weewx.__version__)
-
-def logmsg(level, msg):
-    syslog.syslog(level, 'restx: WindFinder: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 def _mps_to_knot(v):
     from_t = (v, 'meter_per_second', 'group_speed')
@@ -74,14 +66,14 @@ class WindFinder(weewx.restx.StdRESTbase):
         password: WindFinder password
         """
         super(WindFinder, self).__init__(engine, config_dict)
-        loginf("service version is %s" % VERSION)
+        log.info("service version is %s", VERSION)
         try:
             site_dict = config_dict['StdRESTful']['WindFinder']
             site_dict = accumulateLeaves(site_dict, max_level=1)
             site_dict['station_id']
             site_dict['password']
         except KeyError as e:
-            logerr("Data will not be posted: Missing option %s" % e)
+            log.error("Data will not be posted: Missing option %s", e)
             return
         site_dict['manager_dict'] = weewx.manager.get_manager_dict(
             config_dict['DataBindings'], config_dict['Databases'], 'wx_binding')
@@ -90,7 +82,7 @@ class WindFinder(weewx.restx.StdRESTbase):
         self.archive_thread = WindFinderThread(self.archive_queue, **site_dict)
         self.archive_thread.start()
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
-        loginf("Data will be uploaded for %s" % site_dict['station_id'])
+        log.info("Data will be uploaded for %s", site_dict['station_id'])
 
     def new_archive_record(self, event):
         self.archive_queue.put(event.record)
@@ -184,5 +176,5 @@ class WindFinderThread(weewx.restx.RESTThread):
 
         url = self.server_url + '?' + urlencode(values)
         if weewx.debug >= 2:
-            logdbg('url: %s' % re.sub(r"key=[^\&]*", "key=XXX", url))
+            log.debug('url: %s', re.sub(r"key=[^\&]*", "key=XXX", url))
         return url

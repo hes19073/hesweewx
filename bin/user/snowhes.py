@@ -18,7 +18,7 @@ with something like this:
 the file 'snow' only 1.5
 
 [SnowDepth]
-    filename = /home/weewx/snow
+    filename = /home/weewx/archive/snow
 
 To use as a service:
 
@@ -27,27 +27,32 @@ To use as a service:
         data_services = user.snowhes.SnowDepth
 """
 from __future__ import absolute_import
+import logging
 
-import syslog
 import weewx
+import weeutil.logger
 
 from weewx.engine import StdService
 from weewx.units import ValueTuple, convertStd
+
+log = logging.getLogger(__name__)
+
+VERSION = "0.2"
 
 class SnowDepth(StdService):
     def __init__(self, engine, config_dict):
         super(SnowDepth, self).__init__(engine, config_dict)
         self._last_snow = 0.0
         d = config_dict.get('SnowDepth', {})
-        self.filename  = d.get('filename', '/home/weewx/snow')
-        syslog.syslog(syslog.LOG_INFO, "snowdepth: using %s" %  self.filename)
+        self.filename  = d.get('filename', '/home/weewx/archive/snow')
+        log.info("Snow using %s",  self.filename)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.newArchiveRecord)
 
     def newArchiveRecord(self, event):
         try:
             with open(self.filename) as f:
                 snow_val = f.read()
-            syslog.syslog(syslog.LOG_DEBUG, "snowdepth: found value of %s" % snow_val)
+            log.debug("Snowdepth found value of %s", snow_val)
             # Convert our value to a type ValueTuple. We know it is in cm and
             # let's use group_snow (could use group_length too)
             value_vt = ValueTuple(float(snow_val), 'cm', 'group_snow')
@@ -61,5 +66,4 @@ class SnowDepth(StdService):
             event.record['snowTotal'] = float(self._last_snow)
             event.record['snow'] = float(delta)
         except Exception as e:
-            syslog.syslog(syslog.LOG_ERR, "snowdepth: SYSLOG ERR cannot read value: %s" % e)
-
+            log.error("Snowdepth cannot read value: %s", e)

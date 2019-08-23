@@ -2,8 +2,11 @@
 # Copyright 2018 - Jonathan Koren <jonathan@jonathankoren.com>
 # License: GPL 3
 
+from __future__ import absolute_import
+
+import logging
+
 import sys
-import syslog
 import time
 
 import weeutil.weeutil
@@ -15,6 +18,8 @@ import weewx.cheetahgenerator
 
 from . import calculators
 from . import units
+
+log = logging.getLogger(__name__)
 
 schema = [
     ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
@@ -338,7 +343,7 @@ class AqiCarService(weewx.engine.StdService):
                     (record['aqi_' + pollutant], record['aqi_' + pollutant + '_category']) = \
                         self.aqi_standard.calculate_aqi(pollutant, required_unit, joined)
                 except ValueError as e:
-                    syslog.syslog(syslog.LOG_ERR, "AqiCarService: AQI calculation for %s failed: %s" % (pollutant, str(e)))
+                    log.error("AqiCarService: AQI calculation for %s failed: %s", pollutant, str(e))
                 except NotImplementedError as e:
                     pass
             else:
@@ -349,12 +354,12 @@ class AqiCarService(weewx.engine.StdService):
                 (record['aqi_composite'], record['aqi_composite_category']) = \
                     self.aqi_standard.calculate_composite_aqi(self.aqi_standard.get_pollutants(), joined)
             except ValueError as e:
-                syslog.syslog(syslog.LOG_ERR, "AqiCarService: AQI calculation for composite failed: %s" % (str(e)))
+                log.error("AqiCarService: AQI calculation for composite failed: %s", str(e))
 
         if len(record) > 4:
             self.aqi_dbm.addRecord(record)
         else:
-            syslog.syslog(syslog.LOG_ERR, "AqiCarService: not storing record for dateTime %d" % (now))
+            log.error("AqiCarService: not storing record for dateTime %d", now)
 
 class AqiCarSearchList(weewx.cheetahgenerator.SearchList):
     '''Class that implements the '$aqi' tag in cheetah templates'''
