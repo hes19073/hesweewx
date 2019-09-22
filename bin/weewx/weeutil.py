@@ -23,7 +23,15 @@ import six
 from six.moves import input
 
 # For backwards compatibility:
-from weeutil.config import accumulateLeaves, search_up
+from weeutil import config, log
+search_up        = config.search_up
+accumulateLeaves = config.accumulateLeaves
+merge_config     = config.merge_config
+patch_config     = config.patch_config
+comment_scalar   = config.comment_scalar
+conditional_merge= config.conditional_merge
+log_traceback    = log.log_traceback
+
 
 def convertToFloat(seq):
     """Convert a sequence with strings to floats, honoring 'Nones'"""
@@ -42,10 +50,10 @@ def option_as_list(option):
 
 def list_as_string(option):
     """Returns the argument as a string.
-    
+
     Useful for insuring that ConfigObj options are always returned
     as a string, despite the presence of a comma in the middle.
-    
+
     Example:
     >>> print(list_as_string('a string'))
     a string
@@ -62,11 +70,11 @@ def list_as_string(option):
 
 def stampgen(startstamp, stopstamp, interval):
     """Generator function yielding a sequence of timestamps, spaced interval apart.
-    
-    The sequence will fall on the same local time boundary as startstamp. 
+
+    The sequence will fall on the same local time boundary as startstamp.
 
     Example:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> startstamp = 1236560400
@@ -75,7 +83,7 @@ def stampgen(startstamp, stopstamp, interval):
     >>> stopstamp = 1236607200
     >>> print(timestamp_to_string(stopstamp))
     2009-03-09 07:00:00 PDT (1236607200)
-    
+
     >>> for stamp in stampgen(startstamp, stopstamp, 10800):
     ...     print(timestamp_to_string(stamp))
     2009-03-08 18:00:00 PDT (1236560400)
@@ -86,19 +94,19 @@ def stampgen(startstamp, stopstamp, interval):
 
     Note that DST started in the middle of the sequence and that therefore the
     actual time deltas between stamps is not necessarily 3 hours.
-    
+
     startstamp: The start of the sequence in unix epoch time.
-    
-    stopstamp: The end of the sequence in unix epoch time. 
-    
+
+    stopstamp: The end of the sequence in unix epoch time.
+
     interval: The time length of an interval in seconds.
-    
+
     yields a sequence of timestamps between startstamp and endstamp, inclusive.
     """
     dt = datetime.datetime.fromtimestamp(startstamp)
     stop_dt = datetime.datetime.fromtimestamp(stopstamp)
     if interval == 365.25 / 12 * 24 * 3600:
-        # Interval is a nominal month. This algorithm is 
+        # Interval is a nominal month. This algorithm is
         # necessary because not all months have the same length.
         while dt <= stop_dt:
             t_tuple = dt.timetuple()
@@ -131,21 +139,21 @@ def stampgen(startstamp, stopstamp, interval):
 
 def startOfInterval(time_ts, interval):
     """Find the start time of an interval.
-    
+
     This algorithm assumes the day is divided up into
     intervals of 'interval' length. Given a timestamp, it
     figures out which interval it lies in, returning the start
     time.
-    
+
     time_ts: A timestamp. The start of the interval containing this
     timestamp will be returned.
-    
+
     interval: An interval length in seconds.
-    
+
     Returns: A timestamp with the start of the interval.
 
     Examples:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> start_ts = time.mktime(time.strptime("2013-07-04 01:57:35", "%Y-%m-%d %H:%M:%S"))
@@ -212,7 +220,7 @@ def _ord_to_ts(_ord):
 # What follows is a bunch of "time span" routines. Generally, time spans
 # are used when start and stop times fall on calendar boundaries
 # such as days, months, years.  So, it makes sense to talk of "daySpans",
-# "weekSpans", etc. They are generally not used between two random times. 
+# "weekSpans", etc. They are generally not used between two random times.
 # ===============================================================================
 
 class TimeSpan(tuple):
@@ -238,7 +246,7 @@ class TimeSpan(tuple):
     def includesArchiveTime(self, timestamp):
         """
         Returns True if the span includes the time timestamp, otherwise False.
-        
+
         timestamp: The timestamp to be tested.
         """
         return self.start < timestamp <= self.stop
@@ -266,13 +274,13 @@ class TimeSpan(tuple):
 def intervalgen(start_ts, stop_ts, interval):
     """Generator function yielding a sequence of time spans whose boundaries
     are on constant local time.
-    
+
     Yields a sequence of TimeSpans. The start times of the timespans will
     be on the same local time boundary as the start of the sequence. See the
     example below.
-    
+
     Example:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> startstamp = 1236477600
@@ -281,7 +289,7 @@ def intervalgen(start_ts, stop_ts, interval):
     >>> stopstamp = 1236538800
     >>> print(timestamp_to_string(stopstamp))
     2009-03-08 12:00:00 PDT (1236538800)
-    
+
     >>> for span in intervalgen(startstamp, stopstamp, 10800):
     ...     print(span)
     [2009-03-07 18:00:00 PST (1236477600) -> 2009-03-07 21:00:00 PST (1236488400)]
@@ -293,7 +301,7 @@ def intervalgen(start_ts, stop_ts, interval):
 
     (Note how in this example the local time boundaries are constant, despite
     DST kicking in. The interval length is not constant.)
-    
+
     Another example, this one over the Fall DST boundary, and using 1 hour intervals:
 
     >>> startstamp = 1257051600
@@ -311,14 +319,14 @@ def intervalgen(start_ts, stop_ts, interval):
     [2009-11-01 02:00:00 PST (1257069600) -> 2009-11-01 03:00:00 PST (1257073200)]
     [2009-11-01 03:00:00 PST (1257073200) -> 2009-11-01 04:00:00 PST (1257076800)]
     [2009-11-01 04:00:00 PST (1257076800) -> 2009-11-01 05:00:00 PST (1257080400)]
-    
+
     start_ts: The start of the first interval in unix epoch time. In unix epoch time.
-    
+
     stop_ts: The end of the last interval will be equal to or less than this.
     In unix epoch time.
-    
+
     interval: The time length of an interval in seconds.
-    
+
     yields: A sequence of TimeSpans. Both the start and end of the timespan
     will be on the same time boundary as start_ts"""
 
@@ -326,7 +334,7 @@ def intervalgen(start_ts, stop_ts, interval):
     stop_dt = datetime.datetime.fromtimestamp(stop_ts)
 
     if interval == 365.25 / 12 * 24 * 3600:
-        # Interval is a nominal month. This algorithm is 
+        # Interval is a nominal month. This algorithm is
         # necessary because not all months have the same length.
         while dt1 < stop_dt:
             t_tuple = dt1.timetuple()
@@ -359,7 +367,7 @@ def intervalgen(start_ts, stop_ts, interval):
 
 def archiveHoursAgoSpan(time_ts, hours_ago=0, grace=1):
     """Returns a TimeSpan for x hours ago
-    
+
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
@@ -389,10 +397,8 @@ def archiveHoursAgoSpan(time_ts, hours_ago=0, grace=1):
 def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta=0, month_delta=0, year_delta=0):
     """ Returns a TimeSpan for the last xxx seconds where xxx equals
         time_delta sec + hour_delta hours + day_delta days + week_delta weeks + month_delta months + year_delta years
+        Note: For month_delta, 1 month = 30 days, For year_delta, 1 year = 365 days
 
-        NOTE: Use of month_delta and year_delta is deprecated.
-        See issue #436 (https://github.com/weewx/weewx/issues/436)
-    
     Example:
     >>> os.environ['TZ'] = 'Australia/Brisbane'
     >>> time.tzset()
@@ -413,7 +419,7 @@ def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta
     [2014-07-21 09:05:35 AEST (1405897535) -> 2015-07-21 09:05:35 AEST (1437433535)]
     >>> print(archiveSpanSpan(time_ts))
     [2015-07-21 09:05:34 AEST (1437433534) -> 2015-07-21 09:05:35 AEST (1437433535)]
-    
+
     Example over a DST boundary. Because Brisbane does not observe DST, we need to
     switch timezones.
     >>> os.environ['TZ'] = 'America/Los_Angeles'
@@ -424,7 +430,7 @@ def archiveSpanSpan(time_ts, time_delta=0, hour_delta=0, day_delta=0, week_delta
     >>> span = archiveSpanSpan(time_ts, day_delta=1)
     >>> print(span)
     [2016-03-12 10:00:00 PST (1457805600) -> 2016-03-13 10:00:00 PDT (1457888400)]
-    
+
     Note that there is not 24 hours of time over this span:
     >>> print((span.stop - span.start) / 3600.0)
     23.0
@@ -459,7 +465,7 @@ def isMidnight(time_ts):
     """Is the indicated time on a midnight boundary, local time?
     NB: This algorithm does not work in countries that switch to DST
     at midnight, such as Brazil.
-    
+
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
@@ -504,25 +510,25 @@ def isStartOfDay(time_ts):
 
 def archiveDaySpan(time_ts, grace=1, days_ago=0):
     """Returns a TimeSpan representing a day that includes a given time.
-    
+
     Midnight is considered to actually belong in the previous day if
     grace is greater than zero.
-    
-    time_ts: The day will include this timestamp. 
-    
+
+    time_ts: The day will include this timestamp.
+
     grace: This many seconds past midnight marks the start of the next
     day. Set to zero to have midnight be included in the
     following day.  [Optional. Default is 1 second.]
-    
+
     days_ago: Which day we want. 0=today, 1=yesterday, etc.
-    
-    returns: A TimeSpan object one day long. 
-    
+
+    returns: A TimeSpan object one day long.
+
     Example, which spans the end-of-year boundary
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> time_ts = time.mktime(time.strptime("2014-01-01 01:57:35", "%Y-%m-%d %H:%M:%S"))
-    
+
     As for today:
     >>> print(archiveDaySpan(time_ts))
     [2014-01-01 00:00:00 PST (1388563200) -> 2014-01-02 00:00:00 PST (1388649600)]
@@ -549,24 +555,24 @@ archiveDaysAgoSpan = archiveDaySpan
 
 def archiveWeekSpan(time_ts, startOfWeek=6, grace=1, weeks_ago=0):
     """Returns a TimeSpan representing a week that includes a given time.
-    
+
     The time at midnight at the end of the week is considered to
     actually belong in the previous week.
-    
-    time_ts: The week will include this timestamp. 
-    
+
+    time_ts: The week will include this timestamp.
+
     startOfWeek: The start of the week (0=Monday, 1=Tues, ..., 6 = Sun).
 
     grace: This many seconds past midnight marks the start of the next
     week. Set to zero to have midnight be included in the
     following week.  [Optional. Default is 1 second.]
-    
+
     weeks_ago: Which week we want. 0=this week, 1=last week, etc.
-    
+
     returns: A TimeSpan object one week long that contains time_ts. It will
     start at midnight of the day considered the start of the week, and be
     one week long.
-    
+
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
@@ -594,22 +600,22 @@ def archiveWeekSpan(time_ts, startOfWeek=6, grace=1, weeks_ago=0):
 
 def archiveMonthSpan(time_ts, grace=1, months_ago=0):
     """Returns a TimeSpan representing a month that includes a given time.
-    
+
     Midnight of the 1st of the month is considered to actually belong
     in the previous month.
-    
-    time_ts: The month will include this timestamp. 
-    
+
+    time_ts: The month will include this timestamp.
+
     grace: This many seconds past midnight marks the start of the next
     month. Set to zero to have midnight be included in the
     following month.  [Optional. Default is 1 second.]
-    
+
     months_ago: Which month we want. 0=this month, 1=last month, etc.
-    
+
     returns: A TimeSpan object one month long that contains time_ts.
     It will start at midnight of the start of the month, and end at midnight
     of the start of the next month.
-    
+
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
@@ -652,18 +658,18 @@ def archiveMonthSpan(time_ts, grace=1, months_ago=0):
 
 def archiveYearSpan(time_ts, grace=1, years_ago=0):
     """Returns a TimeSpan representing a year that includes a given time.
-    
+
     Midnight of the 1st of the January is considered to actually belong
     in the previous year.
-    
-    time_ts: The year will include this timestamp. 
-    
+
+    time_ts: The year will include this timestamp.
+
     grace: This many seconds past midnight marks the start of the next
     year. Set to zero to have midnight be included in the
     following year.  [Optional. Default is 1 second.]
-    
+
     years_ago: Which year we want. 0=this year, 1=last year, etc.
-    
+
     returns: A TimeSpan object one year long that contains time_ts. It will
     begin and end at midnight 1-Jan.
     """
@@ -677,18 +683,18 @@ def archiveYearSpan(time_ts, grace=1, years_ago=0):
 
 def archiveRainYearSpan(time_ts, sory_mon, grace=1):
     """Returns a TimeSpan representing a rain year that includes a given time.
-    
+
     Midnight of the 1st of the month starting the rain year is considered to
     actually belong in the previous rain year.
-    
-    time_ts: The rain year will include this timestamp. 
-    
+
+    time_ts: The rain year will include this timestamp.
+
     sory_mon: The month the rain year starts.
-    
+
     grace: This many seconds past midnight marks the start of the next
     rain year. Set to zero to have midnight be included in the
     following rain year.  [Optional. Default is 1 second.]
-    
+
     returns: A TimeSpan object one year long that contains time_ts. It will
     begin on the 1st of the month that starts the rain year.
     """
@@ -747,19 +753,19 @@ def genHourSpans(start_ts, stop_ts):
 
 def genDaySpans(start_ts, stop_ts):
     """Generator function that generates start/stop of days in an inclusive range.
-    
+
     Example:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> start_ts = 1204796460
     >>> stop_ts  = 1205265720
-    
+
     >>> print(timestamp_to_string(start_ts))
     2008-03-06 01:41:00 PST (1204796460)
     >>> print(timestamp_to_string(stop_ts))
     2008-03-11 13:02:00 PDT (1205265720)
-    
+
     >>> for span in genDaySpans(start_ts, stop_ts):
     ...   print(span)
     [2008-03-06 00:00:00 PST (1204790400) -> 2008-03-07 00:00:00 PST (1204876800)]
@@ -768,17 +774,17 @@ def genDaySpans(start_ts, stop_ts):
     [2008-03-09 00:00:00 PST (1205049600) -> 2008-03-10 00:00:00 PDT (1205132400)]
     [2008-03-10 00:00:00 PDT (1205132400) -> 2008-03-11 00:00:00 PDT (1205218800)]
     [2008-03-11 00:00:00 PDT (1205218800) -> 2008-03-12 00:00:00 PDT (1205305200)]
-    
+
     Note that a daylight savings time change happened 8 March 2009.
 
     start_ts: A time stamp somewhere in the first day.
-    
+
     stop_ts: A time stamp somewhere in the last day.
-    
+
     yields: Instance of TimeSpan, where the start is the time stamp
     of the start of the day, the stop is the time stamp of the start
     of the next day.
-    
+
     """
     _start_dt = datetime.datetime.fromtimestamp(start_ts)
     _stop_dt = datetime.datetime.fromtimestamp(stop_ts)
@@ -795,9 +801,9 @@ def genDaySpans(start_ts, stop_ts):
 def genMonthSpans(start_ts, stop_ts):
     """Generator function that generates start/stop of months in an
     inclusive range.
-    
+
     Example:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> start_ts = 1196705700
@@ -806,20 +812,20 @@ def genMonthSpans(start_ts, stop_ts):
     start time is 2007-12-03 10:15:00 PST (1196705700)
     >>> print("stop time is  %s" % timestamp_to_string(stop_ts))
     stop time is  2008-03-21 05:05:00 PDT (1206101100)
-    
+
     >>> for span in genMonthSpans(start_ts, stop_ts):
     ...   print(span)
     [2007-12-01 00:00:00 PST (1196496000) -> 2008-01-01 00:00:00 PST (1199174400)]
     [2008-01-01 00:00:00 PST (1199174400) -> 2008-02-01 00:00:00 PST (1201852800)]
     [2008-02-01 00:00:00 PST (1201852800) -> 2008-03-01 00:00:00 PST (1204358400)]
     [2008-03-01 00:00:00 PST (1204358400) -> 2008-04-01 00:00:00 PDT (1207033200)]
-    
+
     Note that a daylight savings time change happened 8 March 2009.
 
     start_ts: A time stamp somewhere in the first month.
-    
+
     stop_ts: A time stamp somewhere in the last month.
-    
+
     yields: Instance of TimeSpan, where the start is the time stamp
     of the start of the month, the stop is the time stamp of the start
     of the next month.
@@ -853,7 +859,7 @@ def genYearSpans(start_ts, stop_ts):
 
     if (_stop_dt.month, _stop_dt.day, _stop_dt.hour,
         _stop_dt.minute, _stop_dt.second) == (1, 1, 0, 0, 0):
-        _stop_year -= 1
+            _stop_year -= 1
 
     for year in range(_start_year, _stop_year + 1):
         yield TimeSpan(time.mktime((year, 1, 1, 0, 0, 0, 0, 0, -1)),
@@ -862,12 +868,12 @@ def genYearSpans(start_ts, stop_ts):
 
 def startOfDay(time_ts):
     """Calculate the unix epoch time for the start of a (local time) day.
-    
+
     time_ts: A timestamp somewhere in the day for which the start-of-day
     is desired.
-    
+
     returns: The timestamp for the start-of-day (00:00) in unix epoch time.
-    
+
     """
     _time_tt = time.localtime(time_ts)
     _bod_ts = time.mktime((_time_tt.tm_year,
@@ -879,13 +885,13 @@ def startOfDay(time_ts):
 
 def startOfGregorianDay(date_greg):
     """Given a Gregorian day, returns the start of the day in unix epoch time.
-    
+
     date_greg: A date as an ordinal Gregorian day.
-    
+
     returns: The local start of the day as a unix epoch time.
 
     Example:
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> date_greg = 735973  # 10-Jan-2016
@@ -900,11 +906,11 @@ def startOfGregorianDay(date_greg):
 
 def toGregorianDay(time_ts):
     """Return the Gregorian day a timestamp belongs to.
-    
+
     time_ts: A time in unix epoch time.
-    
+
     returns: The ordinal Gregorian day that contains that time
-    
+
     Example:
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
@@ -926,12 +932,12 @@ def toGregorianDay(time_ts):
 
 def startOfDayUTC(time_ts):
     """Calculate the unix epoch time for the start of a UTC day.
-    
+
     time_ts: A timestamp somewhere in the day for which the start-of-day
     is desired.
-    
+
     returns: The timestamp for the start-of-day (00:00) in unix epoch time.
-    
+
     """
     _time_tt = time.gmtime(time_ts)
     _bod_ts = calendar.timegm((_time_tt.tm_year,
@@ -943,16 +949,16 @@ def startOfDayUTC(time_ts):
 
 def startOfArchiveDay(time_ts, grace=1):
     """Given an archive time stamp, calculate its start of day.
-    
+
     similar to startOfDay(), except that an archive stamped at midnight
     actually belongs to the *previous* day.
 
     time_ts: A timestamp somewhere in the day for which the start-of-day
     is desired.
-    
+
     grace: The number of seconds past midnight when the following
     day is considered to start [Optional. Default is 1 second]
-    
+
     returns: The timestamp for the start-of-day (00:00) in unix epoch time."""
 
     return startOfDay(time_ts - grace)
@@ -1006,7 +1012,7 @@ def secs_to_string(secs):
 
 def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
     """Return a string formatted from the timestamp
-    
+
     Example:
 
     >>> os.environ['TZ'] = 'America/Los_Angeles'
@@ -1024,7 +1030,7 @@ def timestamp_to_string(ts, format_str="%Y-%m-%d %H:%M:%S %Z"):
 
 def timestamp_to_gmtime(ts):
     """Return a string formatted for GMT
-    
+
     >>> print(timestamp_to_gmtime(1196705700))
     2007-12-03 18:15:00 UTC (1196705700)
     >>> print(timestamp_to_gmtime(None))
@@ -1038,13 +1044,13 @@ def timestamp_to_gmtime(ts):
 
 def utc_to_ts(y, m, d, hrs_utc):
     """Converts from a UTC tuple-time to unix epoch time.
-    
+
     y,m,d: The year, month, day for which the conversion is desired.
-    
+
     hrs_tc: Floating point number with the number of hours since midnight in UTC.
-    
+
     Returns: The unix epoch time.
-    
+
     >>> print(utc_to_ts(2009, 3, 27, 14.5))
     1238164200
     """
@@ -1057,13 +1063,13 @@ def utc_to_ts(y, m, d, hrs_utc):
 
 def utc_to_local_tt(y, m, d, hrs_utc):
     """Converts from a UTC time to a local time.
-    
+
     y,m,d: The year, month, day for which the conversion is desired.
-    
+
     hrs_tc: Floating point number with the number of hours since midnight in UTC.
-    
+
     Returns: A timetuple with the local time.
-    
+
     >>> os.environ['TZ'] = 'America/Los_Angeles'
     >>> time.tzset()
     >>> tt=utc_to_local_tt(2009, 3, 27, 14.5)
@@ -1082,11 +1088,11 @@ def latlon_string(ll, hemi, which, format_list=None):
     ll: The decimal latitude or longitude
     hemi: A tuple holding strings representing positive or negative values. E.g.: ('N', 'S')
     which: 'lat' for latitude, 'long' for longitude
-    format_list: A list or tuple holding the format strings to be used. These are [whole degrees latitude, 
+    format_list: A list or tuple holding the format strings to be used. These are [whole degrees latitude,
                  whole degrees longitude, minutes]
-                 
+
     Returns:
-    A 3-way tuple holding (latlon whole degrees, latlon minutes, hemisphere designator). 
+    A 3-way tuple holding (latlon whole degrees, latlon minutes, hemisphere designator).
     Example: (022, 08.3, 'N') """
     labs = abs(ll)
     (frac, deg) = math.modf(labs)
@@ -1097,7 +1103,7 @@ def latlon_string(ll, hemi, which, format_list=None):
             hemi[0] if ll >= 0 else hemi[1])
 
 
-def get_object(module_class):
+def _get_object(module_class):
     """Given a string with a module class name, it imports and returns the class."""
     # Split the path into its parts
     parts = module_class.split('.')
@@ -1117,16 +1123,12 @@ def get_object(module_class):
     return mod
 
 
-# For backwards compatibility:
-_get_object = get_object
-
-
 class GenWithPeek(object):
     """Generator object which allows a peek at the next object to be returned.
-    
+
     Sometimes Python solves a complicated problem with such elegance! This is
     one of them.
-    
+
     Example of usage:
     >>> # Define a generator function:
     >>> def genfunc(N):
@@ -1153,7 +1155,7 @@ class GenWithPeek(object):
 
     def __init__(self, generator):
         """Initialize the generator object.
-        
+
         generator: A generator object to be wrapped
         """
         self.generator = generator
@@ -1187,7 +1189,7 @@ class GenWithPeek(object):
 
 def tobool(x):
     """Convert an object to boolean.
-    
+
     Examples:
     >>> print(tobool('TRUE'))
     True
@@ -1228,7 +1230,7 @@ to_bool = tobool
 
 def to_int(x):
     """Convert an object to an integer, unless it is None
-    
+
     Examples:
     >>> print(to_int(123))
     123
@@ -1250,7 +1252,7 @@ def to_int(x):
 
 def to_float(x):
     """Convert an object to a float, unless it is None
-    
+
     Examples:
     >>> print(to_float(12.3))
     12.3
@@ -1308,10 +1310,10 @@ def move_with_timestamp(filepath):
 
 class ListOfDicts(dict):
     """A list of dictionaries, that are searched in order.
-    
+
     It assumes only that any inserted dictionaries support a keyed
     lookup using the syntax obj[key].
-    
+
     Example:
 
     # Try an empty dictionary:
@@ -1364,14 +1366,12 @@ class ListOfDicts(dict):
 
 class KeyDict(dict):
     """A dictionary that returns the key for an unsuccessful lookup."""
-
     def __missing__(self, key):
         return key
 
 
 def to_sorted_string(rec):
-    import locale
-    return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=locale.strxfrm)])
+    return ", ".join(["%s: %s" % (k, rec.get(k)) for k in sorted(rec, key=str.lower)])
 
 
 def y_or_n(msg, noprompt=False):
@@ -1417,7 +1417,6 @@ def deep_copy_path(path, dest_dir):
         shutil.copy(path, d)
         ncopy += 1
     return ncopy
-
 
 if __name__ == '__main__':
     import doctest

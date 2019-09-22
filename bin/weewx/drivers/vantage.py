@@ -545,16 +545,21 @@ class Vantage(weewx.drivers.AbstractDevice):
         
         N: The number of packets to generate [default is 1]
         
-        yields: up to N loop packets (could be less in the event of a 
+        yields: up to N loop packets (could be less in the event of a
         read or CRC error).
         """
 
         log.debug("Requesting %d LOOP packets.", N)
-        
+
         self.port.wakeup_console(self.max_tries)
-        
-        # Request N packets of type "loop_request":
-        self.port.send_data(b"LPS %d %d\n" % (self.loop_request, N))
+
+        if self.loop_request == 1:
+            # If asking for old-fashioned LOOP1 data, send the older command in case the
+            # station does not support the LPS command:
+            self.port.send_data(b"LOOP %d\n" % N)
+        else:
+            # Request N packets of type "loop_request":
+            self.port.send_data(b"LPS %d %d\n" % (self.loop_request, N))
 
         for loop in range(N):
             # Fetch a packet...

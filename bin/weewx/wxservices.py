@@ -362,7 +362,7 @@ class WXCalculate(object):
                 data['dateTime'], self.atc)
 
     def calc_cloudbase(self, data, data_type):  # @UnusedVariable
-        if 'outTemp' in data and 'outHumidity' in data:        
+        if 'outTemp' in data and 'outHumidity' in data:
             data['cloudbase'] = weewx.wxformulas.cloudbase_US(
                 data['outTemp'], data['outHumidity'], self.altitude_ft)
 

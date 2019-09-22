@@ -809,6 +809,20 @@ class WdSuppArchive(weewx.engine.StdService):
         if 'yearET' in self.loop_packet:
             _data['yearET'] = self.loop_packet['yearET']
 
+        if 'forecastRule' in self.loop_packet:
+            _data['forecastRule'] = self.loop_packet['forecastRule']
+
+        if 'rain15' in self.loop_packet:
+            _data['rain15'] = self.loop_packet['rain15']
+
+        if 'rain24' in self.loop_packet:
+            _data['rain24'] = self.loop_packet['rain24']
+
+        if 'bar_reduction' in self.loop_packet:
+            _data['bar_reduction'] = self.loop_packet['bar_reduction']
+
+        if 'bar_offset' in self.loop_packet:
+            _data['bar_offset'] = self.loop_packet['bar_offset']
 
         return _data
 
@@ -948,6 +962,25 @@ class WdSuppArchive(weewx.engine.StdService):
             else:
                 self.loop_packet['yearET'] = None
 
+            if 'rain15' in event.packet:
+                self.loop_packet['rain15'] = event.packet['rain15']
+            else:
+                self.loop_packet['rain15'] = None
+
+            if 'rain24' in event.packet:
+                self.loop_packet['rain24'] = event.packet['rain25']
+            else:
+                self.loop_packet['rain24'] = None
+
+            if 'bar_reduction' in event.packet:
+                self.loop_packet['bar_reduction'] = event.packet['bar_reduction']
+            else:
+                self.loop_packet['bar_reduction'] = None
+
+            if 'bar_offset' in event.packet:
+                self.loop_packet['bar_offset'] = event.packet['bar_offset']
+            else:
+                self.loop_packet['bar_offset'] = None
 
         except:
             log.info("WdSuppArchive Loop packet data error. Cannot decode packet: %s", e)

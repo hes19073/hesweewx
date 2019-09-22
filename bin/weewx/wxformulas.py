@@ -269,7 +269,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     Example:
 
     >>> for t in range(0,24):
-    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471) 
+    ...    print "%.2f" % solar_rad_Bras(42, -72, 0, t*3600+1422936471)
     0.00
     0.00
     0.00
@@ -680,7 +680,7 @@ def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
 
     return Rnl
 
-    
+
 def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
                               ws_mps, wind_height_m, latitude_deg, longitude_deg, altitude_m,
                               timestamp):
@@ -717,7 +717,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mps=3.3, wind_height_m=2,
     ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8, timestamp=timestamp)
     ET0 = 0.63 mm/hr
-    
+
     Another example, this time for night
     >>> sr_mean_wpm2 = 0.0        # night time
     >>> timestamp = 1475294400    # 1-Oct-2016 at 04:00UTC (0300 local)
@@ -1245,7 +1245,7 @@ def da_US(t_F, p_inHg):
     return da_fo if da_fo is not None else None
 
 def thw_Metric(t_C, RH, ws_kph):
-    """ Uses the air temperature, relative humidity, and wind speed 
+    """ Uses the air temperature, relative humidity, and wind speed
     (THW = temperature-humidity-wind) to calculate a
     potentially more accurate "felt-air temperature." This is not as accurate, however, as the THSW index, which
     can only be calculated when solar radiation information is available. It uses `calculate_heat_index` and then

@@ -55,19 +55,19 @@ from __future__ import absolute_import
 from __future__ import print_function
 import math
 
-def FToC(value): 
+def FToC(value):
     return (value - 32.0) * (5.0 / 9.0)
 
-def CToF(value): 
+def CToF(value):
     return (9.0/5.0)*value + 32.0
 
-def CToK(value): 
+def CToK(value):
     return value + 273.15
 
-def KToC(value): 
+def KToC(value):
     return value - 273.15
 
-def FToR(value): 
+def FToR(value):
     return value + 459.67
 
 def RToF(value):
@@ -85,10 +85,10 @@ def FtToM(value):
 def MToFt(value):
     return value / 0.3048
 
-def InToMm(value): 
+def InToMm(value):
     return value * 25.4
 
-def MmToIn(value): 
+def MmToIn(value):
     return value / 25.4
 
 def MToKm(value): # NB: This is *miles* to Km.
@@ -119,7 +119,7 @@ class TWxUtils(object):
     standardSlpInHg = 29.921   # standard sea level pressure in inHg
     standardTempK = 288.15     # standard sea level temperature in Kelvin
     earthRadius45 = 6356.766   # radius of the earth at lat 45.5 degrees in km
-    
+
     # standard lapse rate (6.5C/1000m i.e. 6.5K/1000m)
     standardLapseRate = 0.0065
     # (0.0019812) standard lapse rate per foot (1.98C/1000ft)
@@ -183,10 +183,10 @@ class TWxUtils(object):
             raise ValueError("Unknown StationToAltimeter algorithm '%s'" %
                              algorithm)
         return Result
-  
+
     @staticmethod
     def StationToSeaLevelPressure(pressureHPa, elevationM,
-                                  currentTempC, meanTempC, humidity, 
+                                  currentTempC, meanTempC, humidity,
                                   algorithm = 'paManBar'):
         Result = pressureHPa * TWxUtils.PressureReductionRatio(pressureHPa,
                                                                elevationM,
@@ -214,7 +214,7 @@ class TWxUtils(object):
 
     @staticmethod
     def SeaLevelToStationPressure(pressureHPa, elevationM,
-                                  currentTempC, meanTempC, humidity, 
+                                  currentTempC, meanTempC, humidity,
                                   algorithm = 'paManBar'):
         Result = pressureHPa / TWxUtils.PressureReductionRatio(pressureHPa,
                                                                elevationM,
@@ -266,7 +266,7 @@ class TWxUtils(object):
     @staticmethod
     def SaturationVaporPressure(tempC, algorithm='vaBolton'):
         # comparison of vapor pressure algorithms
-        # http://cires.colorado.edu/~voemel/vp.html   
+        # http://cires.colorado.edu/~voemel/vp.html
         # (for DavisVP) http://www.exploratorium.edu/weather/dewpoint.html
         if algorithm == 'vaDavisVp':
             # Davis Calculations Doc
@@ -348,7 +348,7 @@ class TWxUtilsUS(object):
         return Result
 
     @staticmethod
-    def StationToAltimeter(pressureIn, elevationFt, 
+    def StationToAltimeter(pressureIn, elevationFt,
                            algorithm='aaMADIS'):
         """Example:
         >>> p = TWxUtilsUS.StationToAltimeter(24.692, 5431, 'aaASOS')
@@ -461,7 +461,7 @@ class uWxUtilsVP(object):
 
     The sensor pressure can then be used to calcuate altimeter setting using
     other functions in the uWxUtils and uWxUtilsUS units.
-    
+
     notes about input parameters:
       currentTemp -   current instantaneous station temperature
       temp12HrsAgoF - temperature from 12 hours ago. If the 12 hour temp is
@@ -523,7 +523,7 @@ class uWxUtilsVP(object):
 
 
 if __name__ == "__main__":
-    
+
     import doctest
 
     if not doctest.testmod().failed:

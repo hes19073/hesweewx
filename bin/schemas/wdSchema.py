@@ -64,6 +64,9 @@ weewxwd_schema = [
     ('dayET',        'REAL'),
     ('monthET',      'REAL'),
     ('yearET',       'REAL'),
+    ('stormRain',    'REAL'),
+    ('stormStart',   'INTEGER'),
+    ('forecastRule', 'REAL'),
     ]
 
 # Define schema for supp table
@@ -90,6 +93,9 @@ wdsupp_schema = [
     ('pop',                 'REAL'),
     ('vantageForecastNumber', 'REAL'),
     ('windSpeed10',           'REAL'),
+    ('rain15',                'REAL'),
+    ('hourRain',              'REAL'),
+    ('rain24',                'REAL'),
     ('dayRain',               'REAL'),
     ('monthRain',             'REAL'),
     ('yearRain',              'REAL'),

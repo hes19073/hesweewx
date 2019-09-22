@@ -484,13 +484,13 @@ class StdArchive(StdService):
                 self.archive_interval = software_interval
                 ival_msg = "(specified in weewx configuration)"
         else:
-            log.critical("Unknown type of record generation: %s", self.record_generation)
+            log.error("Unknown type of record generation: %s", self.record_generation)
             raise ValueError(self.record_generation)
 
         log.info("Using archive interval of %d seconds %s", self.archive_interval, ival_msg)
 
         if self.archive_delay <= 0:
-            raise weewx.ViolatedPrecondition("Archive delay (%.1f) must be greater than zero." % 
+            raise weewx.ViolatedPrecondition("Archive delay (%.1f) must be greater than zero." %
                                              (self.archive_delay,))
         if self.archive_delay >= self.archive_interval / 2:
             log.warning("Archive delay (%d) is unusually long", self.archive_delay)
@@ -949,8 +949,8 @@ def main(options, args, engine_class=StdEngine):
         except Terminate:
             log.info("Terminating weewx version %s", weewx.__version__)
             weeutil.logger.log_traceback(log.info, "    ****  ")
-            # Reraise the exception (this should cause the program to exit)
-            raise
+            signal.signal(signal.SIGTERM, signal.SIG_DFL)
+            os.kill(0, signal.SIGTERM)
 
         # Catch any keyboard interrupts and log them
         except KeyboardInterrupt:

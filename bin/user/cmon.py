@@ -836,7 +836,7 @@ if __name__ == "__main__":
         if schema_name is None:
             s = schema
         elif isinstance(schema_name, str):
-            s = weeutil.weeutil._get_object(schema_name)
+            s = weeutil.weeutil.get_object(schema_name)
         else:
             s = mgr_dict['schema']
         if 'interval' in s:

@@ -30,15 +30,15 @@ class WXDaySummaryManager(weewx.manager.DaySummaryManager):
       "min REAL, mintime INTEGER, max REAL, maxtime INTEGER, sum REAL, count INTEGER, "\
       "wsum REAL, sumtime INTEGER, "\
       "max_dir REAL, xsum REAL, ysum REAL, dirsumtime INTEGER, squaresum REAL, wsquaresum REAL);"
-                             
+
     def _initialize_day_tables(self, archiveSchema, cursor):
         """Specializing version that adds schema for wind data."""
         # First initialize my superclass:
         weewx.manager.DaySummaryManager._initialize_day_tables(self, archiveSchema, cursor)
-        
+
         # Now initialize the WX specific tables
         cursor.execute(WXDaySummaryManager.wx_sql_create_str % self.table_name)
-        
+
     def getAggregate(self, timespan, obs_type, aggregateType, **option_dict):
         """Specialized version of getDayAggregate that can calculate heating or cooling degree days.
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
-#    Anpassung by Hartmut Schweidler
+#
 
 """Data structures and functions for dealing with units."""
 
@@ -92,6 +92,8 @@ obs_group_dict = ListOfDicts({
     "cloudbase"          : "group_altitude",
     "AqPM2_5"            : "group_concentration",
     "AqPM10"             : "group_concentration",
+    "pm_10"              : "group_concentration",
+    "pm_25"              : "group_concentration",
     "leafWet1"           : "group_count",
     "leafWet2"           : "group_count",
     "homedeg"            : "group_degree_day",
@@ -101,12 +103,15 @@ obs_group_dict = ListOfDicts({
     "GDD4"               : "group_degree_day",
     "GDD6"               : "group_degree_day",
     "GDD10"              : "group_degree_day",
+    "wdd_deg"            : "group_degree_day",
     "gustdir"            : "group_direction",
     "vecdir"             : "group_direction",
     "windDir"            : "group_direction",
     "windGustDir"        : "group_direction",
     "windGustDir10"      : "group_direction",
     "windrun"            : "group_distance",
+    "distance"           : "group_distance",
+    "visibility_km"      : "group_distance",
     "interval"           : "group_interval",
     "soilMoist1"         : "group_moisture",
     "soilMoist2"         : "group_moisture",
@@ -132,13 +137,14 @@ obs_group_dict = ListOfDicts({
     "radiation"          : "group_radiation",
     "ET"                 : "group_rain",
     "dayET"              : "group_rain",
+    "monthET"            : "group_rain",
+    "yearET"             : "group_rain",
     "dayRain"            : "group_rain",
+    "rain_ET"            : "group_rain",
     "hail"               : "group_rain",
     "hourRain"           : "group_rain",
     "monthRain"          : "group_rain",
     "rain"               : "group_rain",
-    "snow"               : "group_snow",
-    "snowTotal"          : "group_snow",
     "rain24"             : "group_rain",
     "rain15"             : "group_rain",
     "totalRain"          : "group_rain",
@@ -146,6 +152,8 @@ obs_group_dict = ListOfDicts({
     "yearRain"           : "group_rain",
     "hailRate"           : "group_rainrate",
     "rainRate"           : "group_rainrate",
+    "snow"               : "group_snow",
+    "snowTotal"          : "group_snow",
     "snowRate"           : "group_snowrate",
     "wind"               : "group_speed",
     "windGust"           : "group_speed",
@@ -227,8 +235,6 @@ obs_group_dict = ListOfDicts({
     "dateTime"           : "group_time",
     "green_day"          : "group_time",
     "stormStart"         : "group_time",
-    "leafWet1"           : "group_count",
-    "leafWet2"           : "group_count",
     "cbIndex"            : "group_count",
     "forecastIcon"       : "group_count",
     "currentIcon"        : "group_count",
@@ -249,10 +255,6 @@ obs_group_dict = ListOfDicts({
     "powerG"             : "group_power",
     "energyR"            : "group_energy",
     "energyG"            : "group_energy",
-    "cloudbase"          : "group_altitude",
-    "windrun"            : "group_distance",
-    "distance"           : "group_distance",
-    "visibility_km"      : "group_distance",
     "lighting"           : "group_lux",
     "light_sensor"       : "group_lux",
     "sunshineS"          : "group_elapsed",
@@ -268,8 +270,6 @@ obs_group_dict = ListOfDicts({
     "absolutF"           : "group_gram",
     "AVP"                : "group_gram",
     "AVPin"              : "group_gram",
-    "pm_10"              : "group_concentration",
-    "pm_25"              : "group_concentration",
     "air_sensor"         : "group_ppm",
     "gas_sensor"         : "group_ppm",
     "hcho_sensor"        : "group_ppm",
@@ -347,22 +347,19 @@ USUnits = ListOfDicts({
     "group_anzahl"      : "anzahl",
     "group_volt"        : "volt",
     "group_amp"         : "amp",
-    "group_power"       : "watt",
     "group_energy"      : "watt_hour",
     "group_volume"      : "gallon",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
     "group_datanet"     : "megabyte",
     "group_datamem"     : "megabyte",
-    "group_distance"    : "mile",
     "group_ppm"         : "ppm",
     "group_druck2"      : "N_per_meter_squared",
     "group_druck3"      : "kg_per_meter_qubic",
     "group_gram"        : "g_per_meter_qubic",
     "group_radio"       : "nSv_per_hour",
     "group_resistance"  : "ohm",
-    "group_cpm"         : "cpm",
-    "group_length"      : "inch"
+    "group_cpm"         : "cpm"
 })
 
 # This dictionary maps unit groups to a standard unit type in the
@@ -400,22 +397,19 @@ MetricUnits = ListOfDicts({
     "group_anzahl"      : "anzahl",
     "group_volt"        : "volt",
     "group_amp"         : "amp",
-    "group_power"       : "watt",
     "group_energy"      : "watt_hour",
     "group_volume"      : "litre",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
     "group_datanet"     : "megabyte",
     "group_datamem"     : "megabyte",
-    "group_distance"    : "km",
     "group_ppm"         : "ppm",
     "group_druck2"      : "N_per_meter_squared",
     "group_druck3"      : "kg_per_meter_qubic",
     "group_gram"        : "g_per_meter_qubic",
     "group_radio"       : "nSv_per_hour",
     "group_resistance"  : "ohm",
-    "group_cpm"         : "cpm",
-    "group_length"      : "cm"
+    "group_cpm"         : "cpm"
 })
 
 # This dictionary maps unit groups to a standard unit type in the
@@ -581,7 +575,7 @@ default_unit_format_dict = {
     "meter"              : "%.0f",
     "meter_per_second"   : "%.0f",
     "meter_per_second2"  : "%.1f",
-    "microgram_per_meter_cubed": "%.3f",
+    "microgram_per_meter_cubed": "%.2f",
     "mile"               : "%.1f",
     "mile_per_hour"      : "%.0f",
     "mile_per_hour2"     : "%.1f",

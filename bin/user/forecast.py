@@ -791,8 +791,8 @@ schema = [('method',     'VARCHAR(10) NOT NULL'),
           ('windChar',   'VARCHAR(2)'),  # GN,LT,BZ,WY,VW,SD,HF
           ('clouds',     'VARCHAR(2)'),  # CL,FW,SC,BK,OV,B1,B2
           ('pop',        'REAL'),        # percent
-          ('qpf',        'VARCHAR(8)'),  # range or value (inch)
-          ('qsf',        'VARCHAR(5)'),  # range or value (inch)
+          ('qpf',        'VARCHAR(12)'),  # range or value (inch)
+          ('qsf',        'VARCHAR(12)'),  # range or value (inch)
           ('rain',       'VARCHAR(2)'),  # S,C,L,O,D
           ('rainshwrs',  'VARCHAR(2)'),  # S,C,L,O,D
           ('tstms',      'VARCHAR(2)'),  # S,C,L,O,D
@@ -3308,13 +3308,15 @@ class OWMForecast(Forecast):
                     OWMForecast.KEY) * 2.236936
                 r['windDir'] = Forecast.deg2dir(period['wind']['deg'])
                 if 'rain' in period and '3h' in period['rain']:
-                    r['qpf'] = Forecast.str2float(
+                    rain3 = Forecast.str2float(
                         'rain.3h', period['rain']['3h'],
                         OWMForecast.KEY) / 25.4
+                    r['qpf'] = "{:05.3f}".format(rain3)
                 if 'snow' in period and '3h' in period['snow']:
-                    r['qsf'] = Forecast.str2float(
+                    snow3 = Forecast.str2float(
                         'snow.3h', period['snow']['3h'],
                         OWMForecast.KEY) / 25.4
+                    r['qsf'] = "{:05.3f}".format(snow3)
                 if 'main' in period and 'description' in period['main']:
                     r['desc'] = period['main']['description']
                 # FIXME pressure
@@ -5504,7 +5506,7 @@ class ForecastPlotGenerator(weewx.reportengine.ReportGenerator):
                 'SQLITE_ROOT': '/var/tmp'}}
 
         log.debug('run the image generator')
-        g = weeutil.weeutil._get_object('weewx.imagegenerator.ImageGenerator')(
+        g = weeutil.weeutil.get_object('weewx.imagegenerator.ImageGenerator')(
             cfg_dict, img_dict, max_ts, self.first_run, self.stn_info)
         g.run()
 
