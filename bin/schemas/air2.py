@@ -16,3 +16,12 @@ schema = [
     ('baroOut',  'REAL'),
     ]
 
+# Schema to be used for the daily summaries. The default is to include all the observation types in the table as
+# 'scalar' types, plus one for 'wind' as a vector type.
+day_summaries = [(e[0], 'scalar') for e in table if e[0] not in ('dateTime', 'usUnits', 'interval')]\
+                + [('wind', 'vector')]
+
+schema = {
+    'table': table,
+    'day_summaries' : day_summaries
+}

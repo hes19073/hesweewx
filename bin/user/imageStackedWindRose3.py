@@ -12,8 +12,8 @@
 ## Version: 1.0.0                                    Date: 10 January 2015
 ##
 ## Revision History
-##  10 January 2015  v1.0.0     -Rewritten for Weewx v3.0.0
-##  1 May 2014       v0.9.3     -Fixed issue that arose with Weewx 2.6.3 now
+##  10 January 2015  v1.0.0     -Rewritten for Weewx v3.0.0  
+##  1 May 2014       v0.9.3     -Fixed issue that arose with Weewx 2.6.3 now 
 ##                               allowing use of UTF-8 characters in plots
 ##                              -Fixed logic error in code that calculates size
 ##                               of windrose 'petals'
@@ -55,14 +55,14 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
 
     def run(self):
         self.setup()
-
+        
         # Generate any images
         self.genImages(self.gen_ts)
-
+        
     def setup(self):
         # Get our binding to use
         self.data_binding = self.config_dict['StdArchive'].get('data_binding', 'wx_binding')
-
+        
         self.image_dict = self.skin_dict['ImageStackedWindRoseGenerator']
         self.title_dict = self.skin_dict['Labels']['Generic']
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
@@ -113,12 +113,12 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
         # on the stacked bar in the legend. 7 elements only (ie 0, 10% of max,
         # 20% of max...100% of max)
         self.speedFactor = [0.0,0.1,0.2,0.3,0.5,0.7,1.0]
-
+        
     def genImages(self, gen_ts):
         """Generate the images.
-
+        
         The time period chosen is from gen_ts going back skin.conf 'time_length' seconds.
-
+    
         gen_ts: The time stamp of the end of the plot period. If not set defaults to the time of the last record
         in the archive database.
         """
@@ -165,11 +165,11 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                 # Loop over each line to be added to the plot.
                 for line_name in self.image_dict[timespan][plotname].sections:
 
-                    # Accumulate options from parent nodes.
+                    # Accumulate options from parent nodes. 
                     line_options = weeutil.config.accumulateLeaves(self.image_dict[timespan][plotname][line_name])
-
+                    
                     # See if a plot title has been explicitly requested.
-                    # 'label' used for consistency in skin.conf with
+                    # 'label' used for consistency in skin.conf with 
                     # ImageGenerator sections
                     label = line_options.get('label')
                     if label:
@@ -299,7 +299,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
                                     # Set min count so far to this bin
                                     labelCount = sum(windBin[i])
                                     # Set labelDir to this direction
-                                    labelDir = i
+                                    labelDir = i 
                     self.labelDir = labelDir
                     #Get our image object to hold our windrose plot
                     image = WindRoseImageSetup(self)
@@ -376,7 +376,7 @@ class ImageStackedWindRoseGenerator(weewx.reportengine.ReportGenerator):
 
 def WindRoseImageSetup(self):
     """Create image object for us to draw on.
-
+        
     image: Image object to be returned for us to draw on.
     """
 
@@ -388,7 +388,7 @@ def WindRoseImageSetup(self):
 
 def WindRosePlotSetup(self, draw):
     """Draw circular plot background, rings, axes and labels.
-
+        
     draw: The Draw object on which we are drawing.
     """
 
@@ -442,12 +442,12 @@ def WindRosePlotSetup(self, draw):
 
 def LegendSetup(self, draw, speedList, speedBin):
     """Draw plot title (if requested), legend and time stamp (if requested).
-
+        
     draw: The Draw object on which we are drawing.
-
+    
     speedList: 2D list with speed range boundaries in speedList[0] and petal
     colours in speedList[1]
-
+    
     speedBin: 1D list to hold overal obs count for each speed range
     """
 
@@ -514,7 +514,7 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     """    Plots must be generated if:
     (1) it does not exist
     (2) it is 24 hours old (or older)
-
+    
     Every plot, irrespective of time_length, will likely be different to the
     last one but to reduce load for long time_length plots a plot can be
     skipped if:
@@ -524,16 +524,16 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     (3) plot length is greater than 7 but less than 30 day and the plot file
         is less than 1 hour old
     (4) can't think of another reason! Let's see how (1) and (2) go
-
+    
     time_ts: Timestamp holding time of plot
-
+    
     time_length: Length of time over which plot is produced
-
+    
     img_file: Full path and filename of plot file
-
+    
     plotname: Name of plot
     """
-
+    
     # Images without a time_length must be skipped every time and a syslog
     # entry added.
     if time_length is None:
@@ -547,7 +547,7 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     # If the image is older than 24 hours then regenerate
     if time_ts - os.stat(img_file).st_mtime >= 86400:
         return False
-
+    
     # If time_length > 30 days and the image is less than 24 hours old then skip
     if time_length > 18144000 and time_ts - os.stat(img_file).st_mtime < 86400:
         return True
@@ -555,6 +555,6 @@ def skipThisPlot(time_ts, time_length, img_file, plotname):
     # If time_length > 7 days and the image is less than 1 hour old then skip
     if time_length >= 604800 and time_ts - os.stat(img_file).st_mtime < 3600:
         return True
-
+    
     # Otherwise we must regenerate
     return False

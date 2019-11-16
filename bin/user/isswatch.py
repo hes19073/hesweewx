@@ -80,7 +80,7 @@ class ISSAlert(SearchList):
             newsighting = {
                            'pubdate':sighting.find('pubDate').text,
                            'guid':sighting.find('guid').text,
-                           'pubts':self.get_ts(sighting.find('pubDate').text),
+                           #'pubts':self.get_ts(sighting.find('pubDate').text),
                 }
 
             #Split the title to get just the object e.g. ISS, Dragon etc.
@@ -127,7 +127,8 @@ class ISSAlert(SearchList):
 
     def get_ts(self,pubdate):
         """Converts a Pub Date e.g. 19 Jan 2016 17:24:51 GMT into a timestamp"""
-
+        import locale
+        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
         pubdate = re.sub(' GMT$', '', pubdate)
         format = "%d %b %Y %H:%M:%S"
         return time.mktime(datetime.datetime.strptime(pubdate, format).timetuple())
@@ -140,30 +141,30 @@ class ISSAlert(SearchList):
 #PYTHONPATH=bin python bin/user/isswatch.py weewx.conf
 if __name__ == '__main__':
 
-        import weewx
-        import socket
-        import configobj
+	import weewx
+	import socket
+	import configobj
 
-        weewx.debug = 1
-        syslog.openlog('wee_isswatch', syslog.LOG_PID|syslog.LOG_CONS)
-        syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+	weewx.debug = 1
+	syslog.openlog('wee_isswatch', syslog.LOG_PID|syslog.LOG_CONS)
+	syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
 
-        if len(sys.argv) < 1 :
-                        print("""Usage: isswatch.py path-to-configuration-file""")
-                        sys.exit(weewx.CMD_ERROR)
+	if len(sys.argv) < 1 :
+			print("""Usage: isswatch.py path-to-configuration-file""")
+			sys.exit(weewx.CMD_ERROR)
 
-        try :
-                        config_dict = configobj.ConfigObj(sys.argv[1], file_error=True)
-        except IOError:
-                        print(("Unable to open configuration file ", sys.argv[1]))
-                        raise
+	try :
+			config_dict = configobj.ConfigObj(sys.argv[1], file_error=True)
+	except IOError:
+			print(("Unable to open configuration file ", sys.argv[1]))
+			raise
 
-        socket.setdefaulttimeout(10)
+	socket.setdefaulttimeout(10)
 
-        feedurl = config_dict['StdReport']['isswatch']['url']
-        print (feedurl)
+	feedurl = config_dict['StdReport']['isswatch']['url']
+	print (feedurl)
 
-        isswatcher = ISSAlert()
-        issall = isswatcher.processAlertRSS(feedurl)
+	isswatcher = ISSAlert()
+	issall = isswatcher.processAlertRSS(feedurl)
 
-        print(issall)
+	print(issall)

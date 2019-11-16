@@ -326,6 +326,7 @@ USUnits = ListOfDicts({
     "group_distance"    : "mile",
     "group_elapsed"     : "second",
     "group_energy"      : "watt_hour",
+    "group_energy2"     : "watt_second",
     "group_interval"    : "minute",
     "group_length"      : "inch",
     "group_moisture"    : "centibar",
@@ -398,6 +399,7 @@ MetricUnits = ListOfDicts({
     "group_volt"        : "volt",
     "group_amp"         : "amp",
     "group_energy"      : "watt_hour",
+    "group_energy2"     : "watt_second",
     "group_volume"      : "litre",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
@@ -421,6 +423,11 @@ MetricWXUnits['group_rainrate'] = "mm_per_hour"
 MetricWXUnits['group_speed']    = "meter_per_second"
 MetricWXUnits['group_speed2']   = "meter_per_second2"
 
+std_groups = {
+    weewx.US: USUnits,
+    weewx.METRIC: MetricUnits,
+    weewx.METRICWX: MetricWXUnits
+}
 
 # Conversion functions to go from one unit type to another.
 conversionDict = {
@@ -503,6 +510,14 @@ conversionDict = {
       'byte'             : {'bit'              : lambda x : x * 8},
       'km'               : {'mile'             : lambda x : x * 0.621371192},
       'mile'             : {'km'               : lambda x : x * 1.609344},
+      'watt'             : {'kilowatt'         : lambda x : x / 1000.0},
+      'kilowatt'         : {'watt'             : lambda x : x * 1000.0},
+      'watt_second'      : {'kilowatt_hour'    : lambda x : x / 3.6e6,
+                            'watt_hour'        : lambda x : x / 3600.0},
+      'watt_hour'        : {'kilowatt_hour'    : lambda x : x / 1000.0,
+                            'watt_second'      : lambda x : x * 3600.0},
+      'kilowatt_hour'    : {'watt_second'      : lambda x : x * 3.6e6,
+                            'watt_hour'        : lambda x : x * 1000.0},
       'byte'             : {'kilobyte'         : lambda x : x/1024,
                             'megabyte'         : lambda x : x/(1024*1024),
                             'gigabyte'         : lambda x : x/(1024*1024*1024),
@@ -587,6 +602,7 @@ default_unit_format_dict = {
     "uv_index"           : "%.1f",
     "volt"               : "%.1f",
     "watt"               : "%.1f",
+    "watt_second"        : "%.0f",
     "watt_hour"          : "%.1f",
     "anzahl"             : "%.0f",
     "ppm"                : "%.1f",
@@ -639,7 +655,7 @@ default_unit_label_dict = {
     "knot2"             : u" knots",
     "litre"             : u" l",
     "mbar"              : u" mbar",
-    "meter"             : u" meters",
+    "meter"             : u" m",
     "meter_per_second"  : u" m/s",
     "meter_per_second2" : u" m/s",
     "mile"              : u" mile",
@@ -654,6 +670,7 @@ default_unit_label_dict = {
     "uv_index"          : u"",
     "volt"              : u" V",
     "watt"              : u" W",
+    "watt_second"       : u" Ws",
     "watt_hour"         : u" Wh",
     "anzahl"            : u"   ",
     "kilobyte"          : u" KB",

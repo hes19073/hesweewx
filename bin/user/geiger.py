@@ -25,7 +25,7 @@ Add the following to weewx.conf:
 
 [Engine]
     [[Services]]
-        archive_services = ..., user.geiger2.GeigerMonitor
+        archive_services = ..., user.geiger.GeigerMonitor
 
 """
 

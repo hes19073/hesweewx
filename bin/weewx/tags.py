@@ -10,6 +10,7 @@ import weeutil.weeutil
 from weeutil.weeutil import to_int
 import weewx.units
 from weewx.units import ValueTuple
+import weewx.xtypes
 
 #===============================================================================
 #                    Class TimeBinder
@@ -383,8 +384,14 @@ class ObservationBinder(object):
     def _do_query(self, aggregate_type, val=None):
         """Run a query against the databases, using the given aggregation type."""
         db_manager = self.db_lookup(self.data_binding)
-        result = db_manager.getAggregate(self.timespan, self.obs_type, aggregate_type, 
-                                         val=val, **self.option_dict)
+        try:
+            # If we cannot perform the aggregation, we will get an UnknownType or UnknownAggregation
+            # error. Be prepared to catch it.
+            result = weewx.xtypes.get_aggregate(self.obs_type, self.timespan, aggregate_type,
+                                                   db_manager, val=val, **self.option_dict)
+        except (weewx.UnknownType, weewx.UnknownAggregation):
+            # Signal Cheetah that we don't know how to do this by raiing an AttributeError.
+            raise AttributeError(self.obs_type)
         return weewx.units.ValueHelper(result, self.context, self.formatter, self.converter)
         
 #===============================================================================
@@ -457,13 +464,21 @@ class CurrentObj(object):
                 # Don't recognize the binding.
                 vt = weewx.units.UnknownType(self.data_binding)
             else:
-                # Does the type exist in the database? If not, it's an unknown type
-                if obs_type not in db_manager.sqlkeys:
-                    vt = weewx.units.UnknownType(obs_type)
-                else:
-                    # Get the record from the database
-                    record = db_manager.getRecord(self.current_time, max_delta=self.max_delta)
+                # Get the record for this timestamp from the database
+                record = db_manager.getRecord(self.current_time, max_delta=self.max_delta)
+                # If there was no record at that timestamp, it will be None. If there was a record, check to
+                # see if the type is in it.
+                if not record or obs_type in record:
+                    # If there was no record, then the value of the ValueTuple will be None. Otherwise,
+                    # it will be value stored in the database.
                     vt = weewx.units.as_value_tuple(record, obs_type)
+                else:
+                    # Couldn't get the value out of the record. Try the XTypes system.
+                    try:
+                        vt = weewx.xtypes.get_scalar(obs_type, self.record, db_manager)
+                    except (weewx.UnknownType, weewx.CannotCalculate):
+                        # Nothing seems to be working. It's an unknown type.
+                        vt = weewx.units.UnknownType(obs_type)
 
         # Finally, return a ValueHelper
         return weewx.units.ValueHelper(vt, 'current',

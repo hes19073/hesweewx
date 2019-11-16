@@ -355,16 +355,17 @@ def aag_winddir(key, path, last_data, ts):
                                     wdir = 1
     return 22.5 * wdir
 
-def humhes(key, path, last_data, ts):
+def hum_calc(key, path, last_data, ts):
     tem = get_float('%s%s' % (path, '/temperature'))
     vdd = get_float('%s%s' % (path, '/VDD'))
     vdo = get_float('%s%s' % (path, '/VAD'))
     vda = (5.0 / vdd) * vdo
-    SrH = (vda - 0.847847) / (29.404604 / 1000)
-    dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) - (0.0000011 * tem * tem))
+    ##SrH = (vdo - 0.847847) / (29.404604 / 1000)       # oder vda
+    ##dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) - (0.0000011 * tem * tem))
+    #dhu = (((vdo / vdd) - 0.16) / 0.0062) / (1.0546 - (0.00216 * tem))
     #dhu = (((vda / vdd) - 0.16) / 0.0062) / (1.0546 - (0.00216 * tem))
-    #dhu = (SrH + 2) / (1.0305 + (0.000044 * tem) #- (0.0000011 * tem * 100))
-
+    #dhu = (SrH + 2) / ((1.0305 + (0.000044 * tem) - (0.0000011 * tem * 100)))
+    dhu = 100 - (vdo * 10)
     if dhu > 100.0:
        d = 99
     else:
@@ -388,7 +389,7 @@ def owvolt(key, path, last_data, ts):
     d = vdd
     return d
 
-def heshum(key, path, last_data, ts):
+def hum_dir(key, path, last_data, ts):
      v = get_float(path)
 
      if v > 100:
@@ -411,8 +412,8 @@ SENSOR_TYPES = {
     'aag_windvane': aag_winddir,
     'aag_windspeed': aag_windspeed,
     'rainwise_bucket': rainwise_bucket,
-    'humhes': humhes,
-    'heshum': heshum,
+    'hum_calc': hum_calc,
+    'hum_dir': hum_dir,
     'lighes': lighes,
     'owvolt': owvolt,
     }
@@ -578,7 +579,7 @@ class OWFSService(weewx.engine.StdService):
 # define a main entry point for basic testing without weewx engine and service
 # overhead.  invoke this as follows from the weewx root dir:
 #
-# PYTHONPATH=bin python bin/user/owfs.py
+# PYTHONPATH=bin python3 bin/user/owfs.py
 if __name__ == '__main__':
     usage = """%prog [options] [--debug] [--help]"""
 
@@ -611,15 +612,6 @@ if __name__ == '__main__':
         # default to usb for the interface
         iface = options.iface if options.iface is not None else 'u'
 
-        if options.verbose:
-            weewx.debug = 1
-            weeutil.logger.setup('owfs', {})
-        else:
-            logging.disable(logging.INFO)
-        #if options.debug is not None:
-        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
-        #else:
-        #    syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
 
         if options.sensors:
             ow.init(iface)

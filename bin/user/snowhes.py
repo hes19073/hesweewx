@@ -63,6 +63,8 @@ class SnowDepth(StdService):
             # calculate_rain is correct it is only the delta function used
             self._last_snow = float(snow_total)
 
+            f.close()
+
             event.record['snowTotal'] = float(self._last_snow)
             event.record['snow'] = float(delta)
         except Exception as e:

@@ -2370,7 +2370,9 @@ class DSForecast(Forecast):
                     _qsf = Forecast.str2float('precipAccumulation',
                                               period['precipAccumulation'],
                                               DS_KEY)
-                    r['qsf'] = _qsf / 2.54 if _qsf is not None else None
+                    qsf_d = _qsf / 2.54 if _qsf is not None else None
+                    qsf_a = str(qsf_d)
+                    r['qsf'] = qsf_a[0:10]
                 r['windSpeed'] = Forecast.str2float('windSpeed',
                                                     period['windSpeed'],
                                                     DS_KEY)
@@ -2469,7 +2471,9 @@ class DSForecast(Forecast):
                     _qsf = Forecast.str2float('precipAccumulation',
                                               period['precipAccumulation'],
                                               DS_KEY)
-                    r['qsf'] = _qsf / 2.54 if _qsf is not None else None
+                    qsf_d = _qsf / 2.54 if _qsf is not None else None
+                    qsf_a = str(qsf_d)
+                    r['qsf'] = qsf_a[0:10]
                 if 'uvIndex' in period:
                     r['uvIndex'] = Forecast.str2int('uvIndex',
                                                     period['uvIndex'],

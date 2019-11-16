@@ -20,7 +20,7 @@
 # Also many thanks to our testers, in special Boris Smeds and Raffael Boesch.
 # Without their help we couldn't have written this driver.
 
-""" 
+"""
 Classes and functions for the KlimaLogg temperature/humidity data loggers.
 
 TFA makes stations in the KlimaLogg series.
@@ -1181,14 +1181,11 @@ Step 7. Perform a setTX command
 
 Step 8. Go to step 1 to wait for state 0xde16 again.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+from __future__ import print_function  # Python 2/3 compatiblity
 from datetime import datetime
 import random
 import sys
-import logging
+import syslog
 import threading
 import time
 import traceback
@@ -1196,35 +1193,31 @@ import usb
 
 # Python 2/3 compatiblity
 try:
-    import StringIO as io    # python 2
+	import StringIO as io	# python 2
 except ImportError:
-    import io            # python 3
+	import io				# python 3
 
 import weewx.drivers
 import weewx.wxformulas
 import weeutil.weeutil
-import weeutil.logger
-import weewx.units
 
-from weeutil.weeutil import to_int
 from weewx.units import obs_group_dict
-
-log = logging.getLogger(__name__)
+from weeutil.log import logdbg, loginf, logerr, logcrt
 
 DRIVER_NAME = 'KlimaLogg'
 DRIVER_VERSION = '1.4.0'
 
 
 def loader(config_dict, _):
-    return KlimaLoggDriver(**config_dict[DRIVER_NAME])
+	return KlimaLoggDriver(**config_dict[DRIVER_NAME])
 
 
 def configurator_loader(_):
-    return KlimaLoggConfigurator()
+	return KlimaLoggConfigurator()
 
 
 def confeditor_loader():
-    return KlimaLoggConfEditor()
+	return KlimaLoggConfEditor()
 
 
 # flags for enabling/disabling debug verbosity
@@ -1351,25 +1344,46 @@ schema = [('dateTime',			 'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
 		  ('batteryStatus8',	   'REAL')]
 
 
-#def log_traceback(dst=syslog.LOG_INFO, prefix='**** '):
-#	sfd = io.StringIO()
-#	traceback.print_exc(file=sfd)
-#	sfd.seek(0)
-#	for line in sfd:
-#		logmsg(dst, prefix + line)
-#	del sfd
+def logmsg(dst, msg):
+	syslog.syslog(dst, 'KlimaLogg: %s: %s' %
+				  (threading.currentThread().getName(), msg))
+
+def logdbg(msg):
+	logmsg(syslog.LOG_DEBUG, msg)
+
+def loginf(msg):
+	logmsg(syslog.LOG_INFO, msg)
+
+def logcrt(msg):
+	logmsg(syslog.LOG_CRIT, msg)
+
+def logerr(msg):
+	logmsg(syslog.LOG_ERR, msg)
+
+def logtee(msg):
+	loginf(msg)
+	print("%s\r" % msg)
 
 
-#def log_frame(n, buf):
-#	log.debug('frame length is %d' % n)
-#	strbuf = ''
-#	for i in range(0, n):
-#		strbuf += str('%02x ' % buf[i])
-#		if (i + 1) % 16 == 0:
-#			log.debug(strbuf)
-#			strbuf = ''
-#	if strbuf:
-#		log.debug(strbuf)
+def log_traceback(dst=syslog.LOG_INFO, prefix='**** '):
+	sfd = io.StringIO()
+	traceback.print_exc(file=sfd)
+	sfd.seek(0)
+	for line in sfd:
+		logmsg(dst, prefix + line)
+	del sfd
+
+
+def log_frame(n, buf):
+	logdbg('frame length is %d' % n)
+	strbuf = ''
+	for i in range(0, n):
+		strbuf += str('%02x ' % buf[i])
+		if (i + 1) % 16 == 0:
+			logdbg(strbuf)
+			strbuf = ''
+	if strbuf:
+		logdbg(strbuf)
 
 
 def get_datum_diff(v, np, ofl):
@@ -1703,39 +1717,39 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		records from the logger.
 		[Optional.  Default is 1800]
 		"""
-		log.info('driver version is %s', DRIVER_VERSION)
+		loginf('driver version is %s' % DRIVER_VERSION)
 		self.vendor_id = stn_dict.get('vendor_id', 0x6666)
 		self.product_id = stn_dict.get('product_id', 0x5555)
 		self.model = stn_dict.get('model', 'TFA KlimaLogg Pro')
 		self.polling_interval = int(stn_dict.get('polling_interval', 10))
 		self.comm_interval = int(stn_dict.get('comm_interval', 8))
 		self.logger_channel = int(stn_dict.get('logger_channel', 1))
-		log.info('channel is %s', self.logger_channel)
+		loginf('channel is %s' % self.logger_channel)
 		self.frequency = stn_dict.get('transceiver_frequency', 'EU')
-		log.info('frequency is %s', self.frequency)
+		loginf('frequency is %s' % self.frequency)
 		self.config_serial = stn_dict.get('serial', None)
 		if self.config_serial is not None:
-			log.info('serial is %s', self.config_serial)
+			loginf('serial is %s' % self.config_serial)
 		self.sensor_map = stn_dict.get('sensor_map', None)
 		if self.sensor_map is None:
 			sensor_map_id = int(stn_dict.get('sensor_map_id', 0))
 			if sensor_map_id == 0:
 				self.sensor_map = KL_SENSOR_MAP
 				self.setup_units_kl_schema()
-				log.debug('using sensor map for kl schema')
+				logdbg('using sensor map for kl schema')
 			else:
 				self.sensor_map = WVIEW_SENSOR_MAP
 				self.setup_units_wview_schema()
-				log.debug('using sensor map for wview schema')
+				logdbg('using sensor map for wview schema')
 		else:
-			log.debug('using custom sensor map')
-		log.info('sensor map is: %s', self.sensor_map)
+			logdbg('using custom sensor map')
+		loginf('sensor map is: %s' % self.sensor_map)
 		self.max_history_records = int(stn_dict.get('max_history_records', 51200))
-		log.info('catchup limited to %s records', self.max_history_records)
+		loginf('catchup limited to %s records' % self.max_history_records)
 		self.batch_size = int(stn_dict.get('batch_size', 1800))
 		timing = int(stn_dict.get('timing', 300))
 		self.first_sleep = float(timing) / 1000.0
-		log.info('timing is %s ms (%0.3f s)', timing, self.first_sleep)
+		loginf('timing is %s ms (%0.3f s)' % (timing, self.first_sleep))
 		self.values = dict()
 		for i in range(1, 9):
 			self.values['sensor_text%d' % i] = stn_dict.get('sensor_text%d' % i, None)
@@ -1781,8 +1795,8 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 			if packet is not None:
 				ts = packet['dateTime']
 				if DEBUG_WEATHER_DATA > 0:
-					log.debug('genLoopPackets: packet_count=%s: ts=%s packet=%s',
-						   self._packet_count, ts, packet)
+					logdbg('genLoopPackets: packet_count=%s: ts=%s packet=%s' %
+						   (self._packet_count, ts, packet))
 				if self._last_obs_ts is None or self._last_obs_ts != ts:
 					self._last_obs_ts = ts
 					self._empty_packet_count = 0
@@ -1791,23 +1805,23 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 				else:
 					self._empty_packet_count += 1
 					if DEBUG_WEATHER_DATA > 0 and self._empty_packet_count > 1:
-						log.debug("genLoopPackets: timestamp unchanged, set to empty packet; count: %s",
+						logdbg("genLoopPackets: timestamp unchanged, set to empty packet; count: %s" %
 							   self._empty_packet_count)
 					packet = None
 			else:
 				self._empty_packet_count += 1
 				if DEBUG_WEATHER_DATA > 0 and self._empty_packet_count > 1:
-					log.debug("genLoopPackets: empty packet; count; %s", self._empty_packet_count)
+					logdbg("genLoopPackets: empty packet; count; %s" % self._empty_packet_count)
 
 			# if no new weather data, return an empty packet
 			if packet is None:
 				if DEBUG_WEATHER_DATA > 0:
-					log.debug("packet_count=%s empty_count=%s",
-						   self._packet_count, self._empty_packet_count)
+					logdbg("packet_count=%s empty_count=%s" %
+						   (self._packet_count, self._empty_packet_count))
 				if self._empty_packet_count >= 30:  # 30 * 10 s = 300 s
 					if DEBUG_WEATHER_DATA > 0:
 						msg = "Restarting communication after %d empty packets" % self._empty_packet_count
-						log.debug(msg)
+						logdbg(msg)
 						raise weewx.WeeWxIOError('%s (%s)' % (msg, PRESS_USB))
 				packet = {'usUnits': weewx.METRIC, 'dateTime': now}
 				# if no new weather data for awhile, log it
@@ -1818,7 +1832,7 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 						if self._last_obs_ts is not None:
 							msg += ' after %d seconds' % (
 								now - self._last_obs_ts)
-						log.info(msg)
+						loginf(msg)
 						self._last_nodata_log_ts = now
 
 			# if no contact with console for awhile, log it
@@ -1829,14 +1843,14 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 					if ts is not None:
 						msg += ' after %d seconds' % (now - ts)
 					msg += ' (%s)' % PRESS_USB
-					log.info(msg)
+					loginf(msg)
 					self._last_contact_log_ts = now
 
 			yield packet
 			time.sleep(self.polling_interval)					
 
 	def genStartupRecords(self, ts):
-		log.info('Scanning historical records')
+		loginf('Scanning historical records')
 		self.clear_wait_at_start()  # let rf communication start
 		first_ts = ts
 		max_store_period = 300  # do another batch when period to save records is more than max_store_period
@@ -1852,7 +1866,7 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 			self.start_caching_history(since_ts=first_ts)
 			while nrem is None or nrem > 0:
 				if ntries >= maxtries:
-					log.error('No historical data after %d tries' % ntries)
+					logerr('No historical data after %d tries' % ntries)
 					return
 				time.sleep(15)
 				ntries += 1
@@ -1863,9 +1877,9 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 					dur = now - last_ts
 					if not batch_started:
 						if records_handled == 0:
-							log.info(PRESS_USB)
+							logtee(PRESS_USB)
 						else:
-							log.info("The next batch of %s records will start within 5 minutes", self.batch_size)
+							logtee("The next batch of %s records will start within 5 minutes" % self.batch_size)
 				else:
 					ntries = 0
 					last_ts = now
@@ -1874,7 +1888,7 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 				ni = self.get_next_history_index()
 				li = self.get_latest_history_index()
 				if batch_started and n != 0:
-					log.info("Records scanned: %s", n)
+					logtee("Records scanned: %s" % n)
 				# handle historical records in batches of batch_size
 				if n >= self.batch_size:
 					break
@@ -1882,13 +1896,13 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 			records = self.get_history_cache_records()
 			self.clear_history_cache()
 			num_received = len(records) - 1
-			log.info('Found %d historical records', num_received)
+			logtee('Found %d historical records' % num_received)
 			last_ts = None
 			this_ts = None
 			for r in records:
 				this_ts = r['dateTime']
 				records_handled += 1
-				log.info("Handle record %s: %s", records_handled, weeutil.weeutil.timestamp_to_string(this_ts))
+				logtee("Handle record %s: %s" % (records_handled, weeutil.weeutil.timestamp_to_string(this_ts)))
 				if last_ts is not None:
 					rec = dict()
 					rec['usUnits'] = weewx.METRIC
@@ -1897,20 +1911,11 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 					# calculate the dewpoint and heatindex for each sensor
 					# FIXME: this belongs in StdWXCalculate
 					for y in range(0, 9):
-						if r['Temp%d' % y] < 81.0 and r['Humidity%d' % y] < 100.1:
-							r['Dewpoint%d' % y] = weewx.wxformulas.dewpointC(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Heatindex%d' % y] = weewx.wxformulas.heatindexC(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Heatdeg%d' % y] = weewx.wxformulas.heating_degrees(r['Temp%d' % y], 18.333)
-							r['Cooldeg%d' % y] = weewx.wxformulas.cooling_degrees(r['Temp%d' % y], 18.333)
-							r['Homedeg%d' % y] = weewx.wxformulas.heating_degrees(r['Temp%d' % y], 15.0)
-							r['AbsoF%d' % y] = weewx.wxformulas.absF_C(r['Temp%d' % y], r['Humidity%d' % y])
-							r['Avd%d' % y] = (weewx.wxformulas.SaturationVaporPressure(r['Temp%d' % y])) * r['Humidity%d' % y] / 100.0
-							r['Svd%d' % y] = weewx.wxformulas.SaturationVaporPressure(r['Temp%d' % y])
-						#if 'Temp%d' % y in r and 'Humidity%d' % y in r:
-						#	r['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
-						#		r['Temp%s' % y], r['Humidity%d' % y])
-						#	r['heatindex%d' % y] = weewx.wxformulas.heatindexC(
-						#		r['Temp%s' % y], r['Humidity%d' % y])
+						if 'Temp%d' % y in r and 'Humidity%d' % y in r:
+							r['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
+								r['Temp%s' % y], r['Humidity%d' % y])
+							r['heatindex%d' % y] = weewx.wxformulas.heatindexC(
+								r['Temp%s' % y], r['Humidity%d' % y])
 					# get values requested from the sensor map
 					for k in self.sensor_map:
 						label = self.sensor_map[k]
@@ -1932,17 +1937,17 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 			# max_store_period
 			if this_ts is not None:
 				store_period = int(time.time()) - this_ts
-				log.info("Saved %d historical records; ts last saved record %s",
-					   num_received,
-						weeutil.weeutil.timestamp_to_string(this_ts))
+				logtee("Saved %d historical records; ts last saved record %s" %
+					   (num_received,
+						weeutil.weeutil.timestamp_to_string(this_ts)))
 				if n >= self.batch_size:
 					first_ts = this_ts  # continue next batch with last found time stamp
-					log.info('Scan the next batch of %d historical records', self.batch_size)
-					log.info("The scan will start after the next historical record is received.")
+					logtee('Scan the next batch of %d historical records' % self.batch_size)
+					logtee("The scan will start after the next historical record is received.")
 				elif store_period >= max_store_period:
 					first_ts = this_ts  # continue next batch with last found time stamp
-					log.info('Scan the historical records missed during the store period of %d s', store_period)
-					log.info("The scan will start after the next historical record is received.")
+					logtee('Scan the historical records missed during the store period of %d s' % store_period)
+					logtee("The scan will start after the next historical record is received.")
 			else:
 				store_period = 0
 
@@ -2015,6 +2020,8 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		obs_group_dict['heatindex6'] = 'group_temperature'
 		obs_group_dict['heatindex7'] = 'group_temperature'
 		obs_group_dict['heatindex8'] = 'group_temperature'
+		obs_group_dict['rxCheckPercent'] = 'group_percent'
+		obs_group_dict['batteryStatus0'] = 'group_count'
 		obs_group_dict['batteryStatus1'] = 'group_count'
 		obs_group_dict['batteryStatus2'] = 'group_count'
 		obs_group_dict['batteryStatus3'] = 'group_count'
@@ -2023,15 +2030,6 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		obs_group_dict['batteryStatus6'] = 'group_count'
 		obs_group_dict['batteryStatus7'] = 'group_count'
 		obs_group_dict['batteryStatus8'] = 'group_count'
-		obs_group_dict['absolutF0'] = 'group_gram'
-		obs_group_dict['absolutF1'] = 'group_gram'
-		obs_group_dict['absolutF2'] = 'group_gram'
-		obs_group_dict['absolutF3'] = 'group_gram'
-		obs_group_dict['absolutF4'] = 'group_gram'
-		obs_group_dict['absolutF5'] = 'group_gram'
-		obs_group_dict['absolutF6'] = 'group_gram'
-		obs_group_dict['absolutF7'] = 'group_gram'
-		obs_group_dict['absolutF8'] = 'group_gram'
 
 	@staticmethod
 	def setup_units_wview_schema():
@@ -2068,23 +2066,13 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		# calculate dewpoints and heatindices
 		# FIXME: this belongs in StdWXCalculate
 		for y in range(0, 9):
-			if data.values['Temp%d' % y] < 81.0 and data.values['Humidity%d' % y] < 100.1:
-				data.values['Dewpoint%d' % y] = weewx.wxformulas.dewpointC(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Heatindex%d' % y] = weewx.wxformulas.heatindexC(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Heatdeg%d' % y] = weewx.wxformulas.heating_degrees(data.values['Temp%d' % y], 18.333)
-				data.values['Cooldeg%d' % y] = weewx.wxformulas.cooling_degrees(data.values['Temp%d' % y], 18.333)
-				data.values['Homedeg%d' % y] = weewx.wxformulas.heating_degrees(data.values['Temp%d' % y], 15.0)
-				data.values['AbsoF%d' % y] = weewx.wxformulas.absF_C(data.values['Temp%d' % y], data.values['Humidity%d' % y])
-				data.values['Avd%d' % y] = (weewx.wxformulas.SaturationVaporPressure(data.values['Temp%d' % y])) * data.values['Humidity%d' % y] / 100.0
-				data.values['Svd%d' % y] = weewx.wxformulas.SaturationVaporPressure(data.values['Temp%d' % y])
-
-			#if 'Temp%d' % y in data.values and 'Humidity%d' % y in data.values:
-			#	data.values['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
-			#		data.values['Temp%d' % y],
-			#		data.values['Humidity%d' % y])
-			#	data.values['heatindex%d' % y] = weewx.wxformulas.heatindexC(
-			#		data.values['Temp%d' % y],
-			#		data.values['Humidity%d' % y])
+			if 'Temp%d' % y in data.values and 'Humidity%d' % y in data.values:
+				data.values['dewpoint%d' % y] = weewx.wxformulas.dewpointC(
+					data.values['Temp%d' % y],
+					data.values['Humidity%d' % y])
+				data.values['heatindex%d' % y] = weewx.wxformulas.heatindexC(
+					data.values['Temp%d' % y],
+					data.values['Humidity%d' % y])
 
 		# extract the values from the data object
 		for k in self.sensor_map:
@@ -2113,7 +2101,7 @@ class KlimaLoggDriver(weewx.drivers.AbstractDevice):
 		return packet
 
 	def get_config(self):
-		log.debug('get station configuration')
+		logdbg('get station configuration')
 		cfg = self._service.getConfigData().as_dict()
 		cs = cfg.get('checksum_out')
 		if cs is None or cs == 0:
@@ -2390,7 +2378,7 @@ class Decode(object):
 			Decode.isErr2(buf, start + 2, startOnHiNibble) or
 			Decode.isErr2(buf, start + 3, startOnHiNibble) or
 			Decode.isErr2(buf, start + 4, startOnHiNibble)):
-			log.error('ToDateTime: bogus date for %s: error status in buffer' %
+			logerr('ToDateTime: bogus date for %s: error status in buffer' %
 				   label)
 		else:
 			year	= Decode.toInt_2(buf, start + 0, startOnHiNibble) + 2000
@@ -2401,7 +2389,7 @@ class Decode(object):
 			try:
 				result = datetime(year, month, days, hours, minutes)
 			except ValueError:
-				log.error(('ToDateTime: bogus date for %s:'
+				logerr(('ToDateTime: bogus date for %s:'
 						' bad date conversion from'
 						' %s %s %s %s %s') %
 					   (label, minutes, hours, days, month, year))
@@ -2415,7 +2403,7 @@ class Decode(object):
 		"""read 8 nibbles, presentation as DateTime"""
 		result = None
 		if Decode.isErr8(buf, start + 0, startOnHiNibble):
-			log.error('ToDateTime: %s: no valid date' % label)
+			logerr('ToDateTime: %s: no valid date' % label)
 		else:
 			if startOnHiNibble:
 				year  = Decode.toInt_2(buf, start + 0, 1) + 2000
@@ -2444,7 +2432,7 @@ class Decode(object):
 			try:
 				result = datetime(year, month, days, hours, minutes)
 			except ValueError:
-				log.error('ToDateTime: bogus date for %s:'
+				logerr('ToDateTime: bogus date for %s:'
 					   ' bad date conversion from'
 					   ' %s %s %s %s %s' %
 					   (label, minutes, hours, days, month, year))
@@ -2533,25 +2521,25 @@ class CurrentData(object):
 		self.values = values
 
 	def to_log(self):
-		log.debug("timestamp: %s", self.values['timestamp'])
-		log.debug("SignalQuality: %3.0f ", self.values['SignalQuality'])
+		logdbg("timestamp: %s" % self.values['timestamp'])
+		logdbg("SignalQuality: %3.0f " % self.values['SignalQuality'])
 		for x in range(0, 9):
 			if self.values['Temp%d' % x] != SensorLimits.temperature_NP:
-				log.debug("Temp%d:	 %5.1f   Min: %5.1f (%s)   Max: %5.1f (%s)",
-					   x, self.values['Temp%s' % x],
+				logdbg("Temp%d:	 %5.1f   Min: %5.1f (%s)   Max: %5.1f (%s)"
+					   % (x, self.values['Temp%s' % x],
 						  self.values['Temp%sMin' % x],
 						  self.values['Temp%sMinDT' % x],
 						  self.values['Temp%sMax' % x],
-						  self.values['Temp%sMaxDT' % x])
+						  self.values['Temp%sMaxDT' % x]))
 			if self.values['Humidity%d' % x] != SensorLimits.humidity_NP:
-				log.debug("Humidity%d: %5.0f   Min: %5.0f (%s)   Max: %5.0f (%s)",
-					   x, self.values['Humidity%s' % x],
+				logdbg("Humidity%d: %5.0f   Min: %5.0f (%s)   Max: %5.0f (%s)"
+					   % (x, self.values['Humidity%s' % x],
 						  self.values['Humidity%sMin' % x],
 						  self.values['Humidity%sMinDT' % x],
 						  self.values['Humidity%sMax' % x],
-						  self.values['Humidity%sMaxDT' % x])
+						  self.values['Humidity%sMaxDT' % x]))
 		byte_str = ' '.join(['%02x' % x for x in self.values['AlarmData']])
-		log.debug('AlarmData: %s', byte_str)
+		logdbg('AlarmData: %s' % byte_str)
 
 
 class StationConfig(object):
@@ -2611,24 +2599,24 @@ class StationConfig(object):
 				sensor_text = values[lbl]
 				if sensor_text is not None:
 					if len(sensor_text) > 10:
-						log.info('sensor_text%d: "%s" is too long, trimmed to'
-							   ' 10 characters', x, sensor_text)
+						loginf('sensor_text%d: "%s" is too long, trimmed to'
+							   ' 10 characters' % (x, sensor_text))
 						sensor_text = sensor_text[0:10]
 					text_ok = True
 					for y in range(0, len(sensor_text)):
 						if not sensor_text[y:y + 1] in Decode.CHARSTR:
 							text_ok = False
-							log.info('sensor_text%d: "%s" contains bogus'
-								   ' character %s at position %s',
-								   x, sensor_text, sensor_text[y:y + 1], y + 1)
+							loginf('sensor_text%d: "%s" contains bogus'
+								   ' character %s at position %s' %
+								   (x, sensor_text, sensor_text[y:y + 1], y + 1))
 					if not text_ok:
 						sensor_text = None
 				if sensor_text is not None:
 					if self.values['SensorText%s' % x] == '(No sensor)':
-						log.error('sensor_text%d: "%s" ignored: no sensor present',
-							   x, sensor_text)
+						logerr('sensor_text%d: "%s" ignored: no sensor present'
+							   % (x, sensor_text))
 					else:
-						log.debug('sensor_text%d: "%s"', x, sensor_text)
+						logdbg('sensor_text%d: "%s"' % (x, sensor_text))
 						txt = [0] * 8
 						# just for clarity we didn't optimize the code below
 						# map 10 characters of 6 bits into 8 bytes of 8 bits
@@ -2724,7 +2712,7 @@ class StationConfig(object):
 		newbuf = [0] * 125
 		# Set historyInterval to 5 minutes if > 5 minutes (default: 15 minutes)
 		if self.values['HistoryInterval'] > HI_05MIN:
-			log.debug('change HistoryInterval to 5 minutes')
+			logdbg('change HistoryInterval to 5 minutes')
 			self.values['HistoryInterval'] = HI_05MIN
 		newbuf[5] = self.values['Settings']
 		newbuf[6] = self.values['TimeZone']
@@ -2754,13 +2742,13 @@ class StationConfig(object):
 		newbuf[124] = (self.values['OutBufCS'] >> 0) & 0xFF
 		if self.values['OutBufCS'] == self.values['InBufCS']:
 			if DEBUG_CONFIG_DATA > 2:
-				log.debug('checksum not changed: OutBufCS=%04x',
+				logdbg('checksum not changed: OutBufCS=%04x' %
 					   self.values['OutBufCS'])
 			changed = 0
 		else:
 			if DEBUG_CONFIG_DATA > 0:
-				log.debug('checksum changed: OutBufCS=%04x InBufCS=%04x ',
-					   self.values['OutBufCS'], self.values['InBufCS'])
+				logdbg('checksum changed: OutBufCS=%04x InBufCS=%04x ' % 
+					   (self.values['OutBufCS'], self.values['InBufCS']))
 			if self.values['InBufCS'] != 0 and DEBUG_CONFIG_DATA > 1:
 				self.to_log()
 			changed = 1
@@ -2774,25 +2762,25 @@ class StationConfig(object):
 		temp_form = 'C' if int(self.values['Settings']) & 0x1 == 0 else 'F'
 		time_zone = self.values['TimeZone'] if int(self.values['TimeZone']) <= 12 else int(self.values['TimeZone']) - 256
 		history_interval = history_intervals.get(self.values['HistoryInterval'])
-		log.debug('OutBufCS: %04x', self.values['OutBufCS'])
-		log.debug('InBufCS:  %04x', self.values['InBufCS'])
-		log.debug('Settings: %02x: contrast: %s, alert: %s, DCF reception: %s, time format: %s, temp format: %s',
-			   self.values['Settings'], contrast, alert, dcf_recep, time_form, temp_form)
-		log.debug('TimeZone difference with Frankfurt (CET): %02x (tz: %s hour)', self.values['TimeZone'], time_zone)
-		log.debug('HistoryInterval: %02x, period: %s minute(s)', self.values['HistoryInterval'], history_interval)
+		logdbg('OutBufCS: %04x' % self.values['OutBufCS'])
+		logdbg('InBufCS:  %04x' % self.values['InBufCS'])
+		logdbg('Settings: %02x: contrast: %s, alert: %s, DCF reception: %s, time format: %s, temp format: %s' %
+			   (self.values['Settings'], contrast, alert, dcf_recep, time_form, temp_form))
+		logdbg('TimeZone difference with Frankfurt (CET): %02x (tz: %s hour)' % (self.values['TimeZone'], time_zone))
+		logdbg('HistoryInterval: %02x, period: %s minute(s)' % (self.values['HistoryInterval'], history_interval))
 		byte_str = ' '.join(['%02x' % x for x in self.values['AlarmSet']])
-		log.debug('AlarmSet:	 %s', byte_str)
-		log.debug('ResetHiLo:	%02x', self.values['ResetHiLo'])
+		logdbg('AlarmSet:	 %s' % byte_str)
+		logdbg('ResetHiLo:	%02x' % self.values['ResetHiLo'])
 		for x in range(0, 9):
-			log.debug('Sensor%d:	  %3.1f - %3.1f, %3.0f - %3.0f',
-				   x,
+			logdbg('Sensor%d:	  %3.1f - %3.1f, %3.0f - %3.0f' %
+				   (x,
 					self.values['Temp%dMin' % x], 
 					self.values['Temp%dMax' % x],
 					self.values['Humidity%dMin' % x],
-					self.values['Humidity%dMax' % x])
+					self.values['Humidity%dMax' % x]))
 		for x in range(1, 9):
 			byte_str = ' '.join(['%02x' % y for y in self.values['Description%d' % x]])
-			log.debug('Description%d: %s; SensorText%d: %s', x, byte_str, x, self.values['SensorText%s' % x])
+			logdbg('Description%d: %s; SensorText%d: %s' % (x, byte_str, x, self.values['SensorText%s' % x]))
 
 	def as_dict(self):
 		return {'checksum_in': self.values['InBufCS'],
@@ -2885,12 +2873,12 @@ class HistoryData(object):
 			if self.values['Pos%dAlarm' % i] == 0:
 				# History record
 				if self.values['Pos%dDT' % i] != last_ts:
-					log.debug("Pos%dDT %s, Pos%dTemp0: %3.1f, Pos%sHumidity0: %3.1f",
-						   i, self.values['Pos%dDT' % i],
+					logdbg("Pos%dDT %s, Pos%dTemp0: %3.1f, Pos%sHumidity0: %3.1f" %
+						   (i, self.values['Pos%dDT' % i],
 							i, self.values['Pos%dTemp0' % i],
-							i, self.values['Pos%dHumidity0' % i])
-					log.debug("Pos%dTemp 1-8:	  %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f",
-						   i,
+							i, self.values['Pos%dHumidity0' % i]))
+					logdbg("Pos%dTemp 1-8:	  %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f, %3.1f" %
+						   (i,
 							self.values['Pos%dTemp1' % i],
 							self.values['Pos%dTemp2' % i],
 							self.values['Pos%dTemp3' % i],
@@ -2898,9 +2886,9 @@ class HistoryData(object):
 							self.values['Pos%dTemp5' % i],
 							self.values['Pos%dTemp6' % i],
 							self.values['Pos%dTemp7' % i],
-							self.values['Pos%dTemp8' % i])
-					log.debug("Pos%dHumidity 1-8: %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f",
-						   i,
+							self.values['Pos%dTemp8' % i]))
+					logdbg("Pos%dHumidity 1-8: %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f, %3.0f" %
+						   (i,
 							self.values['Pos%dHumidity1' % i],
 							self.values['Pos%dHumidity2' % i],
 							self.values['Pos%dHumidity3' % i],
@@ -2908,38 +2896,38 @@ class HistoryData(object):
 							self.values['Pos%dHumidity5' % i],
 							self.values['Pos%dHumidity6' % i],
 							self.values['Pos%dHumidity7' % i],
-							self.values['Pos%dHumidity8' % i])
+							self.values['Pos%dHumidity8' % i]))
 				last_ts = self.values['Pos%dDT' % i]
 			else:
 				# Alarm record
 				if self.values['Pos%dAlarmdata' % i] & 0x1:
-					log.debug('Alarm=%01x: Humidity%d: %3.0f above/reached Hi-limit (%3.0f) on %s',
-						   self.values['Pos%dAlarmdata' % i],
+					logdbg('Alarm=%01x: Humidity%d: %3.0f above/reached Hi-limit (%3.0f) on %s' %
+						   (self.values['Pos%dAlarmdata' % i],
 							self.values['Pos%dSensor' % i],
 							self.values['Pos%dHumidity' % i],
 							self.values['Pos%dHumidityHi' % i],
-							self.values['Pos%dDT' % i])
+							self.values['Pos%dDT' % i]))
 				if self.values['Pos%dAlarmdata' % i] & 0x2:
-					log.debug('Alarm=%01x: Humidity%d: %3.0f below/reached Lo-limit (%3.0f) on %s',
-						   self.values['Pos%dAlarmdata' % i],
+					logdbg('Alarm=%01x: Humidity%d: %3.0f below/reached Lo-limit (%3.0f) on %s' %
+						   (self.values['Pos%dAlarmdata' % i],
 							self.values['Pos%dSensor' % i],
 							self.values['Pos%dHumidity' % i],
 							self.values['Pos%dHumidityLo' % i],
-							self.values['Pos%dDT' % i])
+							self.values['Pos%dDT' % i]))
 				if self.values['Pos%dAlarmdata' % i] & 0x4:
-					log.debug('Alarm=%01x: Temp%d: %3.1f above/reached Hi-limit (%3.1f) on %s',
-						   self.values['Pos%dAlarmdata' % i],
+					logdbg('Alarm=%01x: Temp%d: %3.1f above/reached Hi-limit (%3.1f) on %s' %
+						   (self.values['Pos%dAlarmdata' % i],
 							self.values['Pos%dSensor' % i],
 							self.values['Pos%dTemp' % i],
 							self.values['Pos%dTempHi' % i],
-							self.values['Pos%dDT' % i])
+							self.values['Pos%dDT' % i]))
 				if self.values['Pos%dAlarmdata' % i] & 0x8:
-					log.debug('Alarm=%01x: Temp%d: %3.1f below/reached Lo-limit(%3.1f) on %s',
-						   self.values['Pos%dAlarmdata' % i],
+					logdbg('Alarm=%01x: Temp%d: %3.1f below/reached Lo-limit(%3.1f) on %s' %
+						   (self.values['Pos%dAlarmdata' % i],
 							self.values['Pos%dSensor' % i],
 							self.values['Pos%dTemp' % i],
 							self.values['Pos%dTempLo' % i],
-							self.values['Pos%dDT' % i])
+							self.values['Pos%dDT' % i]))
 
 	def as_dict(self, x=1):
 		"""emit historical data as a dict with weewx conventions"""
@@ -2985,8 +2973,8 @@ class LastStat(object):
 	def update(self, seen_ts=None, quality=None,
 			   weather_ts=None, history_ts=None, config_ts=None):
 		if DEBUG_COMM > 1:
-			log.debug('LastStat: seen=%s quality=%s weather=%s history=%s config=%s',
-				   seen_ts, quality, weather_ts, history_ts, config_ts)
+			logdbg('LastStat: seen=%s quality=%s weather=%s history=%s config=%s' %
+				   (seen_ts, quality, weather_ts, history_ts, config_ts))
 		if seen_ts is not None:
 			self.last_seen_ts = seen_ts
 		if quality is not None:
@@ -3025,18 +3013,18 @@ class Transceiver(object):
 			for dev in bus.devices:
 				if dev.idVendor == vid and dev.idProduct == pid:
 					if serial is None:
-						log.info('found transceiver at bus=%s device=%s',
-							   bus.dirname, dev.filename)
+						loginf('found transceiver at bus=%s device=%s' %
+							   (bus.dirname, dev.filename))
 						return dev
 					else:
 						sn = Transceiver._read_serial(dev)
 						if str(serial) == sn:
-							log.info('found transceiver at bus=%s device=%s serial=%s',
-								   bus.dirname, dev.filename, sn)
+							loginf('found transceiver at bus=%s device=%s serial=%s' %
+								   (bus.dirname, dev.filename, sn))
 							return dev
 						else:
-							log.info('skipping transceiver with serial %s (looking for %s)',
-								   sn, serial)
+							loginf('skipping transceiver with serial %s (looking for %s)' %
+								   (sn, serial))
 		return None
 
 	@staticmethod
@@ -3051,7 +3039,7 @@ class Transceiver(object):
 			if buf:
 				return ''.join(['%02d' % x for x in buf[0:7]])
 		except usb.USBError as e:
-			log.error("cannot read serial number: %s", e)
+			logerr("cannot read serial number: %s" % e)
 		finally:
 			# if we claimed the interface, we must release it
 			Transceiver._close_device(handle)
@@ -3066,9 +3054,9 @@ class Transceiver(object):
 		if not handle:
 			raise weewx.WeeWxIOError('Open USB device failed')
 
-		log.info('manufacturer: %s', handle.getString(dev.iManufacturer, 30))
-		log.info('product: %s', handle.getString(dev.iProduct, 30))
-		log.info('interface: %d', interface)
+		loginf('manufacturer: %s' % handle.getString(dev.iManufacturer, 30))
+		loginf('product: %s' % handle.getString(dev.iProduct, 30))
+		loginf('interface: %d' % interface)
 
 		# be sure kernel does not claim the interface
 		try:
@@ -3078,12 +3066,12 @@ class Transceiver(object):
 
 		# attempt to claim the interface
 		try:
-			log.debug('claiming USB interface %d', interface)
+			logdbg('claiming USB interface %d' % interface)
 			handle.claimInterface(interface)
 			handle.setAltInterface(interface)
 		except usb.USBError as e:
 			Transceiver._close_device(handle)
-			log.debug('Unable to claim USB interface %s: %s', interface, e)
+			logcrt('Unable to claim USB interface %s: %s' % (interface, e))
 			raise weewx.WeeWxIOError(e)
 
 		# FIXME: check return values
@@ -3105,7 +3093,7 @@ class Transceiver(object):
 	def _close_device(handle):
 		if handle is not None:
 			try:
-				log.debug('releasing USB interface')
+				logdbg('releasing USB interface')
 				handle.releaseInterface()
 			except usb.USBError:
 				pass
@@ -3305,10 +3293,10 @@ class Transceiver(object):
 		# de15 is idle, de14 is intermediate
 		if strbuf in ['de 15 00 00 00 00 ', 'de 14 00 00 00 00 ']:
 			if strbuf != self.last_dump or DEBUG_COMM > 2:
-				log.debug('%s: %s%s', cmd, pad, strbuf)
+				logdbg('%s: %s%s' % (cmd, pad, strbuf))
 			self.last_dump = strbuf
 		else:
-			log.debug('%s: %s%s', cmd, pad, strbuf)
+			logdbg('%s: %s%s' % (cmd, pad, strbuf))
 			self.last_dump = None
 
 	@staticmethod
@@ -3417,7 +3405,7 @@ class AX5051RegisterNames:
 class CommunicationService(object):
 
 	def __init__(self, first_sleep, values, max_records=51200, batch_size=100):
-		log.debug('CommunicationService.init')
+		logdbg('CommunicationService.init')
 
 		self.first_sleep = first_sleep
 		self.values = values
@@ -3450,7 +3438,7 @@ class CommunicationService(object):
 		self.batch_size = batch_size
 
 	def buildFirstConfigFrame(self, cs):
-		log.debug('buildFirstConfigFrame: cs=%04x', cs)
+		logdbg('buildFirstConfigFrame: cs=%04x' % cs)
 		newlen = 11
 		newbuf = [0] * newlen
 		historyAddress = 0x010700
@@ -3468,7 +3456,7 @@ class CommunicationService(object):
 		return newlen, newbuf
 
 	def buildConfigFrame(self, buf):
-		log.debug("buildConfigFrame")
+		logdbg("buildConfigFrame")
 		changed, cfgbuf = self.station_config.testConfigChanged()
 		if changed:
 			newlen = 125  # 0x7D
@@ -3489,7 +3477,7 @@ class CommunicationService(object):
 
 	@staticmethod
 	def buildTimeFrame(buf, cs):
-		log.debug("buildTimeFrame: cs=%04x", cs)
+		logdbg("buildTimeFrame: cs=%04x" % cs)
 
 		tm = time.localtime()
 
@@ -3517,8 +3505,8 @@ class CommunicationService(object):
 
 	def buildACKFrame(self, buf, action, cs, hidx=None):
 		if DEBUG_COMM > 1:
-			log.debug("buildACKFrame: action=%x cs=%04x historyIndex=%s",
-				   action, cs, hidx)
+			logdbg("buildACKFrame: action=%x cs=%04x historyIndex=%s" %
+				   (action, cs, hidx))
 
 		comInt = self.comm_mode_interval
 
@@ -3533,14 +3521,14 @@ class CommunicationService(object):
 			if (action == ACTION_GET_HISTORY and
 				age >= (comInt + 1) * 2 and buf[1] != 0xF0):
 				if DEBUG_COMM > 0:
-					log.debug('buildACKFrame: morphing action'
-						   ' from %d to 5 (age=%s)', action, age)
+					logdbg('buildACKFrame: morphing action'
+						   ' from %d to 5 (age=%s)' % (action, age))
 				action = ACTION_GET_CURRENT
 
 		if hidx == 0xFFFF:
 			# At first config preset the address with DeviceId and logger_id
 			haddr = (self.getDeviceID() << 8) + int(self.logger_id)
-			log.debug('buildACKFrame: first config haddr preset to deviceID and logger_id 0x%06x', haddr)
+			logdbg('buildACKFrame: first config haddr preset to deviceID and logger_id 0x%06x' % haddr)
 		else:
 			if hidx is None:
 				if self.last_stat.latest_history_index is not None:
@@ -3548,11 +3536,11 @@ class CommunicationService(object):
 			if hidx is None or hidx < 0 or hidx >= KlimaLoggDriver.max_records:
 				# If no hidx is present yet, preset haddr with 0xffffff
 				haddr = 0xFFFFFF
-				log.debug('buildACKFrame: no known haddr; preset with 0x%06x', haddr)
+				logdbg('buildACKFrame: no known haddr; preset with 0x%06x' % haddr)
 			else:
 				haddr = index_to_addr(hidx)
 		if DEBUG_COMM > 1:
-			log.debug('buildACKFrame: idx: %s addr: 0x%04x', hidx, haddr)
+			logdbg('buildACKFrame: idx: %s addr: 0x%04x' % (hidx, haddr))
 
 		# d5 00 0b f0 f0 ff 03 ff ff 80 03 01 07 00
 		#		   0  1  2  3  4  5  6  7  8  9 10
@@ -3572,7 +3560,7 @@ class CommunicationService(object):
 		return newlen, newbuf
 
 	def handleConfig(self, length, buf):
-		log.debug('handleConfig: %s', self.timing())
+		logdbg('handleConfig: %s' % self.timing())
 		if DEBUG_CONFIG_DATA > 2:
 			self.hid.dump('InBuf', buf, fmt='long', length=length)
 		self.station_config.read(buf)
@@ -3588,7 +3576,7 @@ class CommunicationService(object):
 
 	def handleCurrentData(self, length, buf):
 		if DEBUG_WEATHER_DATA > 1:
-			log.debug('handleCurrentData: %s', self.timing())
+			logdbg('handleCurrentData: %s' % self.timing())
 
 		now = int(time.time())
 
@@ -3604,8 +3592,8 @@ class CommunicationService(object):
 				data.to_log()
 		else:
 			if DEBUG_WEATHER_DATA > 1:
-				log.debug('new weather data within %s; skip data; ts=%s',
-					   age, now)
+				logdbg('new weather data within %s; skip data; ts=%s' % 
+					   (age, now))
 
 		# update the connection cache
 		self.last_stat.update(seen_ts=now,
@@ -3618,12 +3606,12 @@ class CommunicationService(object):
 		inBufCS = self.station_config.getInBufCS()
 		if inBufCS == 0 or inBufCS != cs:
 			# request for a get config
-			log.debug('handleCurrentData: inBufCS of station does not match')
+			logdbg('handleCurrentData: inBufCS of station does not match')
 			self.setSleep(self.first_sleep, 0.010)
 			newlen, newbuf = self.buildACKFrame(buf, ACTION_GET_CONFIG, cs)
 		elif changed:
 			# Request for a set config
-			log.debug('handleCurrentData: outBufCS of station changed')
+			logdbg('handleCurrentData: outBufCS of station changed')
 			self.setSleep(self.first_sleep, 0.010)
 			newlen, newbuf = self.buildACKFrame(buf, ACTION_REQ_SET_CONFIG, cs)
 		else:
@@ -3646,7 +3634,7 @@ class CommunicationService(object):
 
 	def handleHistoryData(self, length, buf):
 		if DEBUG_HISTORY_DATA > 1:
-			log.debug('handleHistoryData: %s', self.timing())
+			logdbg('handleHistoryData: %s' % self.timing())
 
 		now = int(time.time())
 		self.last_stat.update(seen_ts=now,
@@ -3692,23 +3680,23 @@ class CommunicationService(object):
 			if tsPos1 == tsPos6 and tsPos1 != self.TS_1900:
 				if timeDiff > 300:
 					self.station_config.setAlarmClockOffset()  # set Humidity0Min value to 99
-					log.error('ERROR: DCF: %s; dateTime history record %s differs %s seconds from dateTime server; please check and set set the clock of your station',
-						   dcfOn, thisIndex, timeDiff)
-					log.error('ERROR: tsPos1: %s, tsPos2: %s', tsPos1, tsPos6)
+					logerr('ERROR: DCF: %s; dateTime history record %s differs %s seconds from dateTime server; please check and set set the clock of your station' %
+						   (dcfOn, thisIndex, timeDiff))
+					logerr('ERROR: tsPos1: %s, tsPos2: %s' % (tsPos1, tsPos6))
 				else:
 					self.station_config.resetAlarmClockOffset()  # set Humidity0Min value to 20
 					if timeDiff > 30:
-						log.debug('DCF = %s; dateTime history record %s differs %s seconds from dateTime server',
-							   dcfOn, thisIndex, timeDiff)
+						logdbg('DCF = %s; dateTime history record %s differs %s seconds from dateTime server' %
+							   (dcfOn, thisIndex, timeDiff))
 
 		# initially the first buffer presented is 6, in fact it starts at 0,
 		# which has date None, so we start at 1
 		if thisIndex == 6 and latestIndex > 12:
 			thisIndex = 1
 		nrec = get_index(latestIndex - thisIndex)
-		log.debug('handleHistoryData: time=%s this=%d (0x%04x) latest=%d (0x%04x) nrec=%d',
-			   data.values['Pos1DT'],
-				thisIndex, thisAddr, latestIndex, latestAddr, nrec)
+		logdbg('handleHistoryData: time=%s this=%d (0x%04x) latest=%d (0x%04x) nrec=%d' %
+			   (data.values['Pos1DT'],
+				thisIndex, thisAddr, latestIndex, latestAddr, nrec))
 
 		# track the latest history index
 		self.last_stat.last_history_index = thisIndex
@@ -3718,12 +3706,12 @@ class CommunicationService(object):
 		if self.command == ACTION_GET_HISTORY:
 			if self.history_cache.start_index is None:
 				if self.history_cache.num_rec > 0:
-					log.debug('handleHistoryData: request for %s records',
+					logtee('handleHistoryData: request for %s records' %
 						   self.history_cache.num_rec)
 					nreq = self.history_cache.num_rec
 				else:
 					if self.history_cache.since_ts > 0:
-						log.debug('handleHistoryData: request records since %s',
+						logtee('handleHistoryData: request records since %s' %
 							   weeutil.weeutil.timestamp_to_string(self.history_cache.since_ts))
 						span = int(time.time()) - self.history_cache.since_ts
 						if cfg['history_interval'] is not None:
@@ -3734,17 +3722,17 @@ class CommunicationService(object):
 						# all records in the station history
 						nreq = int(span / arcint) + 5  # FIXME: punt 5
 						if nrec > 0 and nreq > nrec:
-							log.info('handleHistoryData: too many records requested (%d), clipping to number stored (%d)',
-								  nreq, nrec)
+							loginf('handleHistoryData: too many records requested (%d), clipping to number stored (%d)' %
+								  (nreq, nrec))
 							nreq = nrec
 					else:
-						log.info('handleHistoryData: no start date known (empty database), use number stored (%d)', nrec)
+						loginf('handleHistoryData: no start date known (empty database), use number stored (%d)' % nrec)
 						nreq = nrec
 				# limit number of history records that will be read
-				log.debug('handleHistoryData: nreq=%s', nreq)
+				logdbg('handleHistoryData: nreq=%s' % nreq)
 				if nreq > self.max_records:
 					nreq = self.max_records
-					log.info('Number of history records limited to: %s', nreq)
+					loginf('Number of history records limited to: %s' % nreq)
 				if nreq >= KlimaLoggDriver.max_records:
 					nrec = KlimaLoggDriver.max_records - 1
 				idx = get_index(latestIndex - nreq)
@@ -3752,8 +3740,8 @@ class CommunicationService(object):
 				self.history_cache.next_index = idx
 				self.last_stat.last_history_index = idx
 				self.history_cache.num_outstanding_records = nreq
-				log.debug('handleHistoryData: start_index=%s'
-					   ' num_outstanding_records=%s', idx, nreq)
+				logdbg('handleHistoryData: start_index=%s'
+					   ' num_outstanding_records=%s' % (idx, nreq))
 				nextIndex = idx
 				self.records_skipped = 0
 				self.ts_last_rec = 0
@@ -3785,34 +3773,34 @@ class CommunicationService(object):
 							if tsCurrentRec >= self.TS_2010_07 and tsCurrentRec >= self.history_cache.since_ts:
 								# skip records with dateTime in the future
 								if tsCurrentRec > (now + 300):
-									log.debug('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
-										   ' DT is in the future',
-										   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+									logdbg('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
+										   ' DT is in the future' %
+										   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 									self.records_skipped += 1
 								# Check if two records in a row with the same ts
 								elif tsCurrentRec == self.ts_last_rec:
 									if DEBUG_HISTORY_DATA > 1:
-										log.debug('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
-											   ' DT is the same',
-											   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+										logdbg('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
+											   ' DT is the same' %
+											   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 									self.records_skipped += 1
 								# Check if this record elder than previous good record
 								elif tsCurrentRec < self.ts_last_rec:
-									log.debug('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
-										   ' DT is in the past',
-										   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+									logdbg('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
+										   ' DT is in the past' %
+										   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 									self.records_skipped += 1
 								# Check if this record more than 7 days newer than previous good record
 								elif self.ts_last_rec != 0 and tsCurrentRec > self.ts_last_rec + 604800:
-									log.debug('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
-										   ' DT has too big diff',
-										   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+									logdbg('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s'
+										   ' DT has too big diff' %
+										   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 									self.records_skipped += 1
 								else:
 									if self.history_cache.num_cached_records < self.batch_size:
 										# append good record to the history
-										log.debug('handleHistoryData:  append record at Pos%d tsCurrentRec=%s',
-											   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+										logdbg('handleHistoryData:  append record at Pos%d tsCurrentRec=%s' %
+											   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 										self.history_cache.records.append(data.as_dict(x))
 										self.history_cache.num_cached_records += 1
 										# save only TS of good records
@@ -3820,34 +3808,34 @@ class CommunicationService(object):
 										# save index of last appended record
 										self.history_cache.last_this_index = thisIndex
 									else:
-										log.debug('handleHistoryData: record at Pos%d tsCurrentRec=%s'
-											   ' handled in next batch',
-											   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec))
+										logdbg('handleHistoryData: record at Pos%d tsCurrentRec=%s'
+											   ' handled in next batch' %
+											   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec)))
 										time.sleep(20)
 							# Check if this record is too old or has no date
 							elif tsCurrentRec < self.TS_2010_07:
-								log.error('handleHistoryData: skippd record at Pos%d tsCurrentRec=None DT is too old', x)
+								logerr('handleHistoryData: skippd record at Pos%d tsCurrentRec=None DT is too old' % x)
 								self.records_skipped += 1
 							else:
 								# this record is elder than the requested start dateTime
-								log.debug('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s < %s',
-									   x, weeutil.weeutil.timestamp_to_string(tsCurrentRec),
-										weeutil.weeutil.timestamp_to_string(self.history_cache.since_ts))
+								logdbg('handleHistoryData: skipped record at Pos%d tsCurrentRec=%s < %s' %
+									   (x, weeutil.weeutil.timestamp_to_string(tsCurrentRec),
+										weeutil.weeutil.timestamp_to_string(self.history_cache.since_ts)))
 								self.records_skipped += 1
 						self.history_cache.next_index = thisIndex
 				else:
 					if nrec > 0:
-						log.debug('handleHistoryData: index mismatch: indexRequested: %s, thisIndex: %s',
-							   indexRequested, thisIndex)
+						logdbg('handleHistoryData: index mismatch: indexRequested: %s, thisIndex: %s' %
+							   (indexRequested, thisIndex))
 					elif indexRequested != thisIndex:
-						log.debug('handleHistoryData: skip corrupt record: indexRequested: %s, thisIndex: %s',
-							   indexRequested, thisIndex)
+						logdbg('handleHistoryData: skip corrupt record: indexRequested: %s, thisIndex: %s' %
+							   (indexRequested, thisIndex))
 						self.history_cache.next_index += 1
 						self.records_skipped += 1
 				nextIndex = self.history_cache.next_index
 			self.history_cache.num_outstanding_records = nrec
-			log.info('handleHistoryData: records cached=%s, records skipped=%s, next=%s',
-				self.history_cache.num_cached_records, self.records_skipped, nextIndex)
+			loginf('handleHistoryData: records cached=%s, records skipped=%s, next=%s' %
+				(self.history_cache.num_cached_records, self.records_skipped, nextIndex))
 		self.setSleep(self.first_sleep, 0.010)
 		newlen, newbuf = self.buildACKFrame(buf, ACTION_GET_HISTORY, cs, nextIndex)
 		return newlen, newbuf
@@ -3859,31 +3847,31 @@ class CommunicationService(object):
 		resp = buf[3]
 		if resp == RESPONSE_REQ_READ_HISTORY:
 			memPerc = buf[4]
-			log.debug('handleNextAction: %02x (MEM percentage not read to server: %s)', resp, memPerc)
+			logdbg('handleNextAction: %02x (MEM percentage not read to server: %s)' % (resp, memPerc))
 			self.setSleep(0.075, 0.005)
 			newlen = length
 			newbuf = buf
 		elif resp == RESPONSE_REQ_FIRST_CONFIG:
-			log.debug('handleNextAction: %02x (first-time config)', resp)
+			logdbg('handleNextAction: %02x (first-time config)' % resp)
 			self.setSleep(0.075, 0.005)
 			newlen, newbuf = self.buildFirstConfigFrame(cs)
 		elif resp == RESPONSE_REQ_SET_CONFIG:
-			log.debug('handleNextAction: %02x (set config data)', resp)
+			logdbg('handleNextAction: %02x (set config data)' % resp)
 			self.setSleep(0.075, 0.005)
 			newlen, newbuf = self.buildConfigFrame(buf)
 		elif resp == RESPONSE_REQ_SET_TIME:
-			log.debug('handleNextAction: %02x (set time data)', resp)
+			logdbg('handleNextAction: %02x (set time data)' % resp)
 			self.setSleep(0.075, 0.005)
 			newlen, newbuf = self.buildTimeFrame(buf, cs)
 		else:
-			log.debug('handleNextAction: %02x', resp)
+			logdbg('handleNextAction: %02x' % resp)
 			self.setSleep(self.first_sleep, 0.010)
 			newlen, newbuf = self.buildACKFrame(buf, ACTION_GET_HISTORY, cs)
 		return newlen, newbuf
 
 	def generateResponse(self, length, buf):
 		if DEBUG_COMM > 1:
-			log.debug('generateResponse: %s', self.timing())
+			logdbg('generateResponse: %s' % self.timing())
 		if length == 0:
 			raise BadResponse('zero length buffer')
 
@@ -3891,12 +3879,12 @@ class CommunicationService(object):
 		loggerID = buf[2]
 		respType = (buf[3] & 0xF0)
 		if DEBUG_COMM > 1:
-			log.debug("generateResponse: id=%04x resp=%x length=%x",
-				   bufferID, respType, length)
+			logdbg("generateResponse: id=%04x resp=%x length=%x" %
+				   (bufferID, respType, length))
 		deviceID = self.getDeviceID()
 
 		if bufferID == 0xF0F0 or bufferID == 0xFFFF:
-			log.info('generateResponse: console not paired, attempting to pair to 0x%04x', deviceID)
+			loginf('generateResponse: console not paired, attempting to pair to 0x%04x' % deviceID)
 			newlen, newbuf = self.buildACKFrame(buf, ACTION_GET_CONFIG, 0xFFFF, 0xFFFF)
 		elif bufferID == deviceID:
 			self.set_registered_device_id(bufferID, loggerID)  # the station and transceiver are paired now
@@ -3931,7 +3919,7 @@ class CommunicationService(object):
 				raise BadResponse('unexpected response type %x' % respType)
 		else:
 			if self.config_serial is None:
-				log.error('generateResponse: intercepted message from device %04x with length: %02x', bufferID, length)
+				logerr('generateResponse: intercepted message from device %04x with length: %02x' % (bufferID, length))
 			self.setSleep(0.200, 0.005)
 			raise UnknownDeviceId('unexpected device ID (id=%04x)' % bufferID)
 		return newlen, newbuf
@@ -3992,9 +3980,9 @@ class CommunicationService(object):
 		self.configureRegisterNames()
 
 		# calculate the frequency then set frequency registers
-		log.debug('frequency standard: %s',  frequency_standard)
+		logdbg('frequency standard: %s' % frequency_standard)
 		freq = frequencies.get(frequency_standard, frequencies['EU'])
-		log.info('base frequency: %d' % freq)
+		loginf('base frequency: %d' % freq)
 		try:
 			freqVal = long(freq / 16000000.0 * 16777216.0)	# python 2
 		except NameError:
@@ -4006,30 +3994,30 @@ class CommunicationService(object):
 		corVal |= corVec[2]
 		corVal <<= 8
 		corVal |= corVec[3]
-		log.info('frequency correction: %d (0x%x)', corVal, corVal)
+		loginf('frequency correction: %d (0x%x)' % (corVal, corVal))
 		freqVal += corVal
 		if not (freqVal % 2):
 			freqVal += 1
-		log.info('adjusted frequency: %d (0x%x)', freqVal, freqVal)
+		loginf('adjusted frequency: %d (0x%x)' % (freqVal, freqVal))
 		self.reg_names[AX5051RegisterNames.FREQ3] = (freqVal >> 24) & 0xFF
 		self.reg_names[AX5051RegisterNames.FREQ2] = (freqVal >> 16) & 0xFF
 		self.reg_names[AX5051RegisterNames.FREQ1] = (freqVal >> 8)  & 0xFF
 		self.reg_names[AX5051RegisterNames.FREQ0] = (freqVal >> 0)  & 0xFF
-		log.debug('frequency registers: %x %x %x %x',
+		logdbg('frequency registers: %x %x %x %x' % (
 			self.reg_names[AX5051RegisterNames.FREQ3],
 			self.reg_names[AX5051RegisterNames.FREQ2],
 			self.reg_names[AX5051RegisterNames.FREQ1],
-			self.reg_names[AX5051RegisterNames.FREQ0])
+			self.reg_names[AX5051RegisterNames.FREQ0]))
 
 		# figure out the transceiver id
 		buf = self.hid.readConfigFlash(0x1F9, 7)
 		tid = (buf[5] << 8) + buf[6]
-		log.info('transceiver identifier: %d (0x%04x)', tid, tid)
+		loginf('transceiver identifier: %d (0x%04x)' % (tid, tid))
 		self.transceiver_settings.device_id = tid
 
 		# figure out the transceiver serial number
 		sn = ''.join(['%02d' % x for x in buf[0:7]])
-		log.info('transceiver serial: %s', sn)
+		loginf('transceiver serial: %s' % sn)
 		self.transceiver_settings.serial_number = sn
 
 		for r in self.reg_names:
@@ -4037,8 +4025,8 @@ class CommunicationService(object):
 
 	def setup(self, frequency_standard, comm_interval,
 			  logger_channel, vendor_id, product_id, serial):
-		log.info("comm_interval is %s", comm_interval)
-		log.info("logger_channel is %s", logger_channel)
+		loginf("comm_interval is %s" % comm_interval)
+		loginf("logger_channel is %s" % logger_channel)
 		self.comm_mode_interval = comm_interval
 		self.logger_id = logger_channel - 1
 		self.config_serial = serial
@@ -4055,7 +4043,7 @@ class CommunicationService(object):
 
 	def set_registered_device_id(self, val, logger_id):
 		if val != self.registered_device_id:
-			log.info("console is paired to device with ID %04x and logger channel %s", val, logger_id + 1)
+			loginf("console is paired to device with ID %04x and logger channel %s" % (val, logger_id + 1))
 		self.registered_device_id = val
 
 	def getDeviceRegistered(self):
@@ -4120,7 +4108,7 @@ class CommunicationService(object):
 	def startRFThread(self):
 		if self.child is not None:
 			return
-		log.debug('startRFThread: spawning RF thread')
+		logdbg('startRFThread: spawning RF thread')
 		self.running = True
 		self.child = threading.Thread(target=self.doRF)
 		self.child.setName('RFComm')
@@ -4129,11 +4117,10 @@ class CommunicationService(object):
 
 	def stopRFThread(self):
 		self.running = False
-		log.debug('stopRFThread: waiting for RF thread to terminate')
-
+		logdbg('stopRFThread: waiting for RF thread to terminate')
 		self.child.join(self.thread_wait)
 		if self.child.isAlive():
-			log.error('unable to terminate RF thread after %d seconds',
+			logerr('unable to terminate RF thread after %d seconds' %
 				   self.thread_wait)
 		else:
 			self.child = None
@@ -4143,22 +4130,22 @@ class CommunicationService(object):
 
 	def doRF(self):
 		try:
-			log.debug('setting up rf communication')
+			logdbg('setting up rf communication')
 			self.doRFSetup()
 			# wait for genStartupRecords or show_current to start
 			while self.history_cache.wait_at_start == 1:
 				time.sleep(1)
-			log.info("starting rf communication")
+			loginf("starting rf communication")
 			while self.running:
 				self.doRFCommunication()
 		except Exception as e:
-			log.error('exception in doRF: %s', e)
-			#if weewx.debug:
-			#	weeutil.weeutil.log_traceback('***', syslog.LOG_ERR)
+			logerr('exception in doRF: %s' % e)
+			if weewx.debug:
+				log_traceback(dst=syslog.LOG_ERR)
 			self.running = False
 			raise
 		finally:
-			log.debug('stopping rf communication')
+			logdbg('stopping rf communication')
 
 	# it is probably not necessary to have two setPreamblePattern invocations.
 	# however, HeavyWeatherPro seems to do it this way on a first time config.
@@ -4185,7 +4172,7 @@ class CommunicationService(object):
 			try:
 				statebuf = self.hid.getState()
 			except Exception as e:
-				log.error('getState failed: %s', e)
+				logerr('getState failed: %s' % e)
 				time.sleep(5)
 				pass
 			self.pollCount += 1
@@ -4201,14 +4188,14 @@ class CommunicationService(object):
 			self.hid.setFrame(framelen, framebuf)
 			self.hid.setTX()
 		except DataWritten:
-			log.debug('SetTime/SetConfig data written')
+			logdbg('SetTime/SetConfig data written')
 			self.hid.setRX()
 		except BadResponse as e:
-			log.error('generateResponse failed: %s', e)
+			logerr('generateResponse failed: %s' % e)
 			self.hid.setRX()
 		except UnknownDeviceId as e:
 			if self.config_serial is None:
-				log.error("%s; use parameter 'serial' if more than one USB transceiver present", e)
+				logerr("%s; use parameter 'serial' if more than one USB transceiver present" % e)
 			self.hid.setRX()
 
 	# these are for diagnostics and debugging

@@ -7,7 +7,7 @@
 from __future__ import absolute_import
 import time
 
-__version__="4.0.0a6"
+__version__="4.0.0b1"
 
 # Holds the program launch time in unix epoch seconds:
 # Useful for calculating 'uptime.'
@@ -77,15 +77,24 @@ class UnknownBinding(Exception):
 class UnitError(ValueError):
     """Exception thrown when there is a mismatch in unit systems."""
 
+class UnknownType(ValueError):
+    """Exception thrown for an unknown observation type"""
+
+class UnknownAggregation(ValueError):
+    """Exception thrown for an unknown aggregation type"""
+
+class CannotCalculate(ValueError):
+    """Exception raised when a type cannot be calculated."""
+
 # =============================================================================
 #                       Possible event types.
 # =============================================================================
 
 class STARTUP(object):
-    """Event issued when the engine first starts up. Services have not been
+    """Event issued when the engine first starts up. Services have been
     loaded."""
 class PRE_LOOP(object):
-    """Event issued just before the main packet loop is started. Services
+    """Event issued just before the main packet loop is entered. Services
     have been loaded."""
 class NEW_LOOP_PACKET(object):
     """Event issued when a new LOOP packet is available. The event contains

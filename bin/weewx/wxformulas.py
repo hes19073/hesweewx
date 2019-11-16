@@ -8,6 +8,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
 import logging
 import collections
 
@@ -15,12 +16,12 @@ import math
 import time
 import ephem
 import weewx.uwxutils
-
+from weeutil.weeutil import TimeSpan
 from math import sin
 from datetime import datetime
 
-from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
 from weewx.units import CtoK, CtoF, FtoC
+from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
 
 log = logging.getLogger(__name__)
 
@@ -156,8 +157,8 @@ def heatindexF(T, R):
     if T < 80.0 or R < 40.0:
         return T
 
-    hi_F = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R - 6.83783e-3 * T ** 2\
-    - 5.481717e-2 * R ** 2 + 1.22874e-3 * T ** 2 * R + 8.5282e-4 * T * R ** 2 - 1.99e-6 * T ** 2 * R ** 2
+    hi_F = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R - 6.83783e-3 * T ** 2 \
+           - 5.481717e-2 * R ** 2 + 1.22874e-3 * T ** 2 * R + 8.5282e-4 * T * R ** 2 - 1.99e-6 * T ** 2 * R ** 2
     if hi_F < T:
         hi_F = T
     return hi_F
@@ -174,6 +175,7 @@ def heating_degrees(t, base):
 
 def cooling_degrees(t, base):
     return max(t - base, 0) if t is not None else None
+
 
 def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     """Calculate the altimeter pressure, given the raw, station pressure in
@@ -192,6 +194,7 @@ def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     return weewx.uwxutils.TWxUtilsUS.StationToAltimeter(SP_inHg, Z_foot,
                                                         algorithm=algorithm)
 
+
 def altimeter_pressure_Metric(SP_mbar, Z_meter, algorithm='aaASOS'):
     """Convert from (uncorrected) station pressure to altitude-corrected
     pressure.
@@ -209,10 +212,12 @@ def altimeter_pressure_Metric(SP_mbar, Z_meter, algorithm='aaASOS'):
     return weewx.uwxutils.TWxUtils.StationToAltimeter(SP_mbar, Z_meter,
                                                       algorithm=algorithm)
 
+
 def _etterm(elev_meter, t_C):
     """Calculate elevation/temperature term for sea level calculation."""
     t_K = CtoK(t_C)
     return math.exp(-elev_meter / (t_K * 29.263))
+
 
 def sealevel_pressure_Metric(sp_mbar, elev_meter, t_C):
     """Convert station pressure to sea level pressure.  This implementation
@@ -232,6 +237,7 @@ def sealevel_pressure_Metric(sp_mbar, elev_meter, t_C):
     bp_mbar = sp_mbar / pt if pt != 0 else 0
     return bp_mbar
 
+
 def sealevel_pressure_US(sp_inHg, elev_foot, t_F):
     if sp_inHg is None or elev_foot is None or t_F is None:
         return None
@@ -241,6 +247,7 @@ def sealevel_pressure_US(sp_inHg, elev_foot, t_F):
     slp_mbar = sealevel_pressure_Metric(sp_mbar, elev_meter, t_C)
     slp_inHg = slp_mbar * INHG_PER_MBAR
     return slp_inHg
+
 
 def calculate_rain(newtotal, oldtotal):
     """Calculate the rain differential given two cumulative measurements."""
@@ -253,6 +260,7 @@ def calculate_rain(newtotal, oldtotal):
     else:
         delta = None
     return delta
+
 
 def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
     """Calculate maximum solar radiation using Bras method
@@ -319,6 +327,7 @@ def solar_rad_Bras(lat, lon, altitude_m, ts=None, nfac=2):
         sr = None
     return sr
 
+
 def solar_rad_RS(lat, lon, altitude_m, ts=None, atc=0.8):
     """Calculate maximum solar radiation
     Ryan-Stolzenbach, MIT 1972
@@ -382,6 +391,7 @@ def solar_rad_RS(lat, lon, altitude_m, ts=None, atc=0.8):
         sr = None
     return sr
 
+
 def cloudbase_Metric(t_C, rh, altitude_m):
     """Calculate the cloud base in meters
 
@@ -397,6 +407,7 @@ def cloudbase_Metric(t_C, rh, altitude_m):
     cb = (t_C - dp_C) * 1000 / 2.5
     return altitude_m + cb * METER_PER_FOOT if cb is not None else None
 
+
 def cloudbase_US(t_F, rh, altitude_ft):
     """Calculate the cloud base in feet
 
@@ -411,6 +422,7 @@ def cloudbase_US(t_F, rh, altitude_ft):
         return None
     cb = altitude_ft + (t_F - dp_F) * 1000.0 / 4.4
     return cb
+
 
 def humidexC(t_C, rh):
     """Calculate the humidex
@@ -441,6 +453,7 @@ def humidexC(t_C, rh):
 
     return t_C + h if h > 0 else t_C
 
+
 def humidexF(t_F, rh):
     """Calculate the humidex in degree Fahrenheit
 
@@ -452,6 +465,7 @@ def humidexF(t_F, rh):
         return None
     h_C = humidexC(FtoC(t_F), rh)
     return CtoF(h_C) if h_C is not None else None
+
 
 def apptempC(t_C, rh, ws_mps):
     """Calculate the apparent temperature in degree Celsius
@@ -491,6 +505,7 @@ def apptempC(t_C, rh, ws_mps):
         at_C = None
     return at_C
 
+
 def apptempF(t_F, rh, ws_mph):
     """Calculate apparent temperature in degree Fahrenheit
 
@@ -510,6 +525,7 @@ def apptempF(t_F, rh, ws_mph):
     ws_mps = ws_mph * METER_PER_MILE / 3600.0
     at_C = apptempC(t_C, rh, ws_mps)
     return CtoF(at_C) if at_C is not None else None
+
 
 def beaufort(ws_kts):
     """Return the beaufort number given a wind speed in knots"""
@@ -552,6 +568,7 @@ def equation_of_time(doy):
     b = 2 * math.pi * (doy - 81) / 364.0
     return 0.1645 * math.sin(2 * b) - 0.1255 * math.cos(b) - 0.025 * math.sin(b)
 
+
 def hour_angle(t_utc, longitude, doy):
     """Solar hour angle at a given time in radians.
 
@@ -573,6 +590,7 @@ def hour_angle(t_utc, longitude, doy):
         omega += 2.0 * math.pi
     return omega
 
+
 def solar_declination(doy):
     """Solar declination for the day of the year in radians
 
@@ -580,7 +598,7 @@ def solar_declination(doy):
     >>> print "%.6f" % solar_declination(274)
     -0.075274
     """
-    return  0.409 * math.sin(2.0 * math.pi * doy / 365 - 1.39)
+    return 0.409 * math.sin(2.0 * math.pi * doy / 365 - 1.39)
 
 def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     """Extraterrestrial radiation. Radiation at the top of the atmosphere
@@ -600,6 +618,7 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     ...                              longitude_deg=-16.25, tod_utc=16.0, interval=1.0)
     3.543
     """
+
     # Solar constant in MJ/m^2/hr
     Gsc = 4.92
 
@@ -624,6 +643,7 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
         Ra = 0
 
     return Ra
+
 
 def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
     """Calculate the net long-wave radiation.
@@ -768,7 +788,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
 
     # Calculate the slope of the saturation vapor pressure curve in kPa/C (Eqn 13)
     delta = 4098.0 * (0.6108 * math.exp(17.27 * tavg_C / (tavg_C + 237.3))) / \
-                ((tavg_C + 237.3) * (tavg_C + 237.3))
+            ((tavg_C + 237.3) * (tavg_C + 237.3))
 
     # Calculate actual vapor pressure from relative humidity (Eqn 17)
     ea = (etmin * rh_max + etmax * rh_min) / 200.0
@@ -802,6 +822,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
         ET0 = 0
 
     return ET0
+
 
 def evapotranspiration_US(Tmin_F, Tmax_F, rh_min, rh_max,
                           sr_mean_wpm2, ws_mph, wind_height_ft,
@@ -1217,12 +1238,22 @@ def da_Metric(t_C, p_mbar):
     # Density altitude calculations
     #  t_C = outTemp
     #  p_mbar =  pressure
+    # Elevation = 53.6 meter = 175 ft
+    # QNH = pressure
+    # Druckhoehe(PA_da) = Elevation + (1013.25-QNH) * 30 gerundet faktor 28ft
+    # Dichtehöhe = PA_da + 120 * (aktuelle Temp. - [15 - PA_da * 2°/1000 ft])
+    # allgemein vereinfacht DA =  PA + 120 * ΔT
+    # da_ft = (Elevation + (1013.25 - p_mbar) * 30) + ((t_C - (15 - (Elevation + (1013.25 - p_mbar) * 30) * 2 / 1000)) * 120)
 
     if t_C is None or p_mbar is None:
          return None
 
-    da_fo = 1.24 * p_mbar + 120 * t_C - 33.48 * p_mbar + 32115.24
-    da_me = da_fo / 3.28084
+    PA_da = 175 + (1013.25 - p_mbar) * 28
+    dT_da = t_C - (15 - PA_da * 2 / 1000.0)
+    DH_da = 120 * (t_C - (15 - PA_da * 2 / 1000.0))
+    da_ft = PA_da + DH_da
+
+    da_me = da_ft * 0.3048
 
     return da_me if da_me is not None else None
 
@@ -1234,13 +1265,14 @@ def da_US(t_F, p_inHg):
     if t_F is None or p_inHg is None:
          return None
 
-    #da_fo = 145442.16 * (1 - (((17.326 * p_inHg) / (459.67 + t_F)) ** 0.235))
-    #da_fo = round(da_fo, 1)
-
     t_C = FtoC(t_F)
     p_mbar = p_inHg / INHG_PER_MBAR
+
     da_m = da_Metric(t_C, p_mbar)
+
     da_fo = da_m * 3.28084
+
+    da_fo = round(da_fo, 1)
 
     return da_fo if da_fo is not None else None
 
