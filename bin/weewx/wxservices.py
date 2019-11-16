@@ -886,7 +886,7 @@ class SnowRater(weewx.xtypes.XType):
 class HailRater(weewx.xtypes.XType):
     """An extension to the WeeWX type system for calculating hailRate"""
 
-    def __init__(self, hail_period, retain_period):
+    def __init__(self, hail_period, retain2_period):
         """Initialize the hailRater.
         Args:
             hail_period: The length of the sliding window in seconds.
