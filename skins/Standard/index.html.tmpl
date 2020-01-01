@@ -110,6 +110,7 @@
  #end if
    </table>
     <hr />
+    <!-- <img src="daytemp.png"  width="300" height="180" alt="Temperatur" /> -->
     <img src="daytempklein.png" alt="Temperatur" />
  </div>
 </div> <!-- end Temperatur -->
@@ -606,9 +607,16 @@
      #end if
      <td><span class='templo'>$anteil %</span></td>
     </tr>
+#if $day.sunshineS.sum.raw is not None   
+    #set $sun_hours = int($day.sunshineS.sum.raw / 3600)
+    #set $sun_minutes = int((($day.sunshineS.sum.raw / 3600) - $sun_hours) * 60 + 0.5)
+#else
+    #set $sun_hours = 0
+    #set $sun_minutes = 0
+#end if
     <tr>
      <td colspan='2'><span class='hes1_m'>Heute Sonnenschein</span></td>
-     <td colspan='3'><span class='hes1_m'>$day.sunshineS.sum.hour</span></td>
+     <td colspan='3'><span class='hes1_m'>$sun_hours&nbsp;h :&nbsp;$sun_minutes&nbsp;min</span></td>
     </tr>
    </table>
    <hr />
@@ -769,8 +777,8 @@
    <td class="re_data"> $current.cloudbase (ASL)</td>
   </tr>
   <tr>
-   <td class="re_data">Luftfeuchte (abs):</td>
-   <td class="re_data"> $current.absolutF</td>
+   <td class="re_data">Temperatur gefühlt:</td>
+   <td class="re_data"> $current.appTemp</td>
   </tr>
   <tr>
    <td class="re_data">THW-Index:</td>
@@ -779,6 +787,10 @@
   <tr>
    <td class='re_data'>THSW-Index</td>
    <td class='re_data'>$current.thswIndex</td>
+  </tr>
+  <tr>
+   <td class='re_data'>THSW-Davis</td>
+   <td class='re_data'>$current.THSW</td>
   </tr>
   <tr>
    <td class='re_data'>Windweg aktuell</td>
@@ -811,6 +823,28 @@
    <td class='re_data'>VantagePro2 Console</td>
    <td class='re_data'>$current.consBatteryVoltage</td>
   </tr>
+#if $latest($data_binding='wdsupp_binding').windSpeed10.has_data
+  <tr>
+   <td class='re_data'>WindSpeed 10</td>
+   <td class='re_data'>$latest($data_binding='wdsupp_binding').windSpeed10</td>
+  </tr>
+#else
+  <tr>
+   <td></td>
+   <td></td>
+  </tr>
+#end if
+#if $latest($data_binding='wdsupp_binding').yearET.has_data
+  <tr>
+   <td class='re_data'>ET Jahr (sum)</td>
+   <td class='re_data'>$latest($data_binding='wdsupp_binding').yearET</td>
+  </tr>
+#else
+  <tr>
+   <td></td>
+   <td></td>
+  </tr>
+#end if
 #if len($day00) > 3
   <tr>
    <td class='re_data'>Heute</td>
@@ -818,8 +852,8 @@
   </tr>
 #else
   <tr>
-   <td><b>&or;&nbsp;&or;&nbsp;&or;</b></td>
-   <td><b>&nbsp;&or;&nbsp;&or;</b></td>
+   <td>Regen Jahr (sum)</td>
+   <td>$latest($data_binding='wdsupp_binding').yearRain</td>
   </tr>
 #end if
  </table>
@@ -1023,7 +1057,7 @@
 
   </div> 
 
-#include $Extras.cookie
+##include $Extras.cookie
 
  </body>
 

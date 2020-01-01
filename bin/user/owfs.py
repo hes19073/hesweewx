@@ -459,6 +459,7 @@ class OWFSDriver(weewx.drivers.AbstractDevice):
         log.info('sensor type map is %s', self.sensor_type)
         log.info('polling interval is %s', str(self.polling_interval))
         log.info('sensor unit system is %s', self.unit_system)
+        #ow.init(self.interface.encode())
         ow.init(self.interface)
 
     @property
@@ -524,6 +525,7 @@ class OWFSService(weewx.engine.StdService):
         log.info('sensor type map is %s', self.sensor_type)
         log.info('sensor unit system is %s', self.unit_system)
 
+        #ow.init(self.interface.encode())
         ow.init(self.interface)
         if self.binding == 'loop':
             self.bind(weewx.NEW_LOOP_PACKET, self.handle_new_loop)

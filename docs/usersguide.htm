@@ -107,9 +107,11 @@ Version: 4.0
             consumes about 5% of the CPU, 100 MB of virtual memory, and 20 MB of real memory.
         </p>
 
-        <p>WeeWX also runs great on a Raspberry Pi, although report generation will take longer. For example, the 12 "To
-            Date" templates take about 5.1 seconds on the RPi, compared to 3.0 seconds on my Fit-PC, and a mere 0.9
-            seconds on my vintage Dell Optiplex 745.
+        <p>
+            WeeWX also runs great on a Raspberry Pi, although report generation will take longer. For example,
+            the 12 "To Date" templates of the "Standard" report take about 5.1 seconds on a RPi B+,
+            compared to 3.0 seconds on my Fit-PC, 0.9 seconds on my vintage Dell Optiplex 745, and 0.3 seconds on
+            a NUC with a 4th gen i5 processor.
         </p>
 
         <h2>Time</h2>
@@ -1431,6 +1433,29 @@ longitude = -77.0366</pre>
 
         <p>How long to block after sending a socket packet to the WeatherLinkIP. Default is 1 second.</p>
 
+        <p class="config_option">loop_request</p>
+
+        <p>
+            The type of LOOP packet to use for LOOP data. Options are 1 (type <span class="code">LOOP1</span>); 2 (type
+            <span class="code">LOOP2</span>); or 3 (alternate between). Type <span class="code">LOOP2</span> packets
+            have the advantage of including gauge pressure, altimeter, heat index, THSW, and a few other types, so they
+            do not have to be calculated in software. On the other hand, they do not include any of the extra Davis
+            sensors, such as soil moisture, leaf temperature, etc.
+        </p>
+        <p>
+            If you decide to alternate between packet types (option <span class="code">3</span>), then the console will
+            send a type <span class="code">LOOP1</span> packet, followed by a type <span class="code">LOOP2</span>
+            packet. This means that for certain types and depending on the options specified in <span class="code">[StdWXCalculate]</span>,
+            the value used can flip between hardware and software with every packet. In this case, you should be sure to
+            specify option <span class="code">hardware</span> for types <span class="code">pressure</span>, <span
+            class="code">altimeter</span>, <span class="code">dewpoint</span>, <span class="code">windchill</span>, and
+            <span class="code">heatindex</span>. This way, only hardware values will be used.
+        </p>
+        <p class="note">Not all stations support LOOP2 data. You need firmware version 1.90 or later.</p>
+        <p>
+            Default is 1 (use LOOP1 type packets).
+        </p>
+
         <p class="config_option">iss_id</p>
 
         <p>Set to the ID number of the Integrated Sensor Suite (ISS). This is used in the formula to calculate reception
@@ -1942,7 +1967,8 @@ longitude = -77.0366</pre>
         enable = true
         station = KCASANFRA11
         password = XXX
-        rapidfire = False</pre>
+        rapidfire = False
+        api_key = 04255779e9aa45b6e4579938630e67b</pre>
         <p class="config_important">enable</p>
 
         <p>
@@ -1959,6 +1985,13 @@ longitude = -77.0366</pre>
         <p class="config_important">password</p>
 
         <p>Set to your Weather Underground password. Required.</p>
+
+        <p class="config_important">api_key</p>
+
+        <p>
+            Set to your Weather Underground <a href="https://www.wunderground.com/member/api-keys">API key</a>. This is
+            needed only if you plan on using the utility <a href="utilities.htm#wunderfixer_utility">wunderfixer</a>.
+        </p>
 
         <p class="config_option">rapidfire</p>
 
@@ -2170,8 +2203,15 @@ longitude = -77.0366</pre>
         <p>Set to <span class="code">True</span> to use FTP (FTPS) over TLS. This is an extension to the FTP protocol
             that uses a Secure Socket Layer (SSL) protocol, <em>not</em> to be confused with SFTP, which uses a Secure
             Socket Shell protocol. Not all FTP servers support this. In particular, the Microsoft FTP server seems to do
-            a poor job of it. Requires Python V2.7. Will not work with older versions of Python. Optional. Default is
-            <span class="code">False</span></p>
+            a poor job of it. Optional. Default is <span class="code">False</span></p>
+
+        <p class="config_option">secure_data</p>
+
+        <p>
+            If a secure session is requested (option <span class="code">secure_ftp=True</span>), should we attempt a
+            secure data connection as well? This option is useful due to a bug in the Python FTP client library. See <a
+            href="https://github.com/weewx/weewx/issues/284">Issue #284</a>. Optional. Default is <span class="code">True</span>.
+        </p>
 
         <p class="config_option">port</p>
 
@@ -2227,7 +2267,13 @@ longitude = -77.0366</pre>
             Make sure <span class='code'>user</span> has write privileges in this directory. Required. No default.
         </p>
 
-        <p class="config_important">delete</p>
+        <p class="config_option">port</p>
+        <p>
+            The port to use for the ssh connection. Default is to use the default port for the
+            <span class="code">ssh</span> command (generally 22).
+        </p>
+
+        <p class="config_option">delete</p>
 
         <p>Files that don't exist in the local report are removed from the remote location. <em>USE WITH CAUTION:</em>
             If you make a mistake in setting the <span class="code">path</span>, this can cause unexpected files to be
@@ -2477,8 +2523,10 @@ longitude = -77.0366</pre>
 
         <p class="config_option">archive_interval</p>
 
-        <p>If your station hardware supports data logging then the archive interval will be downloaded from the station.
-            Otherwise, you must specify it here in seconds. Optional. Default is 300 seconds.
+        <p>
+            If your station hardware supports data logging then the archive interval will be downloaded from the station.
+            Otherwise, you must specify it here in seconds, and it must be evenly divisible by 60. Optional.
+            Default is 300 seconds.
         </p>
 
         <p class="config_option">archive_delay</p>

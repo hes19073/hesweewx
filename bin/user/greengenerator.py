@@ -660,8 +660,8 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
 
         elapsed_time = time.time() - t1
         if log_success:
-            log.inf("Generated %d files for report %s in %.2f seconds",
-                      ngen, self.skin_dict['REPORT_NAME'], elapsed_time)
+            log.info("Generated %d files for report %s in %.2f seconds",
+                       ngen, self.skin_dict['REPORT_NAME'], elapsed_time)
 
     def setup(self):
 

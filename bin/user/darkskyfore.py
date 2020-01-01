@@ -202,15 +202,16 @@ class getForecast(SearchList):
             if "precipType" in daily_data:
                 if daily_data["precipType"] == "snow":
                     output += '<div class="snow-precip">'
-                    output += '<img src="/xicons/snowflake-icon-15px.png"> <span>'+ str(int(daily_data["precipAccumulation"])) + '<span> cm'
+                    output += '<img src="xicons/snowflake-icon-15px.png"> <span>'+ str(int(daily_data["precipAccumulation"])) + '<span> cm'
                     output += '</div>'
                 elif daily_data["precipType"] == "rain":
-                    output += '<i class="wi wi-raindrop wi-rotate-45 rain-precip"></i> <span >'+ str(int(daily_data["precipProbability"] * 100)) + ' %</span>'
+                    output += '<img src="xicons/raindrop.png"> <span >'+ str(int(daily_data["precipProbability"] * 100)) + ' %</span>'
             else:
-                output += '<i class="wi wi-raindrop wi-rotate-45 rain-no-precip"></i> <span >0%</span>'
+                output += '<img src="xicons/raindrop.png"> <span > 0%</span>'
             output += '</div>'
             output += '<div class="forecast-wind">'
-            output += '<i class="wi wi-strong-wind"></i> '+ str(int(daily_data["windGust"] * 3.6)) + ' km/h'
+            #output += '<img src="xicons/wind.png" width="15px" height="15px"> <span >'+ str(int(daily_data["windGust"] * 3.6)) + ' km/h'
+            output += '<img src="xicons/strong-wind.svg"> <span >'+ str(int(daily_data["windGust"] * 3.6)) + ' km/h'
             output += '</div>'
             output += "</div> <!-- end .wuforecast -->"
             output += '<br />'

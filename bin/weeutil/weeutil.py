@@ -132,11 +132,11 @@ def stampgen(startstamp, stopstamp, interval):
 def startOfInterval(time_ts, interval):
     """Find the start time of an interval.
     
-    This algorithm assumes the day is divided up into
+    This algorithm assumes unit epoch time is divided up into
     intervals of 'interval' length. Given a timestamp, it
     figures out which interval it lies in, returning the start
     time.
-    
+
     time_ts: A timestamp. The start of the interval containing this
     timestamp will be returned.
     
@@ -160,7 +160,7 @@ def startOfInterval(time_ts, interval):
     >>> time.ctime(startOfInterval(start_ts, 3600))
     'Thu Jul  4 01:00:00 2013'
     >>> time.ctime(startOfInterval(start_ts, 7200))
-    'Thu Jul  4 00:00:00 2013'
+    'Thu Jul  4 01:00:00 2013'
     >>> start_ts = time.mktime(time.strptime("2013-07-04 01:00:00", "%Y-%m-%d %H:%M:%S"))
     >>> time.ctime(startOfInterval(start_ts,  300))
     'Thu Jul  4 00:55:00 2013'
@@ -181,22 +181,8 @@ def startOfInterval(time_ts, interval):
     'Thu Jul  4 07:51:00 2013'
     """
 
-    interval_m = int(interval // 60)
-    interval_h = int(interval // 3600)
-    time_tt = time.localtime(time_ts)
-    m = int(time_tt.tm_min // interval_m * interval_m)
-    h = int(time_tt.tm_hour // interval_h * interval_h) if interval_h > 1 else time_tt.tm_hour
+    start_interval_ts = int(time_ts / interval) * interval
 
-    # Replace the hour, minute, and seconds with the start of the interval.
-    # Everything else gets retained:
-    start_interval_ts = time.mktime((time_tt.tm_year,
-                                     time_tt.tm_mon,
-                                     time_tt.tm_mday,
-                                     h, m, 0,
-                                     0, 0, time_tt.tm_isdst))
-    # Weewx uses the convention that the interval is exclusive on left, inclusive
-    # on the right. So, if the timestamp is at the beginning of the interval,
-    # it actually belongs to the previous interval.
     if time_ts == start_interval_ts:
         start_interval_ts -= interval
     return start_interval_ts
@@ -1239,7 +1225,7 @@ def to_int(x):
     >>> print(to_int(None))
     None
     """
-    if isinstance(x, str) and x.lower() == 'none':
+    if isinstance(x, six.string_types) and x.lower() == 'none':
         x = None
     try:
         return int(x) if x is not None else None
@@ -1262,6 +1248,24 @@ def to_float(x):
     if isinstance(x, str) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
+
+
+def to_complex(magnitude, direction):
+    """Convert from magnitude and direction to a complex number."""
+    if magnitude is None:
+        value = None
+    elif magnitude == 0:
+        # If magnitude is zero, it doesn't matter what direction is. Can even be None.
+        value = complex(0.0, 0.0)
+    elif direction is None:
+        # Magnitude must be non-zero, but we don't know the direction.
+        value = None
+    else:
+        # Magnitude is non-zero, and we have a good direction.
+        x = magnitude * math.cos(math.radians(90.0 - direction))
+        y = magnitude * math.sin(math.radians(90.0 - direction))
+        value = complex(x, y)
+    return value
 
 
 def min_with_none(x_seq):

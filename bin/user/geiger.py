@@ -73,7 +73,8 @@ class GeigerMonitor(StdService):
 
         d = config_dict.get('Geiger', {})
         # get PORT and BAUD of Geiger
-        self._port = d.get('port', '/dev/geiger')
+        self._port = d.get('port', '/dev/ttyUSB1')
+        #self._port = d.get('port', '/dev/geiger')
         self._baud = weeutil.weeutil.to_int(d.get('baud', 9600))
 
         # get the database parameters we need to function

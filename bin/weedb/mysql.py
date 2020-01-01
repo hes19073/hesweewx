@@ -35,6 +35,7 @@ exception_map = {
     1054: weedb.NoColumnError,
     1062: weedb.IntegrityError,
     1146: weedb.NoTableError,
+    1927: weedb.CannotConnectError,
     2002: weedb.CannotConnectError,
     2003: weedb.CannotConnectError,
     2005: weedb.CannotConnectError,
@@ -310,7 +311,11 @@ def set_engine(connect, engine):
         server_version = connect._server_version
     except AttributeError:
         server_version = connect.server_version
-    if server_version >= (5, 5):
+    # Some servers return lists of ints, some lists of strings, some a string.
+    # Try to normalize:
+    if isinstance(server_version, (tuple, list)):
+        server_version = '%s.%s' % server_version[:2]
+    if server_version >= '5.5':
         connect.query("SET default_storage_engine=%s" % engine)
     else:
         connect.query("SET storage_engine=%s;" % engine)

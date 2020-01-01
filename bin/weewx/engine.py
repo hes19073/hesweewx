@@ -111,6 +111,7 @@ class StdEngine(object):
             self.console = loader_function(config_dict, self)
         except Exception as ex:
             log.error("Import of driver failed: %s (%s)", ex, type(ex))
+            weeutil.logger.log_traceback(log.critical, "    ****  ")
             # Signal that we have an initialization error:
             raise InitializationError(ex)
         
@@ -542,8 +543,9 @@ class StdArchive(StdService):
         # If this the the initial time through the loop, then the end of
         # the archive and delay periods need to be primed:
         if not hasattr(self, 'end_archive_period_ts'):
-            self.end_archive_period_ts = \
-                (int(self.engine._get_console_time() / self.archive_interval) + 1) * self.archive_interval
+            now = self.engine._get_console_time()
+            start_archive_period_ts = weeutil.weeutil.startOfInterval(now, self.archive_interval)
+            self.end_archive_period_ts = start_archive_period_ts + self.archive_interval
             self.end_archive_delay_ts  =  self.end_archive_period_ts + self.archive_delay
         self.old_accumulator = None
 
@@ -572,8 +574,9 @@ class StdArchive(StdService):
         # END_ARCHIVE_PERIOD event
         if event.packet['dateTime'] > self.end_archive_period_ts:
             self.engine.dispatchEvent(weewx.Event(weewx.END_ARCHIVE_PERIOD, packet=event.packet))
-            self.end_archive_period_ts += self.archive_interval
-            
+            start_archive_period_ts = weeutil.weeutil.startOfInterval(event.packet['dateTime'], self.archive_interval)
+            self.end_archive_period_ts = start_archive_period_ts + self.archive_interval
+
         # Has the end of the archive delay period ended? If so, break the loop.
         if event.packet['dateTime'] >= self.end_archive_delay_ts:
             raise BreakLoop
@@ -626,12 +629,21 @@ class StdArchive(StdService):
         lastgood_ts = dbmanager.lastGoodStamp()
 
         try:
-            # Now ask the console for any new records since then.
-            # (Not all consoles support this feature).
+            # Now ask the console for any new records since then. Not all
+            # consoles support this feature. Note that for some consoles,
+            # notably the Vantage, when doing a long catchup the archive
+            # records may not be on the same boundaries as the archive
+            # interval. Reject any records that have a timestamp in the
+            # future, but provide some lenience for clock drift.
+            now = time.time()
             for record in generator(lastgood_ts):
-                self.engine.dispatchEvent(weewx.Event(weewx.NEW_ARCHIVE_RECORD,
-                                                      record=record,
-                                                      origin='hardware'))
+                ts = record.get('dateTime')
+                if ts and ts < now + self.archive_delay:
+                    self.engine.dispatchEvent(weewx.Event(weewx.NEW_ARCHIVE_RECORD,
+                                                          record=record,
+                                                          origin='hardware'))
+                else:
+                    log.warning("ignore historical record: %s" % record)
         except weewx.HardwareError as e:
             log.error("Internal error detected. Catchup abandoned")
             log.error("**** %s" % e)
@@ -701,6 +713,8 @@ class StdTimeSynch(StdService):
                         log.debug("Station does not support setting the time")
             except NotImplementedError:
                 log.debug("Station does not support reading the time")
+            except weewx.WeeWxIOError as e:
+                log.info("Error reading time: %s" % e)
 
 #==============================================================================
 #                    Class StdPrint
@@ -914,14 +928,15 @@ def main(options, args):
             time.sleep(60)
             log.info("retrying...")
 
-        except (weedb.CannotConnect, weedb.DisconnectError) as e:
-            # No connection to the database server. Log it, wait 120 seconds, then try again
+        # Catch any database connection errors:
+        except (weedb.CannotConnectError, weedb.DisconnectError) as e:
+            # No connection to the database server. Log it, wait 60 seconds, then try again
             log.critical("Database connection exception: %s", e)
             if options.exit:
                 log.critical("    ****  Exiting...")
                 sys.exit(weewx.DB_ERROR)
-            log.critical("    ****  Waiting 2 minutes then retrying...")
-            time.sleep(120)
+            log.critical("    ****  Waiting 60 seconds then retrying...")
+            time.sleep(60)
             log.info("retrying...")
 
         except weedb.OperationalError as e:

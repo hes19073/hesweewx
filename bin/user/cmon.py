@@ -121,8 +121,8 @@ import os
 import math
 import platform
 import re
-#import syslog
 import time
+
 from subprocess import Popen, PIPE
 
 import weewx

@@ -34,7 +34,7 @@ import weewx.wxservices
 
 from weewx.manager import open_manager_with_config
 from weewx.units import unit_constants, unit_nicknames, convertStd, to_std_system, ValueTuple
-from weeutil.weeutil import timestamp_to_string, option_as_list, to_int, tobool, get_object
+from weeutil.weeutil import timestamp_to_string, option_as_list, to_int, tobool, get_object, max_with_none
 
 log = logging.getLogger(__name__)
 
@@ -332,6 +332,8 @@ class Source(object):
 
         # setup a counter to count the periods of records
         self.period_no = 1
+        # obtain the lastUpdate meta data value before we import anything
+        last_update = to_int(self.dbm._read_metadata('lastUpdate'))
         with self.dbm as archive:
             if self.first_period:
                 # collect the time for some stats reporting later
@@ -357,7 +359,7 @@ class Source(object):
                     print("Period %d ..." % self.period_no)
 
                 # get the raw data
-                _msg = 'Obtaining raw import data for period %d...' % self.period_no
+                _msg = 'Obtaining raw import data for period %d ...' % self.period_no
                 if self.verbose:
                     print(_msg)
                 log.info(_msg)
@@ -368,7 +370,7 @@ class Source(object):
                 log.info(_msg)
 
                 # map the raw data to a WeeWX archive compatible dictionary
-                _msg = 'Mapping raw import data for period %d...' % self.period_no
+                _msg = 'Mapping raw import data for period %d ...' % self.period_no
                 if self.verbose:
                     print(_msg)
                 log.info(_msg)
@@ -381,7 +383,7 @@ class Source(object):
                 # save the mapped data to archive
                 # first advise the user and log, but only if its not a dry run
                 if not self.dry_run:
-                    _msg = 'Saving mapped data to archive for period %d...' % self.period_no
+                    _msg = 'Saving mapped data to archive for period %d ...' % self.period_no
                     if self.verbose:
                         print(_msg)
                     log.info(_msg)
@@ -395,9 +397,16 @@ class Source(object):
                 # increment our period counter
                 self.period_no += 1
             # The source data has been processed and any records saved to
-            # archive (except if it was a dry run). If necessary, calculate
-            # any missing derived fields and provide the user with suitable
-            # summary output.
+            # archive (except if it was a dry run).
+
+            # now update the lastUpdate meta data field, set it to the max of
+            # the timestamp of the youngest record imported and the value of
+            # lastUpdate from before we started
+            new_last_update = max_with_none((last_update, self.latest_ts))
+            if new_last_update is not None:
+                self.dbm._write_metadata('lastUpdate', str(int(new_last_update)))
+            # If necessary, calculate  any missing derived fields and provide
+            # the user with suitable summary output.
             if self.total_rec_proc == 0:
                 # nothing was imported so no need to calculate any missing
                 # fields just inform the user what was done
@@ -431,21 +440,30 @@ class Source(object):
                     # It was not a dry run so calculate any missing derived
                     # fields and provide the user with a summary of what we did.
                     if self.calc_missing:
-                        # we were asked to calculate missing derived fields, so
-                        # get a CalcMissing object
-                        # first construct a CalcMissing config dict
-                        # (self.dry_run will never be true)
+                        # We were asked to calculate missing derived fields, so
+                        # get a CalcMissing object.
+                        # First construct a CalcMissing config dict
+                        # (self.dry_run will never be true). Subtract 0.5
+                        # seconds from earliest timestamp as calc_missing only
+                        # calculates missing derived obs for records
+                        # timestamped after start_ts.
                         calc_missing_config_dict = {'name': 'Calculate Missing Derived Observations',
                                                     'binding': self.db_binding_wx,
-                                                    'start_ts': self.earliest_ts,
+                                                    'start_ts': self.earliest_ts-0.5,
                                                     'stop_ts': self.latest_ts,
-                                                    'trans_days': 10,
+                                                    'trans_days': 1,
                                                     'dry_run': self.dry_run is True}
                         # now obtain a CalcMissing object
                         self.calc_missing_obj = weecfg.database.CalcMissing(self.config_dict,
                                                                             calc_missing_config_dict)
+                        _msg = "Calculating missing derived observations ..."
+                        print(_msg)
+                        log.info(_msg)
                         # do the calculations
                         self.calc_missing_obj.run()
+                        _msg = "Finished calculating missing derived observations"
+                        print(_msg)
+                        log.info(_msg)
                     # now provide the summary report
                     _msg = "Finished import"
                     print(_msg)

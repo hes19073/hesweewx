@@ -7,7 +7,7 @@
 from __future__ import absolute_import
 import time
 
-__version__="4.0.0b1"
+__version__="4.0.0b6"
 
 # Holds the program launch time in unix epoch seconds:
 # Useful for calculating 'uptime.'
@@ -61,9 +61,6 @@ class ViolatedPrecondition(Exception):
     
 class StopNow(Exception):
     """Exception thrown to stop the engine."""
-    
-class UninitializedDatabase(Exception):
-    """Exception thrown when attempting to use an uninitialized database."""
     
 class UnknownDatabase(Exception):
     """Exception thrown when attempting to use an unknown database."""

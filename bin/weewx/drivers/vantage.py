@@ -545,14 +545,14 @@ class Vantage(weewx.drivers.AbstractDevice):
         
         N: The number of packets to generate [default is 1]
         
-        yields: up to N loop packets (could be less in the event of a
+        yields: up to N loop packets (could be less in the event of a 
         read or CRC error).
         """
 
         log.debug("Requesting %d LOOP packets.", N)
-
+        
         self.port.wakeup_console(self.max_tries)
-
+        
         if self.loop_request == 1:
             # If asking for old-fashioned LOOP1 data, send the older command in case the
             # station does not support the LPS command:
@@ -1746,7 +1746,7 @@ _loop_map = {
     'barometer'       : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
     'consBatteryVoltage': lambda p, k: float((p[k] * 300) >> 9) / 100.0,
     'dayET'           : lambda p, k: float(p[k]) / 1000.0,
-    'dayRain'         : lambda p, k: float(p[k]) / 100.0,
+    'dayRain'         : _decode_rain,
     'dewpoint'        : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
     'extraAlarm1'     : lambda p, k: p[k],
     'extraAlarm2'     : lambda p, k: p[k],
@@ -1785,7 +1785,7 @@ _loop_map = {
     'leafWet3'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
     'leafWet4'        : lambda p, k: float(p[k]) if p[k] != 0xff else None,
     'monthET'         : lambda p, k: float(p[k]) / 100.0,
-    'monthRain'       : lambda p, k: float(p[k]) / 100.0,
+    'monthRain'       : _decode_rain,
     'outHumidity'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
     'outsideAlarm1'   : lambda p, k: p[k],
     'outsideAlarm2'   : lambda p, k: p[k],
@@ -1822,7 +1822,7 @@ _loop_map = {
     'windSpeed2'      : _decode_windSpeed_H,
     'windSpeed10'     : _decode_windSpeed_H,
     'yearET'          : lambda p, k: float(p[k]) / 100.0,
-    'yearRain'        : lambda p, k: float(p[k]) / 100.0,
+    'yearRain'        : _decode_rain,
 }
 
 # This dictionary maps a type key to a function. The function should be able to
@@ -2096,16 +2096,16 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
         try:
             _firmware_date = station.getFirmwareDate().decode('ascii')
         except weewx.RetriesExceeded:
-            _firmware_date = u"<Unavailable>"
+            _firmware_date = "<Unavailable>"
         try:
             _firmware_version = station.getFirmwareVersion().decode('ascii')
         except weewx.RetriesExceeded:
-            _firmware_version = u'<Unavailable>'
+            _firmware_version = '<Unavailable>'
     
         console_time = station.getConsoleTime()
         altitude_converted = weewx.units.convert(station.altitude_vt, station.altitude_unit)[0]
     
-        print(u"""Davis Vantage EEPROM settings:
+        print("""Davis Vantage EEPROM settings:
     
     CONSOLE TYPE:                   %s
     
@@ -2145,7 +2145,7 @@ class VantageConfigurator(weewx.drivers.AbstractConfigurator):
                 gmt_offset_str = "%+.1f hours" % gmt_offset
                 zone_code = 'N/A'
             on_off = "ON" if retransmit_channel else "OFF"
-            print(u"""    CONSOLE STATION INFO:
+            print("""    CONSOLE STATION INFO:
       Latitude (onboard):           %+0.1f
       Longitude (onboard):          %+0.1f
       Use manual or auto DST?       %s

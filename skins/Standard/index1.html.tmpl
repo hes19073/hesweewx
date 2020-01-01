@@ -264,17 +264,17 @@
  #end if
     </tr>
     <tr>
-      <td class='hes1_kopfc' colspan='2'>Blatt 2 (S)</td><td>$current.leafWet1</td>
+      <td class='hes1_kopfc' colspan='2'>Blatt 2 (S)</td><td>$current.leafWet2</td>
 
- #if $trend.leafWet1.raw < 0
+ #if $trend.leafWet2.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
-        <td class="hes1_vallo">$trend.leafWet1</td>
- #elif $trend.leafWet1.raw == 0
+        <td class="hes1_vallo">$trend.leafWet2</td>
+ #elif $trend.leafWet2.raw == 0
         <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.leafWet1</td>
- #elif $trend.leafWet1.raw > 0
+        <td class="hes1_valhi">$trend.leafWet2</td>
+ #elif $trend.leafWet2.raw > 0
         <td class="hes1_trendhi"> &#8679;</td>
-        <td class="hes1_valhi">$trend.leafWet1</td>
+        <td class="hes1_valhi">$trend.leafWet2</td>
  #end if
     </tr>
   </table>
@@ -285,6 +285,79 @@
   <p>Blatttemperatur:&nbsp;$current.leafTemp1</p>
  </div>
 </div> <!-- end Davis Blatt Feuchte -->
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Regen<br />Vantage Pro2</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Heute</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayTHSW.png' class='popup'>$current.rain</a></td>
+      <td colspan='2'>$day.rain.sum</td>
+    </tr>
+    <tr>
+     <td>Regen <br>Intervall</td>
+     <td>Tag</td>
+     <td>$current.dayRain</td>
+     <td>Monat</td>
+     <td>$latest($data_binding='wd_binding').monthRain</td>
+    </tr>
+    <tr>
+     <td>Regen <br>Intervall</td>
+     <td>Jahr</td>
+     <td>$latest($data_binding='wd_binding').yearRain</td>
+     <td>24 h</span></td>
+     <td>$latest($data_binding='wd_binding').dayRain</td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Regen Davis -->
+
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>THSW<br />Vantage Pro2</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayTHSW.png' class='popup'>$current.THSW</a></td>
+    #if $trend.THSW.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.THSW.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.THSW</td>
+    #elif $trend.THSW.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.THSW</td>
+    #elif $trend.THSW.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.THSW</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'> $day.THSW.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day.THSW.max</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$yesterday.THSW.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$yesterday.THSW.max</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende THSW -->
+
 
  <div class="hes">
   <div class='hesbox'>
@@ -324,6 +397,13 @@
      <td><span class="hes1_m">max</span></td>
      <td><span class='hes1_vallo'>$yesterday.ET.max</span> </td>
     </tr>
+    <tr>
+     <td class='hes1_kopfb'>Davis seit<br />Mitternacht</td>
+     <td><span class='hes1'>Tag</span></td>
+     <td><span class='hes1'>$current.dayET</span></td>
+     <td><span class="hes1">Woche</span></td>
+     <td><span class='hes1'>$day.dayET.sum</span></td>
+    </tr>
    </table>
   </div>
 </div> <!-- ende ET -->
@@ -340,17 +420,17 @@
     </tr><tr>
       <td>&nbsp;</td><td>&nbsp;</td>
     #else
-      <td>Summe aktuell</td><td>$gltaktformat</td>
+      <td>Summe bis 31.05</td><td>$gltaktformat</td>
    </tr><tr>
       <td>200 wurde erreicht am:</td><td>$green_day.format("%d.%m.%Y")</td>
     #end if
      </tr>
    </table>
    <hr />
-   <p>ist die Summe aller Tagesmittelwerten &gt; 0,0°C.<br />
+   <p>Die Summe aller Tagesmittelwerten &gt; 0°C.<br />
       Januarwerte * 0,5 + Februarwerte * 0,75<br />
-      + Märzwerte * 1.0, wenn die Summe &gt; 200, <br />
-      beginnt die nachhaltige <b>Vegetation</b>. (bis 31.Mai)</p>
+      + Märzwerte * 1.0, ist die Summe &gt;200, <br />
+      beginnt die <b>Vegetation</b> (max bis 31.Mai).</p>
    </div>
   </div> <!-- gruenlandtempsum -->
 
@@ -524,7 +604,7 @@
 
  </div> 
 
-#include $Extras.cookie
+##include $Extras.cookie
 
 </body>
 

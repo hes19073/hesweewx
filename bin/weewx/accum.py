@@ -52,6 +52,10 @@ DEFAULTS_INI = u"""
         extractor = last
     [[rain]]
         extractor = sum
+    [[snow]]
+        extractor = sum
+    [[hail]]
+        extractor = sum
     [[rain24]]
         extractor = last
     [[monthET]]

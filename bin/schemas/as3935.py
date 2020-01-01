@@ -9,6 +9,7 @@
 schema = [
     ('dateTime', 'INTEGER NOT NULL PRIMARY KEY'),
     ('usUnits', 'INTEGER NOT NULL'),
+    ('interval', 'INTEGER NOT NULL'),
     ('distance', 'REAL'),
     ('strikes', 'REAL'),
     ('energy', 'REAL'),
@@ -18,10 +19,10 @@ schema = [
 
 # Schema to be used for the daily summaries. The default is to include all the observation types in the table as
 # 'scalar' types, plus one for 'wind' as a vector type.
-day_summaries = [(e[0], 'scalar') for e in table if e[0] not in ('dateTime', 'usUnits', 'interval')]\
-                + [('wind', 'vector')]
+#day_summaries = [(e[0], 'SCALAR') for e in table if e[0] not in ('dateTime', 'usUnits', 'interval')]
+#
+#schema = {
+#    'table': table,
+#    'day_summaries' : day_summaries
+#}
 
-schema = {
-    'table': table,
-    'day_summaries' : day_summaries
-}

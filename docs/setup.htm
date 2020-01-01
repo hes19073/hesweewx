@@ -71,7 +71,7 @@ Python 2.7.15rc1
 
 <p>
     Install the required python packages using either the package management software for your system (<i>e.g.</i>, <span
-    class='code'>apt-get</span>, <span class='code'>yum</span>, <span class='code'>yast</span>) or the Python Package
+    class='code'>apt-get</span>, <span class='code'>yum</span>, <span class='code'>zypper</span>) or the Python Package
     Management System (<span class='code'>pip</span>). Select the appropriate tab for specific instructions for your
     chosen install method and Python version.
 </p>
@@ -116,7 +116,7 @@ Python 2.7.15rc1
 # Ubuntu 18.04 and later):
 <span class='cmd'>sudo apt-get install python</span>
 
-# For all systems, you may have to install the Python Imaging Library.
+# You may have to install the Python Imaging Library.
 # Try this first:
 <span class='cmd'>sudo apt-get install python-pil</span>
 # If that doesn't work, try this:
@@ -137,16 +137,22 @@ sudo apt-get install python-mysqldb</span>
 # Required if using FTP on Raspbian systems:
 <span class="cmd">sudo apt-get install ftp</span>
 
-# Optional for extended almanac information:
+# Optional. For extended almanac information, install "ephem".
+# Try this first:
+<span class="cmd">sudo apt-get install python-ephem</span>
+# If that doesn't work, try this:
 <span class="cmd">sudo apt-get install python-dev
 sudo apt-get install python-pip
 sudo pip install pyephem</span></pre>
         </div>
         <div id="prereq-debian-py3" class="tab-content tab-content-tty">
-            <pre class="tty"><span class="cmd">sudo apt-get install python3-pil
+            <pre class="tty"># Required packages:
+<span class="cmd">sudo apt-get install python3-pil
 sudo apt-get install python3-configobj</span>
 
-# As of this writing, Cheetah 3 can only be installed using pip:
+# Not all distributions have ported Cheetah to Python 3. Try this first:
+<span class="cmd">sudo apt-get install python3-cheetah</span>
+# If that doesn't work, try this:
 <span class="cmd">sudo apt-get install python3-pip
 sudo apt-get install python3-dev
 sudo pip3 install cheetah3</span>
@@ -159,8 +165,13 @@ sudo apt-get install python3-usb</span>
 <span class="cmd">sudo apt-get install mysql-client
 sudo apt-get install python3-mysqldb</span>
 
-# Optional for extended almanac information:
-<span class="cmd">sudo pip3 install pyephem</span>
+# Optional. For extended almanac information, install "ephem".
+# Not all distributions have ported it to Python 3. Try this first:
+<span class="cmd">sudo apt-get install python3-ephem</span>
+# If that doesn't work, try this:
+<span class="cmd">sudo apt-get install python3-pip
+sudo apt-get install python3-dev
+sudo pip3 install pyephem</span>
     </pre>
         </div>
     </div>
@@ -193,7 +204,27 @@ sudo yum install python-mysqldb</span>
                 </pre>
         </div>
         <div id="prereq-redhat-py3" class="tab-content tab-content-tty">
-            <pre class="tty">TBD</pre>
+            <pre class="tty"># For RHEL 8 based systems.
+
+# You may have to install Python 3:
+<span class="cmd">sudo yum update
+sudo yum install python3</span>
+
+# Then install pre-requisites:
+<span class="cmd">sudo yum install python3-configobj
+sudo yum install python3-pillow
+sudo yum install python3-pyserial
+sudo yum install python3-pyusb</span>
+
+# As of this writing, Cheetah can only be installed using pip3:
+<span class="cmd">sudo pip3 install Cheetah3</span>
+
+# For extended almanac information (optional)
+<span class="cmd">sudo pip3 install pyephem</span>
+
+# If you plan on using MySQL
+<span class="cmd">sudo yum install python3-PyMySQL</span>
+</pre>
         </div>
     </div>
 
@@ -205,29 +236,42 @@ sudo yum install python-mysqldb</span>
             Python 3
         </button>
         <div id="prereq-suse-py2" class="tab-content tab-content-tty">
-                <pre class='tty'># On some SUSE systems, use 'yast -i' instead of 'zypper install'
+                <pre class='tty'># Tested on openSUSE Leap 15.1
+
+# You may have to install python 2 first:
+<span class="cmd">sudo zypper install python</span>
 
 # Required packages:
-<span class="cmd">sudo zypper install python-configobj
-sudo zypper install python-imaging
-sudo zypper install python-Cheetah</span>
+<span class="cmd">sudo zypper install python2-configobj
+sudo zypper install python2-Pillow
+sudo zypper install python2-pyserial
+sudo zypper install python2-usb</span>
 
-# Required if hardware is serial or USB:
-<span class="cmd">sudo zypper install python-pyserial
-sudo zypper install pyton-usb</span>
+# Cheetah must be installed by using pip2:
+<span class="cmd">sudo zypper install python2-pip
+sudo pip2 install Cheetah</span>
 
-# Required if using MySQL:
-<span class="cmd">sudo zypper install mysql-community-server-client
-sudo zypper install python-mysql</span>
+# If you plan on using MySQL / MariaDB:
+<span class="cmd">sudo zypper install python2-mysqlclient</span>
 
-# Optional for extended almanac information:
-<span class="cmd">sudo zypper install python-devel
-sudo zypper install setuptools
-sudo pip install pyephem</span>
-                </pre>
+# For extended almanac information (optional):
+<span class="cmd">sudo pip2 install pyephem</span></pre>
         </div>
         <div id="prereq-suse-py3" class="tab-content tab-content-tty">
-            <pre class="tty">TBD</pre>
+            <pre class="tty"># Tested on openSUSE Leap 15.1
+
+# Required packages:
+<span class="cmd">sudo zypper install python3-configobj
+sudo zypper install python3-Pillow
+sudo zypper install python3-Cheetah3
+sudo zypper install python3-pyserial
+sudo zypper install python3-usb</span>
+
+# If you plan on using MySQL / MariaDB:
+<span class="cmd">sudo zypper install python3-mysqlclient</span>
+
+# For extended almanac information (optional)
+<span class="cmd">sudo pip3 install pyephem</span></pre>
         </div>
     </div>
 
@@ -251,7 +295,7 @@ sudo pip install pyusb</span>
 
 # Optional for extended almanac information:
 <span class="cmd">sudo pip install pyephem</span>
-                </pre>
+</pre>
         </div>
         <div id="prereq-pip-py3" class="tab-content tab-content-tty">
                 <pre class="tty"># Install pip3 if it has not already been installed:

@@ -49,13 +49,13 @@ class getEarthquake(SearchList):
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
         earthquake_maxradiuskm = self.generator.skin_dict['Extras']['earthquake_maxradiuskm']
-        #Sample URL from Belchertown Weather: http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=42.223&lon=-72.374&maxradiuskm=1000&format=geojson&nodata=204&minmag=2
-        earthquake_url = "http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=%s&lon=%s&maxradiuskm=%s&format=geojson&nodata=204&minmag=2" % ( latitude, longitude, earthquake_maxradiuskm )
+        #Sample URL from Belchertown Weather: http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=53.605963&lon=11.341407&maxradiuskm=10000&format=geojson&nodata=204&minmag=2
+        earthquake_url = "http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=%s&lon=%s&maxradiuskm=%s&format=geojson&nodata=204&minmag=2" % (latitude, longitude, earthquake_maxradiuskm)
         earthquake_is_stale = False
 
         # Determine if the file exists and get it's modified time
-        if os.path.isfile( earthquake_file ):
-            if ( int( time.time() ) - int( os.path.getmtime( earthquake_file ) ) ) > int( earthquake_stale_timer ):
+        if os.path.isfile(earthquake_file):
+            if (int(time.time()) - int(os.path.getmtime(earthquake_file))) > int(earthquake_stale_timer):
                 earthquake_is_stale = True
         else:
             # File doesn't exist, download a new copy
@@ -72,7 +72,8 @@ class getEarthquake(SearchList):
         with open(earthquake_file, encoding="utf8") as read_file:
             eqdata= json.loads(read_file.read())
 
-        eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
+        #eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
+        eqtime = eqdata["features"][0]["properties"]["time"] / 1000
         equrl = eqdata["features"][0]["properties"]["url"]
         eqplace = eqdata["features"][0]["properties"]["place"]
         eqmag = eqdata["features"][0]["properties"]["mag"]

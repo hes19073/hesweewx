@@ -122,6 +122,9 @@ class ISSAlert(SearchList):
             if then > now:
                 #Add this sighting to our list of all
                 issall.append(newsighting)
+            else:
+                #Add this sighting to our list of als older
+                issall.append(newsighting)
 
         return issall
 

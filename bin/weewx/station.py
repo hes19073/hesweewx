@@ -13,9 +13,9 @@ import weewx.units
 
 class StationInfo(object):
     """Readonly class with static station information. It has no formatting information. Just a POS.
-
+    
     Attributes:
-
+    
     altitude_vt:     Station altitude as a ValueTuple
     hardware:        A string holding a hardware description
     rain_year_start: The start of the rain year (1=January)
@@ -59,14 +59,14 @@ class StationInfo(object):
 
 class Station(object):
     """Formatted version of StationInfo."""
-
+    
     def __init__(self, stn_info, formatter, converter, skin_dict):
-
+        
         # Store away my instance of StationInfo
         self.stn_info = stn_info
         self.formatter = formatter
         self.converter = converter
-
+        
         # Add a bunch of formatted attributes:
         label_dict = skin_dict.get('Labels', {})
         hemispheres    = label_dict.get('hemispheres', ('N','S','E','W'))
@@ -87,14 +87,14 @@ class Station(object):
         self.python_version = "%d.%d.%d" % sys.version_info[:3]
 
     @property
-    def uptime(self):
+    def uptime(self):        
         """Lazy evaluation of weewx uptime."""
         delta_time = time.time() - weewx.launchtime_ts if weewx.launchtime_ts else None
-
+            
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
                                        formatter=self.formatter,
                                        converter=self.converter)
-
+    
     @property
     def db_uptime(self):
         """Lazy evaluation of weewx uptime."""
@@ -123,7 +123,7 @@ class Station(object):
                     # for FreeBSD
                     import ctypes
                     from ctypes.util import find_library
-
+    
                     libc = ctypes.CDLL(find_library('c'))
                     size = ctypes.c_size_t()
                     buf = ctypes.c_int()
