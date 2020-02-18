@@ -465,8 +465,8 @@ def reconfig(old_db_dict, new_db_dict, new_unit_system=None, new_schema=None):
 
     with Manager.open(old_db_dict) as old_archive:
         if new_schema is None:
-            import schemas.wview
-            new_schema = schemas.wview.schema
+            import schemas.wview_extended
+            new_schema = schemas.wview_extended.schema
         with Manager.open_with_create(new_db_dict, schema=new_schema) as new_archive:
             # Wrap the input generator in a unit converter.
             record_generator = weewx.units.GenWithConvert(old_archive.genBatchRecords(),
@@ -547,7 +547,7 @@ class DBBinder(object):
 default_binding_dict = {'database': 'archive_sqlite',
                         'table_name': 'archive',
                         'manager': 'weewx.manager.DaySummaryManager',
-                        'schema': 'schemas.wview.schema'}
+                        'schema': 'schemas.wview_extended.schema'}
 
 
 def get_database_dict_from_config(config_dict, database):
@@ -855,7 +855,8 @@ class DaySummaryManager(Manager):
                 s = ', '.join(
                     ["%s %s" % column_type
                      for column_type in DaySummaryManager.day_schemas[obs_schema[1]]])
-                sql_create_str = "CREATE TABLE %s_day_%s (%s);" % ('archive', obs_schema[0], s)
+                sql_create_str = "CREATE TABLE %s_day_%s (%s);" \
+                                 % (self.table_name, obs_schema[0], s)
                 cursor.execute(sql_create_str)
             # Create the meta table:
             cursor.execute(DaySummaryManager.meta_create_str % self.table_name)
@@ -1086,7 +1087,7 @@ class DaySummaryManager(Manager):
         _timespan = weeutil.weeutil.archiveDaySpan(sod_ts, 0)
 
         # Get an empty day accumulator:
-        _day_accum = weewx.accum.Accum(_timespan)
+        _day_accum = weewx.accum.Accum(_timespan, self.std_unit_system)
 
         _cursor = cursor or self.connection.cursor()
 

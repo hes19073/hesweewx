@@ -130,7 +130,12 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
          ('extraTempO5',          'REAL'),
          ('extraTempO6',          'REAL'),
          ('extraTempO7',          'REAL'),
-         ('trendIcon',            'REAL')]
+         ('trendIcon',            'REAL'),
+         ('bar_calibration',      'REAL'),
+         ('bar_reduction',        'REAL'),
+         ('bar_offset',           'REAL'),
+         ('pressure_raw',         'REAL'),
+]
 
 # Schema to be used for the daily summaries. The default is to include all the observation types in the table as
 # 'scalar' types, plus one for 'wind' as a vector type.

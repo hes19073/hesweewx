@@ -162,8 +162,8 @@ class Source(object):
         self.dbm = open_manager_with_config(config_dict, self.db_binding_wx,
                                             initialize=True,
                                             default_binding_dict={'table_name': 'archive',
-                                                                  'manager': 'weewx.wxmanager.WXDaySummaryManager',
-                                                                  'schema': 'schemas.wview.schema'})
+                                                                  'manager': 'weewx.wxmanager.DaySummaryManager',
+                                                                  'schema': 'schemas.wview_extended.schema'})
         # get the unit system used in our db
         if self.dbm.std_unit_system is None:
             # we have a fresh archive (ie no records) so cannot deduce
@@ -1136,7 +1136,7 @@ class Source(object):
                     # perform any any required QC checks
                     self.qc(_conv_rec, 'Archive')
                     # add the record to our tranche and increment our count
-                    _tranche.append(_rec)
+                    _tranche.append(_conv_rec)
                     nrecs += 1
                     # if we have a full tranche then save to archive and reset
                     # the tranche

@@ -18,12 +18,12 @@ log = logging.getLogger(__name__)
 
 class HausEG(StdService):
     def __init__(self, engine, config_dict):
-        super(HausEG, self).__init__(engine, config_dict)
+        super(HausEG, self).__init__(engine, config_dict)      
         d = config_dict.get('HausEG', {})
         self.filename = d.get('filename', '/var/tmp/hauseg.txt')
         log.info("DataHausEG: using %s", self.filename)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.read_file)
-
+    
     def read_file(self, event):
         try:
             with open(self.filename) as f:
@@ -31,7 +31,7 @@ class HausEG(StdService):
                 line = f.readline()
                 values = line.split(',')
 
-            #log.debug("HausEG: found value of %s", values)
+            log.debug("HausEG: found value of %s" % values)
 
             event.record['ele'] = float(values[1])
             event.record['eleA'] = float(values[2])
@@ -54,5 +54,5 @@ class HausEG(StdService):
             event.record['wasA'] = float(values[20])
 
         except Exception as e:
-            log.error("HausEG: cannot read value: %s", e)
+            log.error("HausEG: cannot read value: %s" % e)
 

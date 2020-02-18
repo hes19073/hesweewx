@@ -21,6 +21,7 @@ import six
 import Cheetah.Template
 import Cheetah.Filters
 
+import weeutil.logger
 import weeplot.genplot
 import weeutil.weeutil
 import weewx.units
@@ -30,7 +31,6 @@ from weewx.units import ValueTuple
 from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
 from weeutil.config import search_up
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 log = logging.getLogger(__name__)
 
@@ -151,6 +151,11 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             ano = today.year
             mai_ano = datetime.date(ano, 5, 31)
             plotgen_ts = time.mktime(mai_ano.timetuple())
+
+            now_tuple = time.localtime(plotgen_ts)
+            new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
+            start_date_ts = time.mktime(tuple(new_year_tuple))
+
             #date_string = plot_options.get('end_date')
             #if date_string:
             #    plotgen_ts = time.mktime(time.strptime(date_string, '%m/%d/%Y'))
@@ -161,17 +166,16 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             #    else:
             #        plotgen_ts = time.time()
 
-            date_string = plot_options.get('start_date')
-            if date_string:
-                start_date_ts = time.mktime(time.strptime(date_string, '%m/%d/%Y'))
-            else:
-                now_tuple = time.localtime(plotgen_ts)
-                new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
-                start_date_ts = time.mktime(tuple(new_year_tuple))
+            #date_string = plot_options.get('start_date')
+            #if date_string:
+            #    start_date_ts = time.mktime(time.strptime(date_string, '%m/%d/%Y'))
+            #else:
+            #    now_tuple = time.localtime(plotgen_ts)
+            #    new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
+            #    start_date_ts = time.mktime(tuple(new_year_tuple))
 
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-            #ai = 43200
             ai = 86400
 
             # Calculate a suitable min, max time for the requested time.
@@ -190,7 +194,8 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
-            if skipThisPlot(plotgen_ts, ai, img_file):
+            t1_ts = time.time()
+            if skipThisPlot(t1_ts, ai, img_file):
                 pass
             else:
                 # Create the subdirectory that the image is to be put in.
@@ -248,8 +253,9 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
 
         # Get a suitable bottom label:
-        bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
-        bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
+        ti_t = time.time()
+        bottom_label_format = plot_options.get('bottom_label_format', '%d.%m.%Y')
+        bottom_label = time.strftime(bottom_label_format, time.localtime(ti_t))
         result.setBottomLabel(bottom_label)
 
         # This generator acts on only one variable type:
@@ -772,15 +778,14 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
             try:
                 # TODO: Look into cacheing the compiled template.
                 compiled_template = Cheetah.Template.Template(
-                    file=template,
+                    file=six.ensure_str(template, encoding='utf-8'),
                     searchList=searchList,
-                    filter='assure_unicode',
+                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
             except TypeError:
                 compiled_template = Cheetah.Template.Template(
                     file=template.encode('ascii', 'ignore'),
                     searchList=searchList,
-                    filter='assure_unicode',
                     filtersLib=weewx.cheetahgenerator)
 
             unicode_string = compiled_template.respond()
@@ -812,7 +817,7 @@ class GreenReportGenerator(weewx.reportengine.ReportGenerator):
             log.error("Generate failed with exception '%s'", type(e))
             log.error("**** Ignoring template %s", template)
             log.error("**** Reason: %s", e)
-            weeutil.logger.log_traceback("****  ")
+            weeutil.logger.log_traceback(log.error, "****  ")
         else:
             ngen += 1
         finally:

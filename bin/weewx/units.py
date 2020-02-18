@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -89,12 +89,16 @@ unit_nicknames = {
 obs_group_dict = ListOfDicts({
     "altitude"           : "group_altitude",
     "cloudbase"          : "group_altitude",
-    "AqPM2_5"            : "group_concentration",
-    "AqPM10"             : "group_concentration",
+    "pm10_0"             : "group_concentration",
+    "pm1_0"              : "group_concentration",
+    "pm2_5"              : "group_concentration",
     "pm_10"              : "group_concentration",
     "pm_25"              : "group_concentration",
+    "beaufort"           : "group_count",
     "leafWet1"           : "group_count",
     "leafWet2"           : "group_count",
+    "leafWet3"           : "group_count",
+    "leafWet4"           : "group_count",
     "homedeg"            : "group_degree_day",
     "cooldeg"            : "group_degree_day",
     "heatdeg"            : "group_degree_day",
@@ -129,11 +133,14 @@ obs_group_dict = ListOfDicts({
     "altimeter"          : "group_pressure",
     "barometer"          : "group_pressure",
     "pressure"           : "group_pressure",
+    "altimeterRate"      : "group_pressurerate",
+    "barometerRate"      : "group_pressurerate",
+    "pressureRate"       : "group_pressurerate",
     "dampfDruck"         : "group_pressure",
     "SVP"                : "group_pressure",
     "SVPin"              : "group_pressure",
-    "maxSolarRad"        : "group_radiation",
     "radiation"          : "group_radiation",
+    "maxSolarRad"        : "group_radiation",
     "ET"                 : "group_rain",
     "dayET"              : "group_rain",
     "monthET"            : "group_rain",
@@ -170,7 +177,6 @@ obs_group_dict = ListOfDicts({
     "current_temp"       : "group_temperature",
     "current_apptemp"    : "group_temperature",
     "appTemp"            : "group_temperature",
-    "humidex"            : "group_temperature",
     "dewpoint"           : "group_temperature",
     "inDewpoint"         : "group_temperature",
     "extraTemp1"         : "group_temperature",
@@ -261,7 +267,7 @@ obs_group_dict = ListOfDicts({
     "sunshineS"          : "group_elapsed",
     "sunshinehours"      : "group_elapsed",
     "sound"              : "group_anzahl",
-    "beaufort"           : "group_anzahl",
+    "beaufort"           : "group_count",
     "lightning"          : "group_anzahl",
     "gas"                : "group_anzahl",
     "ele"                : "group_anzahl",
@@ -344,6 +350,7 @@ USUnits = ListOfDicts({
     "group_percent"     : "percent",
     "group_power"       : "watt",
     "group_pressure"    : "inHg",
+    "group_pressurerate": "inHg_per_hour",
     "group_preis"       : "dollar",
     "group_radiation"   : "watt_per_meter_squared",
     "group_lux"         : "lume_per_meter_squared",
@@ -395,6 +402,7 @@ MetricUnits = ListOfDicts({
     "group_percent"     : "percent",
     "group_power"       : "watt",
     "group_pressure"    : "mbar",
+    "group_pressurerate": "mbar_per_hour",
     "group_preis"       : "euro",
     "group_radiation"   : "watt_per_meter_squared",
     "group_lux"         : "lume_per_meter_squared",
@@ -411,7 +419,7 @@ MetricUnits = ListOfDicts({
     "group_uv"          : "uv_index",
     "group_anzahl"      : "anzahl",
     "group_volt"        : "volt",
-    "group_volume"      : "litre",
+    "group_volume"      : "liter",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
     "group_datanet"     : "megabyte",
@@ -444,6 +452,9 @@ std_groups = {
 
 # Conversion functions to go from one unit type to another.
 conversionDict = {
+    'inHg_per_hour'    : {'mbar_per_hour'    : lambda x : x / INHG_PER_MBAR,
+                          'hPa_per_hour'     : lambda x : x / INHG_PER_MBAR,
+                          'mmHg_per_hour'    : lambda x : x * 25.4},
     'inHg'             : {'mbar'             : lambda x : x / INHG_PER_MBAR,
                           'hPa'              : lambda x : x / INHG_PER_MBAR,
                           'mmHg'             : lambda x : x * 25.4},
@@ -462,19 +473,28 @@ conversionDict = {
                           'km_per_hour'      : lambda x : x * 1.85200,
                           'meter_per_second' : lambda x : x * 0.514444444},
     'knot2'             : {'mile_per_hour2'  : lambda x : x * 1.15077945,
-                          'km_per_hour2'     : lambda x : x * 1.85200,
-                          'meter_per_second2': lambda x : x * 0.514444444},
+                           'km_per_hour2'     : lambda x : x * 1.85200,
+                           'meter_per_second2': lambda x : x * 0.514444444},
     'inch_per_hour'    : {'cm_per_hour'      : lambda x : x * 2.54,
                           'mm_per_hour'      : lambda x : x * 25.4},
     'inch'             : {'cm'               : lambda x : x * CM_PER_INCH,
                           'mm'               : lambda x : x * MM_PER_INCH},
     'foot'             : {'meter'            : lambda x : x * METER_PER_FOOT},
+    'mmHg_per_hour'    : {'inHg_per_hour'    : lambda x : x / MM_PER_INCH,
+                          'mbar_per_hour'    : lambda x : x / 0.75006168,
+                          'hPa_per_hour'     : lambda x : x / 0.75006168},
     'mmHg'             : {'inHg'             : lambda x : x / MM_PER_INCH,
                           'mbar'             : lambda x : x / 0.75006168,
                           'hPa'              : lambda x : x / 0.75006168},
+    'mbar_per_hour'    : {'inHg_per_hour'    : lambda x : x * INHG_PER_MBAR,
+                          'mmHg_per_hour'    : lambda x : x * 0.75006168,
+                          'hPa_per_hour'     : lambda x : x * 1.0},
     'mbar'             : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                           'mmHg'             : lambda x : x * 0.75006168,
                           'hPa'              : lambda x : x * 1.0},
+    'hPa_per_hour'     : {'inHg_per_hour'    : lambda x : x * INHG_PER_MBAR,
+                          'mmHg_per_hour'    : lambda x : x * 0.75006168,
+                          'mbar_per_hour'    : lambda x : x * 1.0},
     'hPa'              : {'inHg'             : lambda x : x * INHG_PER_MBAR,
                           'mmHg'             : lambda x : x * 0.75006168,
                           'mbar'             : lambda x : x * 1.0},
@@ -498,7 +518,8 @@ conversionDict = {
                           'mm'               : lambda x : x * 10.0},
     'mm'               : {'inch'             : lambda x : x / MM_PER_INCH,
                           'cm'               : lambda x : x * 0.10},
-    'meter'            : {'foot'             : lambda x : x / METER_PER_FOOT},
+    'meter'            : {'foot'             : lambda x : x / METER_PER_FOOT,
+                          'km'               : lambda x : x / 1000.0},
     'dublin_jd'        : {'unix_epoch'       : lambda x : (x-25567.5) * 86400.0},
     'unix_epoch'       : {'dublin_jd'        : lambda x : x/86400.0 + 25567.5},
     'second'           : {'hour'             : lambda x : x/3600.0,
@@ -513,21 +534,22 @@ conversionDict = {
     'day'              : {'second'           : lambda x : x*86400.0,
                           'minute'           : lambda x : x*1440.0,
                           'hour'             : lambda x : x*24.0},
-    'gallon'           : {'litre'            : lambda x : x * 3.78541,
+    'gallon'           : {'liter'            : lambda x : x * 3.78541,
                           'cubic_foot'       : lambda x : x * 0.133681,
                           'cubic_meter'      : lambda x : x * 0.00378541},
-    'litre'            : {'gallon'           : lambda x : x * 0.264172,
+    'liter'            : {'gallon'           : lambda x : x * 0.264172,
                           'cubic_foot'       : lambda x : x * 0.0353147,
                           'cubic_meter'      : lambda x : x * 0.001},
     'cubic_foot'       : {'gallon'           : lambda x : x * 7.48052,
-                          'litre'            : lambda x : x * 28.3168,
+                          'liter'            : lambda x : x * 28.3168,
                           'cubic_meter'      : lambda x : x * 0.0283168},
     'cubic_meter'      : {'gallon'           : lambda x : x * 264.172,
-                          'litre'            : lambda x : x * 1000.0,
+                          'liter'            : lambda x : x * 1000.0,
                           'cubic_foot'       : lambda x : x * 35.3147},
     'bit'              : {'byte'             : lambda x : x / 8},
     'byte'             : {'bit'              : lambda x : x * 8},
-    'km'               : {'mile'             : lambda x : x * 0.621371192},
+    'km'               : {'meter'            : lambda x : x * 1000.0,
+                          'mile'             : lambda x : x * 0.621371192},
     'mile'             : {'km'               : lambda x : x * 1.609344},
     'watt'             : {'kilowatt'         : lambda x : x / 1000.0},
     'kilowatt'         : {'watt'             : lambda x : x * 1000.0},
@@ -587,9 +609,8 @@ default_unit_format_dict = {
     "cm"                 : "%.2f",
     "cm_per_hour"        : "%.2f",
     "cubic_foot"         : "%.1f",
-    "cubic_meter"        : "%.3f",
     "cpm"                : "%.1f",
-    "count"              : "%.1f",
+    "count"              : "%.0f",
     "cubic_meter"        : "%.3f",
     "day"                : "%.1f",
     "degree_C"           : "%.1f",
@@ -603,8 +624,10 @@ default_unit_format_dict = {
     "foot"               : "%.0f",
     "gallon"             : "%.1f",
     "hPa"                : "%.1f",
+    "hPa_per_hour"       : "%.3f",
     "hour"               : "%.1f",
     "inHg"               : "%.3f",
+    "inHg_per_hour"      : "%.5f",
     "inch"               : "%.2f",
     "inch_per_hour"      : "%.2f",
     "kilowatt"           : "%.2f",
@@ -614,18 +637,20 @@ default_unit_format_dict = {
     "km_per_hour2"       : "%.1f",
     "knot"               : "%.0f",
     "knot2"              : "%.1f",
-    "litre"              : "%.1f",
+    "liter"              : "%.1f",
     "mark"               : "%.2f",
     "mbar"               : "%.1f",
+    "mbar_per_hour"      : "%.4f",
     "meter"              : "%.0f",
     "meter_per_second"   : "%.0f",
     "meter_per_second2"  : "%.1f",
-    "microgram_per_meter_cubed": "%.2f",
+    "microgram_per_meter_cubed": "%.1f",
     "mile"               : "%.1f",
     "mile_per_hour"      : "%.0f",
     "mile_per_hour2"     : "%.1f",
     "mm"                 : "%.1f",
     "mmHg"               : "%.1f",
+    "mmHg_per_hour"      : "%.4f",
     "mm_per_hour"        : "%.1f",
     "percent"            : "%.0f",
     "second"             : "%.0f",
@@ -677,20 +702,25 @@ default_unit_label_dict = {
     "foot"              : u" feet",
     "gallon"            : u" gal",
     "hPa"               : u" hPa",
+    "hPa_per_hour"      : u" hPa/h",
     "inHg"              : u" inHg",
+    "inHg_per_hour"     : u" inHg/h",
     "hour"              : (u" hour", u" hours"),
     "inch"              : u" in",
-    "inch_per_hour"     : u" in/hr",
+    "inch_per_hour"     : u" in/h",
+    "kilowatt_hour"     : u" kWh",
     "km"                : u" km",
     "km_per_hour"       : u" kph",
     "km_per_hour2"      : u" kph",
     "knot"              : u" knots",
     "knot2"             : u" knots",
-    "litre"             : u" l",
+    "liter"             : u" l",
     "mbar"              : u" mbar",
+    "mbar_per_hour"     : u" mbar/h",
     "meter"             : u" m",
     "meter_per_second"  : u" m/s",
     "meter_per_second2" : u" m/s",
+    "microgram_per_meter_cubed": u" µg/m³",
     "mile"              : u" mile",
     "mile_per_hour"     : u" mph",
     "mile_per_hour2"    : u" mph",
@@ -698,6 +728,7 @@ default_unit_label_dict = {
     "mm"                : u" mm",
     "mmHg"              : u" mmHg",
     "mm_per_hour"       : u" mm/h",
+    "mmHg_per_hour"     : u" mmHg/h",
     "percent"           : u" %",
     "second"            : (u" second", u" seconds"),
     "uv_index"          : u" ",
@@ -705,19 +736,17 @@ default_unit_label_dict = {
     "watt"              : u" W",
     "watt_second"       : u" Ws",
     "watt_hour"         : u" Wh",
-    "kilowatt_hour"     : u" kWh",
+    "watt_per_meter_squared" : u" W/m²",
     "anzahl"            : u" ",
     "kilobyte"          : u" KB",
     "megabyte"          : u" MB",
     "gigabyte"          : u" GB",
     "terabyte"          : u" TB",
     "ppm"               : u" ppm",
-    "watt_per_meter_squared" : u" W/m³",
     "lume_per_meter_squared" : u" lm/m²",
     "N_per_meter_squared"    : u" N/m²",
     "kg_per_meter_qubic"     : u" kg/m³",
     "g_per_meter_qubic"      : u" g/m³",
-    "microgram_per_meter_cubed" : u" µg/m³",
     "nSv_per_hour"           : u" nSv/h",
     "microSv_per_hour"       : u" µSv/h",
     "mSv_per_hour"           : u" mSv/h",
@@ -785,11 +814,13 @@ class ValueTuple(tuple):
     # ValueTuples have some modest math abilities: subtraction and addition.
     def __sub__(self, other):
         if self[1] != other[1] or self[2] != other[2]:
-            raise TypeError("unsupported operand error for subtraction: %s and %s" % (self[1], other[1]))
+            raise TypeError("Unsupported operand error for subtraction: %s and %s"
+                            % (self[1], other[1]))
         return ValueTuple(self[0] - other[0], self[1], self[2])
     def __add__(self, other):
         if self[1] != other[1] or self[2] != other[2]:
-            raise TypeError("unsupported operand error for addition: %s and %s" % (self[1], other[1]))
+            raise TypeError("Unsupported operand error for addition: %s and %s"
+                            % (self[1], other[1]))
         return ValueTuple(self[0] + other[0], self[1], self[2])
 
 #==============================================================================
@@ -834,8 +865,10 @@ class Formatter(object):
     N/A
     >>> print(f.toString((1*86400 + 1*3600 + 16*60 + 42, "second", "group_deltatime")))
     1 day, 1 hour, 16 minutes
-    >>> delta_format = "%(day)d%(day_label)s, %(hour)d%(hour_label)s, %(minute)d%(minute_label)s, %(second)d%(second_label)s" 
-    >>> print(f.toString((2*86400 + 3*3600 +  5*60 +  2, "second", "group_deltatime"), useThisFormat=delta_format))
+    >>> delta_format = "%(day)d%(day_label)s, %(hour)d%(hour_label)s, "\
+           "%(minute)d%(minute_label)s, %(second)d%(second_label)s"
+    >>> print(f.toString((2*86400 + 3*3600 +  5*60 +  2, "second", "group_deltatime"),
+    ...    useThisFormat=delta_format))
     2 days, 3 hours, 5 minutes, 2 seconds
     """
 
@@ -882,7 +915,8 @@ class Formatter(object):
             time_format_dict = default_time_format_dict
 
         try:
-            ordinate_names = weeutil.weeutil.option_as_list(skin_dict['Units']['Ordinates']['directions'])
+            ordinate_names = weeutil.weeutil.option_as_list(
+                skin_dict['Units']['Ordinates']['directions'])
         except KeyError:
             ordinate_names = default_ordinate_names
 
@@ -933,10 +967,10 @@ class Formatter(object):
             # No singular/plural version. It's just a string. Return it.
             return label
 
-    def toString(self, val_t, context='current', addLabel=True, 
-                 useThisFormat=None, None_string=None, 
+    def toString(self, val_t, context='current', addLabel=True,
+                 useThisFormat=None, None_string=None,
                  localize=True):
-        """Format the value as a string.
+        """Format the value as a unicode string.
 
         val_t: The value to be formatted as a value tuple.
 
@@ -951,36 +985,37 @@ class Formatter(object):
         be used.]
 
         None_string: A string to be used if the value val is None.
-        [Optional. If not given, the string given unit_format_dict['NONE']
+        [Optional. If not given, the string given by unit_format_dict['NONE']
         will be used.]
 
         localize: True to localize the results. False otherwise
         """
         if val_t is None or val_t[0] is None:
-            if None_string is not None: 
-                return None_string
+            if None_string is None:
+                val_str = self.unit_format_dict.get('NONE', u'N/A')
             else:
-                return self.unit_format_dict.get('NONE', 'N/A')
-
-        if val_t[1] == "unix_epoch":
+                val_str = None_string
+            addLabel = False
+        elif val_t[1] == "unix_epoch":
             # Different formatting routines are used if the value is a time.
-            if useThisFormat is not None:
-                val_str = time.strftime(useThisFormat, time.localtime(val_t[0]))
+            if useThisFormat is None:
+                val_str = time.strftime(self.time_format_dict.get(context, "%d-%b-%Y %H:%M"),
+                                        time.localtime(val_t[0]))
             else:
-                val_str = time.strftime(self.time_format_dict.get(context, "%d-%b-%Y %H:%M"), time.localtime(val_t[0]))
+                val_str = time.strftime(useThisFormat, time.localtime(val_t[0]))
+            addLabel = False
         elif val_t[2] == "group_deltatime":
             # Get a delta-time format string. Use a default if the user did not supply one:
-            if useThisFormat is not None:
-                format_string = useThisFormat
+            if useThisFormat is None:
+                format_string = self.time_format_dict.get("delta_time",
+                                                          default_time_format_dict["delta_time"])
             else:
-                format_string = self.time_format_dict.get("delta_time", default_time_format_dict["delta_time"])
+                format_string = useThisFormat
             # Now format the delta time, using the function delta_secs_to_string:
             val_str = self.delta_secs_to_string(val_t[0], format_string)
-            # Return it right away, because it does not take a label
-            return val_str
+            addLabel = False
         else:
-            # It's not a time. It's a regular value. Get a suitable
-            # format string:
+            # It's not a time. It's a regular value. Get a suitable format string:
             if useThisFormat is None:
                 # No user-specified format string. Go get one:
                 format_string = self.get_format_string(val_t[1])
@@ -994,11 +1029,16 @@ class Formatter(object):
                 # No localization. Just format the string.
                 val_str = format_string % val_t[0]
 
+        # Make sure the results are in unicode:
+        val_ustr = six.ensure_text(val_str)
+
         # Add a label, if requested:
         if addLabel:
-            val_str += self.get_label_string(val_t[1], plural=(not val_t[0]==1))
+            # Make sure the label is in unicode before tacking it on to the end
+            label = self.get_label_string(val_t[1], plural=(not val_t[0]==1))
+            val_ustr += six.ensure_text(label)
 
-        return val_str
+        return val_ustr
 
     def to_ordinal_compass(self, val_t):
         if val_t[0] is None:
@@ -1013,7 +1053,8 @@ class Formatter(object):
 
         Example:
         >>> f = Formatter()
-        >>> print(f.delta_secs_to_string(3*86400+21*3600+7*60+11, default_time_format_dict["delta_time"]))
+        >>> print(f.delta_secs_to_string(3*86400+21*3600+7*60+11,
+        ...         default_time_format_dict["delta_time"]))
         3 days, 21 hours, 7 minutes
         """
         etime_dict = {}
@@ -1022,12 +1063,7 @@ class Formatter(object):
             etime_dict[label] = amt
             etime_dict[label + '_label'] = self.get_label_string(label, not amt == 1)
             secs %= interval
-        # The version of locale in Python version 2.5 and 2.6 cannot handle interpolation and raises an
-        # exception. Be prepared to catch it and use a regular % formatter
-        try:
-            ans = locale.format_string(label_format, etime_dict)
-        except TypeError:
-            ans = label_format % etime_dict
+        ans = locale.format_string(label_format, etime_dict)
         return ans
 
 #==============================================================================
@@ -1076,7 +1112,7 @@ class Converter(object):
         
         Try an unspecified unit type:
         >>> p2 = (1016.5, None, None)
-        >>> print c.convert(p2)
+        >>> print(c.convert(p2))
         (1016.5, None, None)
         
         Try a bad unit type:
@@ -1213,7 +1249,7 @@ class ValueHelper(object):
     def __init__(self, value_t, context='current', formatter=Formatter(), converter=Converter()):
         """Initialize a ValueHelper.
 
-        value_t: A value tuple holding the datum.
+        value_t: An instance of a ValueTuple, holding the datum.
 
         context: The time context. Something like 'current', 'day', 'week'.
         [Optional. If not given, context 'current' will be used.]
@@ -1230,14 +1266,13 @@ class ValueHelper(object):
         self.formatter = formatter
         self.converter = converter
 
-
     def toString(self,
                  addLabel=True,
                  useThisFormat=None,
                  None_string=None,
                  localize=True,
                  NONE_string=None):
-        """Convert my internally held ValueTuple to a string, using the supplied
+        """Convert my internally held ValueTuple to a unicode string, using the supplied
         converter and formatter.
 
         Parameters:
@@ -1246,16 +1281,16 @@ class ValueHelper(object):
             useThisFormat: String with a format to be used when formatting the value. If None,
             then a format will be supplied. Default is None.
 
-            None_string: If the value is None, then this string will be used. If None, then a default string
-            from skin.conf will be used. Default is None.
+            None_string: If the value is None, then this string will be used. If None, then a
+            default string from skin.conf will be used. Default is None.
 
             localize: If True, localize the results. Default is True
 
             NONE_string: Supplied for backwards compatibility. Identical semantics to None_string.
         """
-        # If the type is unknown, then just return an error string:
+        # If the type is unknown, then just return an error string: 
         if isinstance(self.value_t, UnknownType):
-            return "?'%s'?" % self.value_t.obs_type
+            return u"?'%s'?" % self.value_t.obs_type
         # Check NONE_string for backwards compatibility:
         if None_string is None and NONE_string is not None:
             None_string = NONE_string
@@ -1268,7 +1303,12 @@ class ValueHelper(object):
         return s
 
     def __str__(self):
-        """Return as string"""
+        """Return as the native string type for the version of Python being run."""
+        s = self.toString()
+        return six.ensure_str(s)
+
+    def __unicode__(self):
+        """Return as unicode. This function is called only under Python 2."""
         return self.toString()
 
     def format(self, format_string=None, None_string=None, add_label=True, localize=True):
@@ -1289,8 +1329,7 @@ class ValueHelper(object):
 
     # Backwards compatibility
     def string(self, None_string=None):
-        """Return as string with an optional user specified string to be
-        used if None"""
+        """Return as string with an optional user specified string to be used if None"""
         return self.toString(None_string=None_string)
 
     # Backwards compatibility
@@ -1331,7 +1370,8 @@ class ValueHelper(object):
             try:
                 conversionDict[self.value_t[1]][target_unit]
             except KeyError:
-                raise AttributeError("Illegal conversion from '%s' to '%s'"%(self.value_t[1], target_unit))
+                raise AttributeError("Illegal conversion from '%s' to '%s'"
+                                     %(self.value_t[1], target_unit))
         return ValueHelper(self.value_t, self.context, self.formatter, FixedConverter(target_unit))
 
     def exists(self):
@@ -1538,13 +1578,15 @@ class GenWithConvert(object):
     ...        yield _rec
     >>> # First, try the raw generator function. Output should be in US
     >>> for _out in genfunc():
-    ...    print("Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits']))
+    ...    print("Timestamp: %d; Temperature: %.2f; Unit system: %d"
+    ...        % (_out['dateTime'], _out['outTemp'], _out['usUnits']))
     Timestamp: 194758100; Temperature: 68.00; Unit system: 1
     Timestamp: 194758400; Temperature: 69.80; Unit system: 1
     Timestamp: 194758700; Temperature: 71.60; Unit system: 1
     >>> # Now do it again, but with the generator function wrapped by GenWithConvert:
     >>> for _out in GenWithConvert(genfunc(), weewx.METRIC):
-    ...    print("Timestamp: %d; Temperature: %.2f; Unit system: %d" % (_out['dateTime'], _out['outTemp'], _out['usUnits']))
+    ...    print("Timestamp: %d; Temperature: %.2f; Unit system: %d"
+    ...        % (_out['dateTime'], _out['outTemp'], _out['usUnits']))
     Timestamp: 194758100; Temperature: 20.00; Unit system: 16
     Timestamp: 194758400; Temperature: 21.00; Unit system: 16
     Timestamp: 194758700; Temperature: 22.00; Unit system: 16
@@ -1624,8 +1666,10 @@ def as_value_tuple(record_dict, obs_type):
 
 
 if __name__ == "__main__":
-    
+    if not six.PY3:
+        exit("units.py doctest must be run under Python 3")
     import doctest
 
     if not doctest.testmod().failed:
         print("PASSED")
+

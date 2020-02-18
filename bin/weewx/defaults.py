@@ -8,10 +8,9 @@
 """Backstop defaults used in the absence of any other values."""
 
 from __future__ import absolute_import
-from six.moves import StringIO
-import configobj
+import weeutil.config
 
-default_str = u"""# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+DEFAULT_STR = """# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
 # See the file LICENSE.txt for your rights.
 
 # Where the skins reside, relative to WEEWX_ROOT
@@ -193,6 +192,7 @@ log_failure = False
     # Generic labels, keyed by an observation type.
     [[Generic]]
         barometer      = Barometer
+        barometerRate  = Barometer Change Rate
         dewpoint       = Dew Point
         ET             = ET
         heatindex      = Heat Index
@@ -235,6 +235,4 @@ log_failure = False
     moon_phases = New, Waxing crescent, First quarter, Waxing gibbous, Full, Waning gibbous, Last quarter, Waning crescent
 """
 
-# Even though default_str is in Unicode, specify an encoding in
-# case someone wants to write the ConfigObj out.
-defaults = configobj.ConfigObj(StringIO(default_str), encoding='utf-8', default_encoding='utf-8')
+defaults = weeutil.config.config_from_str(DEFAULT_STR)

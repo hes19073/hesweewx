@@ -121,8 +121,8 @@ import os
 import math
 import platform
 import re
+#import syslog
 import time
-
 from subprocess import Popen, PIPE
 
 import weewx
@@ -620,10 +620,11 @@ class LinuxCollector(Collector):
                 log.debug("read failed for %s: %s", a1_bpi, e)
 
         if os.path.exists(a1_bpi):
+            # w in wh = w * 1 h -- 5 min = 0.0833333 h
             record['powerR'] = tVolt * tAmpere / 1000.0
             record['powerG'] = t_Volt * t_Ampere / 1000.0
-            record['energyR'] = tVolt * tAmpere / 1000.0 * 12
-            record['energyG'] = t_Volt * t_Ampere / 1000.0 * 12
+            record['energyR'] = tVolt * tAmpere / 1000.0 * 0.0833333
+            record['energyG'] = t_Volt * t_Ampere / 1000.0 * 0.0833333
 
         # get stats on mounted filesystems
         fn = '/proc/mounts'

@@ -33,7 +33,6 @@ from weewx.units import ValueTuple
 from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
 from weeutil.config import search_up
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 log = logging.getLogger(__name__)
 
@@ -186,7 +185,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             #skin_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['SKIN_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
             #html_file = os.path.join(image_root, '%s.html' % species_name)
-            ai = 21600   #test mit 600 86400 = 24h
+            ai = 86400   #test mit 600 86400 = 24h
 
             # Calculate a suitable min, max time for the requested time.
             (minstamp, maxstamp, timeinc) = weeplot.utilities.scaletime(start_date_ts, plotgen_ts)
@@ -208,7 +207,8 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
-            if skipThisPlot(plotgen_ts, ai, img_file):
+            t1_ts = time.time()
+            if skipThisPlot(t1_ts, ai, img_file):
                 pass
             else:
                 # Create the subdirectory that the image is to be put in.
@@ -233,7 +233,6 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                     image.save(img_file)
                     ngen += 1
                 except IOError as e:
-                    #log.crt("cydiagenerator: Unable to save to file '%s' %s:" % (img_file, e))
                     log.info("cydiagenerator: Unable to save to file '%s' %s:", img_file, e)
                 t2 = time.time()
                 if self.log_success:
@@ -266,8 +265,9 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
 
         # Get a suitable bottom label:
-        bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
-        bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
+        ti_t = time.time()
+        bottom_label_format = plot_options.get('bottom_label_format', '%d.%m.%Y')
+        bottom_label = time.strftime(bottom_label_format, time.localtime(ti_t))
         result.setBottomLabel(bottom_label)
 
         # This generator acts on only one variable type:
@@ -757,7 +757,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         dest_file = os.path.join(dest_dir, dest_file_name)
 
         # Get start and stop times
-#        default_archive = self.db_binder.get_manager(default_binding)
+        # default_archive = self.db_binder.get_manager(default_binding)
         if self.recs:
             start_ts = self.recs[ZERO]['date'].raw
             stop_ts = self.recs[-1]['date'].raw
@@ -789,15 +789,15 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             try:
                 # TODO: Look into cacheing the compiled template.
                 compiled_template = Cheetah.Template.Template(
-                    file=template,
+                    file=six.ensure_str(template, encoding='utf-8'),
                     searchList=searchList,
-                    filter='assure_unicode',
+                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
             except TypeError:
                 compiled_template = Cheetah.Template.Template(
                     file=template.encode('ascii', 'ignore'),
                     searchList=searchList,
-                    filter='assure_unicode',
+                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
                     
             unicode_string = compiled_template.respond()
@@ -829,7 +829,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
             log.error("Generate failed with exception '%s'", type(e))
             log.error("**** Ignoring template %s", template)
             log.error("**** Reason: %s", e)
-            weeutil.weeutil.log_traceback("****  ")
+            weeutil.logger.log_traceback(log.error, "****  ")
         else:
             ngen += 1
         finally:

@@ -21,6 +21,7 @@ import six
 import Cheetah.Template
 import Cheetah.Filters
 
+import weeutil.logger
 import weeplot.genplot
 import weeutil.weeutil
 import weewx.units
@@ -191,7 +192,8 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
             for (key, val) in list(recs.items()):
                 self.vectors[key] = self.converter.convert(val)
 
-            if skipThisPlot(plotgen_ts, ai, img_file):
+            t1_ts = time.time()
+            if skipThisPlot(t1_ts, ai, img_file):
                 pass
             else:
                 # Create the subdirectory that the image is to be put in.
@@ -250,8 +252,9 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
         
         # Get a suitable bottom label:
-        bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
-        bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
+        ti_t = time.time()
+        bottom_label_format = plot_options.get('bottom_label_format', '%d.%m.%Y')
+        bottom_label = time.strftime(bottom_label_format, time.localtime(ti_t))
         result.setBottomLabel(bottom_label)
 
         # This generator acts on only one variable type:
@@ -280,7 +283,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
             biofix_label = 'Wachstum (GDD)'
         else:
             biofix = get_float_t(line_options.get('biofix_estimated', [32, 'degree_F']), 'group_temperature')
-            biofix_label = 'Biofix (pauschal)'
+            biofix_label = 'Biofix'
         horizons.append([biofix, biofix_label])
         offsets = self.growth_dict[species_name].get('Offsets_from_Biofix')
         if offsets:
@@ -772,15 +775,15 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
             try:
                 # TODO: Look into cacheing the compiled template.
                 compiled_template = Cheetah.Template.Template(
-                    file=template,
+                    file=six.ensure_str(template, encoding='utf-8'),
                     searchList=searchList,
-                    filter='assure_unicode',
+                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
             except TypeError:
                 compiled_template = Cheetah.Template.Template(
                     file=template.encode('ascii', 'ignore'),
                     searchList=searchList,
-                    filter='assure_unicode',
+                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
                     
             unicode_string = compiled_template.respond()
@@ -812,7 +815,7 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
             log.error("Generate failed with exception '%s'", type(e))
             log.error("**** Ignoring template %s", template)
             log.error("**** Reason: %s", e)
-            weeutil.logger.log_traceback("****  ")
+            weeutil.logger.log_traceback(log.error, "****  ")
         else:
             ngen += 1
         finally:
