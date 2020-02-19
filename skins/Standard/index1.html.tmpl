@@ -127,18 +127,19 @@
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
-
-    #if $current.soilMoist1.raw <= 10
+    #if $current.soilMoist1.raw is None
+      <td class='hes1_kopfc' colspan='2'>5 cm im Boden</td><td>
+    #elif $current.soilMoist1.raw <= 10
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffff;">5 cm im Boden</td><td style="background-color: #ccffff;">
-    #else if $current.soilMoist1.raw > 10 and $current.soilMoist1.raw <= 20
+    #elif $current.soilMoist1.raw > 10 and $current.soilMoist1.raw <= 20
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffcc;">5 cm im Boden</td><td style="background-color: #ccffcc;">
-    #else if $current.soilMoist1.raw > 20 and $current.soilMoist1.raw <= 40
+    #elif $current.soilMoist1.raw > 20 and $current.soilMoist1.raw <= 40
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffff99;">5 cm im Boden</td><td style="background-color: #ffff99;">
-    #else if $current.soilMoist1.raw > 40 and $current.soilMoist1.raw <= 60
+    #elif $current.soilMoist1.raw > 40 and $current.soilMoist1.raw <= 60
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffcc99;">5 cm im Boden</td><td style="background-color: #ffcc99;">
-    #else if $current.soilMoist1.raw > 60 and $current.soilMoist1.raw <= 100
+    #elif $current.soilMoist1.raw > 60 and $current.soilMoist1.raw <= 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #ff9900;">5 cm im Boden</td><td style="background-color: #ff9900;">
-    #else if $current.soilMoist1.raw > 100
+    #elif $current.soilMoist1.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">5 cm im Boden</td><td style="background-color: #d65700;">
     #end if
        <b>$current.soilMoist1</b></td>
@@ -157,17 +158,19 @@
  #end if
     </tr>
     <tr>
-    #if $current.soilMoist2.raw <= 10
+    #if $current.soilMoist2.raw is None
+      <td class='hes1_kopfc' colspan='2'>10 cm im Boden</td><td>
+    #elif $current.soilMoist2.raw <= 10
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffff;">10 cm im Boden</td><td style="background-color: #ccffff;">
-    #else if $current.soilMoist2.raw > 10 and $current.soilMoist2.raw <= 20
+    #elif $current.soilMoist2.raw > 10 and $current.soilMoist2.raw <= 20
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffcc;">10 cm im Boden</td><td style="background-color: #ccffcc;">
-    #else if $current.soilMoist2.raw > 20 and $current.soilMoist2.raw <= 40
+    #elif $current.soilMoist2.raw > 20 and $current.soilMoist2.raw <= 40
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffff99;">10 cm im Boden</td><td style="background-color: #ffff99;">
-    #else if $current.soilMoist2.raw > 40 and $current.soilMoist2.raw <= 60
+    #elif $current.soilMoist2.raw > 40 and $current.soilMoist2.raw <= 60
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffcc99;">10 cm im Boden</td><td style="background-color: #ffcc99;">
-    #else if $current.soilMoist2.raw > 60 and $current.soilMoist2.raw <= 100
+    #elif $current.soilMoist2.raw > 60 and $current.soilMoist2.raw <= 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #ff9900;">10 cm im Boden</td><td style="background-color: #ff9900;">
-    #else if $current.soilMoist2.raw > 100
+    #elif $current.soilMoist2.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">10 cm im Boden</td><td style="background-color: #d65700;">
     #end if
        <b>$current.soilMoist2</b></td>
@@ -186,22 +189,26 @@
  #end if
     </tr>
     <tr>
-    #if $current.soilMoist3.raw <= 10
+    #if $current.soilMoist3.raw is None
+      <td class='hes1_kopfc' colspan='2'>20 cm im Boden</td><td>
+    #elif $current.soilMoist3.raw <= 10
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffff;">20 cm im Boden</td><td style="background-color: #ccffff;">
-    #else if $current.soilMoist3.raw > 10 and $current.soilMoist3.raw <= 20
+    #elif $current.soilMoist3.raw > 10 and $current.soilMoist3.raw <= 20
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffcc;">20 cm im Boden</td><td style="background-color: #ccffcc;">
-    #else if $current.soilMoist3.raw > 20 and $current.soilMoist3.raw <= 40
+    #elif $current.soilMoist3.raw > 20 and $current.soilMoist3.raw <= 40
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffff99;">20 cm im Boden</td><td style="background-color: #ffff99;">
-    #else if $current.soilMoist3.raw > 40 and $current.soilMoist3.raw <= 60
+    #elif $current.soilMoist3.raw > 40 and $current.soilMoist3.raw <= 60
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffcc99;">20 cm im Boden</td><td style="background-color: #ffcc99;">
-    #else if $current.soilMoist3.raw > 60 and $current.soilMoist3.raw <= 100
+    #elif $current.soilMoist3.raw > 60 and $current.soilMoist3.raw <= 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #ff9900;">20 cm im Boden</td><td style="background-color: #ff9900;">
-    #else if $current.soilMoist3.raw > 100
+    #elif $current.soilMoist3.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">20 cm im Boden</td><td style="background-color: #d65700;">
     #end if
        <b>$current.soilMoist3</b></td>
-
- #if $trend.soilMoist3.raw < 0
+  #if $trend.soilMoist3.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.soilMoist3.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.soilMoist3</td>
  #elif $trend.soilMoist3.raw == 0
@@ -213,22 +220,27 @@
  #end if
     </tr>
     <tr>
-    #if $current.soilMoist4.raw <= 10
+    #if $current.soilMoist4.raw is None
+      <td class='hes1_kopfc' colspan='2'>50 cm im Boden</td><td>
+    #elif $current.soilMoist4.raw <= 10
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffff;">50 cm im Boden</td><td style="background-color: #ccffff;">
-    #else if $current.soilMoist4.raw > 10 and $current.soilMoist4.raw <= 20
+    #elif $current.soilMoist4.raw > 10 and $current.soilMoist4.raw <= 20
       <td class='hes1_kopfc' colspan='2' style="background-color: #ccffcc;">50 cm im Boden</td><td style="background-color: #ccffcc;">
-    #else if $current.soilMoist4.raw > 20 and $current.soilMoist4.raw <= 40
+    #elif $current.soilMoist4.raw > 20 and $current.soilMoist4.raw <= 40
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffff99;">50 cm im Boden</td><td style="background-color: #ffff99;">
-    #else if $current.soilMoist4.raw > 40 and $current.soilMoist4.raw <= 60
+    #elif $current.soilMoist4.raw > 40 and $current.soilMoist4.raw <= 60
       <td class='hes1_kopfc' colspan='2' style="background-color: #ffcc99;">50 cm im Boden</td><td style="background-color: #ffcc99;">
-    #else if $current.soilMoist4.raw > 60 and $current.soilMoist4.raw <= 100
+    #elif $current.soilMoist4.raw > 60 and $current.soilMoist4.raw <= 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #ff9900;">50 cm im Boden</td><td style="background-color: #ff9900;">
-    #else if $current.soilMoist4.raw > 100
+    #elif $current.soilMoist4.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">50 cm im Boden</td><td style="background-color: #d65700;">
     #end if
        <b>$current.soilMoist4</b></td>
 
- #if $trend.soilMoist4.raw < 0
+ #if $trend.soilMoist4.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.soilMoist4.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.soilMoist4</td>
  #elif $trend.soilMoist4.raw == 0
@@ -252,7 +264,10 @@
     <tr>
       <td class='hes1_kopfc' colspan='2'>Blatt 1 (N)</td><td>$current.leafWet1</td>
 
- #if $trend.leafWet1.raw < 0
+ #if $trend.leafWet1.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.leafWet1.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.leafWet1</td>
  #elif $trend.leafWet1.raw == 0
@@ -266,7 +281,10 @@
     <tr>
       <td class='hes1_kopfc' colspan='2'>Blatt 2 (S)</td><td>$current.leafWet2</td>
 
- #if $trend.leafWet2.raw < 0
+ #if $trend.leafWet2.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.leafWet2.raw < 0
         <td class="hes1_trendlo"> &#8681;</td>
         <td class="hes1_vallo">$trend.leafWet2</td>
  #elif $trend.leafWet2.raw == 0

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ##This program is free software; you can redistribute it and/or modify it under
 ##the terms of the GNU General Public License as published by the Free Software
 ##Foundation; either version 2 of the License, or (at your option) any later
@@ -36,7 +37,7 @@ from weeutil.weeutil import to_float
 
 log = logging.getLogger(__name__)
 
-HAUSWD_VERSION = '0.2'
+HAUSWD_VERSION = '0.3'
 
 
 #===============================================================================
@@ -64,164 +65,142 @@ class HausWdCalculate(weewx.engine.StdService):
 
         data_x = {}
         if 'gasTotal' in event.packet:
-            data_x['gas_m3'], data_x['gas_kWh'], data_x['gas_preis'] = calc_gas(event.packet['gasTotal'])
+            data_x['gasZ_kWh'] = event.packet['gasTotal'] * self.BrennWert * self.ZustandsZahl
+            data_x['gasZ_preis'] = event.packet['gasTotal'] * self.BrennWert * self.ZustandsZahl * self.GasPreis
 
         else:
-            data_x['gas_m3'] = None
-            data_x['gas_kWh'] = None
-            data_x['gas_preis'] = None
+            data_x['gasZ_kWh'] = 0.0
+            data_x['gasZ_preis'] = 0.0
 
         if 'eleTotal' in event.packet:
-            data_x['ele_kWh'], data_x['ele_preis'] = calc_ele(event.packet['eleTotal'])
+            data_x['eleZ_preis'] = event.packet['eleTotal'] * self.StromPreis
 
         else:
-            data_x['ele_kWh'] = None
-            data_x['ele_preis'] = None
+            data_x['eleZ_preis'] = 0.0
 
         if 'eleATotal' in event.packet:
-            data_x['eleA_kWh'], data_x['eleA_preis'] = calc_eleA(event.packet['eleATotal'])
+            data_x['eleAZ_preis'] = event.packet['eleATotal'] * self.StromPreis
 
         else:
-            data_x['eleA_kWh'] = None
-            data_x['eleA_preis'] = None
+            data_x['eleAZ_preis'] = 0.0
 
-        if 'wasTotal' in event.packet and 'wasATotal':
-            data_x['was_m3'], data_x['was_preis'], data_x['wasA_m3'], data_x['wasA_preis']  = calc_was(event.packet['wasTotal'], event.packet['wasATotal'])
+        if 'wasTotal' in event.packet and 'wasATotal' in event.packet:
+            was_new = event.packet['wasTotal']
+            waa_new = event.packet['wasATotal']
+            data_x['wasZ_preis'] = was_new * self.WasserPreis
+            data_x['wasAZ_preis']  = waa_new * self.WasserPreis
+            data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
 
         else:
-            data_x['was_m3'] = None
-            data_x['was_preis'] = None
-            data_x['wasA_m3'] = None
-            data_x['wasA_preis'] = None
+            data_x['wasZ_preis'] = 0.0
+            data_x['wasAZ_preis'] = 0.0
+
 
         event.packet.update(data_x)
+
 
     def new_archive_record(self, event):
 
         data_x = {}
         if 'gasTotal' in event.record:
-            data_x['gas_m3'], data_x['gas_kWh'], data_x['gas_preis'] = calc_gas(event.record['gasTotal'])
+            data_x['gasZ_kWh'] = event.record['gasTotal'] * self.BrennWert * self.ZustandsZahl
+            data_x['gasZ_preis'] = event.record['gasTotal'] * self.BrennWert * self.ZustandsZahl * self.GasPreis
+
+        else:
+            data_x['gasZ_kWh'] = 0.0
+            data_x['gasZ_preis'] = 0.0
+
+        if 'eleTotal' in event.record:
+            data_x['eleZ_preis'] = event.record['eleTotal'] * self.StromPreis
+
+        else:
+            data_x['eleZ_preis'] = 0.0
+
+        if 'eleATotal' in event.record:
+            data_x['eleAZ_preis'] = event.record['eleATotal'] * self.StromPreis
+
+        else:
+            data_x['eleAZ_preis'] = 0.0
+
+        if 'elePVTotal' in event.record:
+            data_x['elePVZ_preis'] = event.record['elePVTotal'] * self.StromPreis
+
+        else:
+            data_x['elePVZ_preis'] = 0.0
+
+        if 'wasTotal' in event.record and 'wasATotal' in event.record:
+            was_new = event.record['wasTotal']
+            waa_new = event.record['wasATotal']
+            data_x['wasZ_preis'] = was_new * self.WasserPreis
+            data_x['wasAZ_preis']  = waa_new * self.WasserPreis
+            data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
+
+        else:
+            data_x['wasZ_preis'] = 0.0
+            data_x['wasAZ_preis'] = 0.0
+            data_x['wasG_preis'] = 0.0
+
+        # Wertung der Impuls Zaehler Werte
+        """ read data impulse  for calculate preis  """
+        if 'gasDelta' in event.record:
+            gas_new = event.record['gasDelta'] / 100.0
+            data_x['gas_m3'] = gas_new
+            data_x['gas_kWh'] = gas_new * self.BrennWert * self.ZustandsZahl
+            data_x['gas_preis'] = gas_new * self.BrennWert * self.ZustandsZahl * self.GasPreis
 
         else:
             data_x['gas_m3'] = 0.0
             data_x['gas_kWh'] = 0.0
             data_x['gas_preis'] = 0.0
 
-        if 'eleTotal' in event.record:
-            data_x['ele_kWh'], data_x['ele_preis'] = calc_ele(event.record['eleTotal'])
+        if 'eleDelta' in event.record:
+            ele_new = event.record['eleDelta'] / 1000.0
+            data_x['ele_kWh'] = ele_new
+            data_x['ele_preis'] = ele_new * self.StromPreis
 
         else:
             data_x['ele_kWh'] = 0.0
             data_x['ele_preis'] = 0.0
 
-        if 'eleATotal' in event.record:
-            data_x['eleA_kWh'], data_x['eleA_preis'] = calc_eleA(event.record['eleATotal'])
+        if 'eleADelta' in event.record:
+            elea_new = event.record['eleDelta'] / 1000.0
+            data_x['eleA_kWh'] = elea_new
+            data_x['eleA_preis'] = elea_new * self.StromPreis
 
         else:
             data_x['eleA_kWh'] = 0.0
             data_x['eleA_preis'] = 0.0
 
-        if 'wasTotal' in event.record and 'wasATotal':
-            data_x['was_m3'], data_x['was_preis'], data_x['wasA_m3'], data_x['wasA_preis'] = calc_was(event.record['wasTotal'], event.record['wasATotal'])
+        if 'elePVDelta' in event.record:
+            elp_new = event.record['elePVDelta'] / 1000.0
+            data_x['elePV_kWh'] = elp_new
+            data_x['elePV_preis'] = elp_new * self.StromPreis
 
         else:
-            data_x['was_m3'] = 0.0
-            data_x['was_preis'] = 0.0
-            data_x['wasA_m3'] = 0.0
-            data_x['wasA_preis'] = 0.0
-
-        # Wertung der Zaehler
-        """ read old data from file 'anfangZahl' for calculate_delta """
-        try:
-            with open('/home/weewx/archive/anfangZahl') as f:
-                line = f.readline()
-                values = line.split(',')
-
-            gas_val = float(values[0])
-            was_val = float(values[1])
-            waa_val = float(values[2])
-            ele_val = float(values[3])
-            ela_val = float(values[4])
-
-            f.close()
-
-        except Exception as e:
-            log.error("Daten: cannot read Date: %s", e)
-
-        if 'gasZahl' in event.record:
-            gas_new = self.calculate_delta(event.record['gasZahl'], gas_val)
-            data_x['gasZ_m3'] = gas_new
-            data_x['gasZ_kWh'] = gas_new * self.BrennWert * self.ZustandsZahl
-            data_x['gasZ_preis'] = gas_new * self.BrennWert * self.ZustandsZahl * self.GasPreis
-            last_gasZ = event.record['gasZahl']
-
-        else:
-            data_x['gasZ_m3'] = 0.0
-            data_x['gasZ_kWh'] = 0.0
-            data_x['gasZ_preis'] = 0.0
-
-        if 'eleZahl' in event.record:
-            ele_new = self.calculate_delta(event.record['eleZahl'], ele_val)
-            data_x['eleZ_kWh'] = ele_new
-            data_x['eleZ_preis'] = ele_new * self.StromPreis
-            last_eleZ = event.record['eleZahl']
-
-        else:
-            data_x['eleZ_kWh'] = 0.0
-            data_x['eleZ_preis'] = 0.0
-
-        if 'eleAZahl' in event.record:
-            elea_new = self.calculate_delta(event.record['eleAZahl'], ela_val)
-            data_x['eleAZ_kWh'] = elea_new
-            data_x['eleAZ_preis'] = elea_new * self.StromPreis
-            last_elaZ = event.record['eleAZahl']
-
-        else:
-            data_x['eleAZ_kWh'] = 0.0
-            data_x['eleAZ_preis'] = 0.0
+            data_x['elePV_kWh'] = 0.0
+            data_x['elePV_preis'] = 0.0
 
 
-        if 'wasZahl' in event.record and 'wasAZahl' in event.record:
-            was_new = self.calculate_delta(event.record['wasZahl'], was_val)
-            waa_new = self.calculate_delta(event.record['wasAZahl'], waa_val)
-            data_x['wasZ_m3'] = was_new
-            data_x['wasAZ_m3'] = waa_new
-            data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
-            data_x['wasZ_preis'] = was_new * self.WasserPreis
-            data_x['wasAZ_preis'] = waa_new * self.WasserPreis
-            last_wasZ = event.record['wasZahl']
-            last_waaZ = event.record['wasAZahl']
+        # if 'wasDelta' in event.record:
+        #    was_new = event.record['wasZahl']
+        #    data_x['was_m3'] = was_new / 100
+        #    data_x['was_preis'] = was_new * self.WasserPreis
 
-        else:
-            data_x['wasZ_m3'] = 0.0
-            data_x['wasAZ_m3'] = 0.0
-            data_x['wasG_preis'] = 0.0
-            data_x['wasZ_preis'] = 0.0
-            data_x['wasAZ_preis'] = 0.0
+        # else:
+        #    data_x['was_m3'] = 0.0
+        #    data_x['was_preis'] = 0.0
 
+        #if 'wasADelta' in event.record:
+        #    waa_new = event.record['wasADelta'] / 100
+        #    data_x['wasA_m3'] = waa_new
+        #    data_x['wasA_preis'] = waa_new * self.WasserPreis
 
-        stand = str(last_gasZ) + ',' + str(last_wasZ) + ',' + str(last_waaZ) + ',' + str(last_eleZ) + ',' + str(last_elaZ)
-
-        data_w = open('/home/weewx/archive/anfangZahl', 'w')
-        data_w.write(stand)
-        data_w.close()
+        #else:
+        #    data_x['wasA_m3'] = 0.0
+        #    data_x['wasA_preis'] = 0.0
 
 
         event.record.update(data_x)
-
-    @staticmethod
-    def calculate_delta(newtotal, oldtotal):
-        """Calculate differential given two cumulative measurements."""
-        if newtotal is not None and oldtotal is not None:
-            if newtotal >= oldtotal:
-                delta = newtotal - oldtotal
-            else:
-                log.info("Hand: counter reset detected: new=%s old=%s", newtotal, oldtotal)
-                delta = 0.0
-        else:
-            delta = 0.0
-
-        return delta
 
 
 #===============================================================================
@@ -259,14 +238,17 @@ class HausWdArchive(weewx.engine.StdService):
         obs_group_dict["wasAZ_m3"] = "group_volume"
         obs_group_dict["eleZ_kWh"] = "group_strom"
         obs_group_dict["eleAZ_kWh"] = "group_strom"
+        obs_group_dict["elePVZ_kWh"] = "group_strom"
         obs_group_dict["gas_preis"] = "group_preis"
         obs_group_dict["was_preis"] = "group_preis"
         obs_group_dict["ele_preis"] = "group_preis"
+        obs_group_dict["elePVZ_preis"] = "group_preis"
         obs_group_dict["gasZ_preis"] = "group_preis"
         obs_group_dict["wasZ_preis"] = "group_preis"
         obs_group_dict["eleZ_preis"] = "group_preis"
         obs_group_dict["wasAZ_preis"] = "group_preis"
         obs_group_dict["eleAZ_preis"] = "group_preis"
+        obs_group_dict["wasG_preis"] = "group_preis"
 
         # bind ourselves to NEW_ARCHIVE_RECORD event
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.new_archive_record)
@@ -319,18 +301,17 @@ def calc_gas(gas_x):
     GasPreis = 0.0619    # 6.19 Cent/kWh
 
     if gas_x is not None:
-        gasX_m3 = gas_x / 1000.0
-        gasX_kWh = gasX_m3 * brennwert * zustandszahl
+
+        gasX_kWh = gas_x * brennwert * zustandszahl
         gasX_preis = gasX_kWh * GasPreis
 
-        return (gasX_m3, gasX_kWh, gasX_preis)
+        return (gasX_kWh, gasX_preis)
 
     else:
-        return (None, None, None)
+        return (0.0, 0.0, 0.0)
 
 def calc_ele(ele_x):
     # berechnung kWh und preis
-    # Impulsfaktor messung s0 100
     StromPreis = 0.272    # wemag 27.20 cent/kWh
 
     if ele_x is not None:
@@ -373,4 +354,5 @@ def calc_was(was_x, wasA_x):
 
     else:
         return (None, None, None, None)
+
 

@@ -45,6 +45,15 @@
       <iframe width="800" height="380" src="https://embed.windy.com/embed2.html?lat=53.599&lon=11.349&zoom=7&level=surface&overlay=radar&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=53.601&detailLon=11.345&metricWind=default&metricTemp=default&radarRange=-1" frameborder="0"></iframe> 
      </div>
      <hr />
+    <h2>Regen-Werte nach Vantage Pro 2 (LOOP2)</h2>
+    <ul>
+     <li>Niederschlag der letzten 15 Minuten:&nbsp;<b>$current.rain15</b></li>
+     <li>Niederschlag der letzten 24 Stunden:&nbsp;<b>$current.rain24</b></li>
+     <li>&nbsp;</li>
+     <li>Niederschlag der letzten Stunde:&nbsp;<b>$current.hourRain</b></li>
+     <li>Niederschlag der aktuelle Tag:&nbsp;<b>$current.dayRain</b></li>
+    </ul>
+    <hr />
      <table>
       <tr>
        <td class="stats_label">Niederschlag letzte Messung</td>
@@ -173,7 +182,7 @@ Niederschlägen ab 0,2 mm.</p>
       <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
       <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.1, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #33FF33;">$year.rain.sum_ge((1.0, "cm", "group_rain")).format("%.0f")</td>
+      <td style="background-color: #33FF33;">$year.rain.sum_ge((1, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #23FF9E;">$year.rain.sum_ge((1.5, "cm", "group_rain")).format("%.0f")</td>
       <td style="background-color: #4B84FF;">$year.rain.sum_ge((2.0, "cm", "group_rain")).format("%.0f")</td>
    </tr>
@@ -263,7 +272,7 @@ Niederschlägen ab 0,2 mm.</p>
  #end for
  </table>
 <hr />
-<h3>Regenintensität in mm / h</h3>
+<h3>Regenintensität in mm/h</h3>
 <p>Maximale Niederschlagsintensität je Monat, mit der Angabe des Tages und der Uhrzeit</p>
  <table>
     <tr>
@@ -447,7 +456,7 @@ Niederschlägen ab 0,2 mm.</p>
                    },
 
                    title: {
-                           text: '2014-18 Monatliche Regenmengen'
+                           text: '2014-19 Monatliche Regenmengen'
                         },
 
                    legend: {
@@ -481,8 +490,10 @@ Niederschlägen ab 0,2 mm.</p>
                              name: '2016'
                         }, {
                              name: '2017'
-                        }, { 
+                        }, {
                              name: '2018'
+                        }, { 
+                             name: '2019'
                         }]
                 };
 
@@ -497,6 +508,11 @@ Niederschlägen ab 0,2 mm.</p>
                                                 $.getJSON('Data/Rain-2018.json', function(data) {
                                                         options.series[4].data = data;
                                                         var chart = new Highcharts.Chart(options);
+                                                        $.getJSON('Data/Rain-2019.json', function(data) {
+                                                                options.series[5].data = data;
+                                                                var chart = new Highcharts.Chart(options);
+
+                                                       });
                                                 });
                                         });
                                 });

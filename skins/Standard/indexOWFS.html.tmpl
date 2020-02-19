@@ -36,58 +36,59 @@
 
 <body>
 
- <div id='hes11'>
+<div id='hes11'>
 
 #include $Extras.header
 #include $Extras.cwarn
 
 <div id='hescontainer'>
-  <div id='popupanchor' style='float:left'></div>
+ <div id='popupanchor' style='float:left'></div>
 
 #include "links_forecast.inc"
 
 #if $day.extraTemp9.has_data
-    <div class="hes">
-     <div class='hesbox'>
-      <table class='hes_temp'>
-       <tr><td class='hes1_kopfa'>Carport<br /> bei 200cm</td>
-           <td class='hes1_kopf' colspan='2'>Aktuell</td>
-           <td class='hes1_kopf' colspan="2">Trend</td></tr>
-       <tr>
-           <td class='hes1_bigval' colspan='3'><a href='dayCarport.png' class='popup'>$current.extraTemp9</a></td>
+  <div class="hes">
+   <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Carport<br /> bei 200cm</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayCarport.png' class='popup'>$current.extraTemp9</a></td>
     #if $trend.extraTemp9.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
     #elif $trend.extraTemp9.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class='hes1_vallo'>$trend.extraTemp9.formatted</td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp9.formatted</td>
     #elif $trend.extraTemp9.raw == 0
-        <td class="hes1_trendhi">=</td>
-        <td class="hes1_valhi">$trend.extraTemp9.formatted</td>
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp9.formatted</td>
     #elif $trend.extraTemp9.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class='hes1_valhi'>$trend.extraTemp9.formatted</td>
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp9.formatted</td>
     #end if
-     </tr>
-     <tr>
-      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-       <td><span class='hes1_m'>max</span></td>
-       <td><span class='hes1_valhi'> $day.extraTemp9.max.formatted</span></td>
-       <td><span class="hes1_m">min</span></td>
-       <td><span class='hes1_vallo'>$day.extraTemp9.min.formatted</span></td>
-     </tr>
-     <tr>
-      <td class='hes1_kopfb'>Werte<br />Gestern</td>
-      <td><span class='hes1_m'>max</span></td>
-      <td><span class='hes1_valhi'> $yesterday.extraTemp9.max.formatted</span></td>
-      <td><span class="hes1_m">min</span></td>
-      <td><span class='hes1_vallo'>$yesterday.extraTemp9.min.formatted</span></td>
-     </tr>
-    </table>
-    <hr />
-     <img src="dayCarport.png" alt="carport-temp" style="width:300px; height:175px;" />
-    </div>
-   </div><!-- ende extraTemp9 carport kombi -->
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp9.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp9.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp9.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp9.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+   <img src="dayCarport.png" alt="carport-temp" style="width:300px; height:175px;" />
+   </div>
+  </div><!-- ende extraTemp9 carport kombi -->
 #end if
 
 #if $day.extraTemp4.has_data
@@ -448,7 +449,7 @@
  <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Helligkeit<br />&nbsp;</td>
+    <tr><td class='hes1_kopfa'>Helligkeit</td>
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>

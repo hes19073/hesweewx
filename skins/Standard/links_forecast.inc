@@ -1,11 +1,18 @@
 #encoding UTF-8
 ##  links_forecast.inc 2749 2018-11-26 18:15:24Z hes $
-
+#import time
 #set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
 
 #set $summaryDS = $forecast.weather_summary('DS')
 #set $ddDS = $forecast.label('Weather', $summaryDS.windDir)
 #set $windDS_text = $windT_dir_dict.get($ddDS)
+
+#set $timeFormat = "%H:%M"
+#try
+    #set $timenextupdate=time.strftime($timeFormat,time.localtime($time.time() + float($current.interval.raw)*60))
+#except
+    #set $timenextupdate = 0
+#end try
 
 <div class='hes'>
  <div class='hesbox'>
@@ -30,7 +37,7 @@
     in Spitzen: $forecast.label('Weather', $summaryDS.windGust)<br>
     Windrichtung: <b>$windDS_text</b><br>
     Regenrisiko: $forecast.label('Weather', $summaryDS.pop)<br>
-#if $latest($data_binding='wdsupp_binding').visibility_km.has_data
+#if $latest($data_binding='wdsupp_binding').visibility_km is not None
     Sichtweite ca.: $latest($data_binding='wdsupp_binding').visibility_km
 #end if
     <br />
@@ -38,27 +45,27 @@
     <a href='https://darksky.net/poweredby/' target='_blank'><b> Powerd by Dark Sky</b></a>
     <br>Heute:&nbsp;$day_summary
     <br>Woche:&nbsp;$week_summary
-    <br>Prognose erstellt:&nbsp;$forecast_updated&nbsp;Uhr
+    <br>Prognose erstellt:&nbsp;$forecast_updated &nbsp;Uhr
   </p>
   <hr />
 
-#if $latest($data_binding='wdsupp_binding').vantageForecastNumber.has_data
-        #set $VPn = $latest($data_binding='wdsupp_binding').vantageForecastNumber.raw
+#if $current.forecastRule.raw is not None
+    #set $VPn = $current.forecastRule.raw
 #else
-        #set $VPn = 46
+    #set $VPn = '46'
 #end if
-    #set $VPn = int($VPn)
-    #set $VPn = str($VPn)
-    #if $current.outTemp.raw < 0
-        #set $VPnumber = 'xicons/VPnumbers/' + $VPn + 's.gif'
-    #else
-        #set $VPnumber = 'xicons/VPnumbers/' + $VPn + '.gif'
-    #end if
+
+#set $VPn = int($VPn)
+#set $VPn = str($VPn)
+#if $current.outTemp.raw < 0
+    #set $VPnumber = 'xicons/VPnumbers/' + $VPn + 's.gif'
+#else
+    #set $VPnumber = 'xicons/VPnumbers/' + $VPn + '.gif'
+#end if
 
    <p><img alt="Wetter" src="$VPnumber" /><br>
-   <b>VantagePro 2:</b> $latest($data_binding='wdsupp_binding').vantageForecastRule.raw<br>
-       Prognose erstellt:&nbsp;$latest($data_binding='wdsupp_binding').dateTime&nbsp;Uhr</p>
-
+    <b>VantagePro 2:</b> $vantageText<br>
+   Prognose erstellt:&nbsp;$current.dateTime &nbsp;Uhr</p>
   <hr />
   <h3>Wetter Kamera Richtung SW</h3>
    <a href="xicons/wet/snapshot.jpg">
@@ -67,6 +74,6 @@
    <p><font color='red'>Sonne</font>&nbsp;<font color='blue'>Mond</font></p>
    <img src="daySonne.png" alt="Sonnenstand" style="width:300px; height:175px;" />
    <hr />
-   <p>Python: $station.python_version</p>
+   <p>Aktualisierung:&nbsp;$timenextupdate</p>
  </div>
 </div>

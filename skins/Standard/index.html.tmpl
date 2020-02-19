@@ -68,6 +68,8 @@
 
 #include "links_forecast.inc"
 
+##include "dwd_warn.inc"
+
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
@@ -823,37 +825,10 @@
    <td class='re_data'>VantagePro2 Console</td>
    <td class='re_data'>$current.consBatteryVoltage</td>
   </tr>
-#if $latest($data_binding='wdsupp_binding').windSpeed10.has_data
-  <tr>
-   <td class='re_data'>WindSpeed 10</td>
-   <td class='re_data'>$latest($data_binding='wdsupp_binding').windSpeed10</td>
-  </tr>
-#else
-  <tr>
-   <td></td>
-   <td></td>
-  </tr>
-#end if
-#if $latest($data_binding='wdsupp_binding').yearET.has_data
-  <tr>
-   <td class='re_data'>ET Jahr (sum)</td>
-   <td class='re_data'>$latest($data_binding='wdsupp_binding').yearET</td>
-  </tr>
-#else
-  <tr>
-   <td></td>
-   <td></td>
-  </tr>
-#end if
 #if len($day00) > 3
   <tr>
    <td class='re_data'>Heute</td>
    <td class='re_data'><b> $day00 </b></td>
-  </tr>
-#else
-  <tr>
-   <td>Regen Jahr (sum)</td>
-   <td>$latest($data_binding='wdsupp_binding').yearRain</td>
   </tr>
 #end if
  </table>
@@ -911,19 +886,28 @@
  </div>
 </div> <!-- end ISS -->
 
+<!-- <div class="hes">
+ <div class='hesbox'>
+  <h3>Wetterwarnung</h3>
+  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn"> -->
+  <!-- <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html"> -->
+  <!-- new view-source:https://wettwarn.de/txt/LPW.html -->
+<!-- <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+ </div>
+</div> --> <!-- end dwd.de wetter -->
+
 <div class="hes">
  <div class='hesbox'>
   <h3>Wetterwarnung</h3>
   <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn">
-  <!-- <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html"> -->
-  <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+  <img src="https://www.dwd.de/DWD/warnungen/warnapp_gemeinden/json/warnungen_gemeinde_map_mvp.png" width="300" height="400" alt="WetterWarn" /></a>
  </div>
-</div> <!-- end dwd.de wetter -->
+</div> <!-- end dwd.de Landkreis LUP wetter -->
 
 <div class="hes">
  <div class='hesbox'>
   <table><tr><td>
- <iframe src="//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="180" align="left" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365">
+ <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="210" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
     <p>Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie können die eingebettete Seite über den folgenden Verweis aufrufen: <a href="http://www.weather365.net"> WEATHER365.net </a></p> </iframe>
   </td></tr></table>
  </div>
