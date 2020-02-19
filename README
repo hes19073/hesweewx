@@ -80,8 +80,6 @@ Adaptation --> weewx.conf
 
 and then /etc/init.d/weewx restart
 
-it is currently running weewx-4.0.0a4 under Python 3.7.3
-
 It's an experiment 
 
 Grundversorgung DWD über ftp-server/ Anmeldung notwendig
@@ -95,5 +93,68 @@ Zur Zeit läuft weewx und cmon über
 
 als multi-weewx
 
-Einstellungen vom 05.04.2019  TEST TEST
-Quelle WEEWX development
+siehe log
+
+Feb 19 00:00:25 wetter weewx-weewx[18985] WARNING weewx.qc: 2020-02-19 00:00:00 CET (1582066800) Archive value 'extraHumid2' -11.8299 outside limits (0.0, 100.0)
+Feb 19 00:00:25 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxAqi'
+Feb 19 00:00:26 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to daily summary in 'weewxAqi'
+Feb 19 00:00:26 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxCarAqi'
+Feb 19 00:00:26 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to daily summary in 'weewxCarAqi'
+Feb 19 00:00:27 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewx'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to daily summary in 'weewx'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxWD'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to daily summary in 'weewxWD'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO user.weewxwd3: WdSuppArchive Could not decode Vantage forecast code
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxWDsupp'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxArchiv.sdb'
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO user.forecast: Zambretti: starting thread
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.restx: WindGuru: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.restx: Windy: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.restx: AWEKAS: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:28 wetter weewx-weewx[18985] INFO weewx.restx: Weather365: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:29 wetter weewx-weewx[18985] INFO weewx.restx: PWSWeather: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:29 wetter weewx-weewx[18985] INFO weewx.restx: WeatherCloud: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:29 wetter weewx-weewx[18985] INFO weewx.restx: WindFinder: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:29 wetter weewx-weewx[18985] INFO weewx.restx: Wunderground-PWS: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:36 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:36 CET (1582066836) to database 'weewxSunmon'
+Feb 19 00:00:36 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:36 CET (1582066836) to daily summary in 'weewxSunmon'
+Feb 19 00:00:36 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:36 CET (1582066836) to database 'weewxGeiger'
+Feb 19 00:00:36 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:36 CET (1582066836) to daily summary in 'weewxGeiger'
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to database 'weewxCmon'
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO weewx.manager: Added record 2020-02-19 00:00:00 CET (1582066800) to daily summary in 'weewxCmon'
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO user.forecast: OWM: not yet time to do the forecast
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO user.forecast: DS: not yet time to do the forecast
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO user.forecast: WU: not yet time to do the forecast
+Feb 19 00:00:37 wetter weewx-cmon[15768] INFO weewx.cheetahgenerator: Generated 0 files for report ServerReport in 0.04 seconds
+Feb 19 00:00:49 wetter weewx-weewx[18985] INFO weewx.restx: CWOP: Published record 2020-02-19 00:00:00 CET (1582066800)
+Feb 19 00:00:52 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 13 files for report StandardReport in 23.88 seconds
+Feb 19 00:00:55 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 33 images for report StandardReport in 2.86 seconds
+Feb 19 00:00:55 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:00:55 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 0 files for report AstroReport in 0.03 seconds
+Feb 19 00:00:55 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 2 images for report AstroReport in 0.14 seconds
+Feb 19 00:00:55 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:01:40 wetter weewx-cmon[15768] INFO weewx.imagegenerator: Generated 38 images for report ServerReport in 63.14 seconds
+Feb 19 00:01:40 wetter weewx-cmon[15768] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:01:40 wetter weewx-cmon[15768] INFO user.wxobs: timezone is set to  ini_set("date.timezone", "Europe/Berlin");
+Feb 19 00:01:41 wetter weewx-cmon[15768] INFO weewx.cheetahgenerator: Generated 1 files for report wxobsReport in 0.19 seconds
+Feb 19 00:01:41 wetter weewx-cmon[15768] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:01:41 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 2 files for report BasicReport in 45.25 seconds
+Feb 19 00:01:41 wetter weewx-cmon[15768] INFO weewx.cheetahgenerator: Generated 1 files for report isswatch in 0.50 seconds
+Feb 19 00:01:41 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 30 images for report BasicReport in 0.86 seconds
+Feb 19 00:01:41 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:01:42 wetter weewx-weewx[18985] INFO user.wr: WindRose generated 2 images for 'WindRoseReport' in 0.09 seconds
+Feb 19 00:01:42 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 2 files for report RatingsReport in 0.30 seconds
+Feb 19 00:01:58 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 37 images for report RatingsReport in 16.52 seconds
+Feb 19 00:01:58 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:02:16 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 10 files for report CalendarReport in 17.77 seconds
+Feb 19 00:03:57 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 136 images for report CalendarReport in 101.24 seconds
+Feb 19 00:03:57 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Feb 19 00:03:58 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 6 files for report SmartphoneReport in 0.21 seconds
+Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 18 images for report SmartphoneReport in 7.14 seconds
+Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html/smartphone
+Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 1 files for report MobileReport in 0.08 seconds
+Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.imagegenerator: Generated 4 images for report MobileReport in 0.17 seconds
+Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html/mobile
+Feb 19 00:04:06 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 1 files for report InigoReport in 0.68 seconds
+Feb 19 00:04:42 wetter weewx-weewx[18985] INFO weewx.reportengine: ftpgenerator: Ftp'd 335 files in 36.08 seconds
+
