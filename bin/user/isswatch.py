@@ -46,12 +46,12 @@ class ISSAlert(SearchList):
         issall = self.processAlertRSS(self.generator.config_dict['StdReport']['isswatch']['url'])
         #issall = self.processAlertRSS(self, 'https://spotthestation.nasa.gov/sightings/xml_files/Germany_None_Luneburg.xml')
 
-        #if len(issall) < 10:
-        #   search_list_extension = { 'issnext' : None, 'issall' : None }
-        #else:
+        if len(issall) < 10:
+            search_list_extension = { 'issnext' : None, 'issall' : None }
+        else:
             # Now create a small dictionary :
-        #    search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
-        search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
+            search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
+        #search_list_extension = { 'issnext' : issall[0], 'issall' : issall }
 
         # Finally, return our extension as a list:
         return [search_list_extension]

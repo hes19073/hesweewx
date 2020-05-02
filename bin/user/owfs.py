@@ -161,9 +161,8 @@ Hobby-Boards with Inspeed wind instrument
 # FIXME: automatically detect each sensor type
 # FIXME: automatically detect per-sensor units
 from __future__ import absolute_import
-import logging
 
-#import syslog
+import logging
 import time
 import ow
 
@@ -173,10 +172,9 @@ import weeutil.logger
 from weewx.drivers import AbstractDevice
 from weewx.engine import StdService
 
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 DRIVER_NAME = 'OWFS'
-DRIVER_VERSION = "0.21"
+DRIVER_VERSION = "0.22"
 
 log = logging.getLogger(__name__)
 

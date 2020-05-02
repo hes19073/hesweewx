@@ -42,10 +42,12 @@ import weewx.reportengine
 import weewx.units
 
 from PIL import Image, ImageDraw, ImageFont
+from weeutil.config import search_up, accumulateLeaves
+from weeutil.weeutil import to_bool, to_int, timestamp_to_string
 
 log = logging.getLogger(__name__)
 
-WEEWXWD_STACKED_WINDROSE_VERSION = '3.0.0'
+WEEWXWD_STACKED_WINDROSE_VERSION = '4.0.0'
 
 #===============================================================================
 #                    Class ImageStackedWindRoseGenerator

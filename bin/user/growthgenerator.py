@@ -21,14 +21,13 @@ import six
 import Cheetah.Template
 import Cheetah.Filters
 
-import weeutil.logger
 import weeplot.genplot
 import weeutil.weeutil
 import weewx.units
 import weewx.reportengine
 
 from weewx.units import ValueTuple
-from weewx.units import CtoK, CtoF, FtoC
+#from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
 from weeutil.config import search_up
 
@@ -51,14 +50,14 @@ def get_float_t(txt, unit_group):
         result = ValueTuple(float(txt[ZERO]), txt[1], unit_group)
     return result
 
-def get_growth(d_temp_maxF, d_temp_minF, c_temp_base, c4_temp):
-    # d_temp_max in degree_F ---- 10 degree_C = 50.0 degree_F
-    # d_temp_min in degree_F ---- 30 degree_C = 86.0 degree_F
+def get_growth(d_temp_maxC, d_temp_minC, cB_temp, c4_temp):
+    # d_temp_max in degree_C ---- 10
+    # d_temp_min in degree_C ---- 30
 
-    d_temp_base = FtoC(c_temp_base)    # 10.0     # 50 F
-    c4_plants = FtoC(c4_temp)          # 30.0     # 86 F
-    d_temp_max = FtoC(d_temp_maxF)
-    d_temp_min = FtoC(d_temp_minF)
+    d_temp_base = cB_temp
+    c4_plants = c4_temp
+    d_temp_max = d_temp_maxC
+    d_temp_min = d_temp_minC
     growth = 0.0
 
     if d_temp_min < d_temp_base:
@@ -86,7 +85,8 @@ def get_growth(d_temp_maxF, d_temp_minF, c_temp_base, c4_temp):
 
     return growth
 
-# The default search list includes standard information sources that should be # useful in most templates.
+# The default search list includes standard information sources that should be 
+# useful in most templates.
 default_search_list = [
     "weewx.cheetahgenerator.Almanac",
     "weewx.cheetahgenerator.Station",
@@ -122,7 +122,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
         self.formatter  = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
-        self.to_degree_f = weewx.units.FixedConverter('degree_F')
+
         # determine how much logging is desired
         self.log_success = to_bool(self.image_dict.get('log_success', True))
         # ensure that we are in a consistent right location
@@ -169,7 +169,6 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
 
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-            #ai = 21600 #86400           # enspricht 24 Stunden seit START
             ai = 86400
 
             # Calculate a suitable min, max time for the requested time.
@@ -177,15 +176,15 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
 
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
-            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
+            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('GreenDDData', {}).get('template', 'Cydia/GREEN-YYYY.csv.tmpl')
             (csv, ext) = os.path.splitext(tmpl)
             csv_name = csv.replace('YYYY', str(time.localtime(plotgen_ts).tm_year))
             csv_file_name = os.path.join(text_root, '%s' % csv_name)
-            spec_c_temp_base = plot_options.get('c_temp_base', [50, 'degree_F'])
-            c_temp_base_t = get_float_t(spec_c_temp_base, 'group_temperature')
-            spec_c4_temp = plot_options.get('c4_temp', [86, 'degree_F'])
+            spec_cB_temp = plot_options.get('cB_temp', [10, 'degree_C'])
+            cB_temp_t = get_float_t(spec_cB_temp, 'group_temperature')
+            spec_c4_temp = plot_options.get('c4_temp', [30, 'degree_C'])
             c4_temp_t = get_float_t(spec_c4_temp, 'group_temperature')
-            recs = self.get_vectors((minstamp, maxstamp), csv_file_name, c_temp_base_t, c4_temp_t)
+            recs = self.get_vectors((minstamp, maxstamp), csv_file_name, cB_temp_t, c4_temp_t)
 
             # Do any necessary unit conversions:
             self.vectors = {}
@@ -252,13 +251,12 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         result.setYScaling(weeutil.weeutil.convertToFloat(plot_options.get('yscale', ['None', 'None', 'None'])))
         
         # Get a suitable bottom label:
-        ti_t = time.time()
-        bottom_label_format = plot_options.get('bottom_label_format', '%d.%m.%Y')
-        bottom_label = time.strftime(bottom_label_format, time.localtime(ti_t))
+        bottom_label_format = plot_options.get('bottom_label_format', '%m/%d/%y %H:%M')
+        bottom_label = time.strftime(bottom_label_format, time.localtime(plotgen_ts))
         result.setBottomLabel(bottom_label)
 
         # This generator acts on only one variable type:
-        var_type = 'heatdeg'   # outTemp
+        var_type = 'outTemp'
 
         # Get the type of plot ("bar', 'line', or 'vector')
         plot_type = line_options.get('plot_type', 'line')
@@ -282,8 +280,8 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         if biofix:
             biofix_label = 'Wachstum (GDD)'
         else:
-            biofix = get_float_t(line_options.get('biofix_estimated', [32, 'degree_F']), 'group_temperature')
-            biofix_label = 'Biofix'
+            biofix = get_float_t(line_options.get('biofix_estimated', [10, 'degree_C']), 'group_temperature')
+            biofix_label = 'Biofix (pauschal)'
         horizons.append([biofix, biofix_label])
         offsets = self.growth_dict[species_name].get('Offsets_from_Biofix')
         if offsets:
@@ -377,12 +375,12 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
     def get_vectors(self, stamps, csv_file_name, c_temp_base_t, c4_temp_t):
 
         (minstamp, maxstamp) = stamps
-        c_temp_base = self.to_degree_f.convert(c_temp_base_t)[ZERO]
-        c4_temp = self.to_degree_f.convert(c4_temp_t)[ZERO]
+        cB_temp = (cB_temp_t)[ZERO]
+        c4_temp = (c4_temp_t)[ZERO]
         result = {
             'date': ValueTuple([], 'unix_epoch', 'group_time'),
-            'daily_max': ValueTuple([], 'degree_F', 'group_temperature'),
-            'daily_min': ValueTuple([], 'degree_F', 'group_temperature'),
+            'daily_max': ValueTuple([], 'degree_C', 'group_temperature'),
+            'daily_min': ValueTuple([], 'degree_C', 'group_temperature'),
             'dd': ValueTuple([], 'count', 'group_count'),
             'dd_cumulative': ValueTuple([], 'count', 'group_count'),
             }
@@ -406,11 +404,11 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
                     if (minstamp <= stamp) and (stamp <= maxstamp):
                         result['date'][ZERO].append(stamp)
                         try:
-                            daily_max = float(rec.get('TMPMAX_F'))
+                            daily_max = float(rec.get('TMPMAX_C'))
                             result['daily_max'][ZERO].append(daily_max)
-                            daily_min = float(rec.get('TMPMIN_F'))
+                            daily_min = float(rec.get('TMPMIN_C'))
                             result['daily_min'][ZERO].append(daily_min)
-                            dd = get_growth(daily_max, daily_min, c_temp_base, c4_temp)
+                            dd = get_growth(daily_max, daily_min, cB_temp, c4_temp)
                             result['dd'][ZERO].append(dd)
                             dd_cumulative += dd
                             result['dd_cumulative'][ZERO].append(dd_cumulative)
@@ -740,7 +738,9 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
         report_dict = weeutil.config.accumulateLeaves(growth_dict[species_name])
         
         (template, dest_dir, encoding, default_binding) = self._prepGen(species_name, report_dict)
-        (dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
+
+        #(dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
+        dest_file_name = os.path.basename(template).replace('.tmpl', '')
         dest_file = os.path.join(dest_dir, dest_file_name)
 
         # Get start and stop times
@@ -752,7 +752,7 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
             log.info('Skipping template %s: cannot find start time', section['template'])
             return ngen
 
-            # skip files that are fresh, but only if staleness is defined
+        # skip files that are fresh, but only if staleness is defined
         timespan = weeutil.weeutil.TimeSpan(start_ts, stop_ts)
         stale = to_int(report_dict.get('stale_age'))
         if stale is not None:
@@ -767,8 +767,9 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
                 pass
 
         searchList = self._getSearchList(encoding, timespan, default_binding, species_name, report_dict)
+
         tmpname = dest_file + '.tmp'
-            
+
         try:
             # Cheetah V2 will crash if given a template file name in Unicode. So,
             # be prepared to catch the exception and convert to ascii:
@@ -783,22 +784,21 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
                 compiled_template = Cheetah.Template.Template(
                     file=template.encode('ascii', 'ignore'),
                     searchList=searchList,
-                    filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
-                    
+
             unicode_string = compiled_template.respond()
-                    
+
             if encoding == 'html_entities':
                 byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
             elif encoding == 'strict_ascii':
                 byte_string = unicode_string.encode('ascii', 'ignore')
             else:
                 byte_string = unicode_string.encode('utf8')
-            
+
             # Open in binary mode. We are writing a byte-string, not a string
             with open(tmpname, mode='wb') as fd:
                 fd.write(byte_string)
-            
+
             os.rename(tmpname, dest_file)
 
         except Exception as e:
@@ -815,7 +815,7 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
             log.error("Generate failed with exception '%s'", type(e))
             log.error("**** Ignoring template %s", template)
             log.error("**** Reason: %s", e)
-            weeutil.logger.log_traceback(log.error, "****  ")
+            weeutil.logger.log_traceback("****  ")
         else:
             ngen += 1
         finally:
@@ -828,9 +828,9 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
     def _getSearchList(self, encoding, timespan, default_binding, species_name, report_dict):
         """Get the complete search list to be used by Growth."""
 
-        spec_c_temp_base = report_dict.get('c_temp_base', [50, 'degree_F'])
-        c_temp_base_t = get_float_t(spec_c_temp_base, 'group_temperature')
-        spec_c4_temp = report_dict.get('c4_temp', [86, 'degree_F'])
+        spec_cB_temp = report_dict.get('cB_temp', [10, 'degree_C'])
+        cB_temp_t = get_float_t(spec_cB_temp, 'group_temperature')
+        spec_c4_temp = report_dict.get('c4_temp', [30, 'degree_C'])
         c4_temp_t = get_float_t(spec_c4_temp, 'group_temperature')
 
         # Get the basic search list
@@ -842,8 +842,8 @@ class GrowthReportGenerator(weewx.reportengine.ReportGenerator):
                 'datetime': self.recs[-1]['date'],
                 'label': report_dict.get('label', species_name),
                 'species_name': species_name,
-                'c_temp_base': weewx.units.ValueHelper(c_temp_base_t, 'year', self.formatter, self.converter),
-                'c4_temp': weewx.units.ValueHelper(c4_temp_t, 'year', self.formatter, self.converter),
+                #'cB_temp': weewx.units.ValueHelper(cB_temp_t, 'year', self.formatter, self.converter),
+                #'c4_temp': weewx.units.ValueHelper(c4_temp_t, 'year', self.formatter, self.converter),
                 },
             }, 
             ]

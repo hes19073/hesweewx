@@ -7,7 +7,7 @@
     <link rel="icon" href="images/favicon.png" type="image/png"/>
     <link rel="stylesheet" href="css/tocbot-4.3.1.css">
     <link rel="stylesheet" href="css/weewx_ui.css"/>
-    <script src="js/cash.js"></script>
+    <script src="js/cash.min.js"></script>
     <script src="js/tocbot-4.3.1.min.js"></script>
     <script src="js/weewx.js"></script>
     <script>
@@ -113,25 +113,25 @@ Usage: wee_config --help
        wee_config --reconfigure CONFIG_FILE|--config=CONFIG_FILE
            [--driver=DRIVER]  [--units=(us|metric)]
            [--latitude=yy.y] [--longitude=xx.x] [--altitude=zz.z,(foot|meter)]
-           [--location="Home Sweet Home"]
+           [--location="Home Sweet Home"] [--register=(y,n)]
            [--output=OUT_CONFIG] [--no-prompt] [--no-backup] [--verbosity=N]
        wee_config --install --dist-config=DIST_CONFIG --output=OUT_CONFIG
            [--driver=DRIVER]  [--units=(us|metric)]
            [--latitude=yy.y] [--longitude=xx.x] [--altitude=zz.z,(foot|meter)]
-           [--location="Home Sweet Home"]
+           [--location="Home Sweet Home"] [--register=(y,n)]
            [--no-prompt] [--no-backup] [--verbosity=N]
        wee_config --upgrade CONFIG_FILE|--config=CONFIG_FILE
            --dist-config=DIST_CONFIG
            [--output=OUT_CONFIG] [--no-prompt] [--no-backup]
            [--warn-on-error] [--verbosity=N]
-       wee_config --patch-skins CONFIG_FILE|--config=CONFIG_FILE [--verbosity=N]
 
 User actions:
 
+--version       Show the WeeWX version, then exit.
 --list-drivers  List the available weewx device drivers, then exit.
 --reconfigure   Modify an existing configuration file CONFIG_FILE with any
                 specified station parameters.  Use this command with the
-                driver option to change the device driver.
+                --driver option to change the device driver.
 
 System actions (not normally done by users):
 
@@ -140,14 +140,13 @@ System actions (not normally done by users):
 --upgrade       Update the contents of configuration file CONFIG_FILE to the
                 installed version, then merge the result with the contents of
                 configuration file DIST_CONFIG.
---patch-skins   Patch skin.conf files to new default semantics (introduced
-                in V3.9).
 
 Station parameters:
 
   --driver      --units
   --latitude    --longitude
   --altitude    --location
+  --register
 
 
 Options:
@@ -158,7 +157,6 @@ Options:
   --install             Install a new configuration file.
   --upgrade             Update an existing configuration file, then merge with
                         contents of DIST_CONFIG.
-  --patch-skins         Patch skin.conf files to WeeWX V3.9 semantics.
   --config=CONFIG_FILE  Use configuration file CONFIG_FILE.
   --dist-config=DIST_CONFIG
                         Use template configuration file DIST_CONFIG.
@@ -174,6 +172,7 @@ Options:
   --location=LOCATION   A text description of the station. For example,
                         "Santa's workshop, North Pole"
   --units=(metric|us)   Set display units to 'metric' or 'us'.
+  --register=(y/n)      Register this station in the weewx registry?
   --no-prompt           Do not prompt. Use default or specified values.
   --no-backup           When replacing an existing configuration file, do not
                         create a backup copy.
@@ -208,7 +207,7 @@ Options:
         <pre class="tty">
 Module name              Driver name    Version  Status
   weewx.drivers.acurite    AcuRite        0.19     No module named usb
-  weewx.drivers.cc3000     CC3000         0.8
+  weewx.drivers.cc3000     CC3000         0.3
   weewx.drivers.fousb      FineOffsetUSB  1.7      No module named usb
   weewx.drivers.simulator  Simulator      3.0
   weewx.drivers.te923      TE923          0.14     No module named usb
@@ -255,7 +254,7 @@ Module name              Driver name    Version  Status
 
 Module name              Driver name    Version  Status
   weewx.drivers.acurite    AcuRite        0.19     
-  weewx.drivers.cc3000     CC3000         0.8
+  weewx.drivers.cc3000     CC3000         0.3
   weewx.drivers.fousb      FineOffsetUSB  1.7      
   weewx.drivers.simulator  Simulator      3.0
   weewx.drivers.te923      TE923          0.14     
@@ -288,17 +287,27 @@ Module name              Driver name    Version  Status
         <pre class="tty">Using configuration file /home/weewx/weewx.conf
 Enter a brief description of the station, such as its location.  For example:
 Santa's Workshop, North Pole
-description [Hood River, Oregon]:
+description [My Little Town, Oregon]:
+
 Specify altitude, with units 'foot' or 'meter'.  For example:
 35, foot
 12, meter
 altitude [700, foot]:
+
 Specify latitude in decimal degrees, negative for south.
-latitude [45]:
+latitude [0.00]:
 Specify longitude in decimal degrees, negative for west.
-longitude [-125]:
+longitude [0.00]:
+
+You can register your station on weewx.com, where it will be included
+in a map. You will need a unique URL to identify your station (such as a
+website, or WeatherUnderground link).
+Include station in the station registry (y/n)? [y]:
+Unique URL: [http://weewx.com]:
+
 Indicate the preferred units for display: 'metric' or 'us'
-units [metricwx]:
+units [us]:
+
 Installed drivers include:
   0) AcuRite         (weewx.drivers.acurite)
   1) CC3000          (weewx.drivers.cc3000)
@@ -309,22 +318,13 @@ Installed drivers include:
   6) Vantage         (weewx.drivers.vantage)
   7) WMR100          (weewx.drivers.wmr100)
   8) WMR200          (weewx.drivers.wmr200)
-  9) WMR9x8          (weewx.drivers.wmr9x8)
- 10) WS1             (weewx.drivers.ws1)
- 11) WS23xx          (weewx.drivers.ws23xx)
- 12) WS28xx          (weewx.drivers.ws28xx)
-choose a driver [6]:
-Specify the hardware interface, either 'serial' or 'ethernet'.
-If the station is connected by serial, USB, or serial-to-USB
-adapter, specify serial.  Specify ethernet for stations with
-WeatherLinkIP interface.
-type [serial]:
-Specify a port for stations with a serial interface, for
-example /dev/ttyUSB0 or /dev/ttyS0.
-port [/dev/ttyUSB0]:
-Saved backup to /home/weewx/weewx.conf.20150430084525
-Saved configuration to /home/weewx/weewx.conf
-</pre>
+  9) WMR300          (weewx.drivers.wmr300)
+ 10) WMR9x8          (weewx.drivers.wmr9x8)
+ 11) WS1             (weewx.drivers.ws1)
+ 12) WS23xx          (weewx.drivers.ws23xx)
+ 13) WS28xx          (weewx.drivers.ws28xx)
+choose a driver [3]:
+Saved backup to /home/weewx/weewx.conf.20200328054724</pre>
 
         <p>If this is too much trouble, you can specify the <span class="code">--no-prompt</span> option:</p>
 
@@ -426,7 +426,7 @@ Options:
 
         <pre class="tty cmd">wee_database --reconfigure</pre>
 
-        <p>See the section <a href="customizing.htm#Adding_a_new_observation_type">Adding a new observation type</a> in
+        <p>See the section <a href="customizing.htm#add_archive_type">Adding a new type to the database</a> in
             the Customization Guide for step-by-step instructions that use this option.
         </p>
 
@@ -1327,6 +1327,18 @@ summaries using the wee_database utility.</pre>
             filename. There is no default.
         </p>
 
+        <h4 class='config_option' id='csv_encoding'>source_encoding</h4>
+
+        <p>The source file encoding. This parameter is optional and should only need be used if the source file uses an encoding
+            other than UTF-8 or an ASCII compatible encoding. If used, the setting used should be
+            a <a href="https://docs.python.org/3/library/codecs.html#standard-encodings">Python Standard Encoding</a>.  The default
+            value is <span class="code">utf-8-sig</span>.
+        </p>
+
+        <h4 class='config_option' id='csv_delimiter'>delimiter</h4>
+
+        <p>The one character string used to separate fields. Default is <span class="code">,</span> (comma).</p>
+
         <h4 class='config_option' id='csv_interval'>interval</h4>
 
         <p>Determines how the time interval (WeeWX archive table field <span class="code">interval</span>) between
@@ -1628,6 +1640,13 @@ summaries using the wee_database utility.</pre>
             <span class="code">rain</span> field). Unused field mapping lines will not be used and may be omitted.
         </p>
 
+        <p>If the source data includes a field that contains a WeeWX unit system code (i.e. the equivalent of the
+            WeeWX <span class="code">usUnits</span> field such as may be obtained from WeeWX or wview data) then
+            this field can be mapped to the WeeWX <span class="code">usUnits</span> field and used to set the
+            units used for all fields being imported. In such cases the the <span class="code">weewx_unit_name</span>
+            portion of the imported fields in the field map is not used and can be omitted.
+        </p>
+
         <p>For example, source CSV data with the following structure:</p>
 
         <pre class="tty">date_and_time,temp,humid,wind,dir,rainfall,rad,river
@@ -1635,7 +1654,11 @@ summaries using the wee_database utility.</pre>
 23 May 2018 13:05,17.6,56,1.0,22.5,0.4,746,341
         </pre>
 
-        <p>where <span class="code">temp</span> is temperature in Celsius, <span class="code">humid</span> is humidity in percent, <span class="code">wind</span> is wind speed in km/h, <span class="code">dir</span> is wind direction in degrees, <span class="code">rainfall</span> is rain in mm, <span class="code">rad</span> is radiation in watts per square meter and <span class="code">river</span> is river height in mm might use a field map as follows:</p>
+        <p>where <span class="code">temp</span> is temperature in Celsius, <span class="code">humid</span> is
+            humidity in percent, <span class="code">wind</span> is wind speed in km/h, <span class="code">dir</span>
+            is wind direction in degrees, <span class="code">rainfall</span> is rain in mm,
+            <span class="code">rad</span> is radiation in watts per square meter and <span class="code">river</span>
+            is river height in mm might use a field map as follows:</p>
 
         <pre class="tty">[[FieldMap]]
     dateTime    = date_and_time, unix_epoch
@@ -1647,20 +1670,33 @@ summaries using the wee_database utility.</pre>
     radiation   = rad, watt_per_meter_squared
         </pre>
 
+        <p>If the same source CSV data included a field <span class="code">unit_info</span> that contains WeeWX
+            unit system data as follows:
+        </p>
+
+        <pre class="tty">date_and_time,temp,humid,wind,dir,rainfall,rad,river,unit_info
+23 May 2018 13:00,17.4,56,3.0,45,0.0,956,340,1
+23 May 2018 13:05,17.6,56,1.0,22.5,0.4,746,341,16
+        </pre>
+
+         <p>then a field map such as the following might be used:</p>
+
+        <pre class="tty">[[FieldMap]]
+    dateTime    = date_and_time, unix_epoch
+    usUnits     = unit_info
+    outTemp     = temp
+    outHumidity = humid
+    windSpeed   = wind
+    windDir     = dir
+    rain        = rainfall
+    radiation   = rad
+        </pre>
+
         <p class="note">
             <strong>Note</strong><br/>Any WeeWX archive fields that are derived (e.g., <span
             class="code">dewpoint</span>) and for which there is no field mapping may be calculated during import by use
             of the <span class="code">calc_missing</span> option in the <span class="config_section">[CSV]</span>
             section of the import configuration file.
-        </p>
-
-        <p class="note">
-            <strong>Note</strong><br/>At present <span class="code">wee_import</span> does not support mapping of
-            the <span class="code">usUnits</span> field. Any CSV data being imported that includes a <span class="code">usUnits</span>
-            field should omit the <span class="code">usUnits</span> field from the field map and instead specify
-            units for each imported field as outlined above. <span class="code">wee_import</span> will then
-            ensure that appropriate unit conversions are made and the correct values saved to the destination
-            database.
         </p>
 
         <h3 class="config_section">[WU]</h3>
@@ -1749,6 +1785,13 @@ summaries using the wee_database utility.</pre>
 
         <p>The full path to the directory containing the Cumulus monthly log files to be imported. Do not include a
             trailing /. There is no default.
+        </p>
+
+        <h4 class='config_option' id='cumulus_encoding'>source_encoding</h4>
+
+        <p>The Cumulus monthly log file encoding. This option is identical in operation to the
+            CSV <em><a href="#csv_encoding">source_encoding</a></em> option but applies to Cumulus imports only. The
+            default is <span class="code">utf-8-sig</span>.
         </p>
 
         <h4 class='config_option' id='cumulus_interval'>interval</h4>
@@ -1954,6 +1997,13 @@ summaries using the wee_database utility.</pre>
         </p>
 
         <p>The default is <span class="code">lg.txt, vantagelog.txt, vantageextrasensorslog.csv</span>.
+        </p>
+
+        <h4 class='config_option' id='wd_encoding'>source_encoding</h4>
+
+        <p>The Weather Display monthly log file encoding. This option is identical in operation to the
+            CSV <em><a href="#csv_encoding">source_encoding</a></em> option but applies to Weather Display imports only. The
+            default is <span class="code">utf-8-sig</span>.
         </p>
 
         <h4 class='config_option' id='wd_interval'>interval</h4>
@@ -2229,12 +2279,6 @@ summaries using the wee_database utility.</pre>
             </tbody>
         </table>
 
-        <p class="note">
-            <strong>Note</strong><br/>The WeeWX archive table field names available under the default database schema
-            are listed at the Appendix <a href="customizing.htm#archive_types"> Archive Types</a> in the
-            <a href="customizing.htm">Customization Guide</a>.
-        </p>
-
         <p>A mapping is not required for every WeeWX archive field (e.g., the Weather Display monthly logs may not
             provide inside temperature so no <span class="code">inTemp</span> field mapping is required) and neither
             does every Weather Display monthly log field need to be included in a mapping (e.g., the Weather Display
@@ -2274,6 +2318,10 @@ summaries using the wee_database utility.</pre>
             <li>Blank fields are represented by the use of white space or no space only between commas.
             </li>
 
+            <li>Direction data being imported may be represented as numeric degrees or as a string representing
+                the <a href="https://en.wikipedia.org/wiki/Cardinal_direction">cardinal, intercardinal and/or secondary intercardinal directions</a>.
+            </li>
+
             <li>There must a field that represents the date-time of the observations on each line. This date-time field
                 must be either a Unix epoch timestamp or any date-time format that can be represented using <em> <a
                     href="https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior">Python
@@ -2291,6 +2339,25 @@ summaries using the wee_database utility.</pre>
 28/11/2017 08:20:00,1016.9,25.9,79,1.6,95,9.7,0,774,5.5
 28/11/2017 08:25:00,1017,25.5,78,2.9,48,9.7,0,303,3.4
 28/11/2017 08:30:00,1017.1,25.1,80,3.1,54,9.7,0,190,3.6</pre>
+
+        <p>or this:</p>
+
+        <pre class="tty">Time,Barometer,Temp,Humidity,Windspeed,Dir,Gust,Dayrain,Radiation,Uv
+2/1/2017 06:20:00,1006.4,4.8,48,2.8,NE,4,0,349,2.8
+2/1/2017 06:25:00,1006.9,5.0,48,3.8,NNE,21.3,0,885,4.3
+2/1/2017 06:30:00,1006.8,5.4,47,3.4,North,12.3,0,887,5.3
+2/1/2017 06:35:00,1007,5.2,49,5.5,NNE,13.3,0,600,5.4
+2/1/2017 06:40:00,1006.9,5.7,49,2.6,ESE,9.7,0,732,5.5
+2/1/2017 06:45:00,1007,5.5,48,1.9,Southsoutheast,9.8,0,393,6.4
+2/1/2017 06:50:00,1007.1,5.2,50,2.1,southeast,9.9,0,180,6.6</pre>
+
+        <p class="note">
+            <strong>Note</strong><br/><a href="https://en.wikipedia.org/wiki/Cardinal_direction">Cardinal, intercardinal
+            and/or secondary intercardinal directions</a> may be represented by one, two or three letter abbreviations
+            e.g., N, SE or SSW; by a single word e.g., North, Southwest or Southsouthwest or by hyphenated or spaced words
+            e.g., North West or South-south-west. Capitalisation is ignored as are any spaces, hyphens or other white
+            space. At present only English abbreviations and directions are supported.
+        </p>
 
         <h3>Mapping data to archive fields</h3>
 
@@ -2340,6 +2407,9 @@ summaries using the wee_database utility.</pre>
                 <ul>
                     <li><a href="#csv_file"><strong><span class="code">file</span></strong></a>. The full path and file
                         name of the file containing the CSV formatted data to be imported.
+                    </li>
+                    <li><a href="#csv_delimiter"><strong><span class="code">delimiter</span></strong></a>. The single
+                        character used to separate fields.
                     </li>
                     <li><a href="#csv_interval"><strong><span class="code">interval</span></strong></a>. Determines how
                         the WeeWX interval field is derived.
@@ -2690,6 +2760,12 @@ Unique records processed: 71; Last timestamp: 2016-01-23 06:00:00 AEST (14534928
 Finished dry run import
 657 records were processed and 657 unique records would have been imported.
 </pre>
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to an incorrect station ID, an incorrect date or Weather Underground API problems.
+                    A short explanatory note to this effect will be displayed against the period concerned and an entry
+                    included in the log.
+                </p>
             </li>
 
             <li>Once the dry run results are satisfactory the source data can be imported using the following command:
@@ -2734,6 +2810,12 @@ Unique records processed: 284; Last timestamp: 2016-01-21 23:55:00 AEST (1453384
 Period 3 ...
 Unique records processed: 284; Last timestamp: 2016-01-22 23:55:00 AEST (1453470900)
 </pre>
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to an incorrect station ID, an incorrect date or Weather Underground API problems.
+                    A short explanatory note to this effect will be displayed against the period concerned and an entry
+                    included in the log.
+                </p>
 
                 <p>The line commencing with <span class="code">Unique records processed</span> should update as records are
                     imported with progress information on number of records processed, number of unique records imported
@@ -2988,6 +3070,11 @@ Finished dry run import
                     <strong>Note</strong><br/>The nine periods correspond to the nine monthly log files used for this
                     import.
                 </p>
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to a missing Cumulus monthly log file. A short explanatory note to this effect
+                    will be displayed against the period concerned and an entry included in the log.
+                </p>
             </li>
 
             <li>Once the dry run results are satisfactory the data can be imported using the following command:
@@ -3057,6 +3144,11 @@ Period 6 ...
 Unique records processed: 8744; Last timestamp: 2017-03-31 23:55:00 AEST (1490968500)
 </pre>
 
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to a missing Cumulus monthly log file. A short explanatory note to this effect
+                    will be displayed against the period concerned and an entry included in the log.
+                </p>
                 <p>The line commencing with <span class="code">Unique records processed</span> should update as records
                     are imported with progress information on number of records processed, number of unique records
                     imported and the date time of the latest record processed. If the import spans multiple months (ie
@@ -3310,6 +3402,11 @@ Finished dry run import
                     <strong>Note</strong><br/>The five periods correspond to the five months of log files used for this
                     import.
                 </p>
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to a missing Weather Display log file. A short explanatory note to this effect
+                    will be displayed against the period concerned and an entry included in the log.
+                </p>
             </li>
 
             <li>If the <span class="code">--suppress--warnings</span> option was used it may be prudent to do a second
@@ -3487,6 +3584,12 @@ Unique records processed: 43136; Last timestamp: 2018-11-30 23:59:00 AEST (15435
 Period 4 ...
 Unique records processed: 12000; Last timestamp: 2018-12-09 07:59:00 AEST (1544306340)
 </pre>
+
+                <p class="note">
+                    <strong>Note</strong><br/>Any periods for which no data could be obtained will be skipped. The lack
+                    of data may be due to a missing Weather Display log file. A short explanatory note to this effect
+                    will be displayed against the period concerned and an entry included in the log.
+                </p>
 
                 <p>The line commencing with <span class="code">Unique records processed</span> should update as records
                     are imported with progress information on number of unique records processed and the date time of the

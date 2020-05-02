@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -8,7 +8,6 @@
 from __future__ import absolute_import
 
 # System imports:
-import copy
 import datetime
 import ftplib
 import glob
@@ -118,10 +117,10 @@ class StdReportEngine(threading.Thread):
         Runs through the list of reports. """
 
         if self.gen_ts:
-            log.debug("reportengine: Running reports for time %s",
+            log.debug("Running reports for time %s",
                       weeutil.weeutil.timestamp_to_string(self.gen_ts))
         else:
-            log.debug("reportengine: Running reports for latest time in the database.")
+            log.debug("Running reports for latest time in the database.")
 
         # Iterate over each requested report
         for report in self.config_dict['StdReport'].sections:
@@ -133,16 +132,17 @@ class StdReportEngine(threading.Thread):
             # See if this report is disabled
             enabled = to_bool(self.config_dict['StdReport'][report].get('enable', True))
             if not enabled:
-                log.debug("reportengine: Report '%s' not enabled. Skipping.", report)
+                log.debug("Report '%s' not enabled. Skipping.", report)
                 continue
 
-            log.debug("reportengine: Running report '%s'", report)
+            log.debug("Running report '%s'", report)
 
             # Fetch and build the skin_dict:
             try:
                 skin_dict = self._build_skin_dict(report)
-            except SyntaxError:
-                log.error("        ****  Report ignored")
+            except SyntaxError as e:
+                log.error("Syntax error: %s", e)
+                log.error("   ****       Report ignored")
                 continue
 
             # Default action is to run the report. Only reason to not run it is
@@ -151,11 +151,6 @@ class StdReportEngine(threading.Thread):
                 # StdReport called us not wee_reports so look for a report_timing
                 # entry if we have one.
                 timing_line = skin_dict.get('report_timing')
-                # The report_timing entry might have one or more comma separated
-                # values which ConfigObj would interpret as a list. If so then
-                # reconstruct our report_timing entry.
-                if hasattr(timing_line, '__iter__'):
-                    timing_line = ','.join(timing_line)
                 if timing_line:
                     # Get a ReportTiming object.
                     timing = ReportTiming(timing_line)
@@ -170,10 +165,10 @@ class StdReportEngine(threading.Thread):
                         if timing.is_triggered(_ts, _ts - _interval) is False:
                             # report timing was valid but not triggered so do
                             # not run the report.
-                            log.debug("reportengine: Report '%s' skipped due to report_timing setting", report)
+                            log.debug("Report '%s' skipped due to report_timing setting", report)
                             continue
                     else:
-                        log.debug("reportengine: Invalid report_timing setting for report '%s', "
+                        log.debug("Invalid report_timing setting for report '%s', "
                                   "running report anyway", report)
                         log.debug("       ****  %s", timing.validation_error)
 
@@ -190,7 +185,7 @@ class StdReportEngine(threading.Thread):
                             self.stn_info,
                             self.record)
                     except Exception as e:
-                        log.error("reportengine: Unable to instantiate generator '%s'", generator)
+                        log.error("Unable to instantiate generator '%s'", generator)
                         log.error("        ****  %s", e)
                         weeutil.logger.log_traceback(log.error, "        ****  ")
                         log.error("        ****  Generator ignored")
@@ -204,7 +199,7 @@ class StdReportEngine(threading.Thread):
                     except Exception as e:
                         # Caught unrecoverable error. Log it, continue on to the
                         # next generator.
-                        log.error("reportengine: Caught unrecoverable exception in generator '%s'", generator)
+                        log.error("Caught unrecoverable exception in generator '%s'", generator)
                         log.error("        ****  %s", e)
                         weeutil.logger.log_traceback(log.error, "        ****  ")
                         log.error("        ****  Generator terminated")
@@ -214,14 +209,14 @@ class StdReportEngine(threading.Thread):
                     finally:
                         obj.finalize()
             else:
-                log.debug("reportengine: No generators specified for report '%s'", report)
+                log.debug("No generators specified for report '%s'", report)
 
     def _build_skin_dict(self, report):
         """Find and build the skin_dict for the given report"""
 
         # Start with the defaults in the defaults module. Because we will be modifying it, we need to make a deep
         # copy.
-        skin_dict = copy.deepcopy(weewx.defaults.defaults)
+        skin_dict = configobj.ConfigObj(weewx.defaults.defaults.dict())
 
         # Add the report name:
         skin_dict['REPORT_NAME'] = report
@@ -237,20 +232,20 @@ class StdReportEngine(threading.Thread):
         # there is no file - everything for a skin might be defined in the weewx configuration.
         try:
             merge_dict = configobj.ConfigObj(skin_config_path, file_error=True, encoding='utf-8')
-            log.debug("reportengine: Found configuration file %s for report '%s'", skin_config_path, report)
+            log.debug("Found configuration file %s for report '%s'", skin_config_path, report)
             # Merge the skin config file in:
             weeutil.config.merge_config(skin_dict, merge_dict)
         except IOError as e:
-            log.debug("reportengine: Cannot read skin configuration file %s for report '%s': %s",
+            log.debug("Cannot read skin configuration file %s for report '%s': %s",
                       skin_config_path, report, e)
         except SyntaxError as e:
-            log.error("reportengine: Failed to read skin configuration file %s for report '%s': %s",
+            log.error("Failed to read skin configuration file %s for report '%s': %s",
                       skin_config_path, report, e)
             raise
 
         # Now add on the [StdReport][[Defaults]] section, if present:
         if 'Defaults' in self.config_dict['StdReport']:
-            merge_dict = copy.deepcopy(self.config_dict['StdReport']['Defaults'])
+            merge_dict = self.config_dict['StdReport']['Defaults'].dict()
             weeutil.config.merge_config(skin_dict, merge_dict)
 
         # Inject any scalar overrides. This is for backwards compatibility. These options should now go
@@ -469,7 +464,7 @@ class ReportTiming(object):
                       replaced with numeric equivalents.
     """
 
-    def __init__(self, line):
+    def __init__(self, raw_line):
         """Initialises a ReportTiming object.
 
         Processes raw line to produce 5 field line suitable for further
@@ -481,39 +476,47 @@ class ReportTiming(object):
         # initialise some properties
         self.is_valid = None
         self.validation_error = None
-        self.raw_line = line.strip()
+        # To simplify error reporting keep a copy of the raw line passed to us
+        # as a string. The raw line could be a list if it included any commas.
+        # Assume a string but catch the error if it is a list and join the list
+        # elements to make a string
+        try:
+            line_str = raw_line.strip()
+        except AttributeError:
+            line_str = ','.join(raw_line).strip()
+        self.raw_line = line_str
         # do some basic checking of the line for unsupported characters
         for unsupported_char in ('%', '#', 'L', 'W'):
-            if unsupported_char in line:
+            if unsupported_char in line_str:
                 self.is_valid = False
                 self.validation_error = "Unsupported character '%s' in '%s'." % (unsupported_char,
-                                                                                 line)
+                                                                                 self.raw_line)
                 return
-        # six special time defintion 'nicknames' are supported which replace
-        # the line elements with pre-detemined values. These nicknames start
+        # Six special time definition 'nicknames' are supported which replace
+        # the line elements with pre-determined values. These nicknames start
         # with the @ character. Check for any of these nicknames and substitute
         # the corresponding line.
         for nickname, nn_line in NICKNAME_MAP.items():
-            if line == nickname:
-                line = nn_line
+            if line_str == nickname:
+                line_str = nn_line
                 break
-        fields = line.split(None, 5)
+        fields = line_str.split(None, 5)
         if len(fields) < 5:
             # Not enough fields
             self.is_valid = False
-            self.validation_error = "Insufficient fields found in '%s'" % line
+            self.validation_error = "Insufficient fields found in '%s'" % self.raw_line
             return
         elif len(fields) == 5:
             fields.append(None)
-        # Extract individual line elements
+        # extract individual line elements
         minutes, hours, dom, months, dow, _extra = fields
-        # Save individual fields
+        # save individual fields
         self.line = [minutes, hours, dom, months, dow]
-        # Is DOM restricted ie is DOM not '*'
+        # is DOM restricted ie is DOM not '*'
         self.dom_restrict = self.line[2] != '*'
-        # Is DOW restricted ie is DOW not '*'
+        # is DOW restricted ie is DOW not '*'
         self.dow_restrict = self.line[4] != '*'
-        # Decode the line and generate a set of possible values for each field
+        # decode the line and generate a set of possible values for each field
         (self.is_valid, self.validation_error) = self.decode_fields()
 
     def decode_fields(self):
@@ -647,13 +650,13 @@ class ReportTiming(object):
         """Determine if CRON like line is to be triggered.
 
         Return True if line is triggered between timestamps ts_lo and ts_hi
-        (exclusivie on ts_lo inclusive on ts_hi), False if it is not
+        (exclusive on ts_lo inclusive on ts_hi), False if it is not
         triggered or None if the line is invalid or ts_hi is not valid.
         If ts_lo is not specified check for triggering on ts_hi only.
 
         ts_hi:  Timestamp of latest time to be checked for triggering.
         ts_lo:  Timestamp used for earliest time in range of times to be
-                checked for triggering. May be ommitted in which case only
+                checked for triggering. May be omitted in which case only
                 ts_hi is checked.
         """
 
@@ -711,7 +714,7 @@ class ReportTiming(object):
                     # If we arrived here then all fields match and the line
                     # would be triggered on this ts so return True.
                     return True
-            # If we are here it is becasue we broke out of all inner for loops
+            # If we are here it is because we broke out of all inner for loops
             # and the line was not triggered so return False.
             return False
         else:

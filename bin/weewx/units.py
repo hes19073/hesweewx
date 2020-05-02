@@ -8,7 +8,7 @@
 """Data structures and functions for dealing with units."""
 
 #
-# The unittest examples work only under Python 3!!
+# The doctest examples work only under Python 3!!
 # extensions by Hartmut Schweidler
 
 from __future__ import absolute_import
@@ -63,8 +63,6 @@ def mps_to_mph(x):
 
 def kph_to_mph(x):
     return x * 1000.0 / METER_PER_MILE
-
-
 
 class UnknownType(object):
     """Indicates that the observation type is unknown."""

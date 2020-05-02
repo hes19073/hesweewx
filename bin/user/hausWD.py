@@ -9,12 +9,40 @@
 ##FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 ##details.
 ##
-## Version: 0.1                                    Date: 26 September 2019
+## Version: 0.3                                    Date: 20 Februar 2020
 ##
 ## Revision History
-##  02 October 2019          v0.2        # Preise Gas Wasser Strom
-##  26 September 2019        v0.1        -Initial implementation
+##  20 Februar 2020          v0.3        - Zaehler und Delta Preise
+##  02 October 2019          v0.2        - Preise Gas Wasser Strom
+##  26 September 2019        v0.1        - Initial implementation
 ##
+
+## *Total = Zaehlerdifferenz Verbrauch
+## *Deltawerte = Zaehlimpule s0
+## Werte *Total Differenz aus Handeintrag und alter Zaehlerstand
+## Werte *Delta Differenz aus Impuls Neu und Impuls alt
+#
+# Service to calculate Preise for Wasser-, Strom- und Gasverbrauch
+#
+# in weewx.config
+# Add this service to weewx.conf, then restart weewx
+#[Engine]
+#    [[Services]]
+#        process_services = ..., user,hausWD,HausWdCalculate,
+#        archive_service = ...., user,hausWD,HausWdArchive
+
+#[HausWD]
+#   # Werte in Euro
+#    Brennwert = 9.8
+#    Zustandszahl = 0.95
+#    Gaspreis = 0.0619
+#    Strompreis = 0.272
+#    Grundpreisstrom = 123.32
+#    Wasserpreis = 1.47
+#    Abwasserpreis = 2.65
+#    Grundpreiswasser = 12.98
+#
+#
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -65,35 +93,111 @@ class HausWdCalculate(weewx.engine.StdService):
 
         data_x = {}
         if 'gasTotal' in event.packet:
+            data_x['gasZ_m3'] = event.packet['gasTotal']
             data_x['gasZ_kWh'] = event.packet['gasTotal'] * self.BrennWert * self.ZustandsZahl
             data_x['gasZ_preis'] = event.packet['gasTotal'] * self.BrennWert * self.ZustandsZahl * self.GasPreis
 
         else:
+            data_x['gasZ_m3'] = 0.0
             data_x['gasZ_kWh'] = 0.0
             data_x['gasZ_preis'] = 0.0
 
         if 'eleTotal' in event.packet:
+            data_x['eleZ_kWh'] = event.packet['eleTotal']
             data_x['eleZ_preis'] = event.packet['eleTotal'] * self.StromPreis
 
         else:
+            data_x['eleZ_kWh'] = 0.0
             data_x['eleZ_preis'] = 0.0
 
         if 'eleATotal' in event.packet:
+            data_x['eleAZ_kWh'] = event.packet['eleATotal']
             data_x['eleAZ_preis'] = event.packet['eleATotal'] * self.StromPreis
 
         else:
+            data_x['eleAZ_m3'] = 0.0
             data_x['eleAZ_preis'] = 0.0
+
+        if 'elePVTotal' in event.packet:
+            data_x['elePVZ_kWh'] = event.packet['elePVTotal']
+            data_x['elePVZ_preis'] = event.packet['elePVTotal'] * self.StromPreis
+
+        else:
+            data_x['elePVZ_kWh'] = 0.0
+            data_x['elePVZ_preis'] = 0.0
 
         if 'wasTotal' in event.packet and 'wasATotal' in event.packet:
             was_new = event.packet['wasTotal']
             waa_new = event.packet['wasATotal']
+            data_x['wasZ_m3'] = was_new
             data_x['wasZ_preis'] = was_new * self.WasserPreis
+            data_x['wasAZ_m3'] = waa_new
             data_x['wasAZ_preis']  = waa_new * self.WasserPreis
             data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
 
         else:
+            data_x['wasZ_m3'] = 0.0
+            data_x['wasAZ_m3'] = 0.0
             data_x['wasZ_preis'] = 0.0
             data_x['wasAZ_preis'] = 0.0
+
+        # Wertung der Impuls Zaehler Werte
+        """ read data impulse  for calculate preis  """
+        if 'gasDelta' in event.packet:
+            gas_new = event.packet['gasDelta'] * 0.01
+            data_x['gas_m3'] = gas_new
+            data_x['gas_kWh'] = gas_new * self.BrennWert * self.ZustandsZahl
+            data_x['gas_preis'] = gas_new * self.BrennWert * self.ZustandsZahl * self.GasPreis
+
+        else:
+            data_x['gas_m3'] = 0.0
+            data_x['gas_kWh'] = 0.0
+            data_x['gas_preis'] = 0.0
+
+        if 'eleDelta' in event.packet:
+            ele_new = event.packet['eleDelta'] * 0.001
+            data_x['ele_kWh'] = ele_new
+            data_x['ele_preis'] = ele_new * self.StromPreis
+
+        else:
+            data_x['ele_kWh'] = 0.0
+            data_x['ele_preis'] = 0.0
+
+        if 'eleADelta' in event.packet:
+            ela_new = event.packet['eleADelta'] * 0.001
+            data_x['eleA_kWh'] = ela_new
+            data_x['eleA_preis'] = ela_new * self.StromPreis
+
+        else:
+            data_x['eleA_kWh'] = 0.0
+            data_x['eleA_preis'] = 0.0
+
+        if 'elePVDelta' in event.packet:
+            elp_new = event.packet['elePVDelta'] * 0.001
+            data_x['elePV_kWh'] = elp_new
+            data_x['elePV_preis'] = elp_new * self.StromPreis
+
+        else:
+            data_x['elePV_kWh'] = 0.0
+            data_x['elePV_preis'] = 0.0
+
+        if 'wasDelta' in event.packet and 'wasADelta' in event.packet:
+            #was_new = event.packet['wasDelta'] * 0.001
+            #waa_new = event.packet['wasADelta'] * 0.001
+            was_new = event.packet['wasDelta']
+            waa_new = event.packet['wasADelta']
+            data_x['was_m3'] = was_new
+            data_x['wasA_m3'] = waa_new
+            data_x['was_preis'] = was_new * self.WasserPreis
+            data_x['wasA_preis']  = waa_new * self.WasserPreis
+            data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
+
+        else:
+            data_x['was_m3'] = 0.0
+            data_x['wasA_m3'] = 0.0
+            data_x['was_preis'] = 0.0
+            data_x['wasA_preis'] = 0.0
+            data_x['wasG_preis'] = 0.0
 
 
         event.packet.update(data_x)
@@ -103,39 +207,51 @@ class HausWdCalculate(weewx.engine.StdService):
 
         data_x = {}
         if 'gasTotal' in event.record:
+            data_x['gasZ_m3'] = event.record['gasTotal']
             data_x['gasZ_kWh'] = event.record['gasTotal'] * self.BrennWert * self.ZustandsZahl
             data_x['gasZ_preis'] = event.record['gasTotal'] * self.BrennWert * self.ZustandsZahl * self.GasPreis
 
         else:
+            data_x['gasZ_m3'] = 0.0
             data_x['gasZ_kWh'] = 0.0
             data_x['gasZ_preis'] = 0.0
 
         if 'eleTotal' in event.record:
+            data_x['eleZ_kWh'] = event.record['eleTotal']
             data_x['eleZ_preis'] = event.record['eleTotal'] * self.StromPreis
 
         else:
+            data_x['eleZ_kWh'] = 0.0
             data_x['eleZ_preis'] = 0.0
 
         if 'eleATotal' in event.record:
+            data_x['eleAZ_kWh'] = event.record['eleATotal']
             data_x['eleAZ_preis'] = event.record['eleATotal'] * self.StromPreis
 
         else:
+            data_x['eleAZ_kWh'] = 0.0
             data_x['eleAZ_preis'] = 0.0
 
         if 'elePVTotal' in event.record:
+            data_x['elePVZ_kWh'] = event.record['elePVTotal']
             data_x['elePVZ_preis'] = event.record['elePVTotal'] * self.StromPreis
 
         else:
+            data_x['elePVZ_kWh'] = 0.0
             data_x['elePVZ_preis'] = 0.0
 
         if 'wasTotal' in event.record and 'wasATotal' in event.record:
             was_new = event.record['wasTotal']
             waa_new = event.record['wasATotal']
+            data_x['wasZ_m3'] = was_new
+            data_x['wasAZ_m3'] = waa_new
             data_x['wasZ_preis'] = was_new * self.WasserPreis
             data_x['wasAZ_preis']  = waa_new * self.WasserPreis
             data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
 
         else:
+            data_x['wasZ_m3'] = 0.0
+            data_x['wasAZ_m3'] = 0.0
             data_x['wasZ_preis'] = 0.0
             data_x['wasAZ_preis'] = 0.0
             data_x['wasG_preis'] = 0.0
@@ -143,7 +259,7 @@ class HausWdCalculate(weewx.engine.StdService):
         # Wertung der Impuls Zaehler Werte
         """ read data impulse  for calculate preis  """
         if 'gasDelta' in event.record:
-            gas_new = event.record['gasDelta'] / 100.0
+            gas_new = event.record['gasDelta'] * 0.01
             data_x['gas_m3'] = gas_new
             data_x['gas_kWh'] = gas_new * self.BrennWert * self.ZustandsZahl
             data_x['gas_preis'] = gas_new * self.BrennWert * self.ZustandsZahl * self.GasPreis
@@ -154,7 +270,7 @@ class HausWdCalculate(weewx.engine.StdService):
             data_x['gas_preis'] = 0.0
 
         if 'eleDelta' in event.record:
-            ele_new = event.record['eleDelta'] / 1000.0
+            ele_new = event.record['eleDelta'] * 0.001
             data_x['ele_kWh'] = ele_new
             data_x['ele_preis'] = ele_new * self.StromPreis
 
@@ -163,16 +279,16 @@ class HausWdCalculate(weewx.engine.StdService):
             data_x['ele_preis'] = 0.0
 
         if 'eleADelta' in event.record:
-            elea_new = event.record['eleDelta'] / 1000.0
-            data_x['eleA_kWh'] = elea_new
-            data_x['eleA_preis'] = elea_new * self.StromPreis
+            ela_new = event.record['eleDelta'] * 0.001
+            data_x['eleA_kWh'] = ela_new
+            data_x['eleA_preis'] = ela_new * self.StromPreis
 
         else:
             data_x['eleA_kWh'] = 0.0
             data_x['eleA_preis'] = 0.0
 
         if 'elePVDelta' in event.record:
-            elp_new = event.record['elePVDelta'] / 1000.0
+            elp_new = event.record['elePVDelta'] * 0.001
             data_x['elePV_kWh'] = elp_new
             data_x['elePV_preis'] = elp_new * self.StromPreis
 
@@ -180,24 +296,23 @@ class HausWdCalculate(weewx.engine.StdService):
             data_x['elePV_kWh'] = 0.0
             data_x['elePV_preis'] = 0.0
 
+        if 'wasDelta' in event.record and 'wasADelta' in event.record:
+            #was_new = event.record['wasDelta'] * 0.001
+            #waa_new = event.record['wasADelta'] * 0.001
+            was_new = event.record['wasDelta']
+            waa_new = event.record['wasADelta']
+            data_x['was_m3'] = was_new
+            data_x['wasA_m3'] = waa_new
+            data_x['was_preis'] = was_new * self.WasserPreis
+            data_x['wasA_preis']  = waa_new * self.WasserPreis
+            data_x['wasG_preis'] = (was_new * self.WasserPreis) + ((was_new - waa_new) * self.AbwasserPreis)
 
-        # if 'wasDelta' in event.record:
-        #    was_new = event.record['wasZahl']
-        #    data_x['was_m3'] = was_new / 100
-        #    data_x['was_preis'] = was_new * self.WasserPreis
-
-        # else:
-        #    data_x['was_m3'] = 0.0
-        #    data_x['was_preis'] = 0.0
-
-        #if 'wasADelta' in event.record:
-        #    waa_new = event.record['wasADelta'] / 100
-        #    data_x['wasA_m3'] = waa_new
-        #    data_x['wasA_preis'] = waa_new * self.WasserPreis
-
-        #else:
-        #    data_x['wasA_m3'] = 0.0
-        #    data_x['wasA_preis'] = 0.0
+        else:
+            data_x['was_m3'] = 0.0
+            data_x['wasA_m3'] = 0.0
+            data_x['was_preis'] = 0.0
+            data_x['wasA_preis'] = 0.0
+            data_x['wasG_preis'] = 0.0
 
 
         event.record.update(data_x)
@@ -291,68 +406,4 @@ class HausWdArchive(weewx.engine.StdService):
 
 
 #===============================================================================
-#                                 Utilities
-#===============================================================================
-
-def calc_gas(gas_x):
-    # berechnung m3 kWh und preis
-    brennwert = 9.8      # wemaGas Zahl kWh pro m3
-    zustandszahl = 0.95  # wemaGas Zahl laut Rechnung
-    GasPreis = 0.0619    # 6.19 Cent/kWh
-
-    if gas_x is not None:
-
-        gasX_kWh = gas_x * brennwert * zustandszahl
-        gasX_preis = gasX_kWh * GasPreis
-
-        return (gasX_kWh, gasX_preis)
-
-    else:
-        return (0.0, 0.0, 0.0)
-
-def calc_ele(ele_x):
-    # berechnung kWh und preis
-    StromPreis = 0.272    # wemag 27.20 cent/kWh
-
-    if ele_x is not None:
-        elekWh = (ele_x / 100.0)
-        elepreis = elekWh * StromPreis
-
-        return (elekWh, elepreis)
-
-    else:
-        return (None, None)
-
-def calc_eleA(ele_x):
-    # berechnung kWh und preis
-    StromPreis = 0.272    # wemag 27.20 cent/kWh
-
-    if ele_x is not None:
-        elekWh = (ele_x / 1000.0)
-        elepreis = elekWh * StromPreis
-
-        return (elekWh, elepreis)
-
-    else:
-        return (None, None)
-
-def calc_was(was_x, wasA_x):
-    # berechnung m3 und preis
-    WasserPreis = 1.47         # ZV SN 1.47 Euro/m3
-    AbwasserPreis = 2.65       # ZV SN 2.65 Euro/m3
-    GrundWasser = 45.0         # Grund 45 E/a
-    GrundAbwasser = 90.0       # GrundA 90.0 E/a
-
-    if was_x is not None and wasA_x is not None:
-        wasm3 = was_x / 1000.0
-        wasAm3 = wasA_x / 1000.0
-
-        waspreis = wasm3 * WasserPreis
-        wasApreis = wasAm3 * WasserPreis
-
-        return (wasm3, waspreis, wasAm3, wasApreis)
-
-    else:
-        return (None, None, None, None)
-
 

@@ -112,7 +112,7 @@ class BaseWrapper(object):
                 print("Unable to wake up console... retrying")
             except weewx.WeeWxIOError:
                 pass
-            log.debug("Retry  #%d failed", count)
+            log.debug("Retry #%d failed", count)
 
         log.error("Unable to wake up console")
         raise weewx.WakeupError("Unable to wake up Vantage console")
@@ -525,20 +525,12 @@ class Vantage(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
         """Generator function that returns loop packets"""
         
-        for count in range(self.max_tries):
-            while True:
-                try:
-                    # Get LOOP packets in big batches This is necessary because there is
-                    # an undocumented limit to how many LOOP records you can request
-                    # on the VP (somewhere around 220).
-                    for _loop_packet in self.genDavisLoopPackets(200):
-                        yield _loop_packet
-                except weewx.WeeWxIOError as e:
-                    log.error("LOOP try #%d; error: %s", count + 1, e)
-                    break
-
-        log.error("LOOP max tries (%d) exceeded.", self.max_tries)
-        raise weewx.RetriesExceeded("Max tries exceeded while getting LOOP data.")
+        while True:
+            # Get LOOP packets in big batches This is necessary because there is
+            # an undocumented limit to how many LOOP records you can request
+            # on the VP (somewhere around 220).
+            for _loop_packet in self.genDavisLoopPackets(200):
+                yield _loop_packet
 
     def genDavisLoopPackets(self, N=1):
         """Generator function to return N loop packets from a Vantage console
@@ -562,15 +554,29 @@ class Vantage(weewx.drivers.AbstractDevice):
             self.port.send_data(b"LPS %d %d\n" % (self.loop_request, N))
 
         for loop in range(N):
-            # Fetch a packet...
-            _buffer = self.port.read(99)
-            # ... see if it passes the CRC test ...
-            if crc16(_buffer):
-                raise weewx.CRCError("LOOP buffer failed CRC check")
-            # ... decode it ...
-            loop_packet = self._unpackLoopPacket(_buffer[:95])
-            # .. then yield it
-            yield loop_packet
+            for count in range(self.max_tries):
+                try:
+                    loop_packet = self._get_packet()
+                except weewx.WeeWxIOError as e:
+                    log.error("LOOP try #%d; error: %s", count + 1, e)
+                else:
+                    yield loop_packet
+                    break
+            else:
+                log.error("LOOP max tries (%d) exceeded.", self.max_tries)
+                raise weewx.RetriesExceeded("Max tries exceeded while getting LOOP data.")
+
+    def _get_packet(self):
+        """Get a single LOOP packet"""
+        # Fetch a packet...
+        _buffer = self.port.read(99)
+        # ... see if it passes the CRC test ...
+        if crc16(_buffer):
+            raise weewx.CRCError("LOOP buffer failed CRC check")
+        # ... decode it ...
+        loop_packet = self._unpackLoopPacket(_buffer[:95])
+        # .. then return it
+        return loop_packet
 
     def genArchiveRecords(self, since_ts):
         """A generator function to return archive packets from a Davis Vantage station.
@@ -1724,7 +1730,7 @@ def _decode_rain(p, k):
         # 0.1 mm bucket
         return p[k] * 0.00393700787
     else:
-        log.warn("Unknown bucket type $s" % p['bucket_type'])
+        log.warning("Unknown bucket type $s" % p['bucket_type'])
 
 
 def _decode_windSpeed_H(p, k):
@@ -1735,7 +1741,7 @@ def _decode_windSpeed_H(p, k):
     elif p['packet_type'] == 1:
         return float(p[k]) / 10.0 if p[k] != 0xffff else None
     else:
-        log.warn("Unknown LOOP packet type %s" % p['packet_type'])
+        log.warning("Unknown LOOP packet type %s" % p['packet_type'])
 
 
 # This dictionary maps a type key to a function. The function should be able to
@@ -1743,6 +1749,9 @@ def _decode_windSpeed_H(p, k):
 # units and return it.
 _loop_map = {
     'altimeter'       : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'bar_calibration' : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'bar_offset'      : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'bar_reduction'   : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
     'barometer'       : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
     'consBatteryVoltage': lambda p, k: float((p[k] * 300) >> 9) / 100.0,
     'dayET'           : lambda p, k: float(p[k]) / 1000.0,
@@ -1773,6 +1782,7 @@ _loop_map = {
     'forecastIcon'    : lambda p, k: p[k],
     'forecastRule'    : lambda p, k: p[k],
     'heatindex'       : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
+    'hourRain'        : _decode_rain,
     'inHumidity'      : lambda p, k: float(p[k]) if p[k] != 0xff else None,
     'insideAlarm'     : lambda p, k: p[k],
     'inTemp'          : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
@@ -1791,7 +1801,10 @@ _loop_map = {
     'outsideAlarm2'   : lambda p, k: p[k],
     'outTemp'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0x7fff else None,
     'pressure'        : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
+    'pressure_raw'    : lambda p, k: float(p[k]) / 1000.0 if p[k] else None,
     'radiation'       : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
+    'rain15'          : _decode_rain,
+    'rain24'          : _decode_rain,
     'rainAlarm'       : lambda p, k: p[k],
     'rainRate'        : _decode_rain,
     'soilLeafAlarm1'  : lambda p, k: p[k],
@@ -1819,8 +1832,8 @@ _loop_map = {
     'windGust10'      : _decode_windSpeed_H,
     'windGustDir10'   : lambda p, k: (float(p[k]) if p[k] != 360 else 0) if p[k] and p[k] != 0x7fff else None,
     'windSpeed'       : lambda p, k: float(p[k]) if p[k] != 0xff else None,
-    'windSpeed2'      : _decode_windSpeed_H,
     'windSpeed10'     : _decode_windSpeed_H,
+    'windSpeed2'      : _decode_windSpeed_H,
     'yearET'          : lambda p, k: float(p[k]) / 100.0,
     'yearRain'        : _decode_rain,
 }

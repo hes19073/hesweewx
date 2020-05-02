@@ -125,40 +125,66 @@ class xGreenDay(SearchList):
              tavgS = 0.0
              tavg_ts = None
              try:
-                 for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jane_ano_ts):
+                 for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jun_ano_ts):
                      _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+
                      if _row is None or _row[1] is None or _row[2] is None:
                          continue
 
+                     date = datetime.datetime.fromtimestamp(_row[0])
+                     mo_date = date.month
                      tavg0 = _row[1] / _row[2]
-                     if tavg0 > 0.0:
-                         tavg0 = tavg0 * 0.5
-                         tavgS = tavgS + tavg0
-                         if tavgS >= 200.0 and tavg_ts is None:
-                             tavg_ts = _row[0]
 
-                 for tspan in weeutil.weeutil.genDaySpans(feb_ano_ts, febe_ano_ts):
-                     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
-                     if _row is None or _row[1] is None or _row[2] is None:
-                         continue
+                     if tavg0 <= 0.0:
+                         day_green = 0.0
+                     else:
+                         if mo_date == 1:
+                             day_green = tavg0 * 0.5
 
-                     tavg0 = _row[1] / _row[2]
-                     if tavg0 > 0.0:
-                         tavg0 = tavg0 * 0.75
-                         tavgS = tavgS + tavg0
-                         if tavgS >= 200.0 and tavg_ts is None:
-                             tavg_ts = _row[0]
+                         elif mo_date == 2:
+                             day_green = tavg0 * 0.75
 
-                 for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts, maie_ano_ts):
-                     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
-                     if _row is None or _row[1] is None or _row[2] is None:
-                         continue
+                         elif mo_date > 2 and mo_date < 6:
+                             day_green = tavg0
 
-                     tavg0 = _row[1] / _row[2]
-                     if tavg0 > 0.0:
-                         tavgS = tavgS + tavg0
-                         if tavgS >= 200.0 and tavg_ts is None:
-                            tavg_ts = _row[0]
+                         else:
+                             day_green = 0.0
+
+                     tavgS += day_green
+                     if tavgS >= 200.0 and tavg_ts is None:
+                         tavg_ts = _row[0]
+
+                #for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jane_ano_ts):
+                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+                #     tavg0 = _row[1] / _row[2]
+                #     if tavg0 > 0.0:
+                #         tavg0 = tavg0 * 0.5
+                #         tavgS = tavgS + tavg0
+                #         if tavgS >= 200.0 and tavg_ts is None:
+                #             tavg_ts = _row[0]
+
+                # for tspan in weeutil.weeutil.genDaySpans(feb_ano_ts, febe_ano_ts):
+                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+                #     if _row is None or _row[1] is None or _row[2] is None:
+                #         continue
+
+                #     tavg0 = _row[1] / _row[2]
+                #     if tavg0 > 0.0:
+                #         tavg0 = tavg0 * 0.75
+                #         tavgS = tavgS + tavg0
+                #         if tavgS >= 200.0 and tavg_ts is None:
+                #             tavg_ts = _row[0]
+
+                # for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts, maie_ano_ts):
+                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
+                #     if _row is None or _row[1] is None or _row[2] is None:
+                #         continue
+
+                #     tavg0 = _row[1] / _row[2]
+                #     if tavg0 > 0.0:
+                #         tavgS = tavgS + tavg0
+                #         if tavgS >= 200.0 and tavg_ts is None:
+                #            tavg_ts = _row[0]
 
              except weedb.DatabaseError:
                  pass

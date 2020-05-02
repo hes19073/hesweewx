@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-#    Copyright (c) 2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2019-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your rights.
 #
@@ -10,7 +10,7 @@
 from __future__ import absolute_import
 import weeutil.config
 
-DEFAULT_STR = """# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+DEFAULT_STR = """# Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 # See the file LICENSE.txt for your rights.
 
 # Where the skins reside, relative to WEEWX_ROOT
@@ -116,7 +116,7 @@ log_failure = False
         hPa               = " hPa"
         inHg              = " inHg"
         inch              = " in"
-        inch_per_hour     = " in/hr"
+        inch_per_hour     = " in/h"
         km                = " km"
         km_per_hour       = " km/h"
         km_per_hour2      = " km/h"

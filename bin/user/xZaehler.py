@@ -61,8 +61,8 @@ class HandService(StdService):
         super(HandService, self).__init__(engine, config_dict)
 
         d = config_dict.get('HandService', {})
-        self.filename = d.get('filename', '/home/weewx/archive/0ZahlStand')
-        log.info("Hand Zaehler eingaben: using %s" % self.filename)
+        self.filename_hand = d.get('filename_hand', '/home/weewx/archive/0ZahlStand')
+        log.info("Hand Zaehler eingaben: using %s" % self.filename_hand)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.lese_file)
 
     def lese_file(self, event):
@@ -70,66 +70,68 @@ class HandService(StdService):
         """ first read old data from '/home/weewx/archive/0ZahlAlt' """
         try:
             with open('/home/weewx/archive/0ZahlAlt') as f:
-                line = f.readline()
-                values = line.split(',')
+                line_hand = f.readline()
+                values_ha = line_hand.split(',')
 
             # was, wasA, ele, gas, eleA, elePV Werte aus = 0ZahlAlt
-            last_was = float(values[0])
-            last_waa = float(values[1])
-            last_ele = float(values[2])
-            last_gas = float(values[3])
-            last_ela = float(values[4])
-            last_elp = float(values[5])
+            last_was = float(values_ha[0])
+            self._last_was = last_was
+            last_waa = float(values_ha[1])
+            self._last_waa = last_waa
+            last_ele = float(values_ha[2])
+            self._last_ele = last_ele
+            last_gas = float(values_ha[3])
+            self._last_gas = last_gas
+            last_ela = float(values_ha[4])
+            self._last_ela = last_ela
+            last_elp = float(values_ha[5])
+            self._last_elp = last_elp
 
             f.close()
 
         except Exception as e:
             log.error("Zahl cannot read old value: %s", e)
 
-        """ then read data from hand in to database 
+        """ then read data from hand in to database
             input new value by hand in '/home/weewx/archive/0ZahlStand'
             now read values, get difference and save in to database 'haus' """
         try:
-            with open(self.filename) as ff:
-                line = ff.readline()
-                values = line.split(',')
+            with open(self.filename_hand) as ff:
+                line_old = ff.readline()
+                values_o = line_old.split(',')
 
-            was_new = float(values[0])
-            was_dif = calculate_delta(was_new, last_was)
-
-            waa_new = float(values[1])
-            waa_dif = calculate_delta(waa_new, last_waa)
-
-            ele_new = float(values[2])
-            ele_dif = calculate_delta(ele_new, last_ele)
-
-            gas_new = float(values[3])
-            gas_dif = calculate_delta(gas_new, last_gas)
-
-            ela_new = float(values[4])
-            ela_dif = calculate_delta(ela_new, last_ela)
-
-            elp_new = float(values[5])
-            elp_dif = calculate_delta(elp_new, last_elp)
-
-            event.record['wasZahl'] = float(values[0])
-            event.record['wasTotal'] = float(was_dif)
-            event.record['wasAZahl'] = float(values[1])
-            event.record['wasATotal'] = float(waa_dif)
-            event.record['eleZahl'] = float(values[2])
-            event.record['eleTotal'] = float(ele_dif)
-            event.record['gasZahl'] = float(values[3])
-            event.record['gasTotal'] = float(gas_dif)
-            event.record['eleAZahl'] = float(values[4])
-            event.record['eleATotal'] = float(ela_dif)
-            event.record['elePVZahl'] = float(values[5])
-            event.record['elePVTotal'] = float(elp_dif)
+            was_new = float(values_o[0])
+            waa_new = float(values_o[1])
+            ele_new = float(values_o[2])
+            gas_new = float(values_o[3])
+            ela_new = float(values_o[4])
+            elp_new = float(values_o[5])
 
             ff.close()
 
+            was_dif = calculate_delta(was_new, self._last_was)
+            waa_dif = calculate_delta(waa_new, self._last_waa)
+            ele_dif = calculate_delta(ele_new, self._last_ele)
+            gas_dif = calculate_delta(gas_new, self._last_gas)
+            ela_dif = calculate_delta(ela_new, self._last_ela)
+            elp_dif = calculate_delta(elp_new, self._last_elp)
+
+            event.record['wasZahl'] = float(was_new)
+            event.record['wasTotal'] = float(was_dif)
+            event.record['wasAZahl'] = float(waa_new)
+            event.record['wasATotal'] = float(waa_dif)
+            event.record['eleZahl'] = float(ele_new)
+            event.record['eleTotal'] = float(ele_dif)
+            event.record['gasZahl'] = float(gas_new)
+            event.record['gasTotal'] = float(gas_dif)
+            event.record['eleAZahl'] = float(ela_new)
+            event.record['eleATotal'] = float(ela_dif)
+            event.record['elePVZahl'] = float(elp_new)
+            event.record['elePVTotal'] = float(elp_dif)
+
             # save new data to '/home/weewx/archive/0ZahlAlt'
             dat_old = open("/home/weewx/archive/0ZahlAlt", "w")
-            dat_new = str(was_new) + "," + str(waa_new) + "," + str(ela_new) + "," + str(gas_new) + "," + str(ela_new) + "," + str(elp_new)
+            dat_new = str(was_new) + "," + str(waa_new) + "," + str(ele_new) + "," + str(gas_new) + "," + str(ela_new) + "," + str(elp_new)
             dat_old.write(dat_new)
 
             dat_old.close()
@@ -137,18 +139,5 @@ class HandService(StdService):
         except Exception as e:
             log.error("read failed: %s" % e)
 
-
-    def calculate_delta(newtotal, oldtotal):
-        """Calculate the zahl differential given two cumulative measurements."""
-        if newtotal is not None and oldtotal is not None:
-            if newtotal >= oldtotal:
-                delta = newtotal - oldtotal
-            else:
-
-                delta = 0.0
-        else:
-            delta = 0.0
-
-        return delta
 
 

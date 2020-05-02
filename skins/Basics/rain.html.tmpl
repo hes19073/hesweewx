@@ -46,62 +46,67 @@
      </div>
      <hr />
     <h2>Regen-Werte nach Vantage Pro 2 (LOOP2)</h2>
-    <ul>
-     <li>Niederschlag der letzten 15 Minuten:&nbsp;<b>$current.rain15</b></li>
-     <li>Niederschlag der letzten 24 Stunden:&nbsp;<b>$current.rain24</b></li>
-     <li>&nbsp;</li>
-     <li>Niederschlag der letzten Stunde:&nbsp;<b>$current.hourRain</b></li>
-     <li>Niederschlag der aktuelle Tag:&nbsp;<b>$current.dayRain</b></li>
-    </ul>
-    <hr />
-     <table>
-      <tr>
-       <td class="stats_label">Niederschlag letzte Messung</td>
-       <td class="stats_data">$current.rain</td>
-       <td class="stats_label">Regenintensität der letzten Messung</td>
-       <td class="stats_data">$current.rainRate</td>
+    <table>
+     <tr>
+      <td>Niederschlag der letzten 15 Minuten:</td>
+      <td><b>$current.rain15</b></td>
+      <td>Niederschlag der letzten Stunde</td>
+      <td><b>$current.hourRain</b></td>
+     </tr>
+     <tr>
+      <td>Niederschlag der letzten 24 Stunden:</td>
+      <td><b>$current.rain24</b></td>
+      <td>Niederschlag der aktuelle Tag:</td>
+      <td><b>$current.dayRain</b></td>
+     </tr>
+      <tr><td colspan='4'>nach Weewx</td></tr>
+     <tr>
+      <td>Niederschlag der letzten  5 Minuten:</td>
+      <td>$current.rain</td>
+      <td>Regenintensität der letzten Messung</td>
+      <td>$current.rainRate</td>
       </tr>
       <tr>
-       <td class="stats_label">Niederschlag Heute seit Mitternacht</td>
-       <td class="stats_data">$day.rain.sum</td>
-       <td class="stats_label">Niederschlagsintensität am Tag</td>
-       <td class="stats_data">$day.rainRate.max</td>
+       <td>Niederschlag Heute seit Mitternacht</td>
+       <td>$day.rain.sum</td>
+       <td>Niederschlagsintensität am Tag</td>
+       <td>$day.rainRate.max</td>
       </tr>
-      <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+      <tr><td colspan='4'>&nbsp;</td></tr>
       <tr>
-       <td class="stats_label">Niederschlag Gestern</td>
-       <td class="stats_data">$yesterday.rain.sum</td>
-       <td class="stats_label">Niederschlagsintensität am Vortag</td>
-       <td class="stats_data">$yesterday.rainRate.max</td>
+       <td>Niederschlag Gestern</td>
+       <td>$yesterday.rain.sum</td>
+       <td>Niederschlagsintensität am Vortag</td>
+       <td>$yesterday.rainRate.max</td>
       </tr>
       <tr>
-       <td class="stats_label">Niederschlag Woche</td>
-       <td class="stats_data">$week.rain.sum</td>
-       <td class="stats_label">Niederschlag Monat</td>
-       <td class="stats_data">$month.rain.sum</td>
+       <td>Niederschlag Woche</td>
+       <td>$week.rain.sum</td>
+       <td>Niederschlag Monat</td>
+       <td>$month.rain.sum</td>
       </tr>
      </table>
-  #if $latest($data_binding='wdsupp_binding')stormRain.raw > 0.0
+  #if $latest($data_binding='wdsupp_binding')stormRain is not None
      <table>
       <tr>
        <td>Niederschlag Vantage Storm Rain</td>
-       <td class="stats_data">$latest($data_binding='wdsupp_binding')stormStart.format("%d.%m.%Y")</td>
+       <td>$latest($data_binding='wdsupp_binding')stormStart.format("%d.%m.%Y")</td>
        <td>Niederschlagmenge</td>
-       <td class="stats_data">$latest($data_binding='wdsupp_binding')stormRain</td>
+       <td>$latest($data_binding='wdsupp_binding')stormRain</td>
       </tr>
      </table>
   #else
      <table>
       <tr>
        <td>Niederschlag Vantage Storm Rain</td>
-       <td class="stats_data">Nein</td>
+       <td>Nein</td>
        <td>Niederschlagmenge</td>
-       <td class="stats_data">Keine</td>
+       <td>Keine</td>
       </tr>
      </table>
   #end if
 
-  #if $day.snowTotal.max.raw > 0
+  #if $day.snowTotal.max is not None and $day.snowTotal.max.raw > 0.0
      <hr />
      <h3>Aktuell liegen ca. $current.snowTotal Schnee.</h3>   
   #end if
@@ -112,7 +117,7 @@
      <table>
       #for $zeit in range(24)
           <tr><td>Niederschlag vor</td><td>$zeit</td><td>h</td>
-         #if $hours_ago($hours_ago=$zeit).rain.sum.raw > 0
+         #if $hours_ago($hours_ago=$zeit).rain.sum.raw is not None
            #if $hours_ago($hours_ago=$zeit).rain.sum.raw < 0.10
               <td class="tab_datab" style="background-color: #84ebff">$hours_ago($hours_ago=$zeit).rain.sum</td>
            #elif $hours_ago($hours_ago=$zeit).rain.sum.raw < 0.24
@@ -129,7 +134,7 @@
          #else
            <td>&nbsp;</td>
          #end if
-         #if $hours_ago($hours_ago=$zeit).rainRate.max.raw > 0
+         #if $hours_ago($hours_ago=$zeit).rainRate.max.raw is not None
            #if $hours_ago($hours_ago=$zeit).rainRate.max.raw < 0.10
               <td class="tab_datab" style="background-color: #84ebff;">$hours_ago($hours_ago=$zeit).rainRate.max</td>
            #elif $hours_ago($hours_ago=$zeit).rainRate.max.raw < 0.24
@@ -154,255 +159,253 @@
   #end if
      <hr /> 
 
-<h2>Niederschlag</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
+<h2>Niederschlag</h2>
+<h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen</h3>
 <p>Als Niederschlag werden nur Regenschauer, in einer Höhe von 2 m über Grund, erfasst.<br />
 Andere Niederschläge (Schnee oder Hagel) können aufgrund einer fehlenden Heizung nicht registriert werden. <br />
 Als Regentag wird ein Tag bezeichnet an dem mehr als 0,1 mm Niederschlag fällt. Meine Wetterstation erfasst
 Niederschlägen ab 0,2 mm.</p>
 <p>&nbsp;</p>
+ <div id="Report">
+  <table>
+   <tr>
+    <td>Jahr<br />&nbsp;</td>
+    <td style="background-color: #FF4949;">Regentage</td>
+    <td >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td style="background-color: #FF8C5F;">Tage mit &gt;= 1 mm</td>
+    <td style="background-color: #FFAC4B;">Tage mit &gt;= 5 mm</td>
+    <td style="background-color: #33FF33;">Tage mit &gt;= 10 mm</td>
+    <td style="background-color: #23FF9E;">Tage mit &gt;= 15 mm</td>
+    <td style="background-color: #4B84FF;">Tage mit &gt;= 20 mm</td>
+   </tr>
 
-<div id="Report">
-
-<table>
+#for $year in $alltime.years
+   <tr>
+    <td>$year.dateTime.format("%Y")</td>
+    <td style="background-color: #FF4949;">$year.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.1, "cm", "group_rain")).format("%.0f")</td>
+    <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
+    <td style="background-color: #33FF33;">$year.rain.sum_ge((1, "cm", "group_rain")).format("%.0f")</td>
+    <td style="background-color: #23FF9E;">$year.rain.sum_ge((1.5, "cm", "group_rain")).format("%.0f")</td>
+    <td style="background-color: #4B84FF;">$year.rain.sum_ge((2.0, "cm", "group_rain")).format("%.0f")</td>
+   </tr>
+#end for
+  </table>
+ <hr />
+ <h3>Regentage nach Monaten in den Jahren</h3>
+ <p>&nbsp; </p>
+ <table>
   <tr>
-   <td>Anzahl der <br />nach Jahren</td>
-   <td style="background-color: #FF4949;">Regentage</td>
-   <td >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="background-color: #FF8C5F;">Tage mit &gt;= 1 mm</td>
-   <td style="background-color: #FFAC4B;">Tage mit &gt;= 5 mm</td>
-   <td style="background-color: #33FF33;">Tage mit &gt;= 10 mm</td>
-   <td style="background-color: #23FF9E;">Tage mit &gt;= 15 mm</td>
-   <td style="background-color: #4B84FF;">Tage mit &gt;= 20 mm</td>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
   </tr>
 
 #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-      <td style="background-color: #FF4949;">$year.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
-      <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-      <td style="background-color: #FF8C5F;">$year.rain.sum_ge((0.1, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #FFAC4B;">$year.rain.sum_ge((0.5, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #33FF33;">$year.rain.sum_ge((1, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #23FF9E;">$year.rain.sum_ge((1.5, "cm", "group_rain")).format("%.0f")</td>
-      <td style="background-color: #4B84FF;">$year.rain.sum_ge((2.0, "cm", "group_rain")).format("%.0f")</td>
-   </tr>
-#end for
-</table>
-<hr />
-
-<h3>Regentage nach Monaten in den Jahren</h3>
-<table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
-
-#for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.rain.sum.raw is not None:
-            <td style="background-color: #23FF9E;">$month.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
+   <td style="background-color: #23FF9E;">$month.rain.sum_ge((0.01, "cm", "group_rain")).format("%.0f")</td>
           #else
-            <td style="background-color: #FFFFFF;">-</td>
+   <td style="background-color: #FFFFFF;">-</td>
           #end if
       #end for
-    </tr>
+  </tr>
 #end for
-</table>
-<hr />
-<h3>Regenmengen in mm</h3>
+ </table>
+ <hr />
+ <h3>Regenmengen in mm</h3>
  <p>&nbsp; </p>
  <table>
-    <tr>
-     <td>Jahr</td>
-     <td>gesamt</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>gesamt</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
  #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-      <td><b>$year.rain.sum.formatted</b></td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
+   <td><b>$year.rain.sum.formatted</b></td>
       #for $month in $year.months
-          #if $month.rain.sum.raw is not None:
+          #if $month.rain.sum.raw is not None
              #if $month.rain.sum.raw < 0.01
-                 <td class="hest01">$month.rain.sum.formatted</td>
+   <td class="hest01">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 0.3
-                 <td class="hest02">$month.rain.sum.formatted</td>
+   <td class="hest02">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 1
-                 <td class="hest03">$month.rain.sum.formatted</td>
+   <td class="hest03">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 5
-                 <td class="hest04">$month.rain.sum.formatted</td>
+   <td class="hest04">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 10
-                 <td class="hest05">$month.rain.sum.formatted</td>
+   <td class="hest05">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 20
-                 <td class="hest06">$month.rain.sum.formatted</td>
+   <td class="hest06">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 30
-                 <td class="hest07">$month.rain.sum.formatted</td>
+   <td class="hest07">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 40
-                 <td class="hest08">$month.rain.sum.formatted</td>
+   <td class="hest08">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 50
-                 <td class="hest09">$month.rain.sum.formatted</td>
+   <td class="hest09">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 60
-                 <td class="hest10">$month.rain.sum.formatted</td>
+   <td class="hest10">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 70
-                 <td class="hest11">$month.rain.sum.formatted</td>
+   <td class="hest11">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 80
-                 <td class="hest12">$month.rain.sum.formatted</td>
+   <td class="hest12">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 90
-                 <td class="hest13">$month.rain.sum.formatted</td>
+   <td class="hest13">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 100
-                 <td class="hest14">$month.rain.sum.formatted</td>
+   <td class="hest14">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw < 120
-                 <td class="hest15">$month.rain.sum.formatted</td>
+   <td class="hest15">$month.rain.sum.formatted</td>
              #elif $month.rain.sum.raw > 120 
-                 <td class="hest16">$month.rain.sum.formatted</td>
+   <td class="hest16">$month.rain.sum.formatted</td>
              #end if
           #else
-                 <td class="hest00">-</td>
+   <td class="hest00">-</td>
           #end if
        #end for
-    </tr>
+  </tr>
  #end for
  </table>
-<hr />
-<h3>Regenintensität in mm/h</h3>
-<p>Maximale Niederschlagsintensität je Monat, mit der Angabe des Tages und der Uhrzeit</p>
+ <hr />
+ <h3>Regenintensität in mm/h</h3>
+ <p>Maximale Niederschlagsintensität je Monat, mit der Angabe des Tages und der Uhrzeit</p>
  <table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
  #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.rainRate.max.raw is not None:
              #if $month.rainRate.max.raw < 1
-                 <td class="hest01">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest01">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 5
-                 <td class="hest02">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest02">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 10
-                 <td class="hest03">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest03">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 20
-                 <td class="hest04">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest04">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 30
-                 <td class="hest05">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest05">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 40
-                 <td class="hest06">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest06">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 50
-                 <td class="hest07">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest07">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 60
-                 <td class="hest08">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest08">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 70
-                 <td class="hest09">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest09">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 80
-                 <td class="hest10">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest10">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 90
-                 <td class="hest11">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest11">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw < 100
-                 <td class="hest12">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest12">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #elif $month.rainRate.max.raw > 100 
-                 <td class="hest16">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
+   <td class="hest16">$month.rainRate.max.formatted<br /><small>$month.rainRate.maxtime</small></td>
              #end if
           #else
-                 <td class="hest00">-</td>
+   <td class="hest00">-</td>
           #end if
        #end for
-    </tr>
+  </tr>
  #end for
  </table>
-
-<hr />
-<h3>Wasserbilanz nach Jahren</h3>
-<p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
+ <hr />
+ <h3>Wasserbilanz nach Jahren</h3>
+ <p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
  <table>
-    <tr>
-     <td>Jahr&nbsp;</td><td>Bilanz</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Bilanz</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
  #for $year in $alltime.years
     #if int($year.dateTime.format("%Y")) > 2016
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #set $was_year = $year.rain.sum.raw - $year.ET.sum.raw
       #set $WasYear = ("{:.2f}".format($was_year))
-      <td><b>$WasYear</b></td>
+   <td><b>$WasYear</b></td>
       #for $month in $year.months
           #if $month.rain.sum.raw is not None and $month.ET.sum.raw is not None
              #set $was_month = $month.rain.sum.raw - $month.ET.sum.raw
              #set $WasMonth = ("{:.2f}".format($was_month))
              #if $was_month < 0.0
-                 <td style="background-color: coral">$WasMonth </td>
+   <td style="background-color: coral">$WasMonth </td>
              #elif $was_month == 0.0
                  <td class="hest00">$WasMonth </td>
              #elif $was_month  > 0.0
-                 <td style="background-color: limegreen">$WasMonth </td>
+   <td style="background-color: limegreen">$WasMonth </td>
              #end if
           #else
-                 <td class="hest00">-</td>
+   <td class="hest00">-</td>
           #end if
        #end for
-    </tr>
+  </tr>
     #end if
  #end for
  </table>
-<hr />
-
-<h3>Wassermengen nach Jahreszeiten</h3>
-<p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
-<p>&nbsp;</p>
-<table>
-    <tr>
-      <td>&nbsp;</td>
-      <td>21.03. - 20.06</td>
-      <td>21.06. - 20.09.</td>
-      <td>21.09. - 20.12.</td>
-      <td>21.12. - 20.03</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-     <td>Frühlings-Regen</td>
-     <td>Sommern-Regen</td>
-     <td>Herbst-Regen</td>
-     <td>Winter-Regen</td>
-    </tr>
-    <tr>
-     <td>$year.dateTime.format("%Y")</td>
-     <td>$spring.rain.sum.formatted </td>
-     <td>$summer.rain.sum.formatted </td>
-     <td>$autumm.rain.sum.formatted </td>
-     <td>$winter.rain.sum.formatted </td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-     <td>Frühlings-Verdunstung</td>
-     <td>Sommern-Verdunstung</td>
-     <td>Herbst-Verdunstung</td>
-     <td>Winter-Verdunstung</td>
-    </tr>
-    <tr>
-     <td>$year.dateTime.format("%Y")</td>
-     <td>$spring.ET.sum.formatted </td>
-     <td>$summer.ET.sum.formatted </td>
-     <td>$autumm.ET.sum.formatted </td>
-     <td>$winter.ET.sum.formatted </td>
-    </tr>
-    <tr><td colspan='5'>Bilanz</td></tr>
-    <tr>
-     <td>$year.dateTime.format("%Y")</td>
+ <hr />
+ <h3>Wassermengen nach Jahreszeiten</h3>
+ <p>Niederschlag abzüglich der Verdunstung<br>in mm</p>
+ <p>&nbsp;</p>
+ <table>
+  <tr>
+   <td>&nbsp;</td>
+   <td>21.03. - 20.06</td>
+   <td>21.06. - 20.09.</td>
+   <td>21.09. - 20.12.</td>
+   <td>21.12. - 20.03</td>
+  </tr>
+  <tr>
+   <td>&nbsp;</td>
+   <td>Frühlings-Regen</td>
+   <td>Sommer-Regen</td>
+   <td>Herbst-Regen</td>
+   <td>Winter-Regen</td>
+  </tr>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
+   <td>$spring.rain.sum.formatted </td>
+   <td>$summer.rain.sum.formatted </td>
+   <td>$autumm.rain.sum.formatted </td>
+   <td>$winter.rain.sum.formatted </td>
+  </tr>
+  <tr>
+   <td>&nbsp;</td>
+   <td>Frühlings-Verdunstung</td>
+   <td>Sommer-Verdunstung</td>
+   <td>Herbst-Verdunstung</td>
+   <td>Winter-Verdunstung</td>
+  </tr>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
+   <td>$spring.ET.sum.formatted </td>
+   <td>$summer.ET.sum.formatted </td>
+   <td>$autumm.ET.sum.formatted </td>
+   <td>$winter.ET.sum.formatted </td>
+  </tr>
+  <tr><td colspan='5'>Bilanz</td></tr>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #set $was_spring = $spring.rain.sum.raw - $spring.ET.sum.raw
       #set $WasSpring = ("{:.2f}".format($was_spring))
       #set $was_summer = $summer.rain.sum.raw - $summer.ET.sum.raw
@@ -411,15 +414,14 @@ Niederschlägen ab 0,2 mm.</p>
       #set $WasAutumm = ("{:.2f}".format($was_autumm))
       #set $was_winter = $winter.rain.sum.raw - $winter.ET.sum.raw
       #set $WasWinter = ("{:.2f}".format($was_winter));
-     <td>$WasSpring </td>
-     <td>$WasSummer </td>
-     <td>$WasAutumm </td>
-     <td>$WasWinter </td>
-    </tr>
-
-</table>
-<hr />
-  <h3>Perioden von Trockenheit und Regentagen</h3>
+   <td>$WasSpring </td>
+   <td>$WasSummer </td>
+   <td>$WasAutumm </td>
+   <td>$WasWinter </td>
+  </tr>
+ </table>
+ <hr />
+ <h3>Perioden von Trockenheit und Regentagen</h3>
    <ul>
     <li>Längste Trockenperiode in diesem Monat&nbsp;<b>$month_con_dry_days</b>&nbsp;Tage, vom $month_con_dryS_days_time.format("%d.%m.%Y")
      bis zum  $month_con_dry_days_time.format("%d.%m.%Y")</li>

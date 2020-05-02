@@ -24,7 +24,7 @@ from weeutil.weeutil import TimeSpan
 log = logging.getLogger(__name__)
 
 # Print version in syslog for easier troubleshooting
-VERSION = "1.0"
+VERSION = "1.1"
 
 log.info("version %s", VERSION)
 
@@ -49,7 +49,8 @@ class getEarthquake(SearchList):
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
         earthquake_maxradiuskm = self.generator.skin_dict['Extras']['earthquake_maxradiuskm']
-        #Sample URL from Belchertown Weather: http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=53.605963&lon=11.341407&maxradiuskm=10000&format=geojson&nodata=204&minmag=2
+        #Sample URL from Belchertown Weather: 
+        #       http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=53.605963&lon=11.341407&maxradiuskm=10000&format=geojson&nodata=204&minmag=2
         earthquake_url = "http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=%s&lon=%s&maxradiuskm=%s&format=geojson&nodata=204&minmag=2" % (latitude, longitude, earthquake_maxradiuskm)
         earthquake_is_stale = False
 

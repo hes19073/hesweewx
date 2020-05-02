@@ -524,7 +524,6 @@ import os, errno
 import re
 import socket
 import subprocess
-#import syslog
 import threading
 import time
 
@@ -539,7 +538,6 @@ from io import BytesIO
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 from http.client import BadStatusLine, IncompleteRead
-#from weeutil.log import log.debug, log.info, log.error, logcrt
 
 try:
     import cjson as json
@@ -976,9 +974,10 @@ DEFAULT_BINDING_DICT = {
 
 class ForecastThread(threading.Thread):
     def __init__(self, target, *args):
+        threading.Thread.__init__(self)
         self._target = target
         self._args = args
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
 
     def run(self):
         self._target(*self._args)
@@ -1119,7 +1118,7 @@ class Forecast(StdService):
         # map a percentage to a cloud indicator
         try:
             v = int(value)
-        except (ValueError, TypeError):
+        except ValueError as TypeError:
             return None
         if 0 <= v <= 5:
             return 'CL'
@@ -1140,7 +1139,7 @@ class Forecast(StdService):
         # map a decimal degree to a compass direction
         try:
             v = float(value)
-        except (ValueError, TypeError):
+        except ValueError as TypeError:
             return None
         if 0 <= v <= 22.5:
             return 'N'
@@ -1167,7 +1166,7 @@ class Forecast(StdService):
         # map a decimal degree to a compass direction
         try:
             v = float(value)
-        except (ValueError, TypeError):
+        except ValueError as TypeError:
             return None
         if 0 <= v <= 11.25:
             return 'N'
@@ -1245,12 +1244,12 @@ class Forecast(StdService):
             log.info('%s: starting thread', self.method_id)
             self.do_forecast(event)
         elif time.time() - self.interval > self.last_ts:
-            #t = ForecastThread(self.do_forecast, event)
-            #t.setName(self.method_id + 'Thread')
-            #log.debug('%s: starting thread' % self.method_id)
+            t = ForecastThread(self.do_forecast, event)
+            t.setName(self.method_id + 'Thread')
+            log.debug('%s: starting thread' % self.method_id)
             log.info('%s: starting thread', self.method_id)
-            #t.start()
-            self.do_forecast(event)
+            t.start()
+            #self.do_forecast(event)
         else:
             log.debug('%s: not yet time to do the forecast', self.method_id)
             log.info('%s: not yet time to do the forecast', self.method_id)

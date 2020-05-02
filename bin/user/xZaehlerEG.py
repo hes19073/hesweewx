@@ -33,8 +33,8 @@
 """ Service Configuration 
 
 
- data /var/tmp/haus-data.txt
-         0  1   2   3          4           5           6           7           8
+ data /var/tmp/hauseg.txt
+         0 1   2    3          4           5           6           7           8
 # dateTime,ele,eleA,extraTemp1,extraTemp10,extraTemp11,extraTemp12,extraTemp13,extraTemp14,
 9          10         11         12         13         14         15         16         17  18      19
 extraTemp2,extraTemp3,extraTemp4,extraTemp5,extraTemp6,extraTemp7,extraTemp8,extraTemp9,gas,usUnits,was
@@ -58,23 +58,29 @@ class HausEG(StdService):
     def __init__(self, engine, config_dict):
         super(HausEG, self).__init__(engine, config_dict)
         d = config_dict.get('HausEG', {})
-        self.filename = d.get('filename', '/var/tmp/hauseg.txt')
-        log.info("DataHausEG: using %s", self.filename)
+        self.filename_haus = d.get('filename_haus', '/var/tmp/hauseg.txt')
+        log.info("DataHausEG: using %s", self.filename_haus)
         self.bind(weewx.NEW_ARCHIVE_RECORD, self.read_file)
 
     def read_file(self, event):
         """ read old data from file '0ImpulsZahl' for calculate_delta """
         try:
             with open('/home/weewx/archive/0ImpulsZahl') as f:
-                line = f.readline()
-                values = line.split(',')
+                line_imp = f.readline()
+                values_i = line_imp.split(',')
 
-            gas_val = float(values[0])
-            was_val = float(values[1])
-            waa_val = float(values[2])
-            ele_val = float(values[3])
-            ela_val = float(values[4])
-            elp_val = float(values[5])
+            gas_val = float(values_i[0])
+            self._gas_val = gas_val
+            was_val = float(values_i[1])
+            self._was_val = was_val
+            waa_val = float(values_i[2])
+            self._waa_val = waa_val
+            ele_val = float(values_i[3])
+            self._ele_val = ele_val
+            ela_val = float(values_i[4])
+            self._ela_val = ela_val
+            elp_val = float(values_i[5])
+            self._elp_val = elp_val
 
             f.close()
 
@@ -86,14 +92,17 @@ class HausEG(StdService):
             # read values, get difference and save in to database 'haus'
 
         try:
-            with open(self.filename) as ff:
+            with open(self.filename_haus) as ff:
                 line = ff.readline()
                 values = line.split(',')
 
             #log.debug("HausEG: found value of %s", values)
 
-            event.record['ele'] = float(values[1])
-            event.record['eleA'] = float(values[2])
+            ele_new = float(values[1])
+            ela_new = float(values[2])
+
+            event.record['ele'] = ele_new
+            event.record['eleA'] = ela_new
             event.record['extraTemp1'] = float(values[3])
             event.record['extraTemp10'] = float(values[4])
             event.record['extraTemp11'] = float(values[5])
@@ -108,20 +117,25 @@ class HausEG(StdService):
             event.record['extraTemp7'] = float(values[14])
             event.record['extraTemp8'] = float(values[15])
             event.record['extraTemp9'] = float(values[16])
-            event.record['gas'] = float(values[17])
-            event.record['was'] = float(values[19])
-            event.record['wasA'] = float(values[20])
-            event.record['elePV'] = float(values[1])
-            event.record['gasDelta'] = calculate_delta(float(values[17]), gas_val)
-            event.record['wasDelta'] = calculate_delta(float(values[19]), was_val)
-            event.record['wasADelta'] = calculate_delta(float(values[20]), waa_val)
-            event.record['eleDelta'] = calculate_delta(float(values[1]), ele_val)
-            event.record['eleADelta'] = calculate_delta(float(values[2]), ela_val)
-            event.record['elePVDelta'] = calculate_delta(float(values[1]), elp_val)
+            gas_new = float(values[17])
+            was_new = float(values[19])
+            waa_new = float(values[20])
+            elp_new = float(values[1])
+            event.record['gas'] = gas_new
+            event.record['was'] = was_new
+            event.record['wasA'] = waa_new
+            event.record['elePV'] = elp_new
+            event.record['gasDelta'] = calculate_delta(gas_new, self._gas_val)
+            #event.record['wasDelta'] = calculate_delta(was_new, self._was_val)
+            event.record['wasADelta'] = calculate_delta(waa_new, self._waa_val)
+            event.record['eleDelta'] = calculate_delta(ele_new, self._ele_val)
+            event.record['eleADelta'] = calculate_delta(ela_new, self._ela_val)
+            event.record['elePVDelta'] = calculate_delta(elp_new, self._elp_val)
 
             # save values for impulse in /home/weewx/archive/0ImpulsZahl
-            #       gas                was                wasA               ele               eleA              elePV
-            stand = str(values[17])+','+str(values[19])+',0.0,'+str(values[1])+','+str(values[2])+','+str(values[1])
+            #        gas                     was              wasA                 ele                  eleA                 elePV
+            #stand = str(values[17]) + ','+ str(values[19])+',0.0,'+str(values[1])+','+str(values[2])+','+str(values[1])
+            stand = str(gas_new) + ',' + str(was_new) + ',' + str(waa_new) + ',' + str(ele_new) + ',' + str(ela_new) + ',' + str(elp_new)
 
             ff.close()
 

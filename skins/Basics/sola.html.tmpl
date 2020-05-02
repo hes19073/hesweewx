@@ -42,10 +42,10 @@
     #if $day.radiation.sum is None
         <p>Keine Sonne</p>
     #elif $day.radiation.sum.raw > 0
-     <table>
+        <table>
       #for $zeit in range(24)
-          <tr><td>Sonne vor</td><td>$zeit</td><td>h</td>
-         #if $hours_ago($hours_ago=$zeit).radiation.sum.raw > 0
+         <tr><td>Sonne vor</td><td>$zeit</td><td>h</td>
+         #if $hours_ago($hours_ago=$zeit).radiation.sum.raw is not None
            #if $hours_ago($hours_ago=$zeit).radiation.sum.raw < 50
               <td class="tab_datab" style="background-color: #84ebff">$hours_ago($hours_ago=$zeit).radiation.sum
               &nbsp;:&nbsp;$hours_ago($hours_ago=$zeit).sunshineS.sum.hour</td>
@@ -84,15 +84,15 @@
 
 <table>
   <tr>
-   <td>Anzahl der <br />nach Jahren</td>
+   <td>Jahr <br />&nbsp;</td>
    <td style="background-color: #FF4949;">Sonnentage</td>
   </tr>
 
 #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
-      <td style="background-color: #FF4949;">$year.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
-   </tr>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
+   <td style="background-color: #FF4949;">$year.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
+  </tr>
 #end for
 </table>
 <hr />
@@ -100,105 +100,105 @@
 <h3>Sonnentage nach Monaten in den Jahren</h3>
 <p>Wenn die maximale Strahlung größer als 120 W/m² war.</p>
 <table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
 
 #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+   <tr>
+    <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
+    <td style="background-color: #23FF9E;">$month.radiation.max_ge((120, "watt_per_meter_squared", "group_radiation")).format("%.0f")</td>
           #else
             <td style="background-color: #FFFFFF;">-</td>
           #end if
       #end for
-    </tr>
+   </tr>
 #end for
-</table>
+ </table>
 <h3>Sonne nach Monaten in den Jahren</h3>
 <p>Nach Berechnung durch weewx</p>
 <table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
 
 #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.max.raw is not None:
-            <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
+   <td style="background-color: #23FF9E;">$month.sunshineS.sum_ge((0.1, "second", "group_elapsed")).format("%.0f")</td>
           #else
-            <td style="background-color: #FFFFFF;">-</td>
+   <td style="background-color: #FFFFFF;">-</td>
           #end if
       #end for
-    </tr>
+  </tr>
 #end for
-</table>
+ </table>
 
-<h3>Sonne in w/m²</h3>
+<h3>Sonne in W/m²</h3>
  <p>&nbsp; </p>
  <table>
-    <tr>
-     <td>Jahr&nbsp;</td>
-     <td>Jan</td><td>Feb</td><td>Mär</td>
-     <td>Apr</td><td>Mai</td><td>Jun</td>
-     <td>Jul</td><td>Aug</td><td>Sep</td>
-     <td>Okt</td><td>Nov</td><td>Dez</td>
-    </tr>
+  <tr>
+   <td>Jahr<br />&nbsp;</td>
+   <td>Jan</td><td>Feb</td><td>Mär</td>
+   <td>Apr</td><td>Mai</td><td>Jun</td>
+   <td>Jul</td><td>Aug</td><td>Sep</td>
+   <td>Okt</td><td>Nov</td><td>Dez</td>
+  </tr>
  #for $year in $alltime.years
-    <tr>
-      <td>$year.dateTime.format("%Y")</td>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
       #for $month in $year.months
           #if $month.radiation.sum.raw is not None:
-             #if $month.radiation.sum.raw < 50
-                 <td class="hest01">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 150
-                 <td class="hest02">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 300
-                 <td class="hest03">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 5000
-                 <td class="hest04">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 10000
-                 <td class="hest05">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 20000
-                 <td class="hest06">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 30000
-                 <td class="hest07">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 40000
-                 <td class="hest08">$month.radiation.sum.formatted</td>
+             #if $month.radiation.sum.raw < 500
+   <td class="hest01">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 1500
+   <td class="hest02">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 3000
+   <td class="hest03">$month.radiation.sum.formatted</td>
              #elif $month.radiation.sum.raw < 50000
-                 <td class="hest09">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 60000
-                 <td class="hest10">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 70000
-                 <td class="hest11">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 80000
-                 <td class="hest12">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 90000
-                 <td class="hest13">$month.radiation.sum.formatted</td>
+   <td class="hest04">$month.radiation.sum.formatted</td>
              #elif $month.radiation.sum.raw < 100000
-                 <td class="hest14">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw < 120000
-                 <td class="hest15">$month.radiation.sum.formatted</td>
-             #elif $month.radiation.sum.raw > 120000 
-                 <td class="hest16">$month.radiation.sum.formatted</td>
+   <td class="hest05">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 200000
+   <td class="hest06">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 300000
+   <td class="hest07">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 400000
+   <td class="hest08">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 500000
+   <td class="hest09">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 600000
+   <td class="hest10">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 700000
+   <td class="hest11">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 800000
+   <td class="hest12">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 900000
+   <td class="hest13">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 1000000
+   <td class="hest14">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw < 1200000
+   <td class="hest15">$month.radiation.sum.formatted</td>
+             #elif $month.radiation.sum.raw > 1200000 
+   <td class="hest16">$month.radiation.sum.formatted</td>
              #end if
           #else
-                 <td class="hest00">-</td>
+   <td class="hest00">-</td>
           #end if
        #end for
-    </tr>
+  </tr>
  #end for
  </table>
 <hr />
@@ -206,28 +206,28 @@
 <h3>Sonne nach Jahreszeiten</h3>
 <p>&nbsp;</p>
 <table>
-    <tr>
-      <td>&nbsp;</td>
-      <td>21.03. - 20.06</td>
-      <td>21.06. - 20.09.</td>
-      <td>21.09. - 20.12.</td>
-      <td>21.12. - 20.03</td>
-    </tr>
-    <tr>
-      <td>&nbsp;</td>
-     <td>Frühlings-Sonne</td>
-     <td>Sommer-Sonne</td>
-     <td>Herbst-Sonne</td>
-     <td>Winter-Sonne</td>
-    </tr>
-    <tr>
-     <td>$year.dateTime.format("%Y")</td>
-     <td>$spring.radiation.sum </td>
-     <td>$summer.radiation.sum </td>
-     <td>$autumm.radiation.sum </td>
-     <td>$winter.radiation.sum </td>
-    </tr>
-</table>
+  <tr>
+   <td>&nbsp;</td>
+   <td>21.03. - 20.06</td>
+   <td>21.06. - 20.09.</td>
+   <td>21.09. - 20.12.</td>
+   <td>21.12. - 20.03</td>
+  </tr>
+  <tr>
+   <td>&nbsp;</td>
+   <td>Frühlings-Sonne</td>
+   <td>Sommer-Sonne</td>
+   <td>Herbst-Sonne</td>
+   <td>Winter-Sonne</td>
+  </tr>
+  <tr>
+   <td>$year.dateTime.format("%Y")</td>
+   <td>$spring.radiation.sum </td>
+   <td>$summer.radiation.sum </td>
+   <td>$autumm.radiation.sum </td>
+   <td>$winter.radiation.sum </td>
+  </tr>
+ </table>
 
 <hr />
 

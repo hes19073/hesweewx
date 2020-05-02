@@ -28,7 +28,7 @@ import weewx.units
 import weewx.reportengine
 
 from weewx.units import ValueTuple
-from weewx.units import CtoK, CtoF, FtoC
+#from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
 from weeutil.config import search_up
 
@@ -52,24 +52,23 @@ def get_float_t(txt, unit_group):
     return result
 
 def get_green_t(mo_temp, d_temp_avg):
-    # d_temp_avg in degree_F also 0 degree_C = 32.0 degree_F
-    # Green Day summe temp_avg > 200 degree_C also 392 degree_F
+    # d_temp_avg  in  degree_C
+    # Green Day summe temp_avg > 200 degree_C
     day_green = 0.0
-    d_temp_a = FtoC(d_temp_avg)
 
-    if d_temp_a <= 0.0:
+    if d_temp_avg <= 0.0:
         day_green = 0.0
 
     else:
 
         if mo_temp == 1:
-            day_green = d_temp_a * 0.5
+            day_green = d_temp_avg * 0.5
 
         elif mo_temp == 2:
-            day_green = d_temp_a * 0.75
+            day_green = d_temp_avg * 0.75
 
         elif mo_temp > 2 and mo_temp < 6:
-            day_green = d_temp_a
+            day_green = d_temp_avg
 
         else:
             day_green = 0.0
@@ -117,7 +116,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
         self.formatter  = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
-        self.to_degree_F_day = weewx.units.FixedConverter('degree_F_day')
+
         # determine how much logging is desired
         self.log_success = to_bool(self.image_dict.get('log_success', True))
         # ensure that we are in a consistent right location
@@ -156,24 +155,6 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
             new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
             start_date_ts = time.mktime(tuple(new_year_tuple))
 
-            #date_string = plot_options.get('end_date')
-            #if date_string:
-            #    plotgen_ts = time.mktime(time.strptime(date_string, '%m/%d/%Y'))
-            #else:
-            #    plotgen_ts = gen_ts
-            #    if plotgen_ts:
-            #        pass
-            #    else:
-            #        plotgen_ts = time.time()
-
-            #date_string = plot_options.get('start_date')
-            #if date_string:
-            #    start_date_ts = time.mktime(time.strptime(date_string, '%m/%d/%Y'))
-            #else:
-            #    now_tuple = time.localtime(plotgen_ts)
-            #    new_year_tuple = [now_tuple.tm_year, 1, 1, ZERO, ZERO, ZERO, ZERO, ZERO, now_tuple.tm_isdst]
-            #    start_date_ts = time.mktime(tuple(new_year_tuple))
-
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
             ai = 86400
@@ -183,7 +164,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
 
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
-            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
+            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('GreenDDData', {}).get('template', 'Cydia/GREEN-YYYY.csv.tmpl')
             (csv, ext) = os.path.splitext(tmpl)
             csv_name = csv.replace('YYYY', str(time.localtime(plotgen_ts).tm_year))
             csv_file_name = os.path.join(text_root, '%s' % csv_name)
@@ -259,7 +240,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         result.setBottomLabel(bottom_label)
 
         # This generator acts on only one variable type:
-        var_type = 'outTemp'  #'heatdeg'   # outTemp
+        var_type = 'outTemp'
 
         # Get the type of plot ("bar', 'line', or 'vector')
         plot_type = line_options.get('plot_type', 'line')
@@ -283,7 +264,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         if biofix:
             biofix_label = 'GreenDay'
         else:
-            biofix = get_float_t(line_options.get('biofix_estimated', [392, 'degree_F']), 'group_temperature')
+            biofix = get_float_t(line_options.get('biofix_estimated', [200, 'degree_C']), 'group_temperature')
             biofix_label = 'Vegetationsbeginn'
         horizons.append([biofix, biofix_label])
         offsets = self.green_dict[species_name].get('Offsets_from_Biofix')
@@ -379,8 +360,9 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         (minstamp, maxstamp) = stamps
         result = {
             'date': ValueTuple([], 'unix_epoch', 'group_time'),
-            'daily_max': ValueTuple([], 'degree_F', 'group_temperature'),
-            'daily_avg': ValueTuple([], 'degree_F', 'group_temperature'),
+            'daily_max': ValueTuple([], 'degree_C', 'group_temperature'),
+            'daily_min': ValueTuple([], 'degree_C', 'group_temperature'),
+            'daily_avg': ValueTuple([], 'degree_C', 'group_temperature'),
             'dd': ValueTuple([], 'count', 'group_count'),
             'dd_cumulative': ValueTuple([], 'count', 'group_count'),
             }
@@ -404,20 +386,23 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
                     if (minstamp <= stamp) and (stamp <= maxstamp):
                         result['date'][ZERO].append(stamp)
                         try:
-                            daily_max = float(rec.get('TMPMAX_F'))
+                            daily_max = float(rec.get('TMPMAX_C'))
                             result['daily_max'][ZERO].append(daily_max)
-                            daily_avg = float(rec.get('TMPAVG_F'))
+                            daily_min = float(rec.get('TMPMIN_C'))
+                            result['daily_min'][ZERO].append(daily_min)
+                            daily_avg = float(rec.get('TMPAVG_C'))
                             result['daily_avg'][ZERO].append(daily_avg)
                             mo_temp = int(rec.get('MO'))
-                            d_temp_avg = float(rec.get('TMPAVG_F'))
-                            dd = get_green_t(mo_temp, d_temp_avg)
+                            #d_temp_avg = float(rec.get('TMPAVG_C'))
+                            #dd = get_green_t(mo_temp, d_temp_avg)
+                            dd = get_green_t(mo_temp, daily_avg)
                             result['dd'][ZERO].append(dd)
                             dd_cumulative += dd
                             result['dd_cumulative'][ZERO].append(dd_cumulative)
-                            if dd_cumulative >= 200.0:
-                                dat_gd = open("/home/weewx/public_html/Cydia/C_green.txt", "w")
-                                dat_gd.write(str(stamp))
-                                dat_gd.close()
+                            #if dd_cumulative >= 200.0:
+                            #    dat_gd = open("/home/weewx/public_html/Cydia/C_green.txt", "w")
+                            #    dat_gd.write(str(stamp))
+                            #    dat_gd.close()
                         except ValueError:
                             pass
                         except TypeError:
@@ -436,6 +421,7 @@ class GreenGenerator(weewx.reportengine.ReportGenerator):
         for key in [
                 'date',
                 'daily_max',
+                'daily_min',
                 'daily_avg',
                 'dd',
                 'dd_cumulative',
