@@ -470,7 +470,7 @@ class ReportTiming(object):
         Processes raw line to produce 5 field line suitable for further
         processing.
 
-        line:  The raw line to be processed.
+        raw_line: The raw line to be processed.
         """
 
         # initialise some properties

@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -30,7 +30,9 @@ from weewx.units import ValueTuple, mps_to_mph, kph_to_mph, METER_PER_FOOT, CtoF
 
 log = logging.getLogger(__name__)
 
-DEFAULTS_INI = """
+first_time = True
+
+DEFAULTS_INI = u"""
 [StdWXCalculate]
 
     ignore_zero_wind = True     # If windSpeed is zero, should windDir be set to None?
@@ -49,21 +51,20 @@ DEFAULTS_INI = """
 
     [[Calculations]]
         # Order matters! Type 'pressure' must come before 'altimeter' and 'barometer'
-        # pressure = prefer_hardware
-        # altimeter = prefer_hardware
-        # appTemp = prefer_hardware
-        # barometer = prefer_hardware
-        # beaufort = prefer_hardware        
-        # cloudbase = prefer_hardware
-        # dewpoint = prefer_hardware
-        # ET = prefer_hardware
-        # heatindex = prefer_hardware
-        # humidex = prefer_hardware
-        # inDewpoint = prefer_hardware
-        # maxSolarRad = prefer_hardware
-        # rainRate = prefer_hardware
-        # windchill = prefer_hardware
-        # windrun = prefer_hardware
+        pressure = prefer_hardware
+        altimeter = prefer_hardware
+        appTemp = prefer_hardware
+        barometer = prefer_hardware
+        cloudbase = prefer_hardware
+        dewpoint = prefer_hardware
+        ET = prefer_hardware
+        heatindex = prefer_hardware
+        humidex = prefer_hardware
+        inDewpoint = prefer_hardware
+        maxSolarRad = prefer_hardware
+        rainRate = prefer_hardware
+        windchill = prefer_hardware
+        windrun = prefer_hardware
     [[Algorithms]]
         altimeter = aaASOS
         maxSolarRad = RS
@@ -105,10 +106,8 @@ class StdWXCalculate(weewx.engine.StdService):
 class WXCalculate(object):
     """This class has two jobs:
 
-    - Add derived weather variables (such as dewpoint, heatindex, etc.) to the WeeWX extensible
-    type system.
-    - Use the type system to augment packets and records, following preferences specified in the
-    configuration file.
+    - Add derived weather variables (such as dewpoint, heatindex, etc.) to the WeeWX extensible type system.
+    - Use the type system to augment packets and records, following preferences specified in the configuration file.
     """
 
     def __init__(self, config_dict, altitude_vt, latitude_f, longitude_f, db_binder=None):
@@ -132,8 +131,7 @@ class WXCalculate(object):
         # Instantiate a PressureCooker to calculate various kinds of pressure
         self.pressure_cooker = PressureCooker(altitude_vt,
                                               to_int(self.svc_dict.get('max_delta_12h', 1800)),
-                                              self.svc_dict['Algorithms'].get('altimeter',
-                                                                              'aaASOS'))
+                                              self.svc_dict['Algorithms'].get('altimeter', 'aaASOS'))
         # Instantiate a RainRater to calculate rainRate
         self.rain_rater = RainRater(to_int(self.svc_dict.get('rain_period', 900)),
                                     to_int(self.svc_dict.get('retain_period', 930)))
@@ -159,14 +157,20 @@ class WXCalculate(object):
         weewx.xtypes.xtypes.append(self.hail_rater)
         weewx.xtypes.xtypes.append(self.wx_types)
 
+        # If pressure and altimeter are to be calculated order matters,
+        # pressure must be calculated first
+        _dispatch_list = list(self.svc_dict['Calculations'].keys())
+        # If pressure is in the list make sure it is first
+        if 'pressure' in _dispatch_list:
+            _dispatch_list.insert(0, _dispatch_list.pop(_dispatch_list.index('pressure')))
+        self.dispatch_list = _dispatch_list
+
         # Report about which values will be calculated...
         log.info("The following values will be calculated: %s",
-                 ', '.join(["%s=%s" % (k, self.svc_dict['Calculations'][k])
-                            for k in self.svc_dict['Calculations']]))
+                 ', '.join(["%s=%s" % (k, self.svc_dict['Calculations'][k]) for k in self.svc_dict['Calculations']]))
         # ...and which algorithms will be used.
         log.info("The following algorithms will be used for calculations: %s",
-                 ', '.join(["%s=%s" % (k, self.svc_dict['Algorithms'][k])
-                            for k in self.svc_dict['Algorithms']]))
+                 ', '.join(["%s=%s" % (k, self.svc_dict['Algorithms'][k]) for k in self.svc_dict['Algorithms']]))
 
     def new_loop_packet(self, loop_packet):
         # Keep the RainRater up to date:
@@ -188,13 +192,14 @@ class WXCalculate(object):
             self.adjust_winddir(data_dict)
 
         # Go through the list of potential calculations and see which ones need to be done
-        for obs in self.svc_dict['Calculations']:
+        for obs in self.dispatch_list:
+        #for obs in self.svc_dict['Calculations']:
             directive = self.svc_dict['Calculations'][obs]
             # Keys in svc_dict are in unicode. Keys in packets and records are in native strings.
             # Just to keep things consistent, convert.
             obs_type = str(obs)
-            if directive == 'software' or directive == 'prefer_hardware' \
-                    and (obs_type not in data_dict or data_dict[obs_type] is None):
+            if directive == 'software' \
+                    or directive == 'prefer_hardware' and (obs_type not in data_dict or data_dict[obs_type] is None):
                 try:
                     # We need to do a calculation for type 'obs_type'. This may raise an exception.
                     new_value = weewx.xtypes.get_scalar(obs_type, data_dict, self.db_manager)
@@ -210,16 +215,14 @@ class WXCalculate(object):
 
     @staticmethod
     def adjust_winddir(data):
-        """If windSpeed is in the data stream, and it is either zero or None, then the
-        wind direction is undefined.
-        """
+        """If windSpeed is in the data stream, and it is either zero or None, then the wind direction is undefined."""
         if 'windSpeed' in data and not data['windSpeed']:
             data['windDir'] = None
         if 'windGust' in data and not data['windGust']:
             data['windGustDir'] = None
 
     def shut_down(self):
-        for xtype in [self.pressure_cooker, self.rain_rater, self.wx_types]:
+        for xtype in [self.pressure_cooker, self.rain_rater, self.snow_rater, self.hail_rater, self.wx_types]:
             # Give the object an opportunity to clean up
             xtype.shut_down()
             # Remove from the type system
@@ -228,9 +231,8 @@ class WXCalculate(object):
 
 
 class WXXTypes(weewx.xtypes.XType):
-    """Weather extensions to the WeeWX type extension system that are relatively simple. This is
-    for types which are generally stateless, such as dewpoint, heatindex, etc.
-    """
+    """Weather extensions to the WeeWX type extension system that are relatively simple. This is for types
+     which are generally stateless, such as dewpoint, heatindex, etc."""
 
     def __init__(self, svc_dict, altitude_vt, latitude, longitude):
         """Initialize an instance of WXXTypes
@@ -304,10 +306,10 @@ class WXXTypes(weewx.xtypes.XType):
         return ValueTuple(val, u, 'group_altitude')
 
     def calc_ET(self, key, data, db_manager):
-        """Get maximum and minimum temperatures and average radiation and wind speed for the
-        indicated period then calculate the amount of evapotranspiration during the interval.
-        Convert to US units if necessary since this service operates in US unit system.
-        """
+        """Get maximum and minimum temperatures and average radiation and
+        wind speed for the indicated period then calculate the amount of
+        evapotranspiration during the interval.  Convert to US units if necessary
+        since this service operates in US unit system."""
 
         if 'interval' not in data:
             # This will cause LOOP data not to be processed.
@@ -359,9 +361,8 @@ class WXXTypes(weewx.xtypes.XType):
             weeutil.logger.log_traceback(log.error)
             ET_inch = None
         else:
-            # The formula returns inches/hour. We need the total ET over the interval, so multiply
-            # by the length of the interval in hours. Remember that 'interval' is actually in
-            # minutes.
+            # The formula returns inches/hour. We need the total ET over the interval, so multiply by the length of the
+            # interval in hours. Remember that 'interval' is actually in minutes.
             ET_inch = ET_rate * interval / 60.0 if ET_rate is not None else None
 
         # Convert back to the unit system of the incoming record:
@@ -446,6 +447,11 @@ class WXXTypes(weewx.xtypes.XType):
 
     @staticmethod
     def calc_beaufort(key, data, db_manager=None):
+        global first_time
+        if first_time:
+            print("Type beaufort has been deprecated. Use unit beaufort instead.")
+            log.info("Type beaufort has been deprecated. Use unit beaufort instead.")
+            first_time = False
         if 'windSpeed' not in data:
             raise weewx.CannotCalculate
         windspeed_vt = weewx.units.as_value_tuple(data, 'windSpeed')
@@ -851,18 +857,15 @@ class RainRater(weewx.xtypes.XType):
         if self.rain_events is None:
             self.rain_events = []
         start_ts = stop_ts - self.retain_period
-        # Get all rain events since the window start from the database. Put it in
-        # a 'try' block because the database may not have a 'rain' field.
-        try:
-            for row in db_manager.genSql("SELECT dateTime, usUnits, rain FROM %s "
-                                         "WHERE dateTime>? AND dateTime<=?;"
-                                         % db_manager.table_name, (start_ts, stop_ts)):
-                # Unpack the row:
-                time_ts, unit_system, rain = row
-                self.add_loop_packet({'dateTime': time_ts, 'usUnits': unit_system, 'rain': rain},
-                                     db_manager)
-        except weedb.DatabaseError as e:
-            log.debug("Database error while initializing rainRate: '%s'" % e)
+        # Get all rain events since the window start from the database
+        for row in db_manager.genSql("SELECT dateTime, usUnits, rain FROM %s WHERE dateTime>? AND dateTime<=?;"
+                                     % db_manager.table_name, (start_ts, stop_ts)):
+            # Unpack the row:
+            time_ts, unit_system, rain = row
+            if self.unit_system is None:
+                # Adopt the first unit system as the one we will do our calculations in
+                self.unit_system = unit_system
+            self.add_loop_packet({'dateTime': time_ts, 'usUnits': unit_system, 'rain': rain}, db_manager)
 
 
 class SnowRater(weewx.xtypes.XType):

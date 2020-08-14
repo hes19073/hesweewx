@@ -8,7 +8,7 @@
 """Data structures and functions for dealing with units."""
 
 #
-# The doctest examples work only under Python 3!!
+# The unittest examples work only under Python 3!!
 # extensions by Hartmut Schweidler
 
 from __future__ import absolute_import
@@ -64,6 +64,16 @@ def mps_to_mph(x):
 def kph_to_mph(x):
     return x * 1000.0 / METER_PER_MILE
 
+def mph_to_knot(x):
+    return x * 0.868976242
+
+def kph_to_knot(x):
+    return x * 0.539956803
+
+def mps_to_knot(x):
+    return x * 1.94384449
+
+
 class UnknownType(object):
     """Indicates that the observation type is unknown."""
     def __init__(self, obs_type):
@@ -92,11 +102,14 @@ obs_group_dict = ListOfDicts({
     "pm2_5"              : "group_concentration",
     "pm_10"              : "group_concentration",
     "pm_25"              : "group_concentration",
-    "beaufort"           : "group_count",
+    "beaufort"           : "group_count",          # DEPRECATED
     "leafWet1"           : "group_count",
     "leafWet2"           : "group_count",
     "leafWet3"           : "group_count",
     "leafWet4"           : "group_count",
+    "lightning_disturber_count" : "group_count",
+    "lightning_noise_count"     : "group_count",
+    "lightning_strike_count"    : "group_count",
     "homedeg"            : "group_degree_day",
     "cooldeg"            : "group_degree_day",
     "heatdeg"            : "group_degree_day",
@@ -110,9 +123,12 @@ obs_group_dict = ListOfDicts({
     "windDir"            : "group_direction",
     "windGustDir"        : "group_direction",
     "windGustDir10"      : "group_direction",
+    "lightning_distance" : "group_distance",
     "windrun"            : "group_distance",
+    "earthquake_tief"    : "group_distance",
     "distance"           : "group_distance",
     "visibility_km"      : "group_distance",
+    "frequency"          : "group_frequenc",
     "interval"           : "group_interval",
     "soilMoist1"         : "group_moisture",
     "soilMoist2"         : "group_moisture",
@@ -237,6 +253,7 @@ obs_group_dict = ListOfDicts({
     "tempNormalLow"      : "group_temperature",
     "tempRecordHighYear" : "group_count",
     "tempRecordLowYear"  : "group_count",
+    "earthquake_time"    : "group_time",
     "dateTime"           : "group_time",
     "green_day"          : "group_time",
     "stormStart"         : "group_time",
@@ -267,11 +284,12 @@ obs_group_dict = ListOfDicts({
     "sound"              : "group_anzahl",
     "beaufort"           : "group_count",
     "lightning"          : "group_anzahl",
-    "gas"                : "group_anzahl",
-    "ele"                : "group_anzahl",
-    "was"                : "group_anzahl",
-    "eleA"               : "group_anzahl",
-    "wasA"               : "group_anzahl",
+    "gas"                : "group_anzahl3",
+    "ele"                : "group_anzahl2",
+    "was"                : "group_anzahl4",
+    "eleA"               : "group_anzahl2",
+    "elePV"              : "group_energy",
+    "wasA"               : "group_anzahl4",
     "airDensity"         : "group_druck3",
     "windDruck"          : "group_druck2",
     "absolutF"           : "group_gram",
@@ -297,9 +315,12 @@ obs_group_dict = ListOfDicts({
     "disk_home_total"    : "group_datadisk",
     "disk_home_used"     : "group_datadisk",
     "rad_nsvh"           : "group_radio",
-    "gas_m3"             : "group_volume",
-    "was_m3"             : "group_volume",
-    "wasA_m3"            : "group_volume",
+    "gas_m3"             : "group_cubic_meter",
+    "was_m3"             : "group_cubic_meter",
+    "wasA_m3"            : "group_cubic_meter",
+    "gasZ_m3"            : "group_cubic_meter",
+    "wasZ_m3"            : "group_cubic_meter",
+    "wasAZ_m3"           : "group_cubic_meter",
     "gasZ_preis"         : "group_preis",
     "wasZ_preis"         : "group_preis",
     "eleZ_preis"         : "group_preis",
@@ -342,6 +363,7 @@ USUnits = ListOfDicts({
     "group_elapsed"     : "second",
     "group_energy"      : "watt_hour",
     "group_energy2"     : "watt_second",
+    "group_frequenc"    : "herz",
     "group_interval"    : "minute",
     "group_length"      : "inch",
     "group_moisture"    : "centibar",
@@ -364,8 +386,13 @@ USUnits = ListOfDicts({
     "group_deltatime"   : "second",
     "group_uv"          : "uv_index",
     "group_anzahl"      : "anzahl",
+    "group_anzahl1"     : "anzahl1",
+    "group_anzahl2"     : "anzahl2",
+    "group_anzahl3"     : "anzahl3",
+    "group_anzahl4"     : "anzahl4",
     "group_volt"        : "volt",
     "group_volume"      : "gallon",
+    "group_cubic_meter" : "cubic_meter",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
     "group_datanet"     : "megabyte",
@@ -394,6 +421,7 @@ MetricUnits = ListOfDicts({
     "group_elapsed"     : "second",
     "group_energy"      : "watt_hour",
     "group_energy2"     : "watt_second",
+    "group_frequenc"    : "herz",
     "group_interval"    : "minute",
     "group_length"      : "cm",
     "group_moisture"    : "centibar",
@@ -416,8 +444,13 @@ MetricUnits = ListOfDicts({
     "group_deltatime"   : "second",
     "group_uv"          : "uv_index",
     "group_anzahl"      : "anzahl",
+    "group_anzahl1"     : "anzahl1",
+    "group_anzahl2"     : "anzahl2",
+    "group_anzahl3"     : "anzahl3",
+    "group_anzahl4"     : "anzahl4",
     "group_volt"        : "volt",
     "group_volume"      : "liter",
+    "group_cubic_meter" : "cubic_meter",
     "group_data"        : "byte",
     "group_datadisk"    : "kilobyte",
     "group_datanet"     : "megabyte",
@@ -462,7 +495,7 @@ conversionDict = {
                           'degree_E'         : FtoE},
     'degree_F_day'     : {'degree_C_day'     : lambda x : x * (5.0/9.0)},
     'mile_per_hour'    : {'km_per_hour'      : lambda x : x * 1.609344,
-                          'knot'             : lambda x : x * 0.868976242,
+                          'knot'             : mph_to_knot,
                           'meter_per_second' : lambda x : x * 0.44704},
     'mile_per_hour2'   : {'km_per_hour2'     : lambda x : x * 1.609344,
                           'knot2'            : lambda x : x * 0.868976242,
@@ -500,10 +533,10 @@ conversionDict = {
                           'degree_E'         : CtoE},
     'degree_C_day'     : {'degree_F_day'     : lambda x : x * (9.0/5.0)},
     'km_per_hour'      : {'mile_per_hour'    : kph_to_mph,
-                          'knot'             : lambda x : x * 0.539956803,
+                          'knot'             : kph_to_knot,
                           'meter_per_second' : lambda x : x * 0.277777778},
     'meter_per_second' : {'mile_per_hour'    : mps_to_mph,
-                          'knot'             : lambda x : x * 1.94384449,
+                          'knot'             : mps_to_knot,
                           'km_per_hour'      : lambda x : x * 3.6},
     'meter_per_second2': {'mile_per_hour2'   : lambda x : x * 2.23693629,
                           'knot2'            : lambda x : x * 1.94384449,
@@ -608,7 +641,7 @@ default_unit_format_dict = {
     "cm_per_hour"        : "%.2f",
     "cubic_foot"         : "%.1f",
     "cpm"                : "%.1f",
-    "count"              : "%.0f",
+    "count"              : "%d",
     "cubic_meter"        : "%.3f",
     "day"                : "%.1f",
     "degree_C"           : "%.1f",
@@ -621,6 +654,7 @@ default_unit_format_dict = {
     "euro"               : "%.2f",
     "foot"               : "%.0f",
     "gallon"             : "%.1f",
+    "herz"               : "%.2f",
     "hPa"                : "%.1f",
     "hPa_per_hour"       : "%.3f",
     "hour"               : "%.1f",
@@ -637,9 +671,11 @@ default_unit_format_dict = {
     "knot2"              : "%.1f",
     "liter"              : "%.1f",
     "mark"               : "%.2f",
+    "m_amp"              : "%.2f",
     "mbar"               : "%.1f",
     "mbar_per_hour"      : "%.4f",
     "meter"              : "%.0f",
+    "cubic_meter"        : "%.3f",
     "meter_per_second"   : "%.0f",
     "meter_per_second2"  : "%.1f",
     "microgram_per_meter_cubed": "%.1f",
@@ -658,6 +694,10 @@ default_unit_format_dict = {
     "watt_second"        : "%.0f",
     "watt_hour"          : "%.1f",
     "anzahl"             : "%.0f",
+    "anzahl1"            : "%.1f",
+    "anzahl2"            : "%.2f",
+    "anzahl3"            : "%.3f",
+    "anzahl4"            : "%.4f",
     "ppm"                : "%.1f",
     "kilobyte"           : "%.2f",
     "megabyte"           : "%.2f",
@@ -679,12 +719,13 @@ default_unit_format_dict = {
 
 # Default unit labels to be used in the absence of a skin configuration file
 default_unit_label_dict = {
-    "amp"               : u" amp",
+    "amp"               : u" A",
     "bit"               : u" b",
     "byte"              : u" B",
     "centibar"          : u" cb",
     "cm"                : u" cm",
     "cm_per_hour"       : u" cm/h",
+    "count"             : u" ",
     "cubic_foot"        : u" ft³",
     "cubic_meter"       : u" m³",
     "cpm"               : u" CPM",
@@ -704,6 +745,7 @@ default_unit_label_dict = {
     "inHg"              : u" inHg",
     "inHg_per_hour"     : u" inHg/h",
     "hour"              : (u" hour", u" hours"),
+    "herz"              : u" Hz",
     "inch"              : u" in",
     "inch_per_hour"     : u" in/h",
     "kilowatt_hour"     : u" kWh",
@@ -713,6 +755,7 @@ default_unit_label_dict = {
     "knot"              : u" knots",
     "knot2"             : u" knots",
     "liter"             : u" l",
+    "m_amp"             : u" mA",
     "mbar"              : u" mbar",
     "mbar_per_hour"     : u" mbar/h",
     "meter"             : u" m",
@@ -736,6 +779,10 @@ default_unit_label_dict = {
     "watt_hour"         : u" Wh",
     "watt_per_meter_squared" : u" W/m²",
     "anzahl"            : u" ",
+    "anzahl1"           : u" ",
+    "anzahl2"           : u" ",
+    "anzahl3"           : u" ",
+    "anzahl4"           : u" ",
     "kilobyte"          : u" KB",
     "megabyte"          : u" MB",
     "gigabyte"          : u" GB",
@@ -992,7 +1039,12 @@ class Formatter(object):
             if None_string is None:
                 val_str = self.unit_format_dict.get('NONE', u'N/A')
             else:
-                val_str = None_string
+                # Make sure the "None_string" is, in fact, a string
+                if isinstance(None_string, six.string_types):
+                    val_str = None_string
+                else:
+                    # Coerce to a string.
+                    val_str = str(None_string)
             addLabel = False
         elif val_t[1] == "unix_epoch":
             # Different formatting routines are used if the value is a time.

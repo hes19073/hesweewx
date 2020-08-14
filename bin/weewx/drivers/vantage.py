@@ -1533,7 +1533,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         archive_record['rxCheckPercent'] = _rxcheck(self.model_type,
                                                     archive_record['interval'],
                                                     self.iss_id,
-                                                    raw_archive_record['number_of_wind_samples'])
+                                                    raw_archive_record['wind_samples'])
 
         for _type in raw_archive_record:
             # Get the mapping function for this type. If there is no such
@@ -1619,7 +1619,7 @@ rec_A_schema =[
     ('date_stamp',              'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
     ('highOutTemp',             'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
     ('rainRate',                'H'), ('barometer',     'H'), ('radiation',  'H'),
-    ('number_of_wind_samples',  'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('wind_samples',            'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
     ('outHumidity',             'B'), ('windSpeed',     'B'), ('windGust',   'B'),
     ('windGustDir',             'B'), ('windDir',       'B'), ('UV',         'B'),
     ('ET',                      'B'), ('invalid_data',  'B'), ('soilMoist1', 'B'),
@@ -1635,7 +1635,7 @@ rec_B_schema = [
     ('date_stamp',             'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
     ('highOutTemp',            'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
     ('rainRate',               'H'), ('barometer',     'H'), ('radiation',  'H'),
-    ('number_of_wind_samples', 'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('wind_samples',           'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
     ('outHumidity',            'B'), ('windSpeed',     'B'), ('windGust',   'B'),
     ('windGustDir',            'B'), ('windDir',       'B'), ('UV',         'B'),
     ('ET',                     'B'), ('highRadiation', 'H'), ('highUV',     'B'),
@@ -1654,7 +1654,7 @@ rec_types_B, fmt_B = list(zip(*rec_B_schema))
 rec_A_struct = struct.Struct('<' + ''.join(fmt_A))
 rec_B_struct = struct.Struct('<' + ''.join(fmt_B))
 
-def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
+def _rxcheck(model_type, interval, iss_id, wind_samples):
     """Gives an estimate of the fraction of packets received.
     
     Ref: Vantage Serial Protocol doc, V2.1.0, released 25-Jan-05; p42"""
@@ -1666,7 +1666,7 @@ def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
         _expected_packets = 960.0 * interval / float(41 + iss_id - 1)
     else:
         return None
-    _frac = number_of_wind_samples * 100.0 / _expected_packets
+    _frac = wind_samples * 100.0 / _expected_packets
     if _frac > 100.0:
         _frac = 100.0
     return _frac
@@ -1730,7 +1730,7 @@ def _decode_rain(p, k):
         # 0.1 mm bucket
         return p[k] * 0.00393700787
     else:
-        log.warning("Unknown bucket type $s" % p['bucket_type'])
+        log.warn("Unknown bucket type $s" % p['bucket_type'])
 
 
 def _decode_windSpeed_H(p, k):
@@ -1741,7 +1741,7 @@ def _decode_windSpeed_H(p, k):
     elif p['packet_type'] == 1:
         return float(p[k]) / 10.0 if p[k] != 0xffff else None
     else:
-        log.warning("Unknown LOOP packet type %s" % p['packet_type'])
+        log.warn("Unknown LOOP packet type %s" % p['packet_type'])
 
 
 # This dictionary maps a type key to a function. The function should be able to
@@ -1821,8 +1821,8 @@ _loop_map = {
     'soilTemp4'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'stormRain'       : _decode_rain,
     'stormStart'      : _loop_date,
-    'sunrise'         : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
-    'sunset'          : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
+    'sunrise'         : lambda p, k: 3600 * (p[k] // 100) + 60 * (p[k] % 100),
+    'sunset'          : lambda p, k: 3600 * (p[k] // 100) + 60 * (p[k] % 100),
     'THSW'            : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
     'trendIcon'       : lambda p, k: p[k],
     'txBatteryStatus' : lambda p, k: int(p[k]),
@@ -1850,7 +1850,7 @@ _archive_map = {
     'extraTemp2'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'extraTemp3'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'forecastRule'   : lambda p, k: p[k] if p[k] != 193 else None,
-    'highOutTemp'    : lambda p, k : float(p[k] / 10.0) if p[k] != -32768 else None,
+    'highOutTemp'    : lambda p, k: float(p[k] / 10.0) if p[k] != -32768 else None,
     'highRadiation'  : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
     'highUV'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
     'inHumidity'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
@@ -1878,6 +1878,7 @@ _archive_map = {
     'soilTemp3'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'soilTemp4'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'UV'             : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
+    'wind_samples'   : lambda p, k: float(p[k]) if p[k] else None,
     'windDir'        : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,
     'windGust'       : lambda p, k: float(p[k]),
     'windGustDir'    : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,

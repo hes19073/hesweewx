@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# original belchertown.py by Pat O'Brien, August 19, 2018
 # $Id: earth.py 1651 2018-09-01 12:10:37Z hes $
 # Copyright 2017 Hartmut Schweidler
 # Die Erde und ihre Beben
@@ -16,6 +17,9 @@ import os
 import weewx
 import weecfg
 import weeutil.logger
+import weeutil.weeutil
+import weeutil.config
+import weewx.units
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
@@ -73,8 +77,8 @@ class getEarthquake(SearchList):
         with open(earthquake_file, encoding="utf8") as read_file:
             eqdata= json.loads(read_file.read())
 
-        #eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
-        eqtime = eqdata["features"][0]["properties"]["time"] / 1000
+        eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
+        #eqtime = eqdata["features"][0]["properties"]["time"] / 1000
         equrl = eqdata["features"][0]["properties"]["url"]
         eqplace = eqdata["features"][0]["properties"]["place"]
         eqmag = eqdata["features"][0]["properties"]["mag"]

@@ -135,12 +135,14 @@ schema = [('dateTime',             'INTEGER NOT NULL UNIQUE PRIMARY KEY'),
          ('bar_reduction',        'REAL'),
          ('bar_offset',           'REAL'),
          ('pressure_raw',         'REAL'),
-]
+         ('monthRain',            'REAL'),
+         ('yearRain',             'REAL'),
+         ('monthET',              'REAL'),
+         ('yearET',               'REAL'),
+         ]
 
-# Schema to be used for the daily summaries. The default is to include all the observation types in the table as
-# 'scalar' types, plus one for 'wind' as a vector type.
-#day_summaries = [(e[0], 'SCALAR') for e in table if e[0] not in ('dateTime', 'usUnits', 'interval')]\
-#                + [('wind', 'VECTOR')]
+#day_summaries = [(e[0], 'scalar') for e in table
+#                 if e[0] not in ('dateTime', 'usUnits', 'interval')] + [('wind', 'VECTOR')]
 #
 #schema = {
 #    'table': table,

@@ -215,6 +215,8 @@ log_failure = False
         extraTemp1     = Temperature1
         extraTemp2     = Temperature2
         extraTemp3     = Temperature3
+        lightning_distance     = Lightning Distance
+        lightning_strike_count = Lightning Strikes
 
         # Sensor status indicators
 

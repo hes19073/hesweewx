@@ -403,8 +403,6 @@ class DailySummaries(XType):
         # We cannot use the day summaries if the starting and ending times of the aggregation
         # interval are not on midnight boundaries, and are not the first or last records in the
         # database.
-        if db_manager.first_timestamp is None or db_manager.last_timestamp is None:
-            raise weewx.UnknownAggregation(aggregate_type)
         if not (isStartOfDay(timespan.start) or timespan.start == db_manager.first_timestamp) \
                 or not (isStartOfDay(timespan.stop) or timespan.stop == db_manager.last_timestamp):
             raise weewx.UnknownAggregation(aggregate_type)
@@ -583,11 +581,17 @@ class WindVec(XType):
                 "WHERE dateTime = (SELECT MAX(dateTime) FROM %(table_name)s "
                 "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL)",
         'min': "SELECT %(mag)s, %(dir)s, usUnits FROM %(table_name)s "
-               "WHERE %(mag)s = (SELECT MIN(%(mag)s) FROM %(table_name)s "
-               "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL)",
+               "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL "
+               "ORDER BY %(mag)s ASC LIMIT 1;",
+        # 'min': "SELECT %(mag)s, %(dir)s, usUnits FROM %(table_name)s "
+        #        "WHERE %(mag)s = (SELECT MIN(%(mag)s) FROM %(table_name)s "
+        #        "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL)",
         'max': "SELECT %(mag)s, %(dir)s, usUnits FROM %(table_name)s "
-               "WHERE %(mag)s = (SELECT MAX(%(mag)s) FROM %(table_name)s "
-               "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL)",
+               "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL "
+               "ORDER BY %(mag)s DESC LIMIT 1;",
+        # 'max': "SELECT %(mag)s, %(dir)s, usUnits FROM %(table_name)s "
+        #        "WHERE %(mag)s = (SELECT MAX(%(mag)s) FROM %(table_name)s "
+        #        "WHERE dateTime > %(start)s AND dateTime <= %(stop)s  AND %(mag)s IS NOT NULL)",
     }
     # for types 'avg', 'sum'
     complex_sql_wind = 'SELECT %(mag)s, %(dir)s, usUnits FROM %(table_name)s WHERE dateTime > ? ' \
@@ -683,7 +687,8 @@ class WindVec(XType):
         interpolation_dict = {
             'dir': WindVec.windvec_types[obs_type][1],
             'mag': WindVec.windvec_types[obs_type][0],
-            'start': weeutil.weeutil.startOfDay(timespan.start),
+            #'start': weeutil.weeutil.startOfDay(timespan.start),
+            'start': timespan.start,
             'stop': timespan.stop,
             'table_name': db_manager.table_name
         }
