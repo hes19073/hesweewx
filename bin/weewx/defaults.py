@@ -72,6 +72,7 @@ log_failure = False
         centibar           = %.0f
         cm                 = %.2f
         cm_per_hour        = %.2f
+        count              = %.0f
         degree_C           = %.1f
         degree_F           = %.1f
         degree_compass     = %.0f
@@ -109,6 +110,7 @@ log_failure = False
         centibar          = " cb"
         cm                = " cm"
         cm_per_hour       = " cm/h"
+        count             = " "
         degree_C          =   °C
         degree_F          =   °F
         degree_compass    =   °
@@ -116,7 +118,7 @@ log_failure = False
         hPa               = " hPa"
         inHg              = " inHg"
         inch              = " in"
-        inch_per_hour     = " in/h"
+        inch_per_hour     = " in/hr"
         km                = " km"
         km_per_hour       = " km/h"
         km_per_hour2      = " km/h"
@@ -163,7 +165,7 @@ log_failure = False
 
     # The following section sets the base temperatures used for the
     #  calculation of heating and cooling degree-days.
-    [[[DegreeDays]]]
+    [[DegreeDays]]
 
         # Base temperature for heating days, with unit:
         heating_base = 65, degree_F
@@ -175,7 +177,7 @@ log_failure = False
     # A trend takes a difference across a time period. The following
     # section sets the time period, and how big an error is allowed to
     # still be counted as the start or end of a period.
-    [[[Trend]]]
+    [[Trend]]
 
         time_delta = 10800  # 3 hours
         time_grace = 300    # 5 minutes

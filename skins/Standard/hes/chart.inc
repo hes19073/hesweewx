@@ -91,28 +91,6 @@
 </td>
 </tr>
 <tr>
-<td class="stats_label">  Luftfeuchte (2) (max)/ (min)</td>
-<td class="stats_data">
-  $period1.extraHumid1.max um $period1.extraHumid1.maxtime<br />
-  $period1.extraHumid1.min um $period1.extraHumid1.mintime
-</td>
-<td class="stats_data">
-  $period2.extraHumid1.max um $period2.extraHumid1.maxtime<br />
-  $period2.extraHumid1.min um $period2.extraHumid1.mintime
-</td>
-</tr>
-<tr>
-<td class="stats_label">  Luftfeuchte (3) (max) / (min)</td>
-<td class="stats_data">
-  $period1.extraHumid2.max um $period1.extraHumid2.maxtime<br />
-  $period1.extraHumid2.min um $period1.extraHumid2.mintime
-</td>
-<td class="stats_data">
-  $period2.extraHumid2.max um $period2.extraHumid2.maxtime<br />
-  $period2.extraHumid2.min um $period2.extraHumid2.mintime
-</td>
-</tr>
-<tr>
 <td class="stats_label">  Luftdruck (max) / (min)</td>
 <td class="stats_data">
   $period1.barometer.max um $period1.barometer.maxtime<br />
@@ -655,8 +633,8 @@
     <td>$period1.humidex.max</td>
     <td>$period2.humidex.max</td></tr>
 <tr><td>Wind<br />in Beaufort</td>
-    <td>$period1.beaufort.max</td>
-    <td>$period2.beaufort.max</td></tr>
+    <td>$period1.windSpeed.max.beaufort</td>
+    <td>$period2.windSpeed.max.beaufort</td></tr>
   </tbody>
  </table>
 </div> <!--End class "stats" -->

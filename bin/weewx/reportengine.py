@@ -13,7 +13,6 @@ import ftplib
 import glob
 import logging
 import os.path
-import socket
 import threading
 import time
 import traceback
@@ -214,9 +213,9 @@ class StdReportEngine(threading.Thread):
     def _build_skin_dict(self, report):
         """Find and build the skin_dict for the given report"""
 
-        # Start with the defaults in the defaults module. Because we will be modifying it, we need to make a deep
-        # copy.
-        skin_dict = configobj.ConfigObj(weewx.defaults.defaults.dict())
+        # Start with the defaults in the defaults module. Because we will be modifying it, we need
+        # to make a deep copy.
+        skin_dict = weeutil.config.deep_copy(weewx.defaults.defaults)
 
         # Add the report name:
         skin_dict['REPORT_NAME'] = report
@@ -245,7 +244,9 @@ class StdReportEngine(threading.Thread):
 
         # Now add on the [StdReport][[Defaults]] section, if present:
         if 'Defaults' in self.config_dict['StdReport']:
-            merge_dict = self.config_dict['StdReport']['Defaults'].dict()
+            # Because we will be modifying the results, make a deep copy of the [[Defaults]]
+            # section.
+            merge_dict = weeutil.config.deep_copy(self.config_dict)['StdReport']['Defaults']
             weeutil.config.merge_config(skin_dict, merge_dict)
 
         # Inject any scalar overrides. This is for backwards compatibility. These options should now go
@@ -300,6 +301,7 @@ class FtpGenerator(ReportGenerator):
 
         # determine how much logging is desired
         log_success = to_bool(weeutil.config.search_up(self.skin_dict, 'log_success', True))
+        log_failure = to_bool(weeutil.config.search_up(self.skin_dict, 'log_failure', True))
 
         t1 = time.time()
         try:
@@ -314,24 +316,31 @@ class FtpGenerator(ReportGenerator):
                 port=int(self.skin_dict.get('port', 21)),
                 name=self.skin_dict['REPORT_NAME'],
                 passive=to_bool(self.skin_dict.get('passive', True)),
-                max_tries=int(self.skin_dict.get('max_tries', 3)),
                 secure=to_bool(self.skin_dict.get('secure_ftp', False)),
-                debug=int(self.skin_dict.get('debug', 0)),
-                secure_data=to_bool(self.skin_dict.get('secure_data', True)))
+                debug=weewx.debug,
+                secure_data=to_bool(self.skin_dict.get('secure_data', True)),
+                reuse_ssl=to_bool(self.skin_dict.get('reuse_ssl', False))
+            )
         except KeyError:
             log.debug("ftpgenerator: FTP upload not requested. Skipped.")
             return
 
-        try:
-            n = ftp_data.run()
-        except (socket.timeout, socket.gaierror, ftplib.all_errors, IOError) as e:
-            log.error("ftpgenerator: Caught exception '%s': %s", type(e), e)
-            weeutil.logger.log_traceback(log.error, "        ****  ")
-            return
-
-        if log_success:
-            t2 = time.time()
-            log.info("ftpgenerator: Ftp'd %d files in %0.2f seconds", n, (t2 - t1))
+        max_tries = int(self.skin_dict.get('max_tries', 3))
+        for count in range(max_tries):
+            try:
+                n = ftp_data.run()
+            except ftplib.all_errors as e:
+                log.error("ftpgenerator: (%d): caught exception '%s': %s", count, type(e), e)
+                weeutil.logger.log_traceback(log.error, "        ****  ")
+            else:
+                if log_success:
+                    t2 = time.time()
+                    log.info("ftpgenerator: Ftp'd %d files in %0.2f seconds", n, (t2 - t1))
+                break
+        else:
+            # The loop completed normally, meaning the upload failed.
+            if log_failure:
+                log.error("ftpgenerator: Upload failed")
 
 
 # =============================================================================

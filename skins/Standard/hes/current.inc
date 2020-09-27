@@ -13,6 +13,16 @@
      &nbsp;&nbsp; $decorator_text('tempO', $current.outTemp.raw)&nbsp;&nbsp;&nbsp;($current.outTemp.degree_F)</td>
    </tr>
    <tr>
+    <td class="stats_label">maximale Temperatur<br />&nbsp;</td>
+    <td class="stats_data">$day.outTemp.historical_max
+        im Jahre $day.outTemp.historical_maxtime.format("%Y") </td>
+   </tr>
+   <tr>
+    <td class="stats_label">minimale Temperatur<br />&nbsp;</td>
+    <td class="stats_data">$day.outTemp.historical_min
+        im Jahre $day.outTemp.historical_mintime.format("%Y") </td>
+   </tr>
+   <tr>
     #set $deltaT = $current.outTemp.raw - $current.wetBulb.raw
     #set $DeltaT = "%.1f" % $deltaT + " &deg;C"
     <td class="stats_label">DeltaT<br />Luft Temperaturdifferenz</td>
@@ -22,7 +32,7 @@
     <td class="stats_label">scheinbare<br />Temperatur</td>
     <!-- <td class="stats_data"><b>$current.appTemp</b></td> -->
     <td class="stats_data" style="$decorator_color('heattemp', $current.appTemp.raw)">$current.appTemp 
-     &nbsp;&nbsp; $decorator_text('heattemp', $current.appTemp.raw)&nbsp;&nbsp;&nbsp;($current.appTemp.degree_F)</td>
+     &nbsp;&nbsp;$decorator_text('heattemp', $current.appTemp.raw)&nbsp;&nbsp;&nbsp;($current.appTemp.degree_F)</td>
    </tr>
    <tr>
     <td class="stats_label">Windchill
@@ -34,7 +44,7 @@
     <br />&nbsp;</td>
     <!-- <td class="stats_data">$current.windchill</td> -->
     <td class="stats_data" style="$decorator_color('chill_C', $current.windchill.raw)">$current.windchill
-     &nbsp;&nbsp; $decorator_text('chill_C', $current.windchill.raw)</td>
+     &nbsp;$decorator_text('chill_C', $current.windchill.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Hitzeindex
@@ -46,7 +56,7 @@
     <br />&nbsp;</td>
     <!-- <td class="stats_data">$current.heatindex</td> -->
     <td class="stats_data" style="$decorator_color('heatindex', $current.heatindex.raw)">$current.heatindex 
-     &nbsp;&nbsp; $decorator_text('heatindex', $current.heatindex.raw)</td>
+     &nbsp;$decorator_text('heatindex', $current.heatindex.raw)</td>
    </tr>
    <tr>
     <td class="stats_label">Humidex<br />&nbsp;</td>
@@ -64,7 +74,7 @@
    </tr>
 #if $latest($data_binding='air_binding').inHumidity is not None
    <tr>
-    <td class="stats_label">Luftfeuchte<br />Garten</td>
+    <td class="stats_label">Luftfeuchte<br />AQI²</td>
     <td class="stats_data">$latest($data_binding='air_binding').inHumidity</td>
    </tr>
 #end if
@@ -97,6 +107,10 @@
      &nbsp;&nbsp; $decorator_text('barotrend', $trend.barometer.raw)
     </td>
    </tr>
+ <!--  <tr>
+    <td class="stats_label">Luftdruck<br />Änderungsrate</td>
+    <td class="stats_data">$current.barometerRate</td>
+   </tr> -->
 #if $latest($data_binding='airCar_binding').presAir is not None
    <tr>
     <td class="stats_label">Luftdruck<br />Carport (BMP 180)</td>
@@ -120,7 +134,7 @@
     <td class="stats_data">$current.airDensity</td>
    </tr>
    <tr>
-    <td class="stats_label">Wind<br />&nbsp;</td>
+    <td class="stats_label">Wind<br />&nbsp;</td> <!-- 14.03.2020 Davis Neu -->
     <td class="stats_data" style="$decorator_color('windBof', $current.windSpeed.raw)"><b>$current.windSpeed</b> 
     #if $current.windSpeed.raw == 0.0
         <b>&nbsp;Windstill</b>
@@ -161,13 +175,13 @@
     <td class="stats_label">Niederschlag,<br>der letzten 5 Minuten</td>
     <td class="stats_data">$current.rain</td>
    </tr>
-   <tr>
-    <td class="stats_label">Niederschlag heute<br />seit Mitternacht</td>
-    <td class="stats_data">$day.rain.sum</td>
-  </tr>
   <tr>
     <td class="stats_label">Regenintensität,<br />der letzten 5 Minuten</td>
     <td class="stats_data">$current.rainRate</td>
+  </tr>
+   <tr>
+    <td class="stats_label">Niederschlag heute<br />seit Mitternacht</td>
+    <td class="stats_data">$day.rain.sum</td>
   </tr>
   <tr>
     <td class="stats_label">Regenintensität<br />&nbsp;</td>
@@ -230,49 +244,49 @@
              $latest($data_binding='airCar_binding').tem_A</td>
    </tr>
 #end if
-  #if $day.extraTemp9.has_data
+#if $day.extraTemp9.has_data
   <tr>
    <td class="stats_label">Carport<br />&nbsp;</td>
    <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp9.raw)">$current.extraTemp9</td>
   </tr>
-  #end if
-  #if $day.extraTemp4.has_data
+#end if
+#if $day.extraTemp4.has_data
   <tr>
    <td class="stats_label">Garten<br />&nbsp;</td>
    <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp4.raw)">$current.extraTemp4</td>
   </tr>
-  #end if
-  #if $day.extraTemp8.has_data
+#end if
+#if $day.extraTemp8.has_data
   <tr>
    <td class="stats_label">Schwimmsteg<br />ca. 1,80 m&nbsp;</td>
    <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp8.raw)">$current.extraTemp8</td>
   </tr>
-  #end if
+#end if
   <tr><td>1-Wire OWFS USB<br/>Wassertemperatur</td><td>Seit dem 10.08.2015</td></tr>
-  #if $day.extraTemp6.has_data
+#if $day.extraTemp6.has_data
   <tr>
    <td class="stats_label">Gartenteich <br />Goldfisch</td>
    <td class="stats_data">$current.extraTemp6</td>
   </tr>
-  #end if
-  #if $day.extraTemp1.has_data
+#end if
+#if $day.extraTemp1.has_data
   <tr>
    <td class="stats_label">Teich<br />klein&nbsp;</td>
    <td class="stats_data">$current.extraTemp1</td>
   </tr>
-  #end if
-  #if $day.extraTemp2.has_data
+#end if
+#if $day.extraTemp2.has_data
   <tr>
    <td class="stats_label">Schwimmteich<br />&nbsp;</td>
    <td class="stats_data">$current.extraTemp2</td>
   </tr>
-  #end if
-  #if $day.extraTemp3.has_data
+#end if
+#if $day.extraTemp3.has_data
   <tr>
    <td class="stats_label">Schwimmteich<br />1,80 m Tiefe</td>
    <td class="stats_data">$current.extraTemp3</td>
   </tr>
-  #end if
+#end if
   <tr><td>Sonne<br />&nbsp;</td><td>Seit dem 03.02.2017</td></tr>
   <tr>
    <td class="stats_label">Beleuchtungsstärke<br />(Illuminance)</td>
@@ -285,12 +299,12 @@
      &nbsp;&nbsp; $decorator_text('uv', $current.UV.raw)</td>
    </tr>
    <tr>
-     #if $current.radiation.raw > 0.0 and $current.maxSolarRad.raw > 0.0
-         #set $anteil = $current.radiation.raw * 100 / $current.maxSolarRad.raw
-         #set $anteil = ("{:.2f}".format($anteil));
-     #else
-         #set $anteil = 0.0
-     #end if
+#if $current.radiation.raw > 0.0 and $current.maxSolarRad.raw > 0.0
+    #set $anteil = $current.radiation.raw * 100 / $current.maxSolarRad.raw
+    #set $anteil = ("{:.2f}".format($anteil));
+#else
+    #set $anteil = 0.0
+#end if
     <td class="stats_label">Globalstrahlung<br />&nbsp;</td>
     <td class="stats_data">$current.radiation&nbsp;(das sind&nbsp;$anteil&nbsp;% vom Maximum)</td>
    </tr>
@@ -299,102 +313,102 @@
     <td class="stats_data">$day.sunshineS.sum.hour</td>
    </tr>
    <tr><td>1-Wire OWFS USB<br />Bodentemperatur</td><td>Seit dem 10.08.2015</td></tr>
-  #if $day.extraTemp7.has_data
+#if $day.extraTemp7.has_data
    <tr>
     <td class="stats_label">Boden +100cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp7.raw)">$current.extraTemp7</td>
    </tr>
-  #end if
-  #if $day.extraTemp5.has_data
+#end if
+#if $day.extraTemp5.has_data
    <tr>
     <td class="stats_label">Boden +5cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.extraTemp5.raw)">$current.extraTemp5</td>
    </tr>
-  #end if
-  #if $day.soilTempO1.has_data
+#end if
+#if $day.soilTempO1.has_data
    <tr>
     <td class="stats_label">Boden -5cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTempO1.raw)">$current.soilTempO1</td>
    </tr>
-  #end if
-  #if $day.soilTempO2.has_data
+#end if
+#if $day.soilTempO2.has_data
    <tr>
     <td class="stats_label">Boden -10cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTempO2.raw)">$current.soilTempO2</td>
    </tr>
-  #end if
-  #if $day.soilTempO3.has_data
+#end if
+#if $day.soilTempO3.has_data
    <tr>
     <td class="stats_label">Boden -20cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTempO3.raw)">$current.soilTempO3</td>
    </tr>
-  #end if
-  #if $day.soilTempO4.has_data
+#end if
+#if $day.soilTempO4.has_data
    <tr>
     <td class="stats_label">Boden -50cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTempO4.raw)">$current.soilTempO4</td>
    </tr>
-  #end if
-  #if $day.soilTempO5.has_data
+#end if
+#if $day.soilTempO5.has_data
    <tr>
     <td class="stats_label">Boden -100cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTempO5.raw)">$current.soilTempO5</td>
    </tr>
-  #end if
+#end if
    <tr><td>Davis<br />Bodentemperatur</td><td>Seit dem 03.02.2017</td></tr>
-  #if $day.soilTemp1.has_data
+#if $day.soilTemp1.has_data
    <tr>
     <td class="stats_label">Boden -5cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTemp1.raw)">$current.soilTemp1</td> 
    </tr>
-  #end if
-  #if $day.soilTemp2.has_data
+#end if
+#if $day.soilTemp2.has_data
    <tr>
     <td class="stats_label">Boden -10cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTemp2.raw)">$current.soilTemp2</td>
    </tr>
-  #end if
-  #if $day.soilTemp3.has_data
+#end if
+#if $day.soilTemp3.has_data
    <tr>
     <td class="stats_label">Boden -20cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTemp3.raw)">$current.soilTemp3</td>
    </tr>
-  #end if
-  #if $day.soilTemp4.has_data
+#end if
+#if $day.soilTemp4.has_data
    <tr>
     <td class="stats_label">Boden -50cm<br />&nbsp;</td>
     <td class="stats_data" style="$decorator_color('tempO', $current.soilTemp4.raw)">$current.soilTemp4</td>
    </tr>
-  #end if
+#end if
    <tr><td>Davis<br />Bodenfeuchtigkeit</td><td>Seit dem 03.02.2017</td></tr>
-  #if $day.soilMoist1.has_data
+#if $day.soilMoist1.has_data
    <tr>
     <td class="stats_label">Bodenfeuchte bei<br />-5 cm</td>
     <td class="stats_data" style="$decorator_color('soilmoist', $current.soilMoist1.raw)">$current.soilMoist1
      &nbsp; $decorator_text('soilmoist', $current.soilMoist1.raw)</td>
    </tr>
-  #end if
-  #if $day.soilMoist2.has_data
+#end if
+#if $day.soilMoist2.has_data
    <tr>
     <td class="stats_label">Bodenfeuchte<br />-10 cm&nbsp;</td>
     <td class="stats_data" style="$decorator_color('soilmoist', $current.soilMoist2.raw)">$current.soilMoist2
      &nbsp; $decorator_text('soilmoist', $current.soilMoist2.raw)</td>
    </tr>
-  #end if
-  #if $day.soilMoist3.has_data
+#end if
+#if $day.soilMoist3.has_data
    <tr>
     <td class="stats_label">Bodenfeuchte<br />-20 cm&nbsp;</td>
     <td class="stats_data" style="$decorator_color('soilmoist', $current.soilMoist3.raw)">$current.soilMoist3
      &nbsp; $decorator_text('soilmoist', $current.soilMoist3.raw)</td>
    </tr>
-  #end if
-  #if $day.soilMoist4.has_data
+#end if
+#if $day.soilMoist4.has_data
    <tr>
     <td class="stats_label">Bodenfeuchte<br />-50 cm&nbsp;</td>
     <td class="stats_data" style="$decorator_color('soilmoist', $current.soilMoist4.raw)">$current.soilMoist4
      &nbsp; $decorator_text('soilmoist', $current.soilMoist4.raw)</td>
    </tr>
-  #end if
+#end if
    <tr><td>Davis<br />Blattfeuchtigkeit</td><td>Seit dem 03.02.2017</td></tr>
    <tr>
     <td class="stats_label">Blattfeuchte 1<br />Blick Nord</td>
@@ -509,6 +523,14 @@
    </tr>
    <tr><td>Davis Vantage Pro 2<br />Modell 6163EU</td><td>Seit dem 20.06.2016</td></tr>
    <tr>
+    <td class="stats_label">SenderBatterie<br />&nbsp;</td>
+   #if $current.txBatteryStatus.raw == 0
+       <td><font color='blue'>i.O.</font></td>
+   #else
+       <td><font color='red'>Null</font></td>
+   #end if
+   </tr>
+   <tr>
     <td class="stats_label">Stationsspannung<br />&nbsp;</td>
     <td>$current.consBatteryVoltage</td>
    </tr>
@@ -517,6 +539,19 @@
     <!-- <td>$current.rxCheckPercent</td> -->
     <td class="stats_data" style="$decorator_color('empfang', $current.rxCheckPercent.raw)">$current.rxCheckPercent
      &nbsp; $decorator_text('empfang', $current.rxCheckPercent.raw)</td>
+   </tr>
+   <tr><td>1-Wire OWFS USB<br />Volt</td><td>Seit dem 10.08.2015</td></tr>
+   <tr>
+    <td class="stats_label">USB-Volt<br />&nbsp;</td>
+    <td>$current.heatingVoltage</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Hum-Volt<br />&nbsp;</td>
+    <td>$current.supplyVoltage</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Son-Volt<br />&nbsp;</td>
+    <td>$current.referenceVoltage</td>
    </tr>
   </tbody>
  </table>

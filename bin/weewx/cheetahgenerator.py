@@ -57,13 +57,11 @@ Example:
 
 from __future__ import absolute_import
 
-import copy
 import datetime
 import logging
 import os.path
 import time
 
-import configobj
 import Cheetah.Filters
 import Cheetah.Template
 import six
@@ -76,7 +74,7 @@ import weewx.reportengine
 import weewx.station
 import weewx.tags
 import weewx.units
-from weeutil.config import search_up, accumulateLeaves
+from weeutil.config import search_up, accumulateLeaves, deep_copy
 from weeutil.weeutil import to_bool, to_int, timestamp_to_string
 
 log = logging.getLogger(__name__)
@@ -130,7 +128,8 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         self.setup()
 
         # Make a deep copy of the skin dictionary (we will be modifying it):
-        gen_dict = configobj.ConfigObj(self.skin_dict.dict())
+        gen_dict = deep_copy(self.skin_dict)
+        #gen_dict = configobj.ConfigObj(self.skin_dict.dict())
 
         # Look for options in [CheetahGenerator],
         section_name = "CheetahGenerator"

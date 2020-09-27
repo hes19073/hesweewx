@@ -155,9 +155,6 @@ class ArchiveTable(XType):
                     data_vec.append(agg_vt[0])
 
         else:
-            # Without aggregation. We only know how to get series that are in the database schema:
-            if obs_type not in db_manager.sqlkeys:
-                raise weewx.UnknownType(obs_type)
 
             # No aggregation
             sql_str = "SELECT dateTime, %s, usUnits, `interval` FROM %s " \
@@ -165,20 +162,27 @@ class ArchiveTable(XType):
 
             std_unit_system = None
 
-            for record in db_manager.genSql(sql_str, (startstamp, stopstamp)):
+            # Hit the database. It's possible the type is not in the database, so be prepared
+            # to catch a NoColumnError:
+            try:
+                for record in db_manager.genSql(sql_str, (startstamp, stopstamp)):
 
-                # Unpack the record
-                timestamp, value, unit_system, interval = record
+                    # Unpack the record
+                    timestamp, value, unit_system, interval = record
 
-                if std_unit_system:
-                    if std_unit_system != unit_system:
-                        raise weewx.UnsupportedFeature("Unit type cannot change "
-                                                       "within an aggregation interval.")
-                else:
-                    std_unit_system = unit_system
-                start_vec.append(timestamp - interval * 60)
-                stop_vec.append(timestamp)
-                data_vec.append(value)
+                    if std_unit_system:
+                        if std_unit_system != unit_system:
+                            raise weewx.UnsupportedFeature("Unit type cannot change "
+                                                           "within an aggregation interval.")
+                    else:
+                        std_unit_system = unit_system
+                    start_vec.append(timestamp - interval * 60)
+                    stop_vec.append(timestamp)
+                    data_vec.append(value)
+            except weedb.NoColumnError:
+                # The sql type doesn't exist. Convert to an UnknownType error
+                raise weewx.UnknownType(obs_type)
+
             unit, unit_group = weewx.units.getStandardUnitType(std_unit_system, obs_type,
                                                                aggregate_type)
 
@@ -403,6 +407,8 @@ class DailySummaries(XType):
         # We cannot use the day summaries if the starting and ending times of the aggregation
         # interval are not on midnight boundaries, and are not the first or last records in the
         # database.
+        if db_manager.first_timestamp is None or db_manager.last_timestamp is None:
+            raise weewx.UnknownAggregation(aggregate_type)
         if not (isStartOfDay(timespan.start) or timespan.start == db_manager.first_timestamp) \
                 or not (isStartOfDay(timespan.stop) or timespan.stop == db_manager.last_timestamp):
             raise weewx.UnknownAggregation(aggregate_type)

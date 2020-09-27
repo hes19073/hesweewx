@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your rights.
 #
@@ -23,9 +23,12 @@ import configobj
 
 import weeutil.weeutil
 import weeutil.config
-import weeutil.logger
+#import weeutil.logger
+from weeutil.weeutil import to_bool
 
 major_comment_block = ["", "##############################################################################", ""]
+
+DEFAULT_URL = 'http://acme.com'
 
 # ==============================================================================
 
@@ -203,7 +206,7 @@ def save(config_dict, config_path, backup=False):
     else:
 
         # No existing file or no backup required. Just write.
-        with open(config_path, 'w') as fd:
+        with open(config_path, 'wb') as fd:
             config_dict.write(fd)
         backup_path = None
 
@@ -229,14 +232,13 @@ def modify_config(config_dict, stn_info, logger, debug=False):
     if driver:
         try:
             # Look up driver info:
-            driver_editor, driver_name, driver_version = \
-                load_driver_editor(driver)
+            driver_editor, driver_name, driver_version = load_driver_editor(driver)
         except Exception as e:
             sys.exit("Driver %s failed to load: %s" % (driver, e))
         stn_info['station_type'] = driver_name
         if debug:
-            logger.log('Using %s version %s (%s)' %
-                       (driver_name, driver_version, driver), level=1)
+            logger.log('Using %s version %s (%s)'
+                       % (driver_name, driver_version, driver), level=1)
 
     # Get a driver stanza, if possible
     stanza = None
@@ -285,15 +287,56 @@ def modify_config(config_dict, stn_info, logger, debug=False):
                 config_dict[driver_name][k] = stn_info[driver_name][k]
         # Update station information with stn_info overrides
         for p in ['location', 'latitude', 'longitude', 'altitude']:
-            if stn_info.get(p) is not None:
+            if p in stn_info:
                 if debug:
                     logger.log("Using %s for %s" % (stn_info[p], p), level=2)
                 config_dict['Station'][p] = stn_info[p]
         # Update units display with any stn_info overrides
-        if stn_info.get('units') is not None:
-            if 'StdReport' in config_dict:
-                update_units(config_dict, stn_info.get('units'), logger, debug)
+        if 'units' in stn_info and 'StdReport' in config_dict:
+            update_units(config_dict, stn_info['units'], logger, debug)
 
+        if 'register_this_station' in stn_info \
+                and 'StdRESTful' in config_dict \
+                and 'StationRegistry' in config_dict['StdRESTful']:
+            config_dict['StdRESTful']['StationRegistry']['register_this_station'] \
+                = stn_info['register_this_station']
+
+        if 'station_url' in stn_info and 'Station' in config_dict:
+            if 'station_url' in config_dict['Station']:
+                config_dict['Station']['station_url'] = stn_info['station_url']
+            else:
+                inject_station_url(config_dict, stn_info['station_url'])
+
+
+def inject_station_url(config_dict, url):
+    """Inject the option station_url into the [Station] section"""
+
+    if 'station_url' in config_dict['Station']:
+        # Already injected. Done.
+        return
+
+    # Isolate just the [Station] section. This simplifies what follows
+    station_dict = config_dict['Station']
+
+    # First search for any existing comments that mention 'station_url'
+    for scalar in station_dict.scalars:
+        for ilist, comment in enumerate(station_dict.comments[scalar]):
+            if comment.find('station_url') != -1:
+                # This deletes the (up to) three lines related to station_url that ships
+                # with the standard distribution
+                del station_dict.comments[scalar][ilist]
+                if ilist and station_dict.comments[scalar][ilist - 1].find('specify an URL') != -1:
+                    del station_dict.comments[scalar][ilist - 1]
+                if ilist > 1 and station_dict.comments[scalar][ilist - 2].strip() == '':
+                    del station_dict.comments[scalar][ilist - 2]
+
+    # Add the new station_url, plus comments
+    station_dict['station_url'] = url
+    station_dict.comments['station_url'] \
+        = ['', '    # If you have a website, you may specify an URL']
+
+    # Reorder to match the canonical ordering.
+    reorder_scalars(station_dict.scalars, 'station_url', 'rain_year_start')
 
 # ==============================================================================
 #              Utilities that update and merge ConfigObj objects
@@ -444,7 +487,7 @@ def update_to_v25(config_dict):
     try:
         # V2.5 saw the introduction of the station registry:
         if 'StationRegistry' not in config_dict['StdRESTful']:
-            stnreg_dict = configobj.ConfigObj(StringIO(u"""[StdRESTful]
+            stnreg_dict = configobj.ConfigObj(StringIO("""[StdRESTful]
 
         [[StationRegistry]]
             # Uncomment the following line to register this weather station.
@@ -460,7 +503,7 @@ def update_to_v25(config_dict):
 
             driver = weewx.restful.StationRegistry
 
-    """))
+    """), encoding='utf-8')
             config_dict.merge(stnreg_dict)
     except KeyError:
         pass
@@ -618,7 +661,7 @@ def update_to_v26(config_dict):
     # Support for the WOW uploader was introduced
     try:
         if 'WOW' not in config_dict['StdRESTful']:
-            config_dict.merge(configobj.ConfigObj(StringIO(u"""[StdRESTful]
+            config_dict.merge(configobj.ConfigObj(StringIO("""[StdRESTful]
 
             [[WOW]]
                 # This section is for configuring posts to WOW
@@ -631,7 +674,7 @@ def update_to_v26(config_dict):
                 log_success = True
                 log_failure = True
 
-        """)))
+        """), encoding='utf-8'))
             config_dict['StdRESTful'].comments['WOW'] = ['']
     except KeyError:
         pass
@@ -639,7 +682,7 @@ def update_to_v26(config_dict):
     # Support for the AWEKAS uploader was introduced
     try:
         if 'AWEKAS' not in config_dict['StdRESTful']:
-            config_dict.merge(configobj.ConfigObj(StringIO(u"""[StdRESTful]
+            config_dict.merge(configobj.ConfigObj(StringIO("""[StdRESTful]
 
             [[AWEKAS]]
                 # This section is for configuring posts to AWEKAS
@@ -652,7 +695,7 @@ def update_to_v26(config_dict):
                 log_success = True
                 log_failure = True
 
-        """)))
+        """), encoding='utf-8'))
             config_dict['StdRESTful'].comments['AWEKAS'] = ['']
     except KeyError:
         pass
@@ -733,7 +776,7 @@ def update_to_v30(config_dict):
 
     if 'DataBindings' not in config_dict:
         # Insert a [DataBindings] section. First create it
-        c = configobj.ConfigObj(StringIO(u"""[DataBindings]
+        c = configobj.ConfigObj(StringIO("""[DataBindings]
             # This section binds a data store to a database
 
             [[wx_binding]]
@@ -747,7 +790,7 @@ def update_to_v30(config_dict):
                 # It is *only* used when the database is created.
                 schema = schemas.wview.schema
 
-        """))
+        """), encoding='utf-8')
         # Now merge it in:
         config_dict.merge(c)
         # For some reason, ConfigObj strips any leading comments. Put them back:
@@ -767,7 +810,7 @@ def update_to_v30(config_dict):
 
     # StdWXCalculate is new
     if 'StdWXCalculate' not in config_dict:
-        c = configobj.ConfigObj(StringIO(u"""[StdWXCalculate]
+        c = configobj.ConfigObj(StringIO("""[StdWXCalculate]
     # Derived quantities are calculated by this service.  Possible values are:
     #  hardware        - use the value provided by hardware
     #  software        - use the value calculated by weewx
@@ -781,7 +824,7 @@ def update_to_v30(config_dict):
     heatindex = prefer_hardware
     dewpoint = prefer_hardware
     inDewpoint = prefer_hardware
-    rainRate = prefer_hardware"""))
+    rainRate = prefer_hardware"""), encoding='utf-8')
         # Now merge it in:
         config_dict.merge(c)
         # For some reason, ConfigObj strips any leading comments. Put them back:
@@ -842,11 +885,15 @@ def update_to_v32(config_dict):
         # Set the default [[SQLite]] section. Turn off interpolation first, so the
         # symbol for WEEWX_ROOT does not get lost.
         save, config_dict.interpolation = config_dict.interpolation, False
-        config_dict['DatabaseTypes'] = {
-            'SQLite': {'SQLITE_ROOT': '%(WEEWX_ROOT)s/archive',
-                       'driver': 'weedb.sqlite'}
-        }
-        config_dict['DatabaseTypes'].comments['SQLite'] = ['', '    # Defaults for SQLite databases']
+        # The section must be built step by step so we get the order of the entries correct
+        config_dict['DatabaseTypes'] = {}
+        config_dict['DatabaseTypes']['SQLite'] = {}
+        config_dict['DatabaseTypes']['SQLite']['driver'] = 'weedb.sqlite'
+        config_dict['DatabaseTypes']['SQLite']['SQLITE_ROOT'] = '%(WEEWX_ROOT)s/archive'
+        config_dict['DatabaseTypes'].comments['SQLite'] = \
+            ['', '    # Defaults for SQLite databases']
+        config_dict['DatabaseTypes']['SQLite'].comments['SQLITE_ROOT'] \
+            = "        # Directory in which the database files are located"
         config_dict.interpolation = save
         try:
             root = config_dict['Databases']['archive_sqlite']['root']
@@ -1029,22 +1076,23 @@ def update_to_v39(config_dict):
         std_report_comment = config_dict.comments['StdReport']
 
         if 'Defaults' not in config_dict['StdReport']:
-            defaults_dict = configobj.ConfigObj(StringIO(Defaults))
+            defaults_dict = configobj.ConfigObj(StringIO(DEFAULTS), encoding='utf-8')
             weeutil.config.merge_config(config_dict, defaults_dict)
             reorder_sections(config_dict['StdReport'], 'Defaults', 'RSYNC', after=True)
 
         if 'SeasonsReport' not in config_dict['StdReport']:
-            seasons_options_dict = configobj.ConfigObj(StringIO(SeasonsReport))
+            seasons_options_dict = configobj.ConfigObj(StringIO(SEASONS_REPORT), encoding='utf-8')
             weeutil.config.merge_config(config_dict, seasons_options_dict)
             reorder_sections(config_dict['StdReport'], 'SeasonsReport', 'FTP')
 
         if 'SmartphoneReport' not in config_dict['StdReport']:
-            smartphone_options_dict = configobj.ConfigObj(StringIO(SmartphoneReport))
+            smartphone_options_dict = configobj.ConfigObj(StringIO(SMARTPHONE_REPORT),
+                                                          encoding='utf-8')
             weeutil.config.merge_config(config_dict, smartphone_options_dict)
             reorder_sections(config_dict['StdReport'], 'SmartphoneReport', 'FTP')
 
         if 'MobileReport' not in config_dict['StdReport']:
-            mobile_options_dict = configobj.ConfigObj(StringIO(MobileReport))
+            mobile_options_dict = configobj.ConfigObj(StringIO(MOBILE_REPORT), encoding='utf-8')
             weeutil.config.merge_config(config_dict, mobile_options_dict)
             reorder_sections(config_dict['StdReport'], 'MobileReport', 'FTP')
 
@@ -1085,6 +1133,7 @@ def update_to_v40(config_dict):
     - Fix problems with DegreeDays and Trend in weewx.conf
     - Add new option growing_base
     - Add new option WU api_key
+    - Add options to [StdWXCalculate] that were formerly defaults
     """
 
     # No need to check for the version of weewx for these changes.
@@ -1142,6 +1191,16 @@ def update_to_v40(config_dict):
         config_dict['StdRESTful']['Wunderground'].comments['api_key'] = \
             ["", "If you plan on using wunderfixer, set the following", "to your API key:"]
 
+    # The following types were never listed in weewx.conf and, instead, depended on defaults.
+    if 'StdWXCalculate' in config_dict \
+            and 'Calculations' in config_dict['StdWXCalculate']:
+        config_dict['StdWXCalculate']['Calculations'].setdefault('maxSolarRad', 'prefer_hardware')
+        config_dict['StdWXCalculate']['Calculations'].setdefault('cloudbase', 'prefer_hardware')
+        config_dict['StdWXCalculate']['Calculations'].setdefault('humidex', 'prefer_hardware')
+        config_dict['StdWXCalculate']['Calculations'].setdefault('appTemp', 'prefer_hardware')
+        config_dict['StdWXCalculate']['Calculations'].setdefault('ET', 'prefer_hardware')
+        config_dict['StdWXCalculate']['Calculations'].setdefault('windrun', 'prefer_hardware')
+
     # This section will inject a [Logging] section. Leave it commented out for now,
     # until we gain more experience with it.
 
@@ -1179,7 +1238,7 @@ def update_units(config_dict, unit_system_name, logger=None, debug=False):
         except KeyError:
             # We are missing the [StdReport] / [[Defaults]] / [[[Units]]] / [[[[Groups]]]] section.
             # Create a section, then merge it into the ConfigObj.
-            unit_dict = configobj.ConfigObj(StringIO(UnitDefaults))
+            unit_dict = configobj.ConfigObj(StringIO(UNIT_DEFAULTS), encoding='utf-8')
             weeutil.config.merge_config(config_dict, unit_dict)
 
 
@@ -1206,32 +1265,48 @@ def get_version_info(config_dict):
 
 
 def get_station_info(config_dict):
-    """Extract station info from config dictionary."""
+    """Extract station info from config dictionary.
+
+    Returns:
+        A station_info structure. If a key is missing in the structure, that means no
+        information is available about it.
+    """
     stn_info = dict()
-    if config_dict is not None:
+    if config_dict:
         if 'Station' in config_dict:
-            stn_info['location'] = weeutil.weeutil.list_as_string(config_dict['Station'].get('location'))
-            stn_info['latitude'] = config_dict['Station'].get('latitude')
-            stn_info['longitude'] = config_dict['Station'].get('longitude')
-            stn_info['altitude'] = config_dict['Station'].get('altitude')
+            if 'location' in config_dict['Station']:
+                stn_info['location'] \
+                    = weeutil.weeutil.list_as_string(config_dict['Station']['location'])
+            if 'latitude' in config_dict['Station']:
+                stn_info['latitude'] = config_dict['Station']['latitude']
+            if 'longitude' in config_dict['Station']:
+                stn_info['longitude'] = config_dict['Station']['longitude']
+            if 'altitude' in config_dict['Station']:
+                stn_info['altitude'] = config_dict['Station']['altitude']
             if 'station_type' in config_dict['Station']:
                 stn_info['station_type'] = config_dict['Station']['station_type']
                 if stn_info['station_type'] in config_dict:
                     stn_info['driver'] = config_dict[stn_info['station_type']]['driver']
 
-            # Try to figure out what unit system the user is using. Assume we can't.
-            stn_info['units'] = None
+            # Try to figure out what unit system the user is using.
             try:
                 # First look for a [Defaults] section.
                 stn_info['units'] = get_unit_info(config_dict['StdReport']['Defaults'])
             except KeyError:
-                pass
-            # If that didn't work, look for an override in the [[StandardReport]] section.
-            if stn_info['units'] is None:
+                # If that didn't work, look for an override in the [[StandardReport]] section.
                 try:
                     stn_info['units'] = get_unit_info(config_dict['StdReport']['StandardReport'])
                 except KeyError:
                     pass
+        try:
+            stn_info['register_this_station'] \
+                = config_dict['StdRESTful']['StationRegistry']['register_this_station']
+        except KeyError:
+            pass
+        try:
+            stn_info['station_url'] = config_dict['Station']['station_url']
+        except KeyError:
+            pass
 
     return stn_info
 
@@ -1264,12 +1339,14 @@ def reorder_sections(config_dict, src, dst, after=False):
     # If index raises an exception, we want to fail hard.
     # Find the source section (the one we intend to move):
     src_idx = config_dict.sections.index(src)
+    # Save the key
+    src_key = config_dict.sections[src_idx]
     # Remove it
     config_dict.sections.pop(src_idx)
     # Find the destination
     dst_idx = config_dict.sections.index(dst)
     # Now reorder the attribute 'sections', putting src just before dst:
-    config_dict.sections = config_dict.sections[:dst_idx + bump] + [src] + \
+    config_dict.sections = config_dict.sections[:dst_idx + bump] + [src_key] + \
                            config_dict.sections[dst_idx + bump:]
 
 
@@ -1436,18 +1513,21 @@ def load_driver_editor(driver_module_name):
 # ==============================================================================
 
 def prompt_for_info(location=None, latitude='90.000', longitude='0.000',
-                    altitude=['0', 'meter'], units='metric', **kwargs):
+                    altitude=['0', 'meter'], units='metric',
+                    register_this_station='false',
+                    station_url=DEFAULT_URL, **kwargs):
+    stn_info = {}
     #
     #  Description
     #
     print("Enter a brief description of the station, such as its location.  For example:")
     print("Santa's Workshop, North Pole")
-    loc = prompt_with_options("description", location)
+    stn_info['location'] = prompt_with_options("description", location)
 
     #
     #  Altitude
     #
-    print("Specify altitude, with units 'foot' or 'meter'.  For example:")
+    print("\nSpecify altitude, with units 'foot' or 'meter'.  For example:")
     print("35, foot")
     print("12, meter")
     msg = "altitude [%s]: " % weeutil.weeutil.list_as_string(altitude) if altitude else "altitude: "
@@ -1470,38 +1550,60 @@ def prompt_for_info(location=None, latitude='90.000', longitude='0.000',
 
         if not alt:
             print("Unrecognized response. Try again.")
+    stn_info['altitude'] = alt
 
     #
     # Latitude & Longitude
     #
-    print("Specify latitude in decimal degrees, negative for south.")
-    lat = prompt_with_limits("latitude", latitude, -90, 90)
+    print("\nSpecify latitude in decimal degrees, negative for south.")
+    stn_info['latitude'] = prompt_with_limits("latitude", latitude, -90, 90)
     print("Specify longitude in decimal degrees, negative for west.")
-    lon = prompt_with_limits("longitude", longitude, -180, 180)
+    stn_info['longitude'] = prompt_with_limits("longitude", longitude, -180, 180)
+
+    #
+    # Include in station registry?
+    #
+    default = 'y' if to_bool(register_this_station) else 'n'
+    print("\nYou can register your station on weewx.com, where it will be included")
+    print("in a map. You will need a unique URL to identify your station (such as a")
+    print("website, or WeatherUnderground link).")
+    registry = prompt_with_options("Include station in the station registry (y/n)?",
+                                   default,
+                                   ['y', 'n'])
+    if registry.lower() == 'y':
+        stn_info['register_this_station'] = 'true'
+        while True:
+            station_url = prompt_with_options("Unique URL:", station_url)
+            if station_url == DEFAULT_URL:
+                print("Unique please!")
+            else:
+                stn_info['station_url'] = station_url
+                break
+    else:
+        stn_info['register_this_station'] = 'false'
 
     #
     # Display units. Accept only 'us' or 'metric', where 'metric'
     # is a synonym for 'metricwx'.
     #
-    print("Indicate the preferred units for display: 'metric' or 'us'")
+    print("\nIndicate the preferred units for display: 'metric' or 'us'")
     default = units if units != 'metricwx' else 'metric'
     uni = prompt_with_options("units", default, ['us', 'metric'])
     if uni == 'metric':
         uni = 'metricwx'
+    stn_info['units'] = uni
 
-    return {'location': loc,
-            'altitude': alt,
-            'latitude': lat,
-            'longitude': lon,
-            'units': uni}
+    return stn_info
 
 
 def prompt_for_driver(dflt_driver=None):
     """Get the information about each driver, return as a dictionary."""
+    if dflt_driver is None:
+        dflt_driver = 'weewx.drivers.simulator'
     infos = get_all_driver_infos()
     keys = sorted(infos)
     dflt_idx = None
-    print("Installed drivers include:")
+    print("\nInstalled drivers include:")
     for i, d in enumerate(keys):
         print(" %2d) %-15s %-25s %s" % (i, infos[d].get('driver_name', '?'),
                                         "(%s)" % d, infos[d].get('status', '')))
@@ -1715,7 +1817,7 @@ def get_extension_installer(extension_installer_dir):
 # ==============================================================================
 
 
-SeasonsReport = u"""[StdReport]
+SEASONS_REPORT = """[StdReport]
 
     [[SeasonsReport]]
         # The SeasonsReport uses the 'Seasons' skin, which contains the
@@ -1723,7 +1825,7 @@ SeasonsReport = u"""[StdReport]
         skin = Seasons
         enable = false"""
 
-SmartphoneReport = u"""[StdReport]
+SMARTPHONE_REPORT = """[StdReport]
 
     [[SmartphoneReport]]
         # The SmartphoneReport uses the 'Smartphone' skin, and the images and
@@ -1732,7 +1834,7 @@ SmartphoneReport = u"""[StdReport]
         enable = false
         HTML_ROOT = public_html/smartphone"""
 
-MobileReport = u"""[StdReport]
+MOBILE_REPORT = """[StdReport]
 
     [[MobileReport]]
         # The MobileReport uses the 'Mobile' skin, and the images and files
@@ -1741,7 +1843,7 @@ MobileReport = u"""[StdReport]
         enable = false
         HTML_ROOT = public_html/mobile"""
 
-UnitDefaults = u"""[StdReport]
+UNIT_DEFAULTS = """[StdReport]
 
     ####
 
@@ -1768,7 +1870,7 @@ UnitDefaults = u"""[StdReport]
                 group_temperature  = degree_F             # Options are 'degree_F' or 'degree_C'
 """
 
-Defaults = UnitDefaults + u"""
+DEFAULTS = UNIT_DEFAULTS + """
 
             # The following section sets the formatting for each type of unit.
             [[[[StringFormats]]]]

@@ -76,6 +76,10 @@ class WeeImportFieldError(Exception):
        from an external source.
     """
 
+class WeeImportDecodeError(Exception):
+    """Base class of exceptions thrown when encountering a decode error with an
+       external source.
+    """
 
 # ============================================================================
 #                                class Source
@@ -127,9 +131,6 @@ class Source(object):
         know what records to import.
         """
 
-#        # give our source object some logging abilities
-#        self.wlog = log
-
         # save our WeeWX config dict
         self.config_dict = config_dict
 
@@ -137,7 +138,7 @@ class Source(object):
         # interval, default to 'derive'
         self.interval = import_config_dict.get('interval', 'derive')
         # do we ignore invalid data, default to True
-        self.ignore_invalid_data = tobool(import_config_dict.get('ignore_invalid_data', 
+        self.ignore_invalid_data = tobool(import_config_dict.get('ignore_invalid_data',
                                                                  True))
         # tranche, default to 250
         self.tranche = to_int(import_config_dict.get('tranche', 250))
@@ -363,7 +364,30 @@ class Source(object):
                 if self.verbose:
                     print(_msg)
                 log.info(_msg)
-                _raw_data = self.getRawData(period)
+                try:
+                    _raw_data = self.getRawData(period)
+                except WeeImportIOError as e:
+                    print("**** Unable to load source data for period %d." % self.period_no)
+                    log.info("**** Unable to load source data for period %d." % self.period_no)
+                    print("**** %s" % e)
+                    log.info("**** %s" % e)
+                    print("**** Period %d will be skipped. Proceeding to next period." % self.period_no)
+                    log.info("**** Period %d will be skipped. Proceeding to next period." % self.period_no)
+                    # increment our period counter
+                    self.period_no += 1
+                    continue
+                except WeeImportDecodeError as e:
+                    print("**** Unable to decode source data for period %d." % self.period_no)
+                    log.info("**** Unable to decode source data for period %d." % self.period_no)
+                    print("**** %s" % e)
+                    log.info("**** %s" % e)
+                    print("**** Period %d will be skipped. Proceeding to next period." % self.period_no)
+                    log.info("**** Period %d will be skipped. Proceeding to next period." % self.period_no)
+                    print("**** Consider specifying the source file encoding using the 'source_encoding' config option.")
+                    log.info("**** Consider specifying the source file encoding using the 'source_encoding' config option.")
+                    # increment our period counter
+                    self.period_no += 1
+                    continue
                 _msg = 'Raw import data read successfully for period %d.' % self.period_no
                 if self.verbose:
                     print(_msg)
@@ -789,14 +813,14 @@ class Source(object):
                         try:
                             _temp = float(_row[self.map[_field]['field_name']].strip())
                         except AttributeError:
-                            # the data has not strip() attribute so chances are
+                            # the data has no strip() attribute so chances are
                             # it's a number already
                             if isinstance(_row[self.map[_field]['field_name']], numbers.Number):
                                 _temp = _row[self.map[_field]['field_name']]
                             elif _row[self.map[_field]['field_name']] is None:
                                 _temp = None
                             else:
-                                # we raise the error
+                                # it's not a string and its not a number so raise an error
                                 _msg = "%s: cannot convert '%s' to float at " \
                                        "timestamp '%s'." % (_field,
                                                             _row[self.map[_field]['field_name']],
@@ -806,15 +830,43 @@ class Source(object):
                             # perhaps we have a None, so return None for our field
                             _temp = None
                         except ValueError:
-                            # most likely have non-numeric, non-None data, in 
-                            # this case what we do depends on our 
+                            # most likely have non-numeric, non-None data
+
+                            # if this is a csv import and we are mapping to a
+                            # direction field perhaps we have a string
+                            # representation of a cardinal, intercardinal or
+                            # secondary intercardinal direction that we can
+                            # convert to degrees
+
+                            # set a flag to indicate whether we matched the data to a value
+                            matched = False
+                            if hasattr(self, 'wind_dir_map') and self.map[_field]['units'] == 'degree_compass':
+                                # we have a csv import and we are mapping to a
+                                # direction field
+
+                                # first strip any whitespace and hyphens from
+                                # the data
+                                _stripped = re.sub(r'[\s-]+', '', _row[self.map[_field]['field_name']])
+                                # try to use the data as the key in a dict
+                                # mapping directions to degrees, if there is no
+                                # match we will have None returned
+                                dir_degrees = self.wind_dir_map.get(_stripped.upper())
+                                # if we have a non-None value use it
+                                if dir_degrees is not None:
+                                    _temp = dir_degrees
+                                    # we have a match so set our flag
+                                    matched = True
+                            # if we did not get a match perhaps we can ignore
+                            # the invalid data, that will depend on the
                             # ignore_invalid_data property
-                            if self.ignore_invalid_data:
+                            if not matched and self.ignore_invalid_data:
                                 # we ignore the invalid data so set our result 
                                 # to None
                                 _temp = None
-                            else:
-                                # we raise the error
+                                # set our matched flag
+                                matched = True
+                            # if we did not find a match raise the error
+                            if not matched:
                                 _msg = "%s: cannot convert '%s' to float at " \
                                        "timestamp '%s'." % (_field,
                                                             _row[self.map[_field]['field_name']],
@@ -1031,8 +1083,7 @@ class Source(object):
 
     @staticmethod
     def getRain(last_rain, current_rain):
-        """Determine the rainfall in a period from two cumulative rainfall
-            values.
+        """Determine period rainfall from two cumulative rainfall values.
 
         If the data source provides rainfall as a cumulative value then the
         rainfall in a period is the simple difference between the two values.
@@ -1043,6 +1094,9 @@ class Source(object):
         last_rain > current_rain. Occurs when rain counter was reset (maybe
                                   daily or some other period). Need to return
                                   current_rain.
+        current_rain is None. Could occur if imported rainfall value could not
+                              be converted to a numeric and config option
+                              ignore_invalid_data is set.
 
         Input parameters:
 
@@ -1054,12 +1108,12 @@ class Source(object):
 
         if last_rain is not None:
             # we have a value for the previous period
-            if current_rain >= last_rain:
+            if current_rain is not None and current_rain >= last_rain:
                 # just return the difference
                 return current_rain - last_rain
             else:
-                # we are at at a cumulative reset point so we just want
-                # current_rain
+                # we are at a cumulative reset point or we current_rain is None,
+                # either way we just want current_rain
                 return current_rain
         else:
             # we have no previous rain value so return zero

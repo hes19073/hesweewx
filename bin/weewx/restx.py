@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -129,10 +129,6 @@ class SendError(IOError):
     """Raised when unable to send through a socket."""
 
 
-class CertificateError(Exception):
-    """Raised when there's a problem with an SSL certificate"""
-
-
 # ==============================================================================
 #                    Abstract base classes
 # ==============================================================================
@@ -177,7 +173,7 @@ class RESTThread(threading.Thread):
                  manager_dict=None,
                  post_interval=None, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_certificate=3600,
+                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_ssl=3600,
                  softwaretype="weewx-%s" % weewx.__version__,
                  skip_upload=False):
         """Initializer for the class RESTThread
@@ -223,7 +219,7 @@ class RESTThread(threading.Thread):
           retry_login: How long to wait before retrying a login. Default
           is 3600 seconds (one hour).
           
-          retry_certificate: How long to wait before retrying after an SSL certicate error. Default
+          retry_ssl: How long to wait before retrying after an SSL error. Default
           is 3600 seconds (one hour).
 
           softwaretype: Sent as field "softwaretype in the Ambient post.
@@ -250,7 +246,7 @@ class RESTThread(threading.Thread):
         self.timeout = to_int(timeout)
         self.retry_wait = to_int(retry_wait)
         self.retry_login = to_int(retry_login)
-        self.retry_certificate = to_int(retry_certificate)
+        self.retry_ssl = to_int(retry_ssl)
         self.softwaretype = softwaretype
         self.lastpost = 0
         self.skip_upload = to_bool(skip_upload)
@@ -392,13 +388,14 @@ class RESTThread(threading.Thread):
                 if self.log_failure:
                     _time_str = timestamp_to_string(_record['dateTime'])
                     log.error("%s: Failed to publish record %s: %s" % (self.protocol_name, _time_str, e))
-            except CertificateError as e:
-                if self.retry_certificate:
-                    log.error("%s: Bad SSL certificate (%s); waiting %s minutes then retrying",
-                              self.protocol_name, e, self.retry_certificate / 60.0)
-                    time.sleep(self.retry_certificate)
+            except ssl.SSLError as e:
+                if self.retry_ssl:
+                    log.error("%s: SSL error (%s); waiting %s minutes then retrying",
+                              self.protocol_name, e, self.retry_ssl / 60.0)
+                    time.sleep(self.retry_ssl)
                 else:
-                    log.error("%s: Bad SSL certificate; no retry specified. Terminating", self.protocol_name)
+                    log.error("%s: SSL error (%s); no retry specified. Terminating",
+                              self.protocol_name, e)
                     raise
             except Exception as e:
                 # Some unknown exception occurred. This is probably a serious
@@ -465,13 +462,10 @@ class RESTThread(threading.Thread):
                     # If this is not the first time through, sleep a bit before retrying
                     time.sleep(self.retry_wait)
 
-                try:
-                    # Do a single post. The function post_request() can be
-                    # specialized by a RESTful service to catch any unusual
-                    # exceptions.
-                    _response = self.post_request(request, data)
-                except ssl.CertificateError as e:
-                    raise CertificateError(str(e))
+                # Do a single post. The function post_request() can be
+                # specialized by a RESTful service to catch any unusual
+                # exceptions.
+                _response = self.post_request(request, data)
 
                 if 200 <= _response.code <= 299:
                     # No exception thrown and we got a good response code, but
@@ -532,7 +526,7 @@ class RESTThread(threading.Thread):
         as a GET. [optional]
         """
         # Data might be a unicode string. Encode it first.
-        data_bytes = data.encode() if data else None
+        data_bytes = six.ensure_binary(data) if data is not None else None
         _response = urllib.request.urlopen(request, data=data_bytes, timeout=self.timeout)
         return _response
 
@@ -797,7 +791,7 @@ class AmbientThread(RESTThread):
                  essentials={},
                  post_interval=None, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
-                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_certificate=3600,
+                 timeout=10, max_tries=3, retry_wait=5, retry_login=3600, retry_ssl=3600,
                  softwaretype="weewx-%s" % weewx.__version__,
                  skip_upload=False):
 
@@ -826,7 +820,7 @@ class AmbientThread(RESTThread):
                                             max_tries=max_tries,
                                             retry_wait=retry_wait,
                                             retry_login=retry_login,
-                                            retry_certificate=retry_certificate,
+                                            retry_ssl=retry_ssl,
                                             softwaretype=softwaretype,
                                             skip_upload=skip_upload)
         self.station = station
@@ -1096,8 +1090,8 @@ class StdCWOP(StdRESTful):
 
 
 class CWOPThread(RESTThread):
-    """Concrete class for threads posting from the archive queue,
-    using the CWOP protocol."""
+    """Concrete class for threads posting from the archive queue, using the CWOP protocol. For
+    details on the protocol, see http://www.wxqa.com/faq.html."""
 
     def __init__(self, q, manager_dict,
                  station, passcode, latitude, longitude, station_type,
@@ -1148,7 +1142,9 @@ class CWOPThread(RESTThread):
                                          skip_upload=skip_upload)
         self.station = station
         self.passcode = passcode
-        self.server_list = server_list
+        # In case we have a single server that would likely appear as a string
+        # not a list
+        self.server_list = weeutil.weeutil.option_as_list(server_list)
         self.latitude = to_float(latitude)
         self.longitude = to_float(longitude)
         self.station_type = station_type
@@ -1243,7 +1239,7 @@ class CWOPThread(RESTThread):
 
         # show the packet in the logs for debug
         if weewx.debug >= 2:
-            log.debug('CWOP: packet: %s', _tnc_packet)
+            log.debug("CWOP: packet: '%s'", _tnc_packet.rstrip('\r\n'))
 
         return _tnc_packet
 
@@ -1270,7 +1266,9 @@ class CWOPThread(RESTThread):
                         # Send the login ...
                         self._send(_sock, login, dbg_msg='login')
                         # ... and then the packet
-                        self._send(_sock, tnc_packet, dbg_msg='packet')
+                        response = self._send(_sock, tnc_packet, dbg_msg='tnc')
+                        if weewx.debug >= 2:
+                            log.debug("%s: Response to packet: '%s'", self.protocol_name, response)
                         return
                     finally:
                         _sock.close()
@@ -1358,8 +1356,9 @@ class StdStationRegistry(StdRESTful):
 
         super(StdStationRegistry, self).__init__(engine, config_dict)
 
-        # Extract a copy of the dictionary with the registry options:
-        _registry_dict = accumulateLeaves(config_dict['StdRESTful']['StationRegistry'], max_level=1)
+        _registry_dict = get_site_dict(config_dict, 'StationRegistry', 'register_this_station')
+        if _registry_dict is None:
+            return
 
         # Should the service be run?
         if not to_bool(_registry_dict.pop('register_this_station', False)):
@@ -1482,7 +1481,12 @@ class StationRegistryThread(RESTThread):
         for _key in StationRegistryThread._FORMATS:
             v = record[_key]
             if v is not None:
-                _liststr.append(urllib.parse.quote_plus(StationRegistryThread._FORMATS[_key] % v, '='))
+                # Under Python 2, quote_plus() can only accept strings (no unicode).
+                # If necessary, convert.
+                if isinstance(v, six.string_types):
+                    v = six.ensure_str(v)
+                _liststr.append(urllib.parse.quote_plus(StationRegistryThread._FORMATS[_key] % v,
+                                                        '='))
         _urlquery = '&'.join(_liststr)
         _url = "%s?%s" % (self.server_url, _urlquery)
         return _url
@@ -1627,7 +1631,7 @@ class AWEKASThread(RESTThread):
                  post_interval=300, max_backlog=six.MAXSIZE, stale=None,
                  log_success=True, log_failure=True,
                  timeout=10, max_tries=3, retry_wait=5,
-                 retry_login=3600, retry_certificate=3600, skip_upload=False):
+                 retry_login=3600, retry_ssl=3600, skip_upload=False):
         """Initialize an instances of AWEKASThread.
 
         Parameters specific to this class:
@@ -1671,7 +1675,7 @@ class AWEKASThread(RESTThread):
                                            max_tries=max_tries,
                                            retry_wait=retry_wait,
                                            retry_login=retry_login,
-                                           retry_certificate=retry_certificate,
+                                           retry_ssl=retry_ssl,
                                            skip_upload=skip_upload)
         self.username = username
         # Calculate and save the password hash
@@ -1717,7 +1721,11 @@ class AWEKASThread(RESTThread):
         """Specialized version of format_url() for the AWEKAS protocol."""
 
         # Convert to units required by awekas
-        record = weewx.units.to_METRICWX(in_record)
+        record = weewx.units.to_METRIC(in_record)
+        if 'dayRain' in record and record['dayRain'] is not None:
+            record['dayRain'] *= 10
+        if 'rainRate' in record and record['rainRate'] is not None:
+            record['rainRate'] *= 10
 
         time_tt = time.gmtime(record['dateTime'])
         # assemble an array of values in the proper order

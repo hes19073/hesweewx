@@ -525,12 +525,20 @@ class Vantage(weewx.drivers.AbstractDevice):
     def genLoopPackets(self):
         """Generator function that returns loop packets"""
 
-        while True:
-            # Get LOOP packets in big batches This is necessary because there is
-            # an undocumented limit to how many LOOP records you can request
-            # on the VP (somewhere around 220).
-            for _loop_packet in self.genDavisLoopPackets(200):
-                yield _loop_packet
+        for count in range(self.max_tries):
+            while True:
+                try:
+                    # Get LOOP packets in big batches This is necessary because there is
+                    # an undocumented limit to how many LOOP records you can request
+                    # on the VP (somewhere around 220).
+                    for _loop_packet in self.genDavisLoopPackets(200):
+                        yield _loop_packet
+                except weewx.WeeWxIOError as e:
+                    log.error("LOOP try #%d; error: %s", count + 1, e)
+                    break
+
+        log.error("LOOP max tries (%d) exceeded.", self.max_tries)
+        raise weewx.RetriesExceeded("Max tries exceeded while getting LOOP data.")
 
     def genDavisLoopPackets(self, N=1):
         """Generator function to return N loop packets from a Vantage console
@@ -554,29 +562,15 @@ class Vantage(weewx.drivers.AbstractDevice):
             self.port.send_data(b"LPS %d %d\n" % (self.loop_request, N))
 
         for loop in range(N):
-            for count in range(self.max_tries):
-                try:
-                    loop_packet = self._get_packet()
-                except weewx.WeeWxIOError as e:
-                    log.error("LOOP try #%d; error: %s", count + 1, e)
-                else:
-                    yield loop_packet
-                    break
-            else:
-                log.error("LOOP max tries (%d) exceeded.", self.max_tries)
-                raise weewx.RetriesExceeded("Max tries exceeded while getting LOOP data.")
-
-    def _get_packet(self):
-        """Get a single LOOP packet"""
-        # Fetch a packet...
-        _buffer = self.port.read(99)
-        # ... see if it passes the CRC test ...
-        if crc16(_buffer):
-            raise weewx.CRCError("LOOP buffer failed CRC check")
-        # ... decode it ...
-        loop_packet = self._unpackLoopPacket(_buffer[:95])
-        # .. then return it
-        return loop_packet
+            # Fetch a packet...
+            _buffer = self.port.read(99)
+            # ... see if it passes the CRC test ...
+            if crc16(_buffer):
+                raise weewx.CRCError("LOOP buffer failed CRC check")
+            # ... decode it ...
+            loop_packet = self._unpackLoopPacket(_buffer[:95])
+            # .. then yield it
+            yield loop_packet
 
     def genArchiveRecords(self, since_ts):
         """A generator function to return archive packets from a Davis Vantage station.
@@ -1533,7 +1527,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         archive_record['rxCheckPercent'] = _rxcheck(self.model_type,
                                                     archive_record['interval'],
                                                     self.iss_id,
-                                                    raw_archive_record['wind_samples'])
+                                                    raw_archive_record['number_of_wind_samples'])
 
         for _type in raw_archive_record:
             # Get the mapping function for this type. If there is no such
@@ -1619,7 +1613,7 @@ rec_A_schema =[
     ('date_stamp',              'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
     ('highOutTemp',             'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
     ('rainRate',                'H'), ('barometer',     'H'), ('radiation',  'H'),
-    ('wind_samples',            'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('number_of_wind_samples',  'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
     ('outHumidity',             'B'), ('windSpeed',     'B'), ('windGust',   'B'),
     ('windGustDir',             'B'), ('windDir',       'B'), ('UV',         'B'),
     ('ET',                      'B'), ('invalid_data',  'B'), ('soilMoist1', 'B'),
@@ -1635,7 +1629,7 @@ rec_B_schema = [
     ('date_stamp',             'H'), ('time_stamp',    'H'), ('outTemp',    'h'),
     ('highOutTemp',            'h'), ('lowOutTemp',    'h'), ('rain',       'H'),
     ('rainRate',               'H'), ('barometer',     'H'), ('radiation',  'H'),
-    ('wind_samples',           'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
+    ('number_of_wind_samples', 'H'), ('inTemp',        'h'), ('inHumidity', 'B'),
     ('outHumidity',            'B'), ('windSpeed',     'B'), ('windGust',   'B'),
     ('windGustDir',            'B'), ('windDir',       'B'), ('UV',         'B'),
     ('ET',                     'B'), ('highRadiation', 'H'), ('highUV',     'B'),
@@ -1654,7 +1648,7 @@ rec_types_B, fmt_B = list(zip(*rec_B_schema))
 rec_A_struct = struct.Struct('<' + ''.join(fmt_A))
 rec_B_struct = struct.Struct('<' + ''.join(fmt_B))
 
-def _rxcheck(model_type, interval, iss_id, wind_samples):
+def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
     """Gives an estimate of the fraction of packets received.
     
     Ref: Vantage Serial Protocol doc, V2.1.0, released 25-Jan-05; p42"""
@@ -1666,7 +1660,7 @@ def _rxcheck(model_type, interval, iss_id, wind_samples):
         _expected_packets = 960.0 * interval / float(41 + iss_id - 1)
     else:
         return None
-    _frac = wind_samples * 100.0 / _expected_packets
+    _frac = number_of_wind_samples * 100.0 / _expected_packets
     if _frac > 100.0:
         _frac = 100.0
     return _frac
@@ -1821,8 +1815,8 @@ _loop_map = {
     'soilTemp4'       : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'stormRain'       : _decode_rain,
     'stormStart'      : _loop_date,
-    'sunrise'         : lambda p, k: 3600 * (p[k] // 100) + 60 * (p[k] % 100),
-    'sunset'          : lambda p, k: 3600 * (p[k] // 100) + 60 * (p[k] % 100),
+    'sunrise'         : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
+    'sunset'          : lambda p, k: 3600 * (p[k] / 100) + 60 * (p[k] % 100),
     'THSW'            : lambda p, k: float(p[k]) if p[k] & 0xff != 0xff else None,
     'trendIcon'       : lambda p, k: p[k],
     'txBatteryStatus' : lambda p, k: int(p[k]),
@@ -1850,7 +1844,7 @@ _archive_map = {
     'extraTemp2'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'extraTemp3'     : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'forecastRule'   : lambda p, k: p[k] if p[k] != 193 else None,
-    'highOutTemp'    : lambda p, k: float(p[k] / 10.0) if p[k] != -32768 else None,
+    'highOutTemp'    : lambda p, k : float(p[k] / 10.0) if p[k] != -32768 else None,
     'highRadiation'  : lambda p, k: float(p[k]) if p[k] != 0x7fff else None,
     'highUV'         : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
     'inHumidity'     : lambda p, k: float(p[k]) if p[k] != 0xff else None,
@@ -1878,7 +1872,6 @@ _archive_map = {
     'soilTemp3'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'soilTemp4'      : lambda p, k: float(p[k] - 90) if p[k] != 0xff else None,
     'UV'             : lambda p, k: float(p[k]) / 10.0 if p[k] != 0xff else None,
-    'wind_samples'   : lambda p, k: float(p[k]) if p[k] else None,
     'windDir'        : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,
     'windGust'       : lambda p, k: float(p[k]),
     'windGustDir'    : lambda p, k: float(p[k]) * 22.5 if p[k] != 0xff else None,

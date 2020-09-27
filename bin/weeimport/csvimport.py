@@ -15,8 +15,10 @@ from __future__ import print_function
 
 # Python imports
 import csv
+import io
 import logging
 import os
+
 
 # WeeWX imports
 from . import weeimport
@@ -43,6 +45,17 @@ class CSVSource(weeimport.Source):
     # Define a dict to map CSV fields to WeeWX archive fields. For a CSV import
     # these details are specified by the user in the wee_import config file.
     _header_map = None
+    # define a dict to map cardinal, intercardinal and secondary intercardinal
+    # directions to degrees
+    wind_dir_map = {'N': 0.0, 'NNE': 22.5, 'NE': 45.0, 'ENE': 67.5,
+                    'E': 90.0, 'ESE': 112.5, 'SE': 135.0, 'SSE': 157.5,
+                    'S': 180.0, 'SSW': 202.5, 'SW': 225.0, 'WSW': 247.5,
+                    'W': 270.0, 'WNW': 292.5, 'NW': 315.0, 'NNW': 337.5,
+                    'NORTH': 0.0, 'NORTHNORTHEAST': 22.5, 'NORTHEAST': 45.0, 'EASTNORTHEAST': 67.5,
+                    'EAST': 90.0, 'EASTSOUTHEAST': 112.5, 'SOUTHEAST': 135.0, 'SOUTHSOUTHEAST': 157.5,
+                    'SOUTH': 180.0, 'SOUTHSOUTHWEST': 202.5, 'SOUTHWEST': 225.0, 'WESTSOUTHWEST': 247.5,
+                    'WEST': 270.0, 'WESTNORTHWEST': 292.5, 'NORTHWEST': 315.0, 'NORTHNORTHWEST': 337.5
+                    }
 
     def __init__(self, config_dict, config_path, csv_config_dict, import_config_path, options):
 
@@ -78,6 +91,9 @@ class CSVSource(weeimport.Source):
             self.source = csv_config_dict['file']
         except KeyError:
             raise weewx.ViolatedPrecondition("CSV source file not specified in '%s'." % import_config_path)
+        # get the source file encoding, default to utf-8-sig
+        self.source_encoding = self.csv_config_dict.get('source_encoding',
+                                                        'utf-8-sig')
         # initialise our import field-to-WeeWX archive field map
         self.map = None
         # initialise some other properties we will need
@@ -178,8 +194,14 @@ class CSVSource(weeimport.Source):
 
         # does our source exist?
         if os.path.isfile(self.source):
-            with open(self.source, 'r') as f:
-                _raw_data = f.readlines()
+            # It exists.  The source file may use some encoding, if we can't
+            # decode it raise a WeeImportDecodeError.
+            try:
+                with io.open(self.source, mode='r', encoding=self.source_encoding) as f:
+                    _raw_data = f.readlines()
+            except UnicodeDecodeError as e:
+                # not a utf-8 based encoding, so raise a WeeImportDecodeError
+                raise weeimport.WeeImportDecodeError(e)
         else:
             # if it doesn't we can't go on so raise it
             raise weeimport.WeeImportIOError(

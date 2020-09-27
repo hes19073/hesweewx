@@ -2,7 +2,7 @@
 #encoding UTF-8
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
 ## $Id: index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
-
+## Standard for hes61.de
 <!DOCTYPE html>
 <html lang="de">
  <head>
@@ -61,14 +61,14 @@
 
 #include $Extras.header
 #include $Extras.cwarn
+#include 'index_warn.inc'
+
 
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
   <section>
 
 #include "links_forecast.inc"
-
-##include "dwd_warn.inc"
 
 <div class="hes">
  <div class='hesbox'>
@@ -103,86 +103,30 @@
     </tr>
  #else
     <tr>
+     <td><span class='hes1_m'>&nbsp;</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>&nbsp:</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>&nbsp;</span></td>
+    </tr>
+ #end if
+    <tr>
      <td><span class='hes1_m'>Gestern</span></td>
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$yesterday.outTemp.max</span></td>
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'>$yesterday.outTemp.min</span></td>
     </tr>
- #end if
    </table>
     <hr />
     <!-- <img src="daytemp.png"  width="300" height="180" alt="Temperatur" /> -->
     <img src="daytempklein.png" alt="Temperatur" />
  </div>
 </div> <!-- end Temperatur -->
-  
+
 <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
-#if $current.outTemp.raw < 10.1
-    <tr>
-     <td class='hes1_kopfa'>Windchill</td>
-     <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class='hes1_kopf' colspan="2">Trend</td>
-    </tr>
-    <tr>
-     <td class='hes1_bigval' style="$decorator_color('chill_C', $current.windchill.raw)"></td>
-     <td class='hes1_bigval' colspan='2' ><a href='daywindchill.png' class='popup'>$current.windchill</a></td>
-
- #if $trend.windchill.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
-    #elif $trend.windchill.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class="hes1_vallo">$trend.windchill</td>
-    #elif $trend.windchill.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.windchill</td>
-    #elif $trend.windchill.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class="hes1_valhi">$trend.windchill</td>
-    #end if
-    </tr>
-     <tr>
-      <td><span class='hes1_m'>Gestern</span></td>
-      <td><span class='hes1_m'>max</span></td>
-      <td><span class='temphi'>$yesterday.windchill.max</span></td>
-      <td><span class="hes1_m">min</span></td>
-      <td><span class='templo'>$yesterday.windchill.min</span></td>
-     </tr>
-#elif $current.outTemp.raw > 26.67
-    <tr>
-     <td class='hes1_kopfa'>Hitzeindex</td>
-     <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class='hes1_kopf' colspan="2">Trend</td>
-    </tr>
-    <tr>
-     <td class='hes1_bigval' style="$decorator_color('heatindex', $current.heatindex.raw)"></td>
-     <td class='hes1_bigval' colspan='2' ><a href='dayheatindex.png' class='popup'>$current.heatindex</a></td>
-
- #if $trend.heatindex.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
-    #elif $trend.heatindex.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class="hes1_vallo">$trend.heatindex</td>
-    #elif $trend.heatindex.raw == 0
-       <td class="hes1_trendhi"><b>=</b></td>
-       <td class="hes1_valhi">$trend.heatindex</td>
-    #elif $trend.heatindex.raw > 0
-       <td class="hes1_trendhi"> &#8679;</td>
-       <td class="hes1_valhi">$trend.heatindex</td>
-    #end if
-    </tr>
-     <tr>
-      <td><span class='hes1_m'>Gestern</span></td>
-      <td><span class='hes1_m'>max</span></td>
-      <td><span class='temphi'>$yesterday.heatindex.max</span></td>
-      <td><span class="hes1_m">min</span></td>
-      <td><span class='templo'>$yesterday.heatindex.min</span></td>
-     </tr>
-#else
     <tr>
      <td class='hes1_kopfa'>gefühlt</td>
      <td class='hes1_kopf' colspan='2'>Aktuell</td>
@@ -205,6 +149,7 @@
        <td class="hes1_valhi">$trend.appTemp</td>
     #end if
     </tr>
+    <tr><td colspan='5'>&nbsp;</td></tr>
      <tr>
       <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
@@ -212,18 +157,96 @@
       <td><span class="hes1_m">min</span></td>
       <td><span class='templo'>$yesterday.appTemp.min</span></td>
      </tr>
-#end if
+   </table>
+   <hr />
+   <img src="dayappklein.png" alt="app Temp" />
+ </div>
+</div> <!-- end appTemp -->
+  
+#if $current.outTemp.raw < 10.1
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Windchill</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' style="$decorator_color('chill_C', $current.windchill.raw)"></td>
+     <td class='hes1_bigval' colspan='2' ><a href='daywindchill.png' class='popup'>$current.windchill</a></td>
+
+  #if $trend.windchill.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+  #elif $trend.windchill.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class="hes1_vallo">$trend.windchill</td>
+  #elif $trend.windchill.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.windchill</td>
+  #elif $trend.windchill.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class="hes1_valhi">$trend.windchill</td>
+  #end if
+    </tr>
+    <tr><td colspan='5'>&nbsp;</td></tr>
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.windchill.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.windchill.min</span></td>
+     </tr>
   </table>
     <hr />
-#if $current.outTemp.raw < 10.1
    <img src="daychillklein.png" alt="Windchill" />
-#elif $current.outTemp.raw > 26.67
-   <img src="dayheatklein.png" alt="HitzeIndex" />
-#else
-   <img src="dayappklein.png" alt="app Temp" />
-#end if
  </div>
-</div> <!-- end Windchill  Hitzeindex appTemp -->
+</div> <!-- end Windchill -->
+#end if
+
+
+#if $current.outTemp.raw > 26.67
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Hitzeindex</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' style="$decorator_color('heatindex', $current.heatindex.raw)"></td>
+     <td class='hes1_bigval' colspan='2' ><a href='dayheatindex.png' class='popup'>$current.heatindex</a></td>
+
+  #if $trend.heatindex.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+  #elif $trend.heatindex.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class="hes1_vallo">$trend.heatindex</td>
+  #elif $trend.heatindex.raw == 0
+       <td class="hes1_trendhi"><b>=</b></td>
+       <td class="hes1_valhi">$trend.heatindex</td>
+  #elif $trend.heatindex.raw > 0
+       <td class="hes1_trendhi"> &#8679;</td>
+       <td class="hes1_valhi">$trend.heatindex</td>
+  #end if
+    </tr>
+    <tr><td colspan='5'>&nbsp;</td></tr>
+     <tr>
+      <td><span class='hes1_m'>Gestern</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$yesterday.heatindex.max</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>$yesterday.heatindex.min</span></td>
+     </tr>
+    </table>
+   <hr />
+   <img src="dayheatklein.png" alt="HitzeIndex" />
+  </div>
+ </div> <!-- end Hitzeindex -->
+#end if
 
 <div class="hes">
   <div class='hesbox'>
@@ -256,13 +279,20 @@
     </tr>
     #else
      <tr>
+      <td><span class='hes1_m'>&nbsp;</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>&nbsp;</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>&nbsp;</span></td>
+     </tr>
+#end if
+     <tr>
       <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
       <td><span class='temphi'>$yesterday.dewpoint.max</span></td>
       <td><span class="hes1_m">min</span></td>
       <td><span class='templo'>$yesterday.dewpoint.min</span></td>
      </tr>
-#end if
    </table>
     <hr />
     <img src="daydewklein.png" alt="Taupunkt" />
@@ -318,13 +348,20 @@
     </tr>
     #else
      <tr>
+      <td><span class='hes1_m'>&nbsp;</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>$&nbsp;</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>&nbsp;</span></td>
+     </tr>
+#end if
+     <tr>
       <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
       <td><span class='temphi'>$yesterday.barometer.max.formatted</span></td>
       <td><span class="hes1_m">min</span></td>
       <td><span class='templo'>$yesterday.barometer.min.formatted</span></td>
      </tr>
-#end if
     </table>
      <hr />
     <img src="daybaroklein.png" alt="Luftdruck" />
@@ -365,13 +402,20 @@
     </tr>
     #else
      <tr>
+      <td><span class='hes1_m'>&nbsp;</span></td>
+      <td><span class='hes1_m'>max</span></td>
+      <td><span class='temphi'>&nbsp;</span></td>
+      <td><span class="hes1_m">min</span></td>
+      <td><span class='templo'>&nbsp;</span></td>
+     </tr>
+#end if
+     <tr>
       <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
       <td><span class='temphi'>$yesterday.outHumidity.max</span></td>
       <td><span class="hes1_m">min</span></td>
       <td><span class='templo'>$yesterday.outHumidity.min</span></td>
      </tr>
-#end if
    </table>
     <hr />
     <img src="dayhumidklein.png" alt="Luftfeuchte" />
@@ -406,6 +450,10 @@
        <td colspan='3'>&nbsp;</td>
     #end if
    </tr>
+   <tr>
+    <td colspan='3'>Regensumme Gestern</td>
+    <td colspan='2'>$yesterday.rain.sum</td>
+   </tr>
   </table>
   <hr />
   <img src="dayrainklein.png" alt="Regen" />
@@ -427,10 +475,15 @@
      <td colspan='2'>$day.snowTotal.max</td>
    </tr>
    <tr>
-     <td colspan='2'>
-      <span class='hes1_m'>Schneeprognose</span>
-     </td>
-        <td colspan='3'>&nbsp;</td>
+     <td colspan='2'><span class='hes1_m'>Schneeprognose</span></td>
+     <td colspan='3'>&nbsp;</td>
+   </tr>
+   <tr>
+    <td><span class='hes1_m'>Gestern</span></td>
+    <td><span class='hes1_m'>max</span></td>
+    <td><span class='temphi'>$yesterday.snow.max</span></td>
+    <td><span class="hes1_m">min</span></td>
+    <td><span class='templo'>$yesterday.snow.min</span></td>
    </tr>
   </table>
   <hr />
@@ -489,8 +542,8 @@
      <td style='font-size:100%;padding-left:8px;'>
         <a href='daywinddir.png' class='popup'>$current.windDir.ordinal_compass<br />
      <span style='font-size:100%'>$current.windDir</span></a>
-     </td>
-     <td class='hes1_wind' style='padding-left:8px; font-size:240%;'>
+     </td> <!-- hes1_wind -->
+     <td class='hes1_m' style='padding-left:8px; font-size:220%;'>
      <a href='daywindvec.png' class='popup'>
 #if $current.windDir.raw is None:
       -
@@ -520,7 +573,7 @@
     </tr>
    </table>
     <hr />
-    <img src="daywindklein.png" alt="Wind" style="width:300px; height:160px;"/>
+    <img src="daywindklein.png" alt="Wind" /> <!-- style="width:300px; height:180px;"/> -->
   </div>
 </div> <!-- ende Wind -->
 
@@ -530,9 +583,10 @@
     <tr>
      <td class='hes1_kopfa'>UV-Index</td>
      <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+     <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
     <tr>
-     <td class='hes1_winbo' colspan='2' style="$decorator_color('uv', $current.UV.raw)">
+     <td class='hes1_bigval' colspan='2' style="$decorator_color('uv', $current.UV.raw)">
           $decorator_text('uv', $current.UV.raw)</td>
      <td class='hes1_bigval'><a href='dayuv.png' class='popup'>$current.UV</a></td>
     #if $trend.UV.raw is None
@@ -555,17 +609,24 @@
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$summary.uvIndexMax</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='templo'> $summary.uvIndexMin</span></td>
+     <td><span class='templo'>&nbsp;</span></td>
     </tr>
 #else
+    <tr>
+     <td><span class='hes1_m'>&nbsp;</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>&nbsp;</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>&nbsp;</span></td>
+    </tr>
+#end if
     <tr>
      <td><span class='hes1_m'>Gestern</span></td>
      <td><span class='hes1_m'>max</span></td>
      <td><span class='temphi'>$yesterday.UV.max</span></td>
      <td><span class="hes1_m">min</span></td>
-     <td><span class='templo'>$yesterday.UV.min</span></td>
+     <td><span class='templo'>&nbsp;</span></td>
     </tr>
-#end if
    </table>
    <hr />
    <img src="dayUVklein.png" alt="UV-Index" />
@@ -617,8 +678,8 @@
     #set $sun_minutes = 0
 #end if
     <tr>
-     <td colspan='2'><span class='hes1_m'>Heute Sonnenschein</span></td>
-     <td colspan='3'><span class='hes1_m'>$sun_hours&nbsp;h :&nbsp;$sun_minutes&nbsp;min</span></td>
+     <td class='hes1_m' colspan='2'>Heute Sonnenschein</td>
+     <td class='hes1_m' colspan='3'>$sun_hours&nbsp;h :&nbsp;$sun_minutes&nbsp;min</td>
     </tr>
    </table>
    <hr />
@@ -639,12 +700,12 @@
     <td class='hes1_nam'>Tageslicht</td>
     <td class='hes1_nam'>$daylight_h_str&nbsp;Stunden&nbsp;$daylight_m_str&nbsp;Minuten</td>
  </tr>
-   <tr>
+ <tr>
     <td class='hes1_nam'>Entfernung&nbsp;</td>
     #set $sun_earth = $almanac.sun.earth_distance * 149597870.700
     #set $sonne_erde = locale.format('%.2f', $sun_earth, 1)
     <td class='hes1_nam'>$sonne_erde&nbsp;km</td>
-   </tr>
+ </tr>
  <tr>
     <td class='hes1_nam'>Aufgang&nbsp;&#8679; </td>
     <td class='hes1_nam'>$almanac.sun.rise</td>
@@ -673,6 +734,7 @@
     <td class="hes1_nam">Winter-<br /> sonnenwende</td>
     <td class="hes1_nam">$almanac.next_winter_solstice</td>
   </tr>
+ <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
   <tr>
     <td class="hes1_nam">Ostern</td>
     <td class="hes1_nam">$Easter.format('%d.%m.%Y')</td>
@@ -684,7 +746,8 @@
 <div class='hesSonne'>
  <div class='hesbox'>
   <h3>Sonnenstand</h3>
-  <img src="https://www.timeanddate.com/scripts/sunmap.php?iso=201904T0640" width="600px" height="248px" style="border:1px solid black" alt="Sonnenstand"/>
+  <img src="https://www.timeanddate.com/scripts/sunmap.php?iso=201904T0640" width="620px" height="250px" style="border:1px solid black" alt="Sonnenstand"/>
+   Quelle:<a href = 'https://www.timeanddate.com/weather/@2888316' target='_blank'> www.timeanddate.com</a>
  </div>
 </div> <!-- Sonne die Zweite -->
 
@@ -701,6 +764,16 @@
     </td>
  </tr>
  <tr>
+  <td class='hes1_mon'>$almanac.moon_phase</td>
+  <td class='hes1_mon'>$almanac.moon_fullness %</td>
+ </tr>
+ <tr>
+  <td class='hes1_mon'>Entfernung&nbsp;</td>
+#set $moon_earth = $almanac.moon.earth_distance * 149597870.700
+#set $mond_erde = locale.format('%.2f', $moon_earth, 1)
+  <td class='hes1_mon'>$mond_erde&nbsp;km</td>
+ </tr>
+ <tr>
     <td class='hes1_mon'>Aufgang&nbsp;&#8679;</td>
     <td class='hes1_mon'>$almanac.moon.rise</td>
   </tr>
@@ -712,55 +785,49 @@
     <td class='hes1_mon'>Untergang&nbsp;&#8681;</td>
     <td class='hes1_mon'>$almanac.moon.set</td>
   </tr>
+ <tr>
+  <td class='hes1_mon'>&nbsp;</td>
+  <td class='hes1_mon'>&nbsp;</td>
+ </tr>
+#if $almanac.next_full_moon.raw < $almanac.next_new_moon.raw
   <tr>
-    <td class='hes1_mon'>&nbsp;</td>
-    <td class='hes1_mon'>&nbsp;</td>
+   <td class='hes1_mon'>Vollmond:<br></td>
+   <td class='hes1_mon'>$almanac.next_full_moon</td>
   </tr>
   <tr>
-    <td class='hes1_mon'>$almanac.moon_phase</td>
-    <td class='hes1_mon'>$almanac.moon_fullness %</td>
+   <td class='hes1_mon'>Neumond:</td>
+   <td class='hes1_mon'>$almanac.next_new_moon</td>
+  </tr>
+#else
+  <tr>
+   <td class='hes1_mon'>Neumond:</td>
+   <td class='hes1_mon'>$almanac.next_new_moon</td>
   </tr>
   <tr>
-    <td class='hes1_mon'> Azimut</td>
-    <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.az)</td>
+   <td class='hes1_mon'>Vollmond:</td>
+   <td class='hes1_mon'>$almanac.next_full_moon</td>
+  </tr>
+#end if
+ <tr>
+  <td class='hes1_mon'>&nbsp;</td>
+  <td class='hes1_mon'>&nbsp;</td>
+ </tr>
+  <tr>
+   <td class='hes1_mon'> Azimut</td>
+   <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.az)</td>
   </tr>
   <tr>
-    <td class='hes1_mon'> Altitude</td>
-    <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.alt)</td>
+   <td class='hes1_mon'> Altitude</td>
+   <td class='hes1_mon'>$("%.2f&deg;" % $almanac.moon.alt)</td>
   </tr>
-   <tr>
-    <td class='hes1_mon'>Entfernung&nbsp;</td>
-    #set $moon_earth = $almanac.moon.earth_distance * 149597870.700
-    #set $mond_erde = locale.format('%.2f', $moon_earth, 1)
-    <td class='hes1_mon'>$mond_erde&nbsp;km</td>
-   </tr>
-   <tr>
-    <td class='hes1_mon'>Alter des Mondes:</td>
-    <td class='hes1_mon'>$moonDays&nbsp;Tage</td>
-   </tr>
-   <tr>
-    <td class='hes1_mon'>&nbsp;</td>
-    <td class='hes1_mon'>&nbsp;</td>
-   </tr>
-  #if $almanac.next_full_moon.raw < $almanac.next_new_moon.raw
-   <tr>
-    <td class='hes1_mon'>Vollmond:<br></td>
-    <td class='hes1_mon'>$almanac.next_full_moon</td>
-   </tr>
-   <tr>
-    <td class='hes1_mon'>Neumond:</td>
-    <td class='hes1_mon'>$almanac.next_new_moon</td>
-   </tr>
-  #else
-   <tr>
-    <td class='hes1_mon'>Neumond:</td>
-    <td class='hes1_mon'>$almanac.next_new_moon</td>
-   </tr>
-   <tr>
-    <td class='hes1_mon'>Vollmond:</td>
-    <td class='hes1_mon'>$almanac.next_full_moon</td>
-   </tr>
-  #end if
+ <tr>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+ </tr>
+  <tr>
+   <td class='hes1_mon'>Alter des Mondes:</td>
+   <td class='hes1_mon'>$moonDays&nbsp;Tage</td>
+  </tr>
   <!--  <tr>
     <td class='hes1_mon'>&nbsp;</td>
     <td class='hes1_mon'>&nbsp;</td>
@@ -779,8 +846,18 @@
    <td class="re_data"> $current.cloudbase (ASL)</td>
   </tr>
   <tr>
-   <td class="re_data">Temperatur gefühlt:</td>
-   <td class="re_data"> $current.appTemp</td>
+    <td>Wasserbilanz&nbsp;$current.dateTime.format("%Y")</td>
+    #set $wasser_year = $year.rain.sum.raw - $year.ET.sum.raw
+    #set $WasserYear = ("{:.2f}".format($wasser_year));
+    #if $wasser_year < 0.0
+    <td class="stats_data" style="background-color: coral">$WasserYear&nbsp;mm</td>
+    #else
+    <td class="stats_data" style="background-color: limegreen">$WasserYear&nbsp;mm</td>
+    #end if
+  </tr>
+  <tr>
+   <td class="re_data">&nbsp;</td>
+   <td class="re_data">&nbsp;</td>
   </tr>
   <tr>
    <td class="re_data">THW-Index:</td>
@@ -805,9 +882,14 @@
   <tr>
    <td>Wachstumstage Monat</td>
    <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+  </tr>
   <tr>
    <td>Wachstumstage Jahr</td>
    <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+  </tr>
+  <tr>
+   <td class='re_data'>&nbsp;</td>
+   <td class='re_data'>&nbsp;</td>
   </tr>
   <tr>
    <td class='re_data'>VantagePro2 Empfang</td>
@@ -825,6 +907,10 @@
    <td class='re_data'>VantagePro2 Console</td>
    <td class='re_data'>$current.consBatteryVoltage</td>
   </tr>
+  <tr>
+   <td class='re_data'>&nbsp;</td>
+   <td class='re_data'>&nbsp;</td>
+  </tr>
 #if len($day00) > 3
   <tr>
    <td class='re_data'>Heute</td>
@@ -835,10 +921,48 @@
  </div>
 </div> <!-- end werte  -->
 
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Regen Radar</h3>
+  <a href='$Extras.radar_local_img'>
+  <img src='$Extras.radar_local_img' width="300" height="300" alt="WetterRadar" /></a>
+  Quelle:<a href = 'https://www.dwd.de/DE/Home/home_node.html' target='_blank'> DWD</a>
+ </div>
+</div> <!-- end dwd.de wetterRadar -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>ISS-Überflug</h3>
+  <a href="http://www.heavens-above.com/">
+  <img src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=300&height=300&satid=25544" width="250" height="250" alt="ISS" /></a>
+  <hr />
+  <p>Zeit: $iss_time : Dauer: $duration&nbsp;s<br>
+     Zeit: $iss_time_n : Dauer: $duration_n&nbsp;s</p>
+ </div>
+</div> <!-- end ISS -->
+
+ <div class="hes">
+ <div class='hesbox'>
+  <h3>Wetterwarnung</h3>
+  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn"> 
+  <!-- <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html"> -->
+  <!-- new view-source:https://wettwarn.de/txt/LPW.html -->
+ <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
+ </div>
+</div>  <!-- end dwd.de wetter -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <h3>Wetterwarnung M-V</h3>
+  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn">
+  <img src="https://www.dwd.de/DWD/warnungen/warnapp_gemeinden/json/warnungen_gemeinde_map_mvp.png" width="300" height="400" alt="WetterWarn" /></a>
+ </div>
+</div> <!-- end dwd.de Landkreis LUP wetter -->
+
 #if $Extras.has_key('earthquake_enabled') and $Extras.earthquake_enabled == '1'
 <div class="hes">
  <div class='hesbox'>
-  <h3>Erdbeben</h3><p> (Radius 1000km) </p>
+  <h3>Erdbeben</h3><p> (Radius ca. 1000km) </p>
    <!-- Earthquake data -->
   <table>
   <tr>
@@ -869,84 +993,52 @@
 
 <div class="hes">
  <div class='hesbox'>
-  <h3>Regen Radar</h3>
-  <a href='$Extras.radar_local_img'>
-  <img src='$Extras.radar_local_img' width="300" height="300" alt="WetterRadar" /></a>
+  <h3>Weather365</h3>
+  <p>
+ <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="750" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
+    <p>Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie können die eingebettete Seite über den folgenden Verweis aufrufen: 
+        <a href="http://www.weather365.net"> WEATHER365.net </a></p> </iframe>
+  </p>
  </div>
-</div> <!-- end dwd.de wetterRadar -->
+</div> <!-- end weather365_net  -->
 
 <div class="hes">
  <div class='hesbox'>
-  <h3>ISS-Überflug</h3>
-  <a href="http://www.heavens-above.com/">
-  <img src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=300&height=300&satid=25544" width="250" height="250" alt="ISS" /></a>
-  <hr />
-  <p>Zeit: $iss_time : Dauer: $duration&nbsp;s<br>
-     Zeit: $iss_time_n : Dauer: $duration_n&nbsp;s</p>
+  <h3>Bekannt bei</h3>
+  #include "bekannt.inc"
  </div>
-</div> <!-- end ISS -->
+</div> <!-- end bekannt -->
 
-<!-- <div class="hes">
- <div class='hesbox'>
-  <h3>Wetterwarnung</h3>
-  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn"> -->
-  <!-- <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html"> -->
-  <!-- new view-source:https://wettwarn.de/txt/LPW.html -->
-<!-- <img src="http://www.dwd.de/DWD/warnungen/warnapp/json/warning_map.png" width="300" height="400" alt="WetterWarn" /></a>
- </div>
-</div> --> <!-- end dwd.de wetter -->
-
-<div class="hes">
- <div class='hesbox'>
-  <h3>Wetterwarnung</h3>
-  <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn">
-  <img src="https://www.dwd.de/DWD/warnungen/warnapp_gemeinden/json/warnungen_gemeinde_map_mvp.png" width="300" height="400" alt="WetterWarn" /></a>
- </div>
-</div> <!-- end dwd.de Landkreis LUP wetter -->
-
-<div class="hes">
- <div class='hesbox'>
-  <table><tr><td>
- <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="210" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
-    <p>Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie können die eingebettete Seite über den folgenden Verweis aufrufen: <a href="http://www.weather365.net"> WEATHER365.net </a></p> </iframe>
-  </td></tr></table>
- </div>
-</div> <!-- end weather365_net -->
 
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'> OWFS </td>
-   </tr>
-   <tr>
-     <td>4x Wassertemperatur-Sensor</td>
-   </tr>
-   <tr>
-     <td>5x Bodentemperatur-Sensor</td>
-   </tr>
-   <tr>
-     <td><a href='indexOWFS.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'> OWFS </td></tr>
+   <tr><td>4x Lufttemperatur-Sensor</td></tr>
+   <tr><td>5x Bodentemperatur-Sensor</td></tr>
+   <tr><td><a href='indexOWFS.html'>weiter</a></td></tr>
   </table>
  </div>
-</div> <!-- end owfs -->
+</div> <!-- end owfs Boden -->
 
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'>Davis Sensorstation 6345</td>
-   </tr>
-   <tr>
-     <td>2x Blattfeuchte/-temperatur-Sensor</td>
-   </tr>
-   <tr>
-     <td>4x Bodenfeuchte/-temperatur-Sensor</td>
-   </tr>
-   <tr>
-     <td><a href='index1.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'> Gartenteiche </td></tr>
+   <tr><td>4x Wassertemperatur-Sensor</td></tr>
+   <tr><td>&nbsp;</td></tr>
+   <tr><td><a href='index2.html'>weiter</a></td></tr>
+  </table>
+ </div>
+</div> <!-- end owfs Teich -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Davis Sensorstation 6345</td></tr>
+   <tr><td>2x Blattfeuchte/-temperatur-Sensor</td></tr>
+   <tr><td>4x Bodenfeuchte/-temperatur-Sensor</td></tr>
+   <tr><td><a href='index1.html'>weiter</a></td></tr>
   </table>
  </div>
 </div> <!-- end Davis -->
@@ -954,18 +1046,10 @@
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'>Air Sensoren</td>
-   </tr>
-   <tr>
-     <td>2.5 ppm Sensor</td>
-   </tr>
-   <tr>
-     <td>10 ppm Sensor</td>
-   </tr>
-   <tr>
-     <td><a href='indexAir.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'>Air Sensoren</td></tr>
+   <tr><td>2.5 ppm Sensor</td></tr>
+   <tr><td>10 ppm Sensor</td></tr>
+   <tr><td><a href='indexAir.html'>weiter</a></td></tr>
   </table>
  </div>
 </div> <!-- end Air -->
@@ -973,37 +1057,21 @@
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'>Radioaktivität</td>
-   </tr>
-   <tr>
-     <td>GQ GMC-300E</td>
-   </tr>
-   <tr>
-     <td>Geigerzähler</td>
-   </tr>
-   <tr>
-     <td><a href='indexRad.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'>Radioaktivität</td></tr>
+   <tr><td>GQ GMC-300E</td></tr>
+   <tr><td>AS 3935 Blitz</td></tr>
+   <tr><td><a href='indexRad.html'>weiter</a></td></tr>
   </table>
  </div>
-</div> <!-- end Rad -->
+</div> <!-- end Rad Blitz -->
 
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'>Wachstum GDD</td>
-   </tr>
-   <tr>
-     <td>Heating Degree Day</td>
-   </tr>
-   <tr>
-     <td>Cooling Degree Day</td>
-   </tr>
-   <tr>
-     <td><a href='index3.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'>Wachstum GDD</td></tr>
+   <tr><td>Wachstumsgradtage</td></tr>
+   <tr><td>Apfelwickler</td></tr>
+   <tr><td><a href='index3.html'>weiter</a></td></tr>
   </table>
  </div>
 </div> <!-- end GDD -->
@@ -1025,13 +1093,6 @@
     <a href="http://info.flagcounter.com/Qo1g"><img src="http://s11.flagcounter.com/count/Qo1g/bg_FFFFFF/txt_000000/border_CCCCCC/columns_3/maxflags_12/viewers_0/labels_0/pageviews_0/flags_0/" alt="Flag Counter"></a>
  </div>
 </div> <!-- end counter -->
-
-<div class="hes">
- <div class='hesbox'>
-  <h3>Bekannt bei</h3>
-  #include "bekannt.inc"
- </div>
-</div> <!-- end bekannt -->
 
 </section >
 

@@ -10,40 +10,35 @@
   <h3>Station</h3>
   <table class="about">
     <tr>
-      <td class="label">Weewx seit:</td>
+      <td class="label"><b>Weewx seit:</b></td>
       <td class="data">$year00</td>
     </tr>
-
     <tr>
       <td class="label">Hardware</td>
       <td class="data">$station.hardware</td>
     </tr>
     <tr>
       <td class="label">Hardware</td>
-      <td class="data">6345 CSOV</td>
+      <td class="data">Davis Station 6345 CSOV</td>
     </tr>
     <tr>
       <td class="label">Hardware</td>
-      <td class="data">DS18B20</td>
+      <td class="data">Temp.-Sensor DS18B20</td>
     </tr>
     <tr>
       <td class="label">Hardware</td>
-      <td class="data">GQ GMC-300E</td>
+      <td class="data">Geiger-Zähler GQ GMC-300E</td>
     </tr>
     <tr>
       <td class="label">Hardware</td>
-      <td class="data">Blitz AS3935</td>
+      <td class="data">Blitz-Sensor AS3935</td>
     </tr>
     <tr>
       <td class="label">Hardware</td>
-      <td class="data">PM 2.5 SDS011</td>
+      <td class="data">Feinstaubsensor SDS011</td>
     </tr>
     <tr>
-      <td class="label">Software</td>
-      <td class="data">WeeWX $station.version</td>
-    </tr>
-    <tr>
-      <td class="label">Start:</td>
+      <td class="label">Inbetriebnahme:</td>
       <td class="data">$start_time</td>
     </tr>
     <tr>
@@ -60,23 +55,28 @@
     </tr>
     <tr>
      <td class="label">Python</td>
-     <td class="label" bgcolor="red">$weePython</td>
+     <td class="label">$weePython</td>
     </tr>
     <tr>
       <td class="label">Platform</td>
       <td class="data">$weePlatform</td>
     </tr>
     <tr>
+      <td class="label">Software</td>
+      <td class="data">WeeWX-Version: $station.version</td>
+    </tr>
+   <tr><td colspan='2'>&nbsp;</td></tr>
+    <tr>
       <td class="label"><b>Erweiterung</b></td>
       <td class="data"><i>Version</i></td>
     </tr>
     <tr>
-      <td class="label">Davis Forecast:</td>
-      <td class="data">wd wsupp 1.2.0b1</td>
+      <td class="label">Berechnungen:</td>
+      <td class="data">WD 3.0.1</td>
     </tr>
     <tr>
       <td class="label">Forecast:</td>
-      <td class="data">3.3.0</td>
+      <td class="data">3.4.0</td>
     </tr>
     <tr>
       <td class="label">ComputerMonitor</td>
@@ -84,19 +84,19 @@
     </tr>
     <tr>
       <td class="label">OWFS version:</td>
-      <td class="data">0.20</td>
+      <td class="data">0.22</td>
     </tr>
     <tr>
       <td class="label">AS3935 Service:</td>
-      <td class="data">as3935-0.6</td>
+      <td class="data">0.6</td>
     </tr>
     <tr>
       <td class="label">Astro version:</td>
-      <td class="data">wd 1.2.0b1</td>
+      <td class="data">WD Astro 2.0.0</td>
     </tr>
     <tr>
       <td class="label">windguru:</td>
-      <td class="data">0.1</td>
+      <td class="data">0.2</td>
     </tr>
     <tr>
       <td class="label">windfinder:</td>
@@ -104,27 +104,55 @@
     </tr>
     <tr>
       <td class="label">wetter:</td>
-      <td class="data">0.5</td>
+      <td class="data">0.6</td>
     </tr>
     <tr>
       <td class="label">wcloud:</td>
-      <td class="data">0.7</td>
+      <td class="data">0.13</td>
     </tr>
     <tr>
       <td class="label">snowhes:</td>
       <td class="data">0.2</td>
     </tr>
-    <!-- <tr>
+    <tr>
       <td class="label">DWD Pollen</td>
-      <td class="data">0.3</td>
-    </tr> -->
+      <td class="data">3.0.1</td>
+    </tr>
     <tr>
       <td class="label">DWD Vorschau</td>
-      <td class="data">0.5</td>
+      <td class="data">3.0.5</td>
     </tr>
     <tr>
       <td class="label">Radioaktivität</td>
-      <td class="data">0.2</td>
+      <td class="data">3.0.2</td>
+    </tr>
+    <tr>
+      <td class="label">Cydia Pomonella</td>
+      <td class="data">3.0.2</td>
+    </tr>
+    <tr>
+      <td class="label">Wachstumsgradtag</td>
+      <td class="data">3.0.2</td>
+    </tr>
+    <tr>
+      <td class="label">Grünland Temp.Summe</td>
+      <td class="data">3.0.2</td>
+    </tr>
+    <tr>
+      <td class="label">Prognose AerisWeather</td>
+      <td class="data">3.0.1</td>
+    </tr>
+    <tr>
+      <td class="label">Wetterwarnung Aeris</td>
+      <td class="data">3.0.1</td>
+    </tr>
+    <tr>
+      <td class="label">Wetterwarnung DWD</td>
+      <td class="data">3.0.1</td>
+    </tr>
+    <tr>
+      <td class="label">Air Quality Aeris</td>
+      <td class="data">3.0.1</td>
     </tr>
   </table>
 </div>

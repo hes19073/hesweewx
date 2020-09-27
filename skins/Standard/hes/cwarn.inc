@@ -1,7 +1,7 @@
 #encoding UTF-8
 ## cwarn.inc 2015-02-23 18:24:18Z hes $
 
-<p>&nbsp;</p>
+
 #if $current.outTemp.raw is not None
    #if $current.outTemp.raw > 26.7
    <div id="fzeie">

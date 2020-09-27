@@ -23,6 +23,7 @@ from datetime import datetime
 import weewx.units
 from weewx.units import CtoK, CtoF, FtoC, mph_to_knot, kph_to_knot, mps_to_knot
 from weewx.units import INHG_PER_MBAR, METER_PER_FOOT, METER_PER_MILE, MM_PER_INCH
+from weewx.units import ValueTuple, mps_to_mph, kph_to_mph
 
 log = logging.getLogger(__name__)
 
@@ -32,14 +33,14 @@ METER_PER_FOOT = 0.3048
 METER_PER_MILE = 1609.34
 MM_PER_INCH = 25.4
 
-def mps_to_mph(x):
-    return x * 3600.0 / METER_PER_MILE
+#def mps_to_mph(x):
+#    return x * 3600.0 / METER_PER_MILE
 
-def kph_to_mph(x):
-    return x * 1000.0 / METER_PER_MILE
+#def kph_to_mph(x):
+#    return x * 1000.0 / METER_PER_MILE
 
-def degtorad(x):
-    return x * math.pi / 180.0
+#def degtorad(x):
+#    return x * math.pi / 180.0
 
 def dewpointF(T, R):
     """Calculate dew point.
@@ -51,11 +52,11 @@ def dewpointF(T, R):
     Returns: Dewpoint in Fahrenheit
     Examples:
 
-    >>> print "%.1f" % dewpointF(68, 50)
+    >>> print("%.1f" % dewpointF(68, 50))
     48.7
-    >>> print "%.1f" % dewpointF(32, 50)
+    >>> print("%.1f" % dewpointF(32, 50))
     15.5
-    >>> print "%.1f" % dewpointF(-10, 50)
+    >>> print("%.1f" % dewpointF(-10, 50))
     -23.5
     """
 
@@ -130,10 +131,9 @@ def windchillC(T_C, V_kph):
 
     return FtoC(WcF) if WcF is not None else None
 
-
 def heatindexF(T, R):
     """Calculate heat index.
-    http://www.nws.noaa.gov/om/heat/heat_index.shtml
+    https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
 
     T: Temperature in Fahrenheit
 
@@ -141,32 +141,40 @@ def heatindexF(T, R):
 
     Returns heat index in Fahrenheit
 
-    Examples:
+    Examples (Expected values obtained from https://www.wpc.ncep.noaa.gov/html/heatindex.shtml):
 
-    >>> print heatindexF(75.0, 50.0)
-    75.0
-    >>> print heatindexF(80.0, 50.0)
-    80.8029049
-    >>> print heatindexF(80.0, 95.0)
-    86.3980618
-    >>> print heatindexF(90.0, 50.0)
-    94.5969412
-    >>> print heatindexF(90.0, 95.0)
-    126.6232036
+    >>> print("%0.0f" % heatindexF(75.0, 50.0))
+    75
+    >>> print("%0.0f" % heatindexF(80.0, 50.0))
+    81
+    >>> print("%0.0f" % heatindexF(80.0, 95.0))
+    88
+    >>> print("%0.0f" % heatindexF(90.0, 50.0))
+    95
+    >>> print("%0.0f" % heatindexF(90.0, 95.0))
+    127
 
     """
+
     if T is None or R is None:
         return None
 
-    # Formula only valid for temperatures over 80F:
-    if T < 80.0 or R < 40.0:
-        return T
+    # Use simplified formula
+    hi_F = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (R * 0.094))
 
-    hi_F = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R - 6.83783e-3 * T ** 2 \
-           - 5.481717e-2 * R ** 2 + 1.22874e-3 * T ** 2 * R + 8.5282e-4 * T * R ** 2 \
-           - 1.99e-6 * T ** 2 * R ** 2
-    if hi_F < T:
-        hi_F = T
+    # Apply full formula if the above, averaged with temperature, is greater than 80F:
+    if (hi_F + T) / 2.0 >= 80.0:
+        hi_F = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R \
+               - 6.83783e-3 * T ** 2 - 5.481717e-2 * R ** 2 + 1.22874e-3 * T ** 2 * R \
+               + 8.5282e-4 * T * R ** 2 - 1.99e-6 * T ** 2 * R ** 2
+        # Apply an adjustment for low humidities
+        if R < 13 and 80 < T < 112:
+            adjustment = ((13 - R) / 4.0) * math.sqrt((17 - abs(T - 95.)) / 17.0)
+            hi_F = hi_F - adjustment
+        # Apply an adjustment for high humidities
+        elif R > 85 and 80 <= T < 87:
+            adjustment = ((R - 85) / 10.0) * ((87 - T) / 5.0)
+            hi_F = hi_F + adjustment
     return hi_F
 
 
@@ -181,7 +189,6 @@ def heatindexC(T_C, R):
 def heating_degrees(t, base):
     return max(base - t, 0) if t is not None else None
 
-
 def cooling_degrees(t, base):
     return max(t - base, 0) if t is not None else None
 
@@ -191,9 +198,9 @@ def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     inHg and the altitude in feet.
 
     Examples:
-    >>> print("%.2f" % altimeter_pressure_US(28.0, 0.0))
+    >>> print "%.2f" % altimeter_pressure_US(28.0, 0.0)
     28.00
-    >>> print("%.2f" % altimeter_pressure_US(28.0, 1000.0))
+    >>> print "%.2f" % altimeter_pressure_US(28.0, 1000.0)
     29.04
     """
     if SP_inHg is None or Z_foot is None:
@@ -209,9 +216,9 @@ def altimeter_pressure_Metric(SP_mbar, Z_meter, algorithm='aaASOS'):
     pressure.
 
     Examples:
-    >>> print("%.1f" % altimeter_pressure_Metric(948.08, 0.0))
+    >>> print "%.1f" % altimeter_pressure_Metric(948.08, 0.0)
     948.2
-    >>> print("%.1f" % altimeter_pressure_Metric(948.08, 304.8))
+    >>> print "%.1f" % altimeter_pressure_Metric(948.08, 304.8)
     983.4
     """
     if SP_mbar is None or Z_meter is None:
@@ -444,13 +451,13 @@ def humidexC(t_C, rh):
     rh - relative humidity [0-100]
 
     Examples:
-    >>> print("%.2f" % humidexC(30.0, 80.0))
+    >>> print "%.2f" % humidexC(30.0, 80.0)
     43.64
-    >>> print("%.2f" % humidexC(30.0, 20.0))
+    >>> print "%.2f" % humidexC(30.0, 20.0)
     30.00
-    >>> print("%.2f" % humidexC(0, 80.0))
+    >>> print "%.2f" % humidexC(0, 80.0)
     0.00
-    >>> print(humidexC(30.0, None))
+    >>> print humidexC(30.0, None)
     None
     """
     try:
@@ -578,7 +585,7 @@ def equation_of_time(doy):
     """Equation of time in minutes. Plus means sun leads local time.
 
     Example (1 October):
-    >>> print("%.4f" % equation_of_time(274))
+    >>> print "%.4f" % equation_of_time(274)
     0.1889
     """
     b = 2 * math.pi * (doy - 81) / 364.0
@@ -595,9 +602,9 @@ def hour_angle(t_utc, longitude, doy):
     Returns hour angle in radians. 0 <= omega < 2*pi
 
     Example:
-    >>> print("%.4f radians" % hour_angle(15.5, -16.25, 274))
+    >>> print "%.4f radians" % hour_angle(15.5, -16.25, 274)
     0.6821 radians
-    >>> print("%.4f radians" % hour_angle(0, -16.25, 274))
+    >>> print "%.4f radians" % hour_angle(0, -16.25, 274)
     2.9074 radians
     """
     Sc = equation_of_time(doy)
@@ -616,7 +623,6 @@ def solar_declination(doy):
     """
     return 0.409 * math.sin(2.0 * math.pi * doy / 365 - 1.39)
 
-
 def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     """Extraterrestrial radiation. Radiation at the top of the atmosphere
 
@@ -631,8 +637,8 @@ def sun_radiation(doy, latitude_deg, longitude_deg, tod_utc, interval):
     Returns the (average?) solar radiation over the time interval in MJ/m^2/hr
 
     Example:
-    >>> print("%.3f" % sun_radiation(doy=274, latitude_deg=16.217,
-    ...                              longitude_deg=-16.25, tod_utc=16.0, interval=1.0))
+    >>> print "%.3f" % sun_radiation(doy=274, latitude_deg=16.217,
+    ...                              longitude_deg=-16.25, tod_utc=16.0, interval=1.0)
     3.543
     """
 
@@ -680,13 +686,11 @@ def longwave_radiation(Tmin_C, Tmax_C, ea, Rs, Rso, rh):
     Returns back radiation in MJ/m^2/day
 
     Example:
-    >>> print("%.1f mm/day" % longwave_radiation(Tmin_C=19.1, Tmax_C=25.1, ea=2.1,
-    ...     Rs=14.5, Rso=18.8, rh=50))
+    >>> print "%.1f mm/day" % longwave_radiation(Tmin_C=19.1, Tmax_C=25.1, ea=2.1, Rs=14.5, Rso=18.8, rh=50)
     3.5 mm/day
 
     Night time example. Set rh = 40% to reproduce the Rs/Rso ratio of 0.8 used in the paper.
-    >>> print("%.1f mm/day" % longwave_radiation(Tmin_C=28, Tmax_C=28, ea=3.402,
-    ...     Rs=0, Rso=0, rh=40))
+    >>> print "%.1f mm/day" % longwave_radiation(Tmin_C=28, Tmax_C=28, ea=3.402, Rs=0, Rso=0, rh=40)
     2.4 mm/day
     """
     # Calculate temperatures in Kelvin:
@@ -753,21 +757,17 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     Example (Example 19 in the reference document):
     >>> sr_mean_wpm2 = 680.56     # == 2.45 MJ/m^2/hr
     >>> timestamp = 1475337600    # 1-Oct-2016 at 16:00UTC
-    >>> print("ET0 = %.2f mm/hr" % evapotranspiration_Metric(Tmin_C=38, Tmax_C=38,
-    ...                                rh_min=52, rh_max=52,
+    >>> print "ET0 = %.2f mm/hr" % evapotranspiration_Metric(Tmin_C=38, Tmax_C=38, rh_min=52, rh_max=52,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mps=3.3, wind_height_m=2,
-    ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8,
-    ...                                timestamp=timestamp))
+    ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8, timestamp=timestamp)
     ET0 = 0.63 mm/hr
 
     Another example, this time for night
     >>> sr_mean_wpm2 = 0.0        # night time
     >>> timestamp = 1475294400    # 1-Oct-2016 at 04:00UTC (0300 local)
-    >>> print("ET0 = %.2f mm/hr" % evapotranspiration_Metric(Tmin_C=28, Tmax_C=28,
-    ...                                rh_min=90, rh_max=90,
+    >>> print "ET0 = %.2f mm/hr" % evapotranspiration_Metric(Tmin_C=28, Tmax_C=28, rh_min=90, rh_max=90,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mps=3.3, wind_height_m=2,
-    ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8,
-    ...                                timestamp=timestamp))
+    ...                                latitude_deg=16.217, longitude_deg=-16.25, altitude_m=8, timestamp=timestamp)
     ET0 = 0.03 mm/hr
     """
     if None in (Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2, ws_mps,
@@ -838,7 +838,7 @@ def evapotranspiration_Metric(Tmin_C, Tmax_C, rh_min, rh_max, sr_mean_wpm2,
     # periods" in http://www.fao.org/docrep/x0490e/x0490e07.htm#radiation
     G = 0.1 * Rn if Rs else 0.5 * Rn
 
-    # Put it all together. Result is in mm/hr (Eqn 53)    
+    # Put it all together. Result is in mm/hr (Eqn 53)
     ET0 = (0.408 * delta * (Rn - G) + gamma * (cn / (tavg_C + 273)) * u2 * (e0T - ea)) \
           / (delta + gamma * (1 + cd * u2))
 
@@ -881,11 +881,9 @@ def evapotranspiration_US(Tmin_F, Tmax_F, rh_min, rh_max,
     Example (using data from HR station):
     >>> sr_mean_wpm2 = 860
     >>> timestamp = 1469829600  # 29-July-2016 22:00 UTC (15:00 local time)
-    >>> print("ET0 = %.3f in/hr" % evapotranspiration_US(Tmin_F=87.8, Tmax_F=89.1,
-    ...                                rh_min=34, rh_max=38,
+    >>> print "ET0 = %.3f in/hr" % evapotranspiration_US(Tmin_F=87.8, Tmax_F=89.1, rh_min=34, rh_max=38,
     ...                                sr_mean_wpm2=sr_mean_wpm2, ws_mph=9.58, wind_height_ft=6,
-    ...                                latitude_deg=45.7, longitude_deg=-121.5, altitude_ft=700,
-    ...                                timestamp=timestamp))
+    ...                                latitude_deg=45.7, longitude_deg=-121.5, altitude_ft=700, timestamp=timestamp)
     ET0 = 0.028 in/hr
     """
     try:
@@ -896,11 +894,10 @@ def evapotranspiration_US(Tmin_F, Tmax_F, rh_min, rh_max,
         altitude_m = altitude_ft * METER_PER_FOOT
     except TypeError:
         return None
-    evt = evapotranspiration_Metric(Tmin_C=Tmin_C, Tmax_C=Tmax_C,
-                                    rh_min=rh_min, rh_max=rh_max, sr_mean_wpm2=sr_mean_wpm2,
-                                    ws_mps=ws_mps, wind_height_m=wind_height_m,
-                                    latitude_deg=latitude_deg, longitude_deg=longitude_deg,
-                                    altitude_m=altitude_m, timestamp=timestamp)
+    evt = evapotranspiration_Metric(Tmin_C=Tmin_C, Tmax_C=Tmax_C, rh_min=rh_min, rh_max=rh_max,
+                                    sr_mean_wpm2=sr_mean_wpm2, ws_mps=ws_mps, wind_height_m=wind_height_m,
+                                    latitude_deg=latitude_deg, longitude_deg=longitude_deg, altitude_m=altitude_m,
+                                    timestamp=timestamp)
     return evt / MM_PER_INCH if evt is not None else None
 
 

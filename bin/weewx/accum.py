@@ -114,7 +114,7 @@ class OutOfSpan(ValueError):
 
 class ScalarStats(object):
     """Accumulates statistics (min, max, average, etc.) for a scalar value.
-    
+
     Property 'last' is the last non-None value seen. Property 'lasttime' is
     the time it was seen. """
 
@@ -203,7 +203,7 @@ class ScalarStats(object):
 
 class VecStats(object):
     """Accumulates statistics for a vector value.
-     
+
     Property 'last' is the last non-None value seen. It is a two-way tuple (mag, dir).
     Property 'lasttime' is the time it was seen. """
 
@@ -359,7 +359,8 @@ class FirstLastAccum(object):
 
     def setStats(self, stats_tuple=None):
         self.first, self.firsttime, self.last, self.lasttime = stats_tuple \
-            if stats_tuple else ScalarStats.default_init
+            if stats_tuple else FirstLastAccum.default_init
+            #if stats_tuple else ScalarStats.default_init
 
     def getStatsTuple(self):
         """Return a stats-tuple. That is, a tuple containing the gathered statistics.

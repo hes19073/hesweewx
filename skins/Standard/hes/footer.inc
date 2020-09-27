@@ -19,30 +19,34 @@
      Datenbanklaufzeit:&nbsp; $station.db_uptime&nbsp;&nbsp;<br />&nbsp;&nbsp;
      weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     weewx  Version:&nbsp; $station.version<br />
+     weewx  Version:&nbsp; $station.version<br /><hr />
      Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
      Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus<br />
      Luftmessung: Laser PM2.5 Sensor, Modell: SDS011<br />
 #if $varExists('$year00')
-     Weewx Zeit: $year00&nbsp;.
+     <hr />
+     Weewx Zeit: $year00
+     <br />
 #end if
 </div>
 
 <p>
  #if $Extras.has_key('station_subtitle')
-     $Extras.station_subtitle<br/>
+     $Extras.station_subtitle<br />
  #end if
+<b>Machen Sie niemals wichtige Entscheidungen von den Daten dieser Seiten abhängig!</b><br />
 </p>
 <hr />
 
 <div class="navbar">
   <p> 
-   <input type="button" value="   Aktuell   " onclick="openURL('index.html')" />
-   <input type="button" value=" OWFS  " onclick="openURL('indexOWFS.html')" />
+   <input type="button" value=" Aktuell " onclick="openURL('index.html')" />
+   <input type="button" value=" Garten " onclick="openURL('indexOWFS.html')" />
+   <input type="button" value=" Teiche " onclick="openURL('index2.html')" />
    <input type="button" value=" Boden " onclick="openURL('index1.html')" />
-   <input type="button" value=" Air   " onclick="openURL('indexAir.html')" />
-   <input type="button" value=" Rad   " onclick="openURL('indexRad.html')" />
-   <input type="button" value=" GDD   " onclick="openURL('index3.html')" />
+   <input type="button" value=" Air " onclick="openURL('indexAir.html')" />
+   <input type="button" value=" Blitz " onclick="openURL('indexRad.html')" />
+   <input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <input type="button" value=" Heute " onclick="openURL('day.html')" />
    <input type="button" value=" Prognose " onclick="openURL('forecast.html')" />
    <input type="button" value=" Statistik " onclick="openURL('statistik.html')" />

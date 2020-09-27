@@ -238,9 +238,10 @@ class WUSource(weeimport.Source):
         # check the response code and raise an exception if there was an error
         if hasattr(response, 'code') and response.code != 200:
             if response.code == 204:
-                raise IOError("Probably a bad station ID or invalid date")
+                _msg = "Possibly a bad station ID, an invalid date or data does not exist for this period."
             else:
-                raise IOError("Bad response code returned: %d" % response.code)
+                _msg = "Bad response code returned: %d." % response.code
+            raise weeimport.WeeImportIOError(_msg)
 
         # The WU API says that compression is required, but let's be prepared
         # if compression is not used
@@ -294,9 +295,16 @@ class WUSource(weeimport.Source):
                             # it's not there so skip it
                             pass
                     if obs == 'epoch':
+                        # An epoch timestamp could be in seconds or
+                        # milliseconds, WeeWX uses seconds. We can check by
+                        # trying to convert the epoch value into a datetime
+                        # object, if the epoch value is in milliseconds it will
+                        # fail. In that case divide the epoch value by 1000.
+                        # Note we would normally expect to see a ValueError but
+                        # on armhf platforms we might see an OverflowError.
                         try:
                             _date = datetime.date.fromtimestamp(_flat_record['epoch'])
-                        except ValueError:
+                        except (ValueError, OverflowError):
                             _flat_record['epoch'] = _flat_record['epoch'] // 1000
                 # WU in its wisdom provides min and max pressure but no average
                 # pressure (unlike other obs) so we need to calculate it. If
