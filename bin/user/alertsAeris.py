@@ -8,18 +8,14 @@
 """
 in skin.conf
 [Extras]
-    alerts_aeris = 1 or 0
-    forecast_api_id =
-    forecast_api_secret =
-    # if forecast and alerts togethter from AerisWeather
     # getAeris
-    # alerts_provider = aeris
-    # aeris_api_id =
-    # aeris_api_secret
+    alerts_aeris = 1
+    alerts_aeris_api_id =
+    alerts_aeris_api_secret =
     alerts_aeris_stale = 3450
-    # aeris_lang = de         # en default, fr, es
-    # aeris_units =
-    # alerts_aeris_limit =
+    alerts_aeris_limit = 1
+    # alerts_aeris_lang = de         # en default, fr, es
+
     nachsehen und aktuelle Daten laden und auswerten
     Bereistellung der Warnmeldung als Text
 """
@@ -48,17 +44,14 @@ log = logging.getLogger(__name__)
 # Print version in syslog
 VERSION = "3.0.1"
 
-log.info("alertsAeris version %s", VERSION)
+log.info("alertsAeris WARNUNG version %s", VERSION)
 
 class getAeris(SearchList):
     def __init__(self, generator):
         SearchList.__init__(self, generator)
 
     def get_extension_list(self, timespan, db_lookup):
-        """ Download and parse the alerts data.
-            von Aeris Weather
-            This is required for the majority of the theme to work
-        """
+        """ Download and parse the alerts data Aeris Weather   """
         # Setup label dict for text and titles
         try:
             d = self.generator.skin_dict['Labels']['Generic']
@@ -79,12 +72,13 @@ class getAeris(SearchList):
                                       self.generator.config_dict['StdReport']['HTML_ROOT'])
 
         # Return right away if we're not going to use the alerts.
+        alerts_updated = time.time()
         if self.generator.skin_dict['Extras']['alerts_aeris'] == "0":
             # Return an empty SLE
             search_list_extension = {
                                  'alerts_html' : "",
                                  'alerts_html_long' : "",
-                                 'alerts_update' : "",
+                                 'alerts_update' : "alerts_updated",
                                 }
 
             return [search_list_extension]
@@ -92,16 +86,13 @@ class getAeris(SearchList):
         """
         Alerts Data = Warnungen
         """
-        # alerts_provider = self.generator.skin_dict['Extras']['alerts_provider']
-        # alerts_aeris_limit = self.generator.skin_dict['Extras']['alerts_aeris_limit']
-        # alerts_aeris_lang = self.generator.skin_dict['Extras']['alerts_lang'].lower()
-        # alerts_aeris_units = self.generator.skin_dict['Extras']['alerts_units'].lower()
         alerts_file = "/home/weewx/archive/alertsAeris.json"
-        alerts_aeris_id = self.generator.skin_dict['Extras']['forecast_api_id']
-        alerts_aeris_secret = self.generator.skin_dict['Extras']['forecast_api_secret']
+        alerts_aeris_id = self.generator.skin_dict['Extras']['alerts_aeris_api_id']
+        alerts_aeris_secret = self.generator.skin_dict['Extras']['alerts_aeris_api_secret']
+        alerts_stale_timer = self.generator.skin_dict['Extras']['alerts_aeris_stale']
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
-        alerts_stale_timer = self.generator.skin_dict['Extras']['alerts_aeris_stale']
+
         alerts_is_stale = False
 
         # Aries code
@@ -371,23 +362,27 @@ class getAeris(SearchList):
         with open(alerts_file, "r") as read_file:
             data = json.load(read_file)
 
-        # read_file.close()
+        read_file.close()
+
         html_alerts = ""
         html_alerts_long = ""
         alerts_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['timestamp']))
         if len(data["aeris"][0]["response"]) > 0:
             alerts_aeris_title = aeris_coded_alerts( data['aeris'][0]['response'][0]['details']['type'] )
+            alerts_aeris_color = data['aeris'][0]['response'][0]['details']['color']
             alerts_aeris_body = data['aeris'][0]['response'][0]['details']['body'].replace('\n', '<br>')
             alerts_aeris_bodyFull = data['aeris'][0]['response'][0]['details']['bodyFull'].replace('\n', '<br>')
             # alerts_aeris_link = data['aeris'][0]['response'][0]['details']['name']
             # alerts_aeris_link = data['aeris'][0]['response'][0]['details']['type']
             alerts_aeris_begins = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['aeris'][0]['response'][0]['timestamps']['begins']))
-            alerts_aeris_expires = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['aeris'][0]['response'][0]['timestamps']['expires']))
-            alerts_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['aeris'][0]['response'][0]['timestamps']['issued']))
+            alerts_aeris_expire = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['aeris'][0]['response'][0]['timestamps']['expires']))
+            alerts_aeris_issued = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['aeris'][0]['response'][0]['timestamps']['issued']))
+            alerts_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(data['timestamp']))
             # gen text
-            output = '<div><h3>' + alerts_aeris_title + '</h3>'
+            output = '<div style="background-color:#' + alerts_aeris_color + ';">'
+            output += '<h3>' + alerts_aeris_title + '</h3>'
             output += 'gültig ab: <i> ' + alerts_aeris_begins + '</i>'
-            output += '  bis: <i> ' + alerts_aeris_expires + '</i>'
+            output += '  bis: <i> ' + alerts_aeris_expire + '</i>'
             output += '<p>' + alerts_aeris_body + '</p>'
             output += '</div> <!-- end .alerts_aeris -->'
             # Add to the output
@@ -408,4 +403,4 @@ class getAeris(SearchList):
 
         # Finally, return our extension as a list:
         return [search_list_extension]
-
+# end

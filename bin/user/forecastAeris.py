@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: forecastAreis.py 1651 2019-05-04 12:10:37Z hes $
+# $Id: forecastAeris.py 1651 2020-09-24 12:10:37Z hes $
 # original by Pat O'Brien, August 19, 2018
 # Copyright 2020 Hartmut Schweidler
 #
@@ -17,7 +17,6 @@
         # forecast_aeris_limit =
         forecast_lang = de
         forecast_units = si
-
 """
 
 from __future__ import absolute_import
@@ -42,7 +41,7 @@ from weeutil.weeutil import TimeSpan
 log = logging.getLogger(__name__)
 
 # Print version in syslog
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 
 log.info("Forcast AerisWeather version %s", VERSION)
 
@@ -51,7 +50,6 @@ class getAeris(SearchList):
         SearchList.__init__(self, generator)
 
     def get_extension_list(self, timespan, db_lookup):
-
         """ Download and parse the Forecast data.
             von AerisWeather
             This is required for the majority of the theme to work
@@ -367,6 +365,7 @@ class getAeris(SearchList):
         html_output = ""
         #forecast_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(data["forecast"][0]["response"][0]["periods"][0]["timestamp"]))
         forecast_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(data["timestamp"]))
+
         for daily_data in data["forecast"][0]["response"][0]["periods"]:
 
             image_url = "xicons/AerisIcons/" + daily_data['icon']

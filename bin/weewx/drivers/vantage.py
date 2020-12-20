@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#    Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -32,7 +32,7 @@ from weewx.crc16 import crc16
 log = logging.getLogger(__name__)
 
 DRIVER_NAME = 'Vantage'
-DRIVER_VERSION = '3.2.0'
+DRIVER_VERSION = '3.2.1'
 
 
 def loader(config_dict, engine):
@@ -500,6 +500,7 @@ class Vantage(weewx.drivers.AbstractDevice):
         if self.model_type not in list(range(1, 3)):
             raise weewx.UnsupportedFeature("Unknown model_type (%d)" % self.model_type)
         self.loop_request = to_int(vp_dict.get('loop_request', 1))
+        log.debug("Option loop_request=%d", self.loop_request)
 
         self.save_day_rain = None
         self.max_dst_jump = 7200
@@ -1304,9 +1305,8 @@ class Vantage(weewx.drivers.AbstractDevice):
                 log.debug("Hardware type is %d", self.hardware_type)
                 # 16 = Pro, Pro2, 17 = Vue
                 return self.hardware_type
-            except weewx.WeeWxIOError:
-                pass
-            log.debug("_determine_hardware; retry #%d", count)
+            except weewx.WeeWxIOError as e:
+                log.error("_determine_hardware; retry #%d: '%s'", count, e)
 
         log.error("Unable to read hardware type; raise WeeWxIOError")
         raise weewx.WeeWxIOError("Unable to read hardware type")
@@ -1654,7 +1654,7 @@ rec_types_B, fmt_B = list(zip(*rec_B_schema))
 rec_A_struct = struct.Struct('<' + ''.join(fmt_A))
 rec_B_struct = struct.Struct('<' + ''.join(fmt_B))
 
-def _rxcheck(model_type, interval, iss_id, wind_samples):
+def _rxcheck(model_type, interval, iss_id, number_of_wind_samples):
     """Gives an estimate of the fraction of packets received.
     
     Ref: Vantage Serial Protocol doc, V2.1.0, released 25-Jan-05; p42"""
@@ -1666,7 +1666,7 @@ def _rxcheck(model_type, interval, iss_id, wind_samples):
         _expected_packets = 960.0 * interval / float(41 + iss_id - 1)
     else:
         return None
-    _frac = wind_samples * 100.0 / _expected_packets
+    _frac = number_of_wind_samples * 100.0 / _expected_packets
     if _frac > 100.0:
         _frac = 100.0
     return _frac
@@ -1730,7 +1730,7 @@ def _decode_rain(p, k):
         # 0.1 mm bucket
         return p[k] * 0.00393700787
     else:
-        log.warn("Unknown bucket type $s" % p['bucket_type'])
+        log.warning("Unknown bucket type $s" % p['bucket_type'])
 
 
 def _decode_windSpeed_H(p, k):
@@ -1741,7 +1741,7 @@ def _decode_windSpeed_H(p, k):
     elif p['packet_type'] == 1:
         return float(p[k]) / 10.0 if p[k] != 0xffff else None
     else:
-        log.warn("Unknown LOOP packet type %s" % p['packet_type'])
+        log.warning("Unknown LOOP packet type %s" % p['packet_type'])
 
 
 # This dictionary maps a type key to a function. The function should be able to

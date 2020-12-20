@@ -1,6 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # ===============================================================================
-# Copyright (c) 2009-2019 Tom Keffer <tkeffer@gmail.com>
+# Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 # 
 # This software may be used and redistributed under the
 # terms of the GNU General Public License version 3.0
@@ -17,8 +17,31 @@ missing data.
 Details of the API for downloading historical data from the WU can be found here:
 https://docs.google.com/document/d/1w8jbqfAk0tfZS5P7hYnar1JiitM0gQZB-clxDfG3aD0/edit
 
+Wunderground response codes:
+- When using the "1day" API
+   o Normal                    | 200
+   o Non-existent station      | 204
+   o Bad api key               | 401
+- When using the "history" API
+   o Normal                    | 200
+   o Non-existent station      | 204
+   o Good station, but no data | 204
+   o Bad api key               | 401
+
+Unfortunately, there is no reliable way to tell the difference between a request for a non-existing
+station, and a request for a date with no data.
+
 CHANGE HISTORY
 --------------------------------
+1.9.1 05/02/2020
+Fixed problem under Python 3 where response was not converted to str before attempting
+to parse the JSON.
+Option --test now requires api_key and password, then goes ahead with querying the WU.
+
+1.9.0 02/10/2020
+With response code of 204, changed the default to assume a good station with no data
+(rather than a bad station ID).
+
 1.8.0 12/15/2019
 Fixed bug where epsilon was not recognized.
 Added option 'upload-only', with default of 300 seconds.
@@ -121,7 +144,7 @@ proposes!"""
 epilog = """Options 'station', 'password', and 'api-key' must be supplied either
 on the command line, or in the configuration file."""
 
-__version__ = "1.8.0"
+__version__ = "1.9.1"
 
 # The number of seconds difference in the timestamp between two records
 # and still have them considered to be the same: 
@@ -174,9 +197,9 @@ def main():
 
     socket.setdefaulttimeout(options.timeout)
 
+    weeutil.logger.setup('wunderfixer', {})
     if options.verbose:
         weewx.debug = 1
-        weeutil.logger.setup('wunderfixer', {})
     else:
         logging.disable(logging.INFO)
 
@@ -185,20 +208,23 @@ def main():
     print("Using configuration file %s." % config_fn)
     log.info("Using weewx configuration file %s." % config_fn)
 
+    # Now we can set up the user-customized logging:
+    weeutil.logger.setup('wunderfixer', config_dict)
+
     # Retrieve the station ID and password from the config file
     try:
         if not options.station:
             options.station = config_dict['StdRESTful']['Wunderground']['station']
-        if not options.password and not options.simulate:
+        if not options.password:
             options.password = config_dict['StdRESTful']['Wunderground']['password']
-        if not options.api_key and not options.simulate:
+        if not options.api_key:
             options.api_key = config_dict['StdRESTful']['Wunderground']['api_key']
     except KeyError:
         log.error("Missing Wunderground station, password, and/or api_key")
         exit("Missing Wunderground station, password, and/or api_key")
 
     # exit if any essential arguments are not present
-    if not options.station or (not options.password and not options.api_key and not options.simulate):
+    if not options.station or not options.password or not options.api_key:
         print("Missing argument(s).\n")
         print(parser.parse_args(["--help"]))
         log.error("Missing argument(s). Wunderfixer exiting.")
@@ -207,8 +233,10 @@ def main():
     # get our binding and database and say what we are using
     db_binding = options.binding
     database = config_dict['DataBindings'][db_binding]['database']
-    print("Using database binding '%s', which is bound to database '%s'" % (db_binding, database))
-    log.info("Using database binding '%s', which is bound to database '%s'" % (db_binding, database))
+    print("Using database binding '%s', which is bound to database '%s'"
+          % (db_binding, database))
+    log.info("Using database binding '%s', which is bound to database '%s'"
+             % (db_binding, database))
 
     # get the manager object for our db_binding
     dbmanager_t = weewx.manager.open_manager_with_config(config_dict, db_binding)
@@ -273,11 +301,9 @@ def main():
               % (len(archive_results), len(wunder_results)))
 
     # ===========================================================================
-    # Unfortunately, the WU does not signal an error if you ask for a CSV file
-    # on a non-existent station. So, there's no way to tell the difference
-    # between asking for results from a non-existent station, versus a
-    # legitimate station that has no data for the given day. Warn the user, then
-    # proceed. 
+    # Unfortunately, the WU does not signal an error if you ask for a non-existent station. So,
+    # there's no way to tell the difference between asking for results from a non-existent station,
+    # versus a legitimate station that has no data for the given day. Warn the user, then proceed.
     # ===========================================================================
     if not wunder_results:
         sys.stdout.flush()
@@ -412,7 +438,12 @@ class WunderStation(weewx.restx.AmbientThread):
 
         if hasattr(response, 'code') and response.code != 200:
             if response.code == 204:
-                raise IOError("Probably a bad station ID or invalid date")
+                log.debug("Bad station (%s) or date (%s)" % (self.station, day_requested))
+                return []
+            elif response.code == 401:
+                # This should not happen, as it should have been caught earlier as an URLError
+                # exception, but just in case they change the API...
+                raise weewx.restx.BadLogin("Bad login")
             else:
                 raise IOError("Bad response code returned: %d" % response.code)
 
@@ -423,9 +454,9 @@ class WunderStation(weewx.restx.AmbientThread):
             f = gzip.GzipFile(fileobj=buf)
             data = f.read()
         else:
-            data = response
+            data = six.ensure_str(response.read())
 
-        wu_data = json.load(data)
+        wu_data = json.loads(data)
 
         # We are only interested in the time stamps. Form a list of them
         time_stamps = [TimeStamp(record['epoch']) for record in wu_data['observations']]
@@ -526,7 +557,7 @@ def getArchiveDayTimeStamps(dbmanager, day_requested, group_by):
     end_ts = time.mktime(end_date.timetuple())
 
     if group_by:
-        sql_stmt = "SELECT dateTime FROM archive WHERE dateTime>=? AND dateTime<? " \
+        sql_stmt = "SELECT MIN(dateTime) FROM archive WHERE dateTime>=? AND dateTime<? " \
                "GROUP BY ROUND(dateTime/%d);" % group_by
     else:
         sql_stmt = "SELECT dateTime FROM archive WHERE dateTime>=? AND dateTime<?"

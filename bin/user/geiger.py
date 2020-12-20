@@ -74,7 +74,7 @@ class GeigerMonitor(StdService):
         d = config_dict.get('Geiger', {})
         # get PORT and BAUD of Geiger
         self._port = d.get('port', '/dev/ttyUSB1')
-        #self._port = d.get('port', '/dev/geiger')
+        # self._port = d.get('port', '/dev/geiger')
         self._baud = weeutil.weeutil.to_int(d.get('baud', 9600))
 
         # get the database parameters we need to function
@@ -128,7 +128,8 @@ class GeigerMonitor(StdService):
 
         try:
             ser = serial.Serial()
-            ser.port = "/dev/geiger"
+            ser.port = "/dev/ttyUSB1"
+            # ser.port = "/dev/geiger"
             ser.baudrate = 9600
             rad_cpm = 0
 

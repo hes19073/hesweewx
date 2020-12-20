@@ -372,7 +372,7 @@ class GrowthGenerator(weewx.reportengine.ReportGenerator):
         return result
 
 
-    def get_vectors(self, stamps, csv_file_name, c_temp_base_t, c4_temp_t):
+    def get_vectors(self, stamps, csv_file_name, cB_temp_t, c4_temp_t):
 
         (minstamp, maxstamp) = stamps
         cB_temp = (cB_temp_t)[ZERO]

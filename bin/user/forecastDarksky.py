@@ -62,12 +62,12 @@ class getForecast(SearchList):
     def get_extension_list(self, timespan, db_lookup):
 
         """ Download and parse the Forecast data.
-            von DakrSky 
+            von DakrSky
             This is required for the majority of the theme to work
         """
 
         # Return right away if we're not going to use the forecast.
-        if self.generator.skin_dict['Extras']['forecast_enabled'] == "0":
+        if self.generator.skin_dict['Extras']['darksky_enabled'] == "0":
             # Return an empty SLE
             search_list_extension = {
                                      'current_obs_icon': "",
@@ -84,7 +84,7 @@ class getForecast(SearchList):
         darksky_units = self.generator.skin_dict['Extras']['darksky_units'].lower()
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
-        forecast_stale_timer = self.generator.skin_dict['Extras']['forecast_stale']
+        forecast_stale_timer = self.generator.skin_dict['Extras']['darksky_stale']
         forecast_url = "https://api.darksky.net/forecast/%s/%s,%s?units=%s&lang=de" % (darksky_secret_key, latitude, longitude, darksky_units)
 
         forecast_is_stale = False
@@ -219,8 +219,7 @@ class getForecast(SearchList):
 
         # Put into a dictionary to return
         search_list_extension  = {
-                                  'forecast_updated': forecast_updated,
-                                  'forecast_json_url': forecast_json_url,
+                                  'forecastDS_updated': forecast_updated,
                                   'current_obs_icon': current_obs_icon,
                                   'current_obs_summary': current_obs_summary,
                                   'current_temp': current_temp,
@@ -229,10 +228,7 @@ class getForecast(SearchList):
                                   'current_windGust': current_windGust,
                                   'current_windDir': current_windDir,
                                   'current_visibility': current_visibility,
-                                  'day_summary': cur_day_summary,
-                                  'now_summary': cur_now_summary,
-                                  'week_summary': cur_week_summary,
-                                  'forecastHTML' : html_output
+                                  'forecastDSHTML' : html_output
                                  }
 
         # Return our json data

@@ -46,14 +46,18 @@ From the Meade TE9233W manual (TE923W-M_IM(ENG)_BK_010511.pdf):
   Wind/Gust sampling interval: 11 seconds
   UV transmitting interval: 300 seconds
   Rain counter resolution: 0.03 in (0.6578 mm)
+    (but console shows instead: 1/36 in (0.705556 mm))
   Battery status of each sensor is checked every hour
 
 This implementation polls the station for data.  Use the polling_interval to
 control the frequency of polling.  Default is 10 seconds.
 
-The manual says that a single bucket tip is 0.03 inches.  In reality, a single
-bucket tip is between 0.02 and 0.03 in (0.508 to 0.762 mm).  This driver uses
-a value of 0.02589 in (0.6578 mm) per bucket tip.
+The manual claims that a single bucket tip is 0.03 inches or 0.6578 mm but
+neither matches the console display.  In reality, a single bucket tip is
+between 0.02 and 0.03 in (0.508 to 0.762 mm).  This driver uses a value of 1/36
+inch as observed in 36 bucket tips per 1.0 inches displayed on the console.
+1/36 = 0.02777778 inch = 0.705555556 mm, or 1.0725989 times larger than the
+0.02589 inch = 0.6578 mm that was used prior to version 0.41.1.
 
 The station has altitude, latitude, longitude, and time.
 
@@ -450,7 +454,7 @@ from weeutil.weeutil import timestamp_to_string
 log = logging.getLogger(__name__)
 
 DRIVER_NAME = 'TE923'
-DRIVER_VERSION = '0.40'
+DRIVER_VERSION = '0.41.1'
 
 def loader(config_dict, engine):  # @UnusedVariable
     return TE923Driver(**config_dict[DRIVER_NAME])
@@ -562,7 +566,7 @@ class TE923Configurator(weewx.drivers.AbstractConfigurator):
     }
     
     city_dict = {
-        0: ["ADD", 3, 0, 9, 0o1, "N", 38, 44, "E", "Addis Ababa, Ethiopia"],
+        0: ["ADD", 3, 0, 9, 1, "N", 38, 44, "E", "Addis Ababa, Ethiopia"],
         1: ["ADL", 9.5, 1, 34, 55, "S", 138, 36, "E", "Adelaide, Australia"],
         2: ["AKR", 2, 4, 39, 55, "N", 32, 55, "E", "Ankara, Turkey"],
         3: ["ALG", 1, 0, 36, 50, "N", 3, 0, "E", "Algiers, Algeria"],
@@ -1189,7 +1193,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
                                          sensor_map=self.sensor_map)
             self._last_rain_archive = packet['rainTotal']
             if self._last_ts:
-                packet['interval'] = (packet['dateTime'] - self._last_ts) / 60
+                packet['interval'] = (packet['dateTime'] - self._last_ts) // 60
                 if packet['interval'] > 0:
                     cnt += 1
                     yield packet
@@ -1251,7 +1255,7 @@ class TE923Driver(weewx.drivers.AbstractDevice):
 
         packet['rainTotal'] = data['rain']
         if packet['rainTotal'] is not None:
-            packet['rainTotal'] *= 0.06578 # weewx wants cm
+            packet['rainTotal'] *= 0.0705555556 # weewx wants cm (1/36 inch)
         packet['rain'] = weewx.wxformulas.calculate_rain(
             packet['rainTotal'], last_rain)
 
@@ -1576,8 +1580,8 @@ class TE923Station(object):
 
     def _raw_read(self, addr):
         reqbuf = [0x05, 0xAF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-        reqbuf[4] = addr / 0x10000
-        reqbuf[3] = (addr - (reqbuf[4] * 0x10000)) / 0x100
+        reqbuf[4] = addr // 0x10000
+        reqbuf[3] = (addr - (reqbuf[4] * 0x10000)) // 0x100
         reqbuf[2] = addr - (reqbuf[4] * 0x10000) - (reqbuf[3] * 0x100)
         reqbuf[5] = (reqbuf[1] ^ reqbuf[2] ^ reqbuf[3] ^ reqbuf[4])
         ret = self.devh.controlMsg(requestType=0x21,
@@ -1616,8 +1620,8 @@ class TE923Station(object):
 
         # Send acknowledgement whether or not it was a good read
         reqbuf = [0x24, 0xAF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-        reqbuf[4] = addr / 0x10000
-        reqbuf[3] = (addr - (reqbuf[4] * 0x10000)) / 0x100
+        reqbuf[4] = addr // 0x10000
+        reqbuf[3] = (addr - (reqbuf[4] * 0x10000)) // 0x100
         reqbuf[2] = addr - (reqbuf[4] * 0x10000) - (reqbuf[3] * 0x100)
         reqbuf[5] = (reqbuf[1] ^ reqbuf[2] ^ reqbuf[3] ^ reqbuf[4])
         ret = self.devh.controlMsg(requestType=0x21,
@@ -1650,8 +1654,8 @@ class TE923Station(object):
     def _raw_write(self, addr, buf):
         wbuf = [0] * 38
         wbuf[0] = 0xAE
-        wbuf[3] = addr / 0x10000
-        wbuf[2] = (addr - (wbuf[3] * 0x10000)) / 0x100
+        wbuf[3] = addr // 0x10000
+        wbuf[2] = (addr - (wbuf[3] * 0x10000)) // 0x100
         wbuf[1] = addr - (wbuf[3] * 0x10000) - (wbuf[2] * 0x100)
         crc = wbuf[0] ^ wbuf[1] ^ wbuf[2] ^ wbuf[3]
         for i in range(32):
@@ -1855,7 +1859,7 @@ class TE923Station(object):
         latitude = float(rev_bcd2int(buf[1])) + (float(rev_bcd2int(buf[2])) / 60)
         if buf[5] & 0x80 == 0x80:
             latitude *= -1
-        longitude = float((buf[6] & 0xf0) / 0x10 * 100) + float(rev_bcd2int(buf[3])) + (float(rev_bcd2int(buf[4])) / 60)
+        longitude = float((buf[6] & 0xf0) // 0x10 * 100) + float(rev_bcd2int(buf[3])) + (float(rev_bcd2int(buf[4])) / 60)
         if buf[5] & 0x40 == 0x00:
             longitude *= -1
         if DEBUG_DECODE:
@@ -2028,9 +2032,10 @@ class TE923Station(object):
             data[label % 'max'], _ = decode_humid(buf[12+i*6])
         data['windspeed_max'], _ = decode_ws(buf[37], buf[38])
         data['windgust_max'], _ = decode_ws(buf[39], buf[40])
-        data['rain_yesterday'] = (buf[42] * 0x100 + buf[41]) * 0.6578
-        data['rain_week'] = (buf[44] * 0x100 + buf[43]) * 0.6578
-        data['rain_month'] = (buf[46] * 0x100 + buf[45]) * 0.6578
+        # not sure if this is the correct units here...
+        data['rain_yesterday'] = (buf[42] * 0x100 + buf[41]) * 0.705555556
+        data['rain_week'] = (buf[44] * 0x100 + buf[43]) * 0.705555556
+        data['rain_month'] = (buf[46] * 0x100 + buf[45]) * 0.705555556
         tt = time.localtime()
         offset = 1 if tt[3] < 12 else 0
         month = bcd2int(buf[47] & 0xf)
@@ -2058,7 +2063,7 @@ class TE923Station(object):
         offset = 1 if tt[3] < 12 else 0
         buf = self._read_date()
         day = rev_bcd2int(buf[2])
-        month = (buf[5] & 0xF0) / 0x10
+        month = (buf[5] & 0xF0) // 0x10
         year = rev_bcd2int(buf[4]) + 2000
         ts = time.mktime((year, month, day + offset, 0, 0, 0, 0, 0, 0))
         return ts
@@ -2089,10 +2094,10 @@ class TE923Station(object):
         data['lat_deg'] = rev_bcd2int(buf[0 + offset])
         data['lat_min'] = rev_bcd2int(buf[1 + offset])
         data['lat_dir'] = "S" if buf[4 + offset] & 0x80 == 0x80 else "N"
-        data['long_deg'] = (buf[5 + offset] & 0xF0) / 0x10 * 100 + rev_bcd2int(buf[2 + offset])
+        data['long_deg'] = (buf[5 + offset] & 0xF0) // 0x10 * 100 + rev_bcd2int(buf[2 + offset])
         data['long_min'] = rev_bcd2int(buf[3 + offset])
         data['long_dir'] = "E" if buf[4 + offset] & 0x40 == 0x40 else "W"
-        data['tz_hr'] = (buf[7 + offset] & 0xF0) / 0x10
+        data['tz_hr'] = (buf[7 + offset] & 0xF0) // 0x10
         if buf[4 + offset] & 0x8 == 0x8:
             data['tz_hr'] *= -1
         data['tz_min'] = 30 if buf[4 + offset] & 0x3 == 0x3 else 0
@@ -2113,7 +2118,7 @@ class TE923Station(object):
         buf[3 + offset] = rev_int2bcd(long_min)
         buf[4 + offset] = (lat_dir == "S") * 0x80 + (long_dir == "E") * 0x40 + (tz_hr < 0) + dst_on * 0x10 * 0x8 + (tz_min == 30) * 3
         buf[5 + offset] = (long_deg > 99) * 0x10 + dst_index
-        buf[6 + offset] = (buf[28] & 0x0F) + int(city_index / 0x10) * 0x10 
+        buf[6 + offset] = (buf[28] & 0x0F) + int(city_index / 0x10) * 0x10
         buf[7 + offset] = city_index % 0x10 + abs(tz_hr) * 0x10
         if loc_type == 0:
             buf[15] = self._checksum(buf[0:15])
@@ -2138,7 +2143,7 @@ class TE923Station(object):
     def set_alt(self, altitude):
         buf = self._read_alt()
         buf[0] = abs(altitude) & 0xff
-        buf[1] = abs(altitude) / 0x100
+        buf[1] = abs(altitude) // 0x100
         buf[2] = buf[2] & 0x7 + (altitude < 0) * 0x8
         buf[3] = self._checksum(buf[0:3])
         self._write_alt(buf)
@@ -2166,7 +2171,7 @@ class TE923Station(object):
         data['weekday_min'] = rev_bcd2int(buf[1])
         data['single_hour'] = rev_bcd2int(buf[2] & 0xF1)
         data['single_min'] = rev_bcd2int(buf[3])
-        data['prealarm_period'] = (buf[4] & 0xF0) / 0x10
+        data['prealarm_period'] = (buf[4] & 0xF0) // 0x10
         data['snooze'] = buf[4] & 0xF
         data['max_temp'], _ = decode_temp(buf[32], buf[33], 0)
         data['min_temp'], _ = decode_temp(buf[34], buf[35], 0)

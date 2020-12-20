@@ -198,14 +198,14 @@ schema = [
     ('net_eth0_terrs', 'INTEGER'),
     ('net_eth0_tdrop', 'INTEGER'),
 
-#    ('net_eth1_rbytes', 'INTEGER'),
-#    ('net_eth1_rpackets', 'INTEGER'),
-#    ('net_eth1_rerrs', 'INTEGER'),
-#    ('net_eth1_rdrop', 'INTEGER'),
-#    ('net_eth1_tbytes', 'INTEGER'),
-#    ('net_eth1_tpackets', 'INTEGER'),
-#    ('net_eth1_terrs', 'INTEGER'),
-#    ('net_eth1_tdrop', 'INTEGER'),
+    ('net_enp3s0_rbytes', 'INTEGER'),
+    ('net_enp3s0_rpackets', 'INTEGER'),
+    ('net_enp3s0_rerrs', 'INTEGER'),
+    ('net_enp3s0_rdrop', 'INTEGER'),
+    ('net_enp3s0_tbytes', 'INTEGER'),
+    ('net_enp3s0_tpackets', 'INTEGER'),
+    ('net_enp3s0_terrs', 'INTEGER'),
+    ('net_enp3s0_tdrop', 'INTEGER'),
 
 # some systems have a wireless interface as wlan0
 #    ('net_wlan0_rbytes', 'INTEGER'),

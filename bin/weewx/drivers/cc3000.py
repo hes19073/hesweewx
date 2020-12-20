@@ -112,6 +112,20 @@ when executing MEM=CLEAR, the timeout is set to 20s.  Should this
 command fail, rather than losing 1 second retrying, 20 sexconds
 will be lost.
 
+
+The CC3000 very rarely stops returning observation values.
+[Observed once in 28 months of operation over two devices.]
+Operation returns to normal after the CC3000 is rebooted.
+This driver now reboots when this situation  is detected.
+If this happens, the log will show:
+    INFO weewx.drivers.cc3000: No data from sensors, rebooting.
+    INFO weewx.drivers.cc3000: Back from a reboot:
+    INFO weewx.drivers.cc3000: ....................
+    INFO weewx.drivers.cc3000:
+    INFO weewx.drivers.cc3000: Rainwise CC-3000 Version: 1.3 Build 022 Dec 02 2016
+    INFO weewx.drivers.cc3000: Flash ID 202015
+    INFO weewx.drivers.cc3000: Initializing memory...OK.
+
 This driver was tested with:
   Rainwise CC-3000 Version: 1.3 Build 022 Dec 02 2016
 
@@ -164,7 +178,7 @@ from weewx.crc16 import crc16
 log = logging.getLogger(__name__)
 
 DRIVER_NAME = 'CC3000'
-DRIVER_VERSION = '0.30'
+DRIVER_VERSION = '0.40'
 
 def loader(config_dict, engine):
     return CC3000Driver(**config_dict[DRIVER_NAME])
@@ -212,6 +226,8 @@ class CC3000Configurator(weewx.drivers.AbstractConfigurator):
                           type=int, help="display records since N minutes ago")
         parser.add_option("--clear-memory", dest="clear", action="store_true",
                           help="clear station memory")
+        parser.add_option("--get-header", dest="gethead", action="store_true",
+                          help="display data header")
         parser.add_option("--get-rain", dest="getrain", action="store_true",
                           help="get the rain counter")
         parser.add_option("--reset-rain", dest="resetrain", action="store_true",
@@ -262,6 +278,8 @@ class CC3000Configurator(weewx.drivers.AbstractConfigurator):
                 print(r)
         elif options.clear:
             self.clear_memory(options.noprompt)
+        elif options.gethead:
+            print(self.driver.station.get_header())
         elif options.getrain:
             print(self.driver.station.get_rain())
         elif options.resetrain:
@@ -305,6 +323,7 @@ class CC3000Configurator(weewx.drivers.AbstractConfigurator):
             print("Charger:", self.driver.station.get_charger())
             print("Baro:", self.driver.station.get_baro())
             print("Rain:", self.driver.station.get_rain())
+            print("HEADER:", self.driver.station.get_header())
             print("MAX:", self.driver.station.get_max())
             print("MIN:", self.driver.station.get_min())
         self.driver.closePort()
@@ -455,7 +474,7 @@ class CC3000Driver(weewx.drivers.AbstractDevice):
         self.model = stn_dict.get('model', 'CC3000')
         port = stn_dict.get('port', CC3000.DEFAULT_PORT)
         log.info('Using serial port %s' % port)
-        self.polling_interval = float(stn_dict.get('polling_interval', 1))
+        self.polling_interval = float(stn_dict.get('polling_interval', 2))
         log.info('Polling interval is %s seconds' % self.polling_interval)
         self.use_station_time = weeutil.weeutil.to_bool(
             stn_dict.get('use_station_time', True))
@@ -471,10 +490,10 @@ class CC3000Driver(weewx.drivers.AbstractDevice):
         # these track the last time a check was made, and how often to make
         # the checks.  threshold of None indicates do not clear logger.
         self.logger_threshold = to_int(
-            stn_dict.get('logger_threshold', None))
+            stn_dict.get('logger_threshold', 0))
         self.last_mem_check = 0
         self.mem_interval = 7 * 24 * 3600
-        if self.logger_threshold is not None:
+        if self.logger_threshold != 0:
             log.info('Clear logger at %s records' % self.logger_threshold)
 
         # track the last rain counter value so we can determine deltas
@@ -496,23 +515,33 @@ class CC3000Driver(weewx.drivers.AbstractDevice):
         log.info('Charger status: %s' % settings['charger'])
         log.info('Memory: %s' % self.station.get_memory_status())
 
+    def time_to_next_poll(self):
+        now = time.time()
+        next_poll_event = int(now / self.polling_interval) * self.polling_interval + self.polling_interval
+        log.debug('now: %f, polling_interval: %d, next_poll_event: %f' % (now, self.polling_interval, next_poll_event))
+        secs_to_poll = next_poll_event - now
+        log.debug('Next polling event in %f seconds' % secs_to_poll)
+        return secs_to_poll
+
     def genLoopPackets(self):
         cmd_mode = True
         if self.polling_interval == 0:
             self.station.set_auto()
             cmd_mode = False
 
-        logged_nodata = False
+        reboot_attempted = False
         ntries = 0
         while ntries < self.max_tries:
             ntries += 1
             try:
+                # Poll on polling_interval boundaries.
+                if self.polling_interval != 0:
+                    time.sleep(self.time_to_next_poll())
                 values = self.station.get_current_data(cmd_mode)
                 now = int(time.time())
                 ntries = 0
                 log.debug("Values: %s" % values)
                 if values:
-                    logged_nodata = False
                     packet = self._parse_current(
                         values, self.header, self.sensor_map)
                     log.debug("Parsed: %s" % packet)
@@ -529,9 +558,14 @@ class CC3000Driver(weewx.drivers.AbstractDevice):
                         log.debug("Packet: %s" % packet)
                         yield packet
                 else:
-                    if not logged_nodata:
-                        log.info("No data from sensors")
-                        logged_nodata = True
+                    if not reboot_attempted:
+                        # To be on the safe side, max of one reboot per execution.
+                        reboot_attempted = True
+                        log.info("No data from sensors, rebooting.")
+                        startup_msgs = self.station.reboot()
+                        log.info("Back from a reboot:")
+                        for line in startup_msgs:
+                            log.info(line)
 
                 # periodically check memory, clear if necessary
                 if time.time() - self.last_mem_check > self.mem_interval:
@@ -543,12 +577,9 @@ class CC3000Driver(weewx.drivers.AbstractDevice):
                         log.info("Logger is at %d records, "
                                "logger clearing threshold is %d" %
                                (nrec, self.logger_threshold))
-                        if self.logger_threshold is not None and nrec >= self.logger_threshold:
+                        if self.logger_threshold != 0 and nrec >= self.logger_threshold:
                             log.info("Clearing all records from logger")
                             self.station.clear_memory()
-
-                if self.polling_interval:
-                    time.sleep(self.polling_interval)
             except (serial.serialutil.SerialException, weewx.WeeWxIOError) as e:
                 log.error("Failed attempt %d of %d to get data: %s" %
                        (ntries, self.max_tries, e))
@@ -938,6 +969,23 @@ class CC3000(object):
         log.debug("Get firmware version")
         return self.command("VERSION")
 
+    def reboot(self):
+        # Reboot outputs the following (after the reboot):
+        # ....................
+        # <blank line>
+        # Rainwise CC-3000 Version: 1.3 Build 022 Dec 02 2016
+        # Flash ID 202015
+        # Initializing memory...OK.
+        log.debug("Rebooting CC3000.")
+        self.send_cmd("REBOOT")
+        time.sleep(5)
+        dots = self.read()
+        blank = self.read()
+        ver = self.read()
+        flash_id = self.read()
+        init_msg = self.read()
+        return [dots, blank, ver, flash_id, init_msg]
+
     # give the station some time to wake up.  when we first hit it with a
     # command, it often responds with an empty string.  then subsequent
     # commands get the proper response.  so for a first command, send something
@@ -1140,11 +1188,18 @@ class CC3000(object):
             raise weewx.WeeWxIOError("Failed to reset rain: %s" % data)
 
     def gen_records_since_ts(self, header, sensor_map, since_ts):
-        now_ts = time.mktime(datetime.datetime.now().timetuple())
-        nseconds = now_ts - since_ts
-        nminutes = math.ceil(nseconds / 60.0)
-        num_records = math.ceil(nminutes / float(self.get_interval()))
-        log.debug('gen_records_since_ts: Asking for %d records.' % num_records)
+        if since_ts is None:
+            since_ts = 0.0
+            num_records = 0
+        else:
+            now_ts = time.mktime(datetime.datetime.now().timetuple())
+            nseconds = now_ts - since_ts
+            nminutes = math.ceil(nseconds / 60.0)
+            num_records = math.ceil(nminutes / float(self.get_interval()))
+        if num_records == 0:
+            log.debug('gen_records_since_ts: Asking for all records.')
+        else:
+            log.debug('gen_records_since_ts: Asking for %d records.' % num_records)
         for r in self.gen_records(nrec=num_records):
             pkt = CC3000Driver._parse_values(r[1:], header, sensor_map, "%Y/%m/%d %H:%M")
             if 'dateTime' in pkt and pkt['dateTime'] > since_ts:
@@ -1160,7 +1215,7 @@ class CC3000(object):
         ('MAX,', 'MIN,') as well as messages for various events such as a
         reboot ('MSG,').
 
-        Things get intereting when nrec is non-zero.
+        Things get interesting when nrec is non-zero.
 
         DOWNLOAD=n returns the latest n records in memory.  The CC3000 does
         not distinguish between REC, MAX, MIN and MSG records in memory.
@@ -1200,6 +1255,18 @@ class CC3000(object):
                     MSG 2019/12/20 15:48 CLEAR ON COMMAND!749D)
             MIN: 3 (As expected for 3 days.)
             MAX: 3 (As expected for 3 days.)
+
+        Interrogating the CC3000 for a large number of records fails miserably
+        if, while reading the responses, the responses are parsed and added
+        to the datbase.  (Check sum mismatches, partical records, etc.).  If
+        these last two steps are skipped, reading from the CC3000 is very
+        reliable.  This can be observed by asing for history with wee_config.
+        Observed with > 11K of records.
+
+        To address the above problem, all records are read into memory.  Reading
+        all records into memory before parsing and inserting into the database
+        is very reliable.  For smaller amounts of recoreds, the reading into
+        memory could be skipped, but what would be the point?
         """
 
         log.debug('gen_records(%d)' % nrec)
@@ -1220,9 +1287,23 @@ class CC3000(object):
         else:
             cmd = 'DOWNLOAD=%d' % num_to_ask
         log.debug('%s' % cmd)
-        data = self.command(cmd)
+
+        # Note: It takes about 14s to read 1000 records into memory.
+        if num_to_ask == 0:
+            log.info('Reading all records into memory.  This could take some time.')
+        elif num_to_ask < 1000:
+            log.info('Reading %d records into memory.' % num_to_ask)
+        else:
+            log.info('Reading %d records into memory.  This could take some time.' % num_to_ask)
         yielded = 0
+        recs = []
+        data = self.command(cmd)
         while data != 'OK':
+            recs.append(data)
+            data = self.read()
+        log.info('Finished reading %d records.' % len(recs))
+        yielded = 0
+        for data in recs:
             values = data.split(',')
             if values[0] == 'REC':
                 yielded += 1
@@ -1233,7 +1314,6 @@ class CC3000(object):
                 pass
             else:
                 log.error("Unexpected record '%s' (%s)" % (values[0], data))
-            data = self.read()
         log.debug('Downloaded %d records' % yielded)
 
 class CC3000ConfEditor(weewx.drivers.AbstractConfEditor):
@@ -1337,6 +1417,8 @@ if __name__ == '__main__':
                       help='reset min counters')
     parser.add_option('--poll', metavar='POLL_INTERVAL', type=int,
                       help='poll interval in seconds')
+    parser.add_option('--reboot', dest='reboot', action='store_true',
+                      help='reboot the station')
     (options, args) = parser.parse_args()
 
     if options.version:
@@ -1363,6 +1445,11 @@ if __name__ == '__main__':
         s.set_echo()
         if options.getver:
             print(s.get_version())
+        if options.reboot:
+            print('rebooting...')
+            startup_msgs = s.reboot()
+            for line in startup_msgs:
+                print(line)
         if options.status:
             print("Firmware:", s.get_version())
             print("Time:", s.get_time())

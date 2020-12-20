@@ -80,6 +80,14 @@ class getdata(SearchList):
         # print "The next ISS pass for %s %s is %s for %s seconds" %
         #            (latitude, longitude, risetime_y, duration_y)
         # sample output:
+        #dur_ym = duration_y // 60
+        #dur_ys %= 60
+        #duration_y = str(dur_ym) + " min, " + str(dur_ys) + "s"
+
+        #dur_nm = duration_n // 60
+        #dur_ns %= 60
+        #duration_n = str(dur_nm) + " min, " + str(dur_ns) + "s"
+
 
         # The next ISS pass for 41.4984174 -81.6937287 is 2017-12-28 05:08:31 for 489 seconds
         # Build the search list with the new values

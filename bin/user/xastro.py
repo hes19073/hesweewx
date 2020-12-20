@@ -1,46 +1,62 @@
-##
-##This program is free software; you can redistribute it and/or modify it under
-##the terms of the GNU General Public License as published by the Free Software
-##Foundation; either version 2 of the License, or (at your option) any later
-##version.
-##
-##This program is distributed in the hope that it will be useful, but WITHOUT
-##ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-##FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-##details.
-##
-## Version: 1.0.0                                    Date: 10 January 2015
-##
-## Revision History
-##  10 April 2019       v1.0.1      -for python3
-##  10 January 2015     v1.0.0      -Rewritten for Weewx v3.0.0
-##  21 October 2014     v0.9.4      -Initial implementation
-##     (never released)
-##
+"""
+xastro.py
+original  wdastro.py by  gjr80
 
-from __future__ import print_function
-from __future__ import absolute_import
+Astronomical search list extensions for WeeWX-WD
 
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+Version: 2.0.0                                      Date: 20 June 2020
+
+Revision History
+    20 June 2020        v2.0.0
+      - minor formatting changes
+      - WeeWX 3.2+/4.x python2/3 compatible
+
+Previous bitbucket revision history
+    31 March 2017       v1.0.3
+      - no change, version number change only
+    14 December 2016    v1.0.2
+      - no change, version number change only
+    30 November 2016    v1.0.1
+      - added support for second level debug messaging (ie debug = 2)
+    10 January 2015     v1.0.0
+      - rewritten for WeeWX v3.0.0
+    21 October 2014     v0.9.4 (never released)
+      - initial implementation
+
+"""
+
+# python imports
 from array import array
+import bisect
+import datetime
 import logging
 import math
-import datetime
 import time
-import bisect
 
+# python 2/3 compatibility shims
+from six.moves import zip
+
+# WeeWX imports
+import weewx
 from weewx.cheetahgenerator import SearchList
-from weewx.tags import TimespanBinder
-from weeutil.weeutil import TimeSpan
 from weewx.units import ValueHelper
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 log = logging.getLogger(__name__)
 
-ASTRO_SLE_VERSION = '1.0.1'
+WEEWXWD_ASTRO_VERSION = '2.0.0'
+
 
 class MyXMoonApsis(SearchList):
-    """Weewx Search List Extension to provide various lunar apogee/perigee
-       details for use in Weewx generated reports.
+    """WeeWX SLE to provide various lunar apogee/perigee details.
 
        Code to calculate apogee and perigee details based on public domain
        Javascript code used at https://www.fourmilab.ch/earthview/pacalc.html
@@ -51,32 +67,32 @@ class MyXMoonApsis(SearchList):
         self.periarg = array('f', [2,  0,  0,  4,  0,  0,  6,  0,  0,  8,  0,  0,
                                    2, -1,  0,  0,  1,  0, 10,  0,  0,  4, -1,  0,
                                    6, -1,  0, 12,  0,  0,  1,  0,  0,  8, -1,  0,
-                                  14,  0,  0,  0,  0,  2,  3,  0,  0, 10, -1,  0,
-                                  16,  0,  0, 12, -1,  0,  5,  0,  0,  2,  0,  2,
-                                  18,  0,  0, 14, -1,  0,  7,  0,  0,  2,  1,  0,
-                                  20,  0,  0,  1,  1,  0, 16, -1,  0,  4,  1,  0,
+                                   14,  0,  0,  0,  0,  2,  3,  0,  0, 10, -1,  0,
+                                   16,  0,  0, 12, -1,  0,  5,  0,  0,  2,  0,  2,
+                                   18,  0,  0, 14, -1,  0,  7,  0,  0,  2,  1,  0,
+                                   20,  0,  0,  1,  1,  0, 16, -1,  0,  4,  1,  0,
                                    9,  0,  0,  4,  0,  2,  2, -2,  0,  4, -2,  0,
                                    6, -2,  0, 22,  0,  0, 18, -1,  0,  6,  1,  0,
-                                  11,  0,  0,  8,  1,  0,  4,  0, -2,  6,  0,  2,
+                                   11,  0,  0,  8,  1,  0,  4,  0, -2,  6,  0,  2,
                                    3,  1,  0,  5,  1,  0, 13,  0,  0, 20, -1,  0,
                                    3,  2,  0,  4, -2,  2,  1,  2,  0, 22, -1,  0,
                                    0,  0,  4,  6,  0, -2,  2,  1, -2,  0,  2,  0,
                                    0, -1,  2,  2,  0,  4,  0, -2,  2,  2,  2, -2,
-                                  24,  0,  0,  4,  0, -4,  2,  2,  0, 1, -1,  0])
+                                   24,  0,  0,  4,  0, -4,  2,  2,  0, 1, -1,  0])
 
         self.pericoeff = array('f', [-1.6769,  0.4589, -0.1856,  0.0883, -0.0773,
-                                      0.0502, -0.0460,  0.0422, -0.0256,  0.0253,
-                                      0.0237,  0.0162, -0.0145,  0.0129, -0.0112,
+                                     0.0502, -0.0460,  0.0422, -0.0256,  0.0253,
+                                     0.0237,  0.0162, -0.0145,  0.0129, -0.0112,
                                      -0.0104,  0.0086,  0.0069,  0.0066, -0.0053,
                                      -0.0052, -0.0046, -0.0041,  0.0040,  0.0032,
                                      -0.0032,  0.0031, -0.0029,  0.0027,  0.0027,
                                      -0.0027,  0.0024, -0.0021, -0.0021, -0.0021,
-                                      0.0019, -0.0018, -0.0014, -0.0014, -0.0014,
-                                      0.0014, -0.0014,  0.0013,  0.0013,  0.0011,
+                                     0.0019, -0.0018, -0.0014, -0.0014, -0.0014,
+                                     0.0014, -0.0014,  0.0013,  0.0013,  0.0011,
                                      -0.0011, -0.0010, -0.0009, -0.0008,  0.0008,
-                                      0.0008,  0.0007,  0.0007,  0.0007, -0.0006,
+                                     0.0008,  0.0007,  0.0007,  0.0007, -0.0006,
                                      -0.0006,  0.0006,  0.0005,  0.0005, -0.0004,
-                                      0])
+                                     0])
 
         self.peritft = array('f', [4, 5, 7, -1])
 
@@ -92,7 +108,7 @@ class MyXMoonApsis(SearchList):
                                   0,  1,  2, 12,  0,  0,  2, -1,  2,  1, -1,  0])
 
         self.apocoeff = array('f', [0.4392,  0.0684,  0.0456, 0.0426,  0.0212,
-                                   -0.0189,  0.0144,  0.0113, 0.0047,  0.0036,
+                                    -0.0189,  0.0144,  0.0113, 0.0047,  0.0036,
                                     0.0035,  0.0034, -0.0034, 0.0022, -0.0017,
                                     0.0013,  0.0011,  0.0010, 0.0009,  0.0007,
                                     0.0006,  0.0005,  0.0005, 0.0004,  0.0004,
@@ -107,25 +123,25 @@ class MyXMoonApsis(SearchList):
                                     6,  0,  0,  1,  0,  0,  8,  0,  0,  0,  1,  0,
                                     0,  0,  2,  4, -1,  0,  2,  0, -2, 10,  0,  0,
                                     6, -1,  0,  3,  0,  0,  2,  1,  0,  1,  1,  0,
-                                   12,  0,  0,  8, -1,  0,  2,  0,  2,  2, -2,  0,
+                                    12,  0,  0,  8, -1,  0,  2,  0,  2,  2, -2,  0,
                                     5,  0,  0, 14,  0,  0, 10, -1,  0,  4,  1,  0,
-                                   12, -1,  0,  4, -2,  0,  7,  0,  0,  4,  0,  2,
-                                   16,  0,  0,  3,  1,  0,  1, -1,  0,  6,  1,  0,
+                                    12, -1,  0,  4, -2,  0,  7,  0,  0,  4,  0,  2,
+                                    16,  0,  0,  3,  1,  0,  1, -1,  0,  6,  1,  0,
                                     0,  2,  0, 14, -1,  0,  2,  2,  0,  6, -2,  0,
                                     2, -1, -2,  9,  0,  0, 18,  0,  0,  6,  0,  2,
                                     0, -1,  2, 16, -1,  0,  4,  0, -2,  8,  1,  0,
-                                   11,  0,  0,  5,  1,  0, 20,  0,  0])
+                                    11,  0,  0,  5,  1,  0, 20,  0,  0])
 
         self.peripcoeff = array('f', [3629.215, 63.224, -6.990,  2.834,  1.927,
-                                        -1.263, -0.702,  0.696, -0.690, -0.629,
-                                        -0.392,  0.297,  0.260,  0.201, -0.161,
-                                         0.157, -0.138, -0.127,  0.104,  0.104,
-                                        -0.079,  0.068,  0.067,  0.054, -0.038,
-                                        -0.038,  0.037, -0.037, -0.035, -0.030,
-                                         0.029, -0.025,  0.023,  0.023, -0.023,
-                                         0.022, -0.021, -0.020,  0.019,  0.017,
-                                         0.014, -0.014,  0.013,  0.012,  0.011,
-                                         0.010, -0.010,  0])
+                                      -1.263, -0.702,  0.696, -0.690, -0.629,
+                                      -0.392,  0.297,  0.260,  0.201, -0.161,
+                                      0.157, -0.138, -0.127,  0.104,  0.104,
+                                      -0.079,  0.068,  0.067,  0.054, -0.038,
+                                      -0.038,  0.037, -0.037, -0.035, -0.030,
+                                      0.029, -0.025,  0.023,  0.023, -0.023,
+                                      0.022, -0.021, -0.020,  0.019,  0.017,
+                                      0.014, -0.014,  0.013,  0.012,  0.011,
+                                      0.010, -0.010,  0])
 
         self.periptft = array('f', [3, 7, 9, -1])
 
@@ -138,37 +154,38 @@ class MyXMoonApsis(SearchList):
                                    0,  0,  2,  0,  6, -1,  0,  8,  0,  0])
 
         self.apopcoeff = array('f', [3245.251, -9.147, -0.841,  0.697, -0.656,
-                                        0.355,  0.159,  0.127,  0.065,  0.052,
-                                        0.043,  0.031, -0.023,  0.022,  0.019,
-                                       -0.016,  0.014,  0.010,  0])
+                                     0.355,  0.159,  0.127,  0.065,  0.052,
+                                     0.043,  0.031, -0.023,  0.022,  0.019,
+                                     -0.016,  0.014,  0.010,  0])
 
         self.apoptft = array('f', [4, -1])
 
         self.apoptfc = array('f', [0.0016, -1])
         self.apsis_type_lookup = {'p': 'perigee', 'a': 'apogee'}
 
-    def fixangle(self, a):
-        """Range reduce angle in degrees"""
+    @staticmethod
+    def fixangle(a):
+        """Range reduce angle in degrees."""
 
-        return a - 360.0 * (math.floor((a) / 360.0))
+        return a - 360.0 * (math.floor(a / 360.0))
 
-    def sumser(self, trig, D, M, F, T, argtab, coeff, tfix, tfixc):
-        """Sum the series of periodic terms"""
+    def sumser(self, trig, d, m, f, t, argtab, coeff, tfix, tfixc):
+        """Sum the series of periodic terms."""
 
         j = 0
         n = 0
         summ = 0
-        D = math.radians(self.fixangle(D))
-        M = math.radians(self.fixangle(M))
-        F = math.radians(self.fixangle(F))
+        d = math.radians(self.fixangle(d))
+        m = math.radians(self.fixangle(m))
+        f = math.radians(self.fixangle(f))
 
         i = 0
         while coeff[i] != 0.0:
-            arg = (D * argtab[j]) + (M * argtab[j + 1]) + (F * argtab[j + 2])
+            arg = (d * argtab[j]) + (m * argtab[j + 1]) + (f * argtab[j + 2])
             j += 3
             coef = coeff[i]
             if i == tfix[n]:
-                coef += T * tfixc[n]
+                coef += t * tfixc[n]
                 n += 1
             summ += coef * trig(arg)
             i += 1
@@ -176,14 +193,14 @@ class MyXMoonApsis(SearchList):
         return summ
 
     def moonpa(self, k):
-        """Calculate perigee or apogee from index number"""
+        """Calculate perigee or apogee from index number."""
 
-        EarthRad = 6378.14;
+        earth_radius = 6378.14
 
         t = k - math.floor(k)
-        if (t > 0.499 and t < 0.501):
+        if 0.499 < t < 0.501:
             apg = True
-        elif (t > 0.999 or t < 0.001):
+        elif t > 0.999 or t < 0.001:
             apg = False
         else:
             return
@@ -194,39 +211,37 @@ class MyXMoonApsis(SearchList):
         t4 = t3 * t
 
         # Mean time of perigee or apogee
-        JDE = 2451534.6698 + 27.55454989 * k - 0.0006691 * t2 - 0.000001098 * t3 + 0.0000000052 * t4
+        jde = 2451534.6698 + 27.55454989 * k - 0.0006691 * t2 - 0.000001098 * t3 + 0.0000000052 * t4
         # Mean elongation of the Moon
-        D = 171.9179 + 335.9106046 * k - 0.0100383 * t2 - 0.00001156 * t3 + 0.000000055 * t4
+        d = 171.9179 + 335.9106046 * k - 0.0100383 * t2 - 0.00001156 * t3 + 0.000000055 * t4
         # Mean anomaly of the Sun
-        M = 347.3477 + 27.1577721 * k - 0.0008130 * t2 - 0.0000010 * t3
+        m = 347.3477 + 27.1577721 * k - 0.0008130 * t2 - 0.0000010 * t3
         # Moon's argument of latitude
-        F = 316.6109 + 364.5287911 * k - 0.0125053 * t2 - 0.0000148 * t3
-        JDE += self.sumser(math.sin, D, M, F, t,
+        f = 316.6109 + 364.5287911 * k - 0.0125053 * t2 - 0.0000148 * t3
+        jde += self.sumser(math.sin, d, m, f, t,
                            self.apoarg if apg else self.periarg,
                            self.apocoeff if apg else self.pericoeff,
                            self.apotft if apg else self.peritft,
-                           self.apotfc if apg else self.peritfc);
-        par = self.sumser(math.cos, D, M, F, t,
+                           self.apotfc if apg else self.peritfc)
+        par = self.sumser(math.cos, d, m, f, t,
                           self.apoparg if apg else self.periparg,
                           self.apopcoeff if apg else self.peripcoeff,
                           self.apoptft if apg else self.periptft,
-                          self.apoptfc if apg else self.periptfc);
+                          self.apoptfc if apg else self.periptfc)
         par = math.radians(par / 3600.0)
 
-        return array('d', [JDE, par, EarthRad / math.sin(par)])
+        return array('d', [jde, par, earth_radius / math.sin(par)])
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list extension with various lunar perigee and
-           apogee details.
+        """Create a search list with various lunar perigee and apogee details.
 
         Parameters:
-          timespan: An instance of weeutil.weeutil.TimeSpan. This will
-                    hold the start and stop times of the domain of
-                    valid times.
+          timespan: An instance of weeutil.weeutil.TimeSpan. This will hold the
+                    start and stop times of the domain of valid times.
 
-          db_lookup: This is a function that, given a data binding
-                     as its only parameter, will return a database manager
-                     object.
+          db_lookup: This is a function that, given a data binding as its only
+                     parameter, will return a database manager object.
+
         Returns:
           moon_apsis: A list of tuples with details of each apogee/perigee in
                       the current year. Tuple format is:
@@ -237,26 +252,27 @@ class MyXMoonApsis(SearchList):
                           apsis
                         apsis_distance is the distance in km of the moon from
                           earth at apsis.
-          next_apogee_ts: ValueHelper timestamp of next apogee (could be next
-                          year)
+          next_apogee_ts: ValueHelper containing date-time of next apogee
+                          (could be next year)
           next_apogee_dist_km: Earth to Moon distance in km at next apogee
-                               (Weewx has no notion of km/mi so cannot use a
+                               (WeeWX has no notion of km/mi so cannot use a
                                ValueHelper)
-          next_perigee_ts: ValueHelper timestamp of next apogee (could be next
-                           year)
+          next_perigee_ts: ValueHelper containing date-time of next apogee
+                           (could be next year)
           next_perigee_dist_km: Earth to Moon distance in km at next perigee
-                               (Weewx has no notion of km/mi so cannot use a
-                               ValueHelper)
+                                (Weewx has no notion of km/mi so cannot use a
+                                ValueHelper)
           max_apogee: Tuple with details of apogee where Moon is furthest from
                       Earth (ie max apogee) this year.
                       Format is:
                         (apsis_ts, apsis_distance)
                       where apsis_ts and apsis_distance as per moon_apsis above
           min_perigee: Tuple with details of perigee where Moon is closest to
-                      Earth (ie min apogee) this year.
-                      Format is:
-                        (apsis_ts, apsis_distance)
-                      where apsis_ts and apsis_distance as per moon_apsis above
+                       Earth (ie min apogee) this year.
+                       Format is:
+                         (apsis_ts, apsis_distance)
+                       where apsis_ts and apsis_distance as per moon_apsis
+                       above
         """
 
         t1 = time.time()
@@ -265,58 +281,50 @@ class MyXMoonApsis(SearchList):
         curr_year = datetime.date.fromtimestamp(timespan.stop).year
         ssk = math.floor((curr_year - 1999.97) * 13.2555)
         apsis_list = []
-        # get our list of apogees/perigees for the current year. List will
+        # Get our list of apogees/perigees for the current year. List will
         # include last apogee/perigee from previous year and first
         # apogee/perigee from next year
         for z in range(0, 40):
             sk = ssk + z * 0.5
             apsis = 'p' if (sk - math.floor(sk)) < 0.25 else 'a'
             pa = self.moonpa(sk)
-            pa_d = pa[2]
             pa_ts = (pa[0]-2440587.5) * 86400.0
             # save our ts as a ValueHelper
             pa_ts_vh = ValueHelper((pa_ts, 'unix_epoch', 'group_time'),
                                    formatter=self.generator.formatter,
                                    converter=self.generator.converter)
-            pa_di_vt = (pa_d, 'km', 'group_distance')
-            pa_di_vh = ValueHelper(pa_di_vt, formatter=self.generator.formatter, converter=self.generator.converter)
             # add the latest event to our list
-            apsis_list.append((apsis, pa_ts_vh, pa_di_vh))
+            apsis_list.append((apsis, pa_ts_vh, pa[2]))
             if datetime.date.fromtimestamp(pa_ts).year > curr_year:
                 # if we have an apsis from next year then grab one more then
                 # stop, we have enough
                 sk = ssk + (z + 1) * 0.5
                 apsis = 'p' if (sk - math.floor(sk)) < 0.25 else 'a'
                 pa = self.moonpa(sk)
-                pa_d = pa[2]
                 pa_ts = (pa[0]-2440587.5) * 86400.0
                 # save our ts as a ValueHelper
                 pa_ts_vh = ValueHelper((pa_ts, 'unix_epoch', 'group_time'),
                                        formatter=self.generator.formatter,
                                        converter=self.generator.converter)
-                pa_di_vt = (pa_d, 'km', 'group_distance')
-                pa_di_vh = ValueHelper(pa_di_vt, formatter=self.generator.formatter, converter=self.generator.converter)
-
-                #pa_di_vh = ValueHelper((pa_d, 'km', 'group_distance'),
-                #                       formatter=self.generator.formatter,
-                #                       converter=self.generator.converter)
                 # add the latest event to our list
-                apsis_list.append((apsis, pa_ts_vh, pa_di_vh))
+                apsis_list.append((apsis, pa_ts_vh, pa[2]))
                 break
 
         # make sure our list is in date order
         apsis_list.sort(key=lambda ts: ts[1].raw)
 
-        # get timestamps fro start of this year and start of next year
-        # Necessary so we can identify which events occur this year
+        # get timestamps for start of this year and start of next year,
+        # necessary so we can identify which events occur this year
         _tt = time.localtime(timespan.stop)
         _ts = time.mktime((_tt.tm_year, 1, 1, 0, 0, 0, 0, 0, -1))
         _ts_y = time.mktime((_tt.tm_year + 1, 1, 1, 0, 0, 0, 0, 0, -1))
         # get max apogee for the year (ie greatest distance to moon)
-        max_apogee = max(apsis_list, key=lambda ap: ap[2] if ap[1].raw >= _ts and ap[1].raw < _ts_y else 0)
+        max_apogee = max(apsis_list,
+                         key=lambda ap: ap[2] if _ts <= ap[1].raw < _ts_y else 0)
         max_apogee = (max_apogee[1], max_apogee[2])
         # get min perigee for the year (ie least distance to moon)
-        min_perigee = min(apsis_list, key=lambda ap: ap[2] if ap[1].raw >= _ts and ap[1].raw < _ts_y else 1000000)
+        min_perigee = min(apsis_list,
+                          key=lambda ap: ap[2] if _ts <= ap[1].raw < _ts_y else 1000000)
         min_perigee = (min_perigee[1], min_perigee[2])
 
         # split our apsis list into individual components so we can find the
@@ -339,33 +347,32 @@ class MyXMoonApsis(SearchList):
                 next_perigee_dist = apsis_dist_list[next_apsis_idx]
                 next_apogee_ts_vh = apsis_ts_vh_list[next_apsis_idx + 1]
                 next_apogee_dist = apsis_dist_list[next_apsis_idx + 1]
-        except:
+        except ValueError:
             # if we had an error then set everything to None
             next_apogee_ts_vh = ValueHelper((None, 'unix_epoch', 'group_time'),
-                                         formatter=self.generator.formatter,
-                                         converter=self.generator.converter)
+                                            formatter=self.generator.formatter,
+                                            converter=self.generator.converter)
             next_apogee_dist = None
-
             next_perigee_ts_vh = ValueHelper((None, 'unix_epoch', 'group_time'),
-                                          formatter=self.generator.formatter,
-                                          converter=self.generator.converter)
+                                             formatter=self.generator.formatter,
+                                             converter=self.generator.converter)
             next_perigee_dist = None
 
-
-
-        # Now create a small dictionary with suitable keys:
-        search_list_extension = {'moon_apsis'           : apsis_list,
-                                 'next_apogee_ts'       : next_apogee_ts_vh,
-                                 'next_apogee_dist_km'  : next_apogee_dist,
-                                 'next_perigee_ts'      : next_perigee_ts_vh,
-                                 'next_perigee_dist_km' : next_perigee_dist,
-                                 'max_apogee'           : max_apogee,
-                                 'min_perigee'          : min_perigee}
+        # now create a small dictionary with suitable keys
+        search_list_extension = {'moon_apsis': apsis_list,
+                                 'next_apogee_ts': next_apogee_ts_vh,
+                                 'next_apogee_dist_km': next_apogee_dist,
+                                 'next_perigee_ts': next_perigee_ts_vh,
+                                 'next_perigee_dist_km': next_perigee_dist,
+                                 'max_apogee': max_apogee,
+                                 'min_perigee': min_perigee}
 
         t2 = time.time()
-        log.debug("MyXMoonApsis SLE executed in %0.3f seconds",  t2 - t1)
+        if weewx.debug >= 2:
+            log.debug("MoonApsis SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
+
 
 class MyXEclipse(SearchList):
 
@@ -401,7 +408,9 @@ class MyXEclipse(SearchList):
                                (2161690375, 'A'), (2176938010, 'T'),
                                (2192289174, 'A'), (2207579026, 'T'),
                                (2220320582, 'P'))
-        self.solar_eclipse_type_lookup = {'A': 'Annular', 'H': 'Hybrid', 'P': 'Partial', 'T': 'Total'}
+        self.solar_eclipse_type_lookup = {'A': 'Annular', 'H': 'Hybrid',
+                                          'P': 'Partial', 'T': 'Total'
+                                          }
         self.lunar_eclipses = ((1308168823, 'T'), (1323527576, 'T'),
                                (1338807860, 'P'), (1354113247, 'Pe'),
                                (1366920518, 'P'), (1369455066, 'Pe'),
@@ -436,43 +445,47 @@ class MyXEclipse(SearchList):
                                (2162892956, 'Pe'), (2175702300, 'Pe'),
                                (2190999265, 'P'), (2206284988, 'P'),
                                (2221645582, 'T'), (2236878281, 'T'))
-        self.lunar_eclipse_type_lookup = {'P': 'Partial', 'Pe': 'Penumbral', 'T': 'Total'}
+        self.lunar_eclipse_type_lookup = {'P': 'Partial',
+                                          'Pe': 'Penumbral',
+                                          'T': 'Total'
+                                          }
 
-    def deltaT(self, ts):
+    @staticmethod
+    def delta_t(ts):
         """Calculates the difference between Universal Time (UT) and
            Terrestrial Dynamical Time (TD). This allows UT of an eclipse to be
            determined from the NASA provided eclipse time (which is in TD)
            using the formula:
 
-            delta T = TD - UT
+                delta T = TD - UT
 
            delta T is calculated using the approximation:
 
-            delta T = 62.92 + 0.32217 * t + 0.005589 * (t ** 2)
+                delta T = 62.92 + 0.32217 * t + 0.005589 * (t ** 2)
 
             where
-             t = y - 2000
-             y = year + (month number - 0.5)/12
+                t = y - 2000
+                y = year + (month number - 0.5)/12
 
            Source: http://eclipse.gsfc.nasa.gov/LEcat5/deltat.html
         """
 
         try:
             dt = datetime.datetime.fromtimestamp(ts)
-            if dt.year > 2005 and dt.year < 2050:
+            if 2005 < dt.year < 2050:
                 y = dt.year + (dt.month - 0.5)/12
                 t = y - 2000
-                result = 62.92 +0.32217 * t + 0.00589 * t ** 2
+                result = 62.92 + 0.32217 * t + 0.00589 * t ** 2
             else:
                 result = None
-        except:
+        except ValueError:
             result = None
         return result
 
     def get_extension_list(self, timespan, db_lookup):
         """Returns a search list with details of the next Solar and Lunar eclipse.
 
-           Details provided include unix timestamp of the eclipse as well as
+           Details provided include epoch timestamp of the eclipse as well as
            the type. Note that the dictionary of eclipses is all eclipses, not
            just eclipses visible at the stations location, so the eclipse
            returned may not be visible to the user. Eclipse data is based upon
@@ -525,12 +538,14 @@ class MyXEclipse(SearchList):
         solar_eclipse_ts_list, solar_eclipse_type_list = list(zip(*self.solar_eclipses))
         try:
             # find the index of the next solar eclipse
-            next_solar_eclipse_idx = bisect.bisect_left(solar_eclipse_ts_list, search_ts)
+            next_solar_eclipse_idx = bisect.bisect_left(solar_eclipse_ts_list,
+                                                        search_ts)
             # get ts of next solar eclipse
-            next_solar_eclipse_ts = solar_eclipse_ts_list[next_solar_eclipse_idx] - self.deltaT(solar_eclipse_ts_list[next_solar_eclipse_idx])
+            next_solar_eclipse_ts = (solar_eclipse_ts_list[next_solar_eclipse_idx] -
+                                     self.delta_t(solar_eclipse_ts_list[next_solar_eclipse_idx]))
             # get the type code of next solar eclipse
             next_solar_eclipse_type = solar_eclipse_type_list[next_solar_eclipse_idx]
-        except:
+        except ValueError:
             # if an error then set them to None
             next_solar_eclipse_ts = None
             next_solar_eclipse_type = None
@@ -547,12 +562,14 @@ class MyXEclipse(SearchList):
         lunar_eclipse_ts_list, lunar_eclipse_data_list = list(zip(*self.lunar_eclipses))
         try:
             # find the index of the next lunar eclipse
-            next_lunar_eclipse_idx = bisect.bisect_left(lunar_eclipse_ts_list, search_ts)
+            next_lunar_eclipse_idx = bisect.bisect_left(lunar_eclipse_ts_list,
+                                                        search_ts)
             # get ts of next lunar eclipse
-            next_lunar_eclipse_ts = lunar_eclipse_ts_list[next_lunar_eclipse_idx] - self.deltaT(lunar_eclipse_ts_list[next_lunar_eclipse_idx])
+            next_lunar_eclipse_ts = (lunar_eclipse_ts_list[next_lunar_eclipse_idx] -
+                                     self.delta_t(lunar_eclipse_ts_list[next_lunar_eclipse_idx]))
             # get the type code of next lunar eclipse
             next_lunar_eclipse_type = lunar_eclipse_data_list[next_lunar_eclipse_idx]
-        except:
+        except ValueError:
             # if an error then set them to None
             next_lunar_eclipse_ts = None
             next_lunar_eclipse_type = None
@@ -566,15 +583,17 @@ class MyXEclipse(SearchList):
         next_lunar_eclipse_type = self.lunar_eclipse_type_lookup[next_lunar_eclipse_type]
 
         # Now create a small dictionary with suitable keys:
-        search_list_extension = {'next_solar_eclipse'      : next_solar_eclipse_ts_vh,
-                                 'next_solar_eclipse_type' : next_solar_eclipse_type,
-                                 'next_lunar_eclipse'      : next_lunar_eclipse_ts_vh,
-                                 'next_lunar_eclipse_type' : next_lunar_eclipse_type}
+        search_list_extension = {'next_solar_eclipse': next_solar_eclipse_ts_vh,
+                                 'next_solar_eclipse_type': next_solar_eclipse_type,
+                                 'next_lunar_eclipse': next_lunar_eclipse_ts_vh,
+                                 'next_lunar_eclipse_type': next_lunar_eclipse_type}
 
         t2 = time.time()
-        log.debug("MyXEclipse SLE executed in %0.3f seconds", t2 - t1)
+        if weewx.debug >= 2:
+            log.debug("Eclipse SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
+
 
 class MyXEarthApsis(SearchList):
 
@@ -587,7 +606,7 @@ class MyXEarthApsis(SearchList):
                            1893677520, 1925343780, 1956710760, 1988427180,
                            2019967080, 2051406300, 2083146360, 2114556240,
                            2146121040, 2177834400, 2209189740
-                          )
+                           )
         self.aphelion = (1404429000, 1436187180, 1467647760, 1499129700,
                          1530893640, 1562265180, 1593874200, 1625538660,
                          1656902640, 1688634060, 1720158900, 1751581080,
@@ -595,27 +614,24 @@ class MyXEarthApsis(SearchList):
                          1909383600, 1941064140, 1972653000, 2004036600,
                          2035802580, 2067270060, 2098750260, 2130495180,
                          2161871520, 2193490500, 2225143020
-                        )
+                         )
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list with the timestamp the next perihelion and
-           aphelion.
+        """Create a search list with date-time of next perihelion and aphelion.
 
            Source: Earth perihelion and aphelion Table Courtesy of
                    Fred Espenak, www.Astropixels.com
 
         Parameters:
-          timespan: An instance of weeutil.weeutil.TimeSpan. This will
-                    hold the start and stop times of the domain of
-                    valid times.
+            timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
+                      the start and stop times of the domain of valid times.
 
-          db_lookup: This is a function that, given a data binding
-                     as its only parameter, will return a database manager
-                     object.
+          db_lookup: This is a function that, given a data binding as its only
+                     parameter, will return a database manager object.
 
         Returns:
-          next_perhelion: Timestamp of next perihelion
-          next_aphelion: Timestamp of next aphelion
+            next_perhelion: ValueHelper containing date-time of next perihelion
+            next_aphelion: ValueHelper containing date-time of next aphelion
         """
 
         t1 = time.time()
@@ -632,29 +648,31 @@ class MyXEarthApsis(SearchList):
             next_perihelion_ts = self.perihelion[next_perihelion_idx]
             # get ts of next aphelion
             next_aphelion_ts = self.aphelion[next_aphelion_idx]
-        except:
+        except IndexError:
             # if an error then set them to None
-            next_perhelion_ts = None
+            next_perihelion_ts = None
             next_aphelion_ts = None
 
         # make our ts into ValueHelpers
         next_perihelion_ts_vh = ValueHelper((next_perihelion_ts, 'unix_epoch', 'group_time'),
-                                           'current',
-                                           formatter=self.generator.formatter,
-                                           converter=self.generator.converter)
+                                            'current',
+                                            formatter=self.generator.formatter,
+                                            converter=self.generator.converter)
         next_aphelion_ts_vh = ValueHelper((next_aphelion_ts, 'unix_epoch', 'group_time'),
                                           'current',
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter)
 
-        # Now create a small dictionary with suitable keys:
-        search_list_extension = {'next_perihelion' : next_perihelion_ts_vh,
-                                 'next_aphelion'   : next_aphelion_ts_vh}
+        # now create a small dictionary with suitable keys
+        search_list_extension = {'next_perihelion': next_perihelion_ts_vh,
+                                 'next_aphelion': next_aphelion_ts_vh}
 
         t2 = time.time()
-        log.debug("MyXEarthApsis SLE executed in %0.3f seconds",  t2 - t1)
+        if weewx.debug >= 2:
+            log.debug("EarthApsis SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
+
 
 class MyXChineseNewYear(SearchList):
 
@@ -669,25 +687,23 @@ class MyXChineseNewYear(SearchList):
                          2032: (11, 2), 2033: (31, 1), 2034: (19, 2),
                          2035: (8,  2), 2036: (28, 1), 2037: (15, 2),
                          2038: (4,  2), 2039: (24, 1), 2040: (12, 2)
-                        }
+                         }
 
     def get_extension_list(self, timespan, db_lookup):
-        """Returns a search list with the date of the next Chinese New Year.
+        """Create a search list with the date of the next Chinese New Year.
 
            Source: http://en.wikipedia.org/wiki/Chinese_New_Year
 
         Parameters:
-          timespan: An instance of weeutil.weeutil.TimeSpan. This will
-                    hold the start and stop times of the domain of
-                    valid times.
+            timespan: An instance of weeutil.weeutil.TimeSpan. This will hold
+                      the start and stop times of the domain of valid times.
 
-          db_lookup: This is a function that, given a data binding
-                     as its only parameter, will return a database manager
-                     object.
+            db_lookup: This is a function that, given a data binding as its
+                       only parameter, will return a database manager object.
 
         Returns:
-          next_cny: Tuple consisting of numeric values (day, month, year) for
-                    next Chinese New Year
+            next_cny: Tuple consisting of numeric values (day, month, year) for
+                      next Chinese New Year
         """
 
         t1 = time.time()
@@ -704,14 +720,16 @@ class MyXChineseNewYear(SearchList):
             if _date > datetime.date(_y, _m, _d):
                 # if it has passed then get construct next year's
                 cny = self.cny_dict[_year + 1] + (_year + 1, )
-        except:
+        except ValueError:
             # if we strike an error then return None
             cny = None
 
-        # Now create a small dictionary with suitable keys:
-        search_list_extension = {'next_cny' : cny}
+        # now create a small dictionary with suitable keys
+        search_list_extension = {'next_cny': cny}
 
         t2 = time.time()
-        log.debug("MyXChineseNewyear SLE executed in %0.3f seconds", t2 - t1)
+        if weewx.debug >= 2:
+            log.debug("ChineseNewYear SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
+

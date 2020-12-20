@@ -11,6 +11,7 @@ import time
 import weeutil.weeutil
 import weewx.units
 
+
 class StationInfo(object):
     """Readonly class with static station information. It has no formatting information. Just a POS.
     
@@ -57,6 +58,7 @@ class StationInfo(object):
         # For backwards compatibility:
         self.webpath         = self.station_url
 
+
 class Station(object):
     """Formatted version of StationInfo."""
 
@@ -69,9 +71,9 @@ class Station(object):
 
         # Add a bunch of formatted attributes:
         label_dict = skin_dict.get('Labels', {})
-        hemispheres    = label_dict.get('hemispheres', ('N','S','E','W'))
+        hemispheres = label_dict.get('hemispheres', ('N', 'S', 'E', 'W'))
         latlon_formats = label_dict.get('latlon_formats')
-        self.latitude  = weeutil.weeutil.latlon_string(stn_info.latitude_f,
+        self.latitude = weeutil.weeutil.latlon_string(stn_info.latitude_f,
                                                        hemispheres[0:2],
                                                        'lat', latlon_formats)
         self.longitude = weeutil.weeutil.latlon_string(stn_info.longitude_f,
@@ -98,7 +100,7 @@ class Station(object):
     @property
     def db_uptime(self):
         """Lazy evaluation of weewx uptime."""
-        delta_time = time.time() -  1383254340
+        delta_time = time.time() - 1383254340
 
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
                                        formatter=self.formatter,

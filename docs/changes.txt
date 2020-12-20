@@ -1,6 +1,184 @@
 weewx change history
 --------------------
 
+4.3.0 MM/DD/YYYY
+
+Version 4.2.0 had a bug, which caused the sums in the daily summary to be
+incorrectly calculated. This version includes a patch to fix the problem. It
+runs once at startup. Fixes issue #623.
+
+The WMR200 driver is no longer supported. An unsupported version can be found
+at https://github.com/weewx/weewx-wmr200.
+
+Service weewx.wxxtypes.StdDelta was inadvertently left out of the list of
+services to be run. Fortunately, it is not used. Yet. Added it back in.
+
+Added the "old" NWS algorithm as an option for calculating heat index.
+
+Changed how various undocumented parameters in [StdWXCalculate] are specified.
+The only one people are likely to have used is 'ignore_zero_wind'. Its name has
+changed to 'force_null', and it has been moved. See the Upgrading Guide.
+
+Documented the various [StdWXCalculate] options.
+
+Fixed corner case for windDir when using software record generation,
+ignore_zero_wind=True, and windSpeed=0 for entire record interval. Now emits
+last windDir value.
+
+Fixed problem when looking up stars with more than one word in their name.
+Fixes issue #620.
+
+Fixed problem where wind gust direction is not available when using software
+record generation.
+
+Added --no-prompt action to wee_import allowing wee_import to be run unattended.
+
+
+4.2.0 10/26/2020
+
+CHANGES COMING! This is the last release that will support the LaCrosse WS23xx,
+Oregon WMR200 and WMR300 stations. In the future, they will be published as
+unsupported extensions.
+
+Made it easier to add new, derived types via StdWXCalculate. Fixes issue #491.
+
+Changed the tag system slightly in order to make it possible for the XTypes
+system to add new aggregations that take an argument.
+
+Added the new data types in the extended_wview schema to the WeeWX types
+system. Fixes issue #613.
+
+Added ability to label left, right or both y-axes of graphs.  PR#610.
+Fixes issue #609. Thanks to user Brent Fraser!
+
+Added units and labels for the lightning data types.
+
+Fixed problem where threads attempt to access non-existent database. Fixes
+issue #579.
+
+Fixed problem that caused reporting units to revert to US if they were in a
+mixed unit system. Fixes issue #576.
+
+Fixed problem that could cause the station registry to fail if given a location
+with a non-ASCII location name.
+
+Changed TE923 bucket size from 0.02589 inches to 1/36 of an inch
+(0.02777778 in). PR #575. Fixes issue #574. Thanks to user Timothy!
+
+Undocumented option retry_certificate has been renamed to retry_ssl, and now
+covers all SSL errors (not just certificate errors). Fixes issue #569. Thanks
+to user Eric!
+
+Fixed problem caused by specifying a [Logging]/[[formatters]] section in
+weewx.conf that uses interpolated variables.
+
+Fixed problem in the Vantage driver that resulted in incorrect sunrise/sunset
+being included in loop packets when run under Python 3. Thanks to users 
+Constantine and Jacques!
+
+Improved auto-scaling of plot axes.
+
+Fixed problem where aggregates of windvec and windgustvec returned the aggregate
+since start of day, not the start of the aggregation period. Fixes issue #590.
+
+New unit "beaufort", included in "group_speed". Treating beaufort as a separate
+type has been deprecated. Fixes issue #591.
+
+New unit "kPa", included in "group_pressure". Fixes issue #596.
+
+Fixed bug in the simulator. Made it easier to subclass class Simulator.
+
+Expressions in StdCalibration are now ordered. Later corrections can depend on
+earlier corrections.
+
+Fixed problem under Python 2, where option 'none' could cause exception.
+PR #597. Thanks to user Clément!
+
+Fixed problem with ws23xx driver under Python 3 that caused it to crash.
+
+Use a more modern formula for heat index. Fixes issue #601. Thanks to
+user Peter Q!
+
+Allow overriding the data binding when using iterators. Fixes issue #580.
+
+Fixed problem where old daily summaries may not have a version number.
+
+Fixed problem in WMR200 driver where missing UV reports as index 255.
+
+Added option 'force_direction' for working around a WU bug. Fixes issue #614.
+
+
+4.1.1 06/01/2020
+
+Fixed problem that caused wind speed to be reported to AWEKAS in m/s instead
+of km/h.
+
+Fixed problem that caused FTP attempts not to be retried.
+
+Fixed problem that caused monthly and yearly summaries to appear only
+sporadically.
+
+Fixed problem when using the ultimeter driver under Python 2.
+
+Fixed problem when using the ws1 driver under Python 2.
+
+Fixed problem that prevented remote directories from being created by FTP.
+
+New strategy for calculating system uptime under Python 3. Revisits
+issue #428. Alternative to PR #561.
+
+
+4.1.0 05/25/2020
+
+Archive records emitted by the Vantage driver now include the number of wind
+samples per archive interval in field wind_samples.
+
+wee_import can now import WeatherCat monthly .cat files.
+
+Changed the logging configuration dictionary to match the Python documents.
+Thanks to user Graham for figuring this out!
+
+Fixed problem that prevented ws1 driver from working under Python 3. PR #556.
+
+Eliminate use of logging in wee_config, allowing it to be used for installs
+without syslog.
+
+Allow expressions to be used as a datatype when plotting.
+
+Added option 'reuse_ssl' to FTP. This activates a workaround for a bug in the
+Python ftp library that causes long-lived connections to get closed prematurely.
+Works only with Python 3.6 and greater.
+
+The cc3000 driver will automatically reboot the hardware if it stops sending
+observations. PR #549.
+
+Install using setup.py forgot to set WEEWX_ROOT when installing in non-standard
+places. Fixes issue #546.
+
+Fixed bug in ws28xx driver that prevented it from running under Python 3.
+Fixes issue #543.
+
+Changed query strategy for calculating min and max wind vectors, which
+should result in much faster plot generation.
+
+Fixed bug in wmr9x8 driver that prevented it from running under Python 3.
+
+Fixed several bugs in the te923 driver that prevented it from running under
+Python 3.
+
+Added a logging handler for rotating files. See https://bit.ly/2StYSHb for how
+to use it. It is the default for MacOS.
+
+More information if an exception is raised while querying for vantage hardware
+type.
+
+wunderfixer: fixed problem under Python 3 where response was not converted to
+str before attempting to parse the JSON. Option --simulate now requires api_key
+and password, so it can hit the WU.
+
+Fixed problem in te923 driver under Python 3 that caused it to crash.
+
+
 4.0.0 04/30/2020
 
 Ported to Python 3. WeeWX should now run under Python 3.5 and greater, as well
@@ -139,6 +317,11 @@ calculated must be listed in weewx.conf. See the Upgrade Guide.
 
 setup.py install no longer saves the old 'bin' subdirectory. Instead, it simply
 overwrites it.
+
+Support for the vantage LOOP2 packet format. Fixes issue #374.
+
+The vantage driver now allows 3 retries per read, rather than per
+archive interval.
 
 
 3.9.2 07/14/2019
@@ -540,8 +723,6 @@ Decode heatindex and windchill from wmr300 sensor outputs.
 
 Report the firmware version when initializing the cc3000 driver.
 
-Support for the vantage LOOP2 packet format. Fixes issue #374.
-
 Fixed bug in vantage driver that would prevent console wake up during
 retries when fetching EEPROM vales. Thanks to user Dan Begallie!
 
@@ -552,10 +733,7 @@ out, other drivers will follow suit. Partial fix of issue #175.
 The vantage driver now emits the barometer trend in LOOP packets as
 field 'trendIcon'.
 
-The vantage driver now allows 3 retries per read, rather than per
-archive interval.
-
-The engine now logs locale. Additional information if a TERM signal is 
+The engine now logs locale. Additional information if a TERM signal is
 received.
 
 Removed the site-specific "Pond" extensions from the Standard skin.

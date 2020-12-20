@@ -55,58 +55,76 @@ from __future__ import absolute_import
 from __future__ import print_function
 import math
 
+
 def FToC(value): 
     return (value - 32.0) * (5.0 / 9.0)
+
 
 def CToF(value): 
     return (9.0/5.0)*value + 32.0
 
+
 def CToK(value): 
     return value + 273.15
+
 
 def KToC(value): 
     return value - 273.15
 
+
 def FToR(value): 
     return value + 459.67
+
 
 def RToF(value):
     return value - 459.67
 
+
 def InToHPa(value):
     return value / 0.02953
+
 
 def HPaToIn(value):
     return value * 0.02953
 
+
 def FtToM(value):
     return value * 0.3048
+
 
 def MToFt(value):
     return value / 0.3048
 
+
 def InToMm(value): 
     return value * 25.4
+
 
 def MmToIn(value): 
     return value / 25.4
 
+
 def MToKm(value): # NB: This is *miles* to Km.
     return value * 1.609344
+
 
 def KmToM(value): # NB: This is Km to *miles*
     return value / 1.609344
 
+
 def msToKmh(value):
     return value * 3.6
 
+
 def Power10(y):
     return pow(10.0, y)
+
 
 # This maps various Pascal functions to Python functions.
 Power = pow
 Exp   = math.exp
 Round = round
+
 
 class TWxUtils(object):
 
@@ -205,12 +223,12 @@ class TWxUtils(object):
         return Result
 
     # FIXME: still to do
-    #class function TWxUtils.AltimeterToStationPressure(pressureHPa: TWxReal;
+    # class function TWxUtils.AltimeterToStationPressure(pressureHPa: TWxReal;
     #     elevationM: TWxReal;
     #     algorithm: TAltimeterAlgorithm = DefaultAltimeterAlgorithm): TWxReal;
-    #begin
-    #end;
-    #}
+    # begin
+    # end;
+    # }
 
     @staticmethod
     def SeaLevelToStationPressure(pressureHPa, elevationM,
@@ -283,7 +301,7 @@ class TWxUtils(object):
         elif algorithm == 'vaTetenNWS':
             #  Magnus Teten
             # www.srh.weather.gov/elp/wxcalc/formulas/vaporPressure.html
-            Result = 6.112 * Power(10,(7.5 * tempC / (tempC + 237.7)))
+            Result = 6.112 * Power(10, (7.5 * tempC / (tempC + 237.7)))
         elif algorithm == 'vaTetenMurray':
             # Magnus Teten (Murray 1967)
             Result = Power(10, (7.5 * tempC / (237.5 + tempC)) + 0.7858)
@@ -326,10 +344,10 @@ class TWxUtils(object):
         Result = (TWxUtils.earthRadius45 * 1000 * geometricAltitudeM) / ((TWxUtils.earthRadius45 * 1000) + geometricAltitudeM)
         return Result
 
-
-#==============================================================================
+# ==============================================================================
 #                              class TWxUtilsUS
-#==============================================================================
+# ==============================================================================
+
 
 class TWxUtilsUS(object):
 
@@ -450,9 +468,10 @@ class TWxUtilsUS(object):
         Result = MToFt(TWxUtils.GeopotentialAltitude(FtToM(geometricAltitudeFt)))
         return Result
 
-#==============================================================================
+# ==============================================================================
 #                              class TWxUtilsVP
-#==============================================================================
+# ==============================================================================
+
 
 class uWxUtilsVP(object):
     """ This class contains functions for calculating the raw sensor pressure

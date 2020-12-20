@@ -35,7 +35,6 @@ from weewx.tags import TimeBinder, TimespanBinder
 from weeutil.weeutil import TimeSpan, genDaySpans
 from weewx.units import ValueHelper, ValueTuple
 from datetime import date
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 log = logging.getLogger(__name__)
 
@@ -108,8 +107,10 @@ class xGreenDay(SearchList):
          # call green_sum as sum of day.outTemp.avg more than 0 degree C
          #      green_day as datetime were green_sum more then 200
          if anomo > 5:
-             self.filename = '/home/weewx/bin/user/zzgreenDay'
-             self.filename1 = '/home/weewx/bin/user/zzgreenSum'
+             #self.filename = '/home/weewx/bin/user/zzgreenDay'
+             self.filename = '/home/weewx/archive/zzgreenDay'
+             #self.filename1 = '/home/weewx/bin/user/zzgreenSum'
+             self.filename1 = '/home/weewx/archive/zzgreenSum'
              try:
                  with open(self.filename1) as f1:
                      tavgS = f1.read()
@@ -154,46 +155,16 @@ class xGreenDay(SearchList):
                      if tavgS >= 200.0 and tavg_ts is None:
                          tavg_ts = _row[0]
 
-                #for tspan in weeutil.weeutil.genDaySpans(jan_ano_ts, jane_ano_ts):
-                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
-                #     tavg0 = _row[1] / _row[2]
-                #     if tavg0 > 0.0:
-                #         tavg0 = tavg0 * 0.5
-                #         tavgS = tavgS + tavg0
-                #         if tavgS >= 200.0 and tavg_ts is None:
-                #             tavg_ts = _row[0]
-
-                # for tspan in weeutil.weeutil.genDaySpans(feb_ano_ts, febe_ano_ts):
-                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
-                #     if _row is None or _row[1] is None or _row[2] is None:
-                #         continue
-
-                #     tavg0 = _row[1] / _row[2]
-                #     if tavg0 > 0.0:
-                #         tavg0 = tavg0 * 0.75
-                #         tavgS = tavgS + tavg0
-                #         if tavgS >= 200.0 and tavg_ts is None:
-                #             tavg_ts = _row[0]
-
-                # for tspan in weeutil.weeutil.genDaySpans(mae_ano_ts, maie_ano_ts):
-                #     _row = db_lookup().getSql("SELECT dateTime,wsum,sumtime FROM archive_day_outTemp WHERE dateTime>? AND dateTime<=?", (tspan.start, tspan.stop))
-                #     if _row is None or _row[1] is None or _row[2] is None:
-                #         continue
-
-                #     tavg0 = _row[1] / _row[2]
-                #     if tavg0 > 0.0:
-                #         tavgS = tavgS + tavg0
-                #         if tavgS >= 200.0 and tavg_ts is None:
-                #            tavg_ts = _row[0]
-
              except weedb.DatabaseError:
                  pass
 
-             dat_gs = open("/home/weewx/bin/user/zzgreenSum", "w")
+             #dat_gs = open("/home/weewx/bin/user/zzgreenSum", "w")
+             dat_gs = open("/home/weewx/archive/zzgreenSum", "w")
              dat_gs.write(str(tavgS))
              dat_gs.close()
 
-             dat_gd = open("/home/weewx/bin/user/zzgreenDay", "w")
+             #dat_gd = open("/home/weewx/bin/user/zzgreenDay", "w")
+             dat_gd = open("/home/weewx/archive/zzgreenDay", "w")
              dat_gd.write(str(tavg_ts))
              dat_gd.close()
 
@@ -213,14 +184,16 @@ class xGreenDay(SearchList):
              except weedb.DatabaseError:
                  pass
 
-             dat_ws = open("/home/weewx/bin/user/zzwarmSum", "w")
+             #dat_ws = open("/home/weewx/bin/user/zzwarmSum", "w")
+             dat_ws = open("/home/weewx/archive/zzwarmSum", "w")
              dat_ws.write(str(warmS))
              dat_ws.close()
 
          else:
-             self.filename = '/home/weewx/bin/user/zzwarmSum'
+             #self.filename_warm = '/home/weewx/bin/user/zzwarmSum'
+             self.filename_warm = '/home/weewx/archive/zzwarmSum'
              try:
-                 with open(self.filename) as f:
+                 with open(self.filename_warm) as f:
                      warmS = f.read()
                      warmS = float(warmS)
              except Exception as e:
@@ -229,9 +202,10 @@ class xGreenDay(SearchList):
          # call coolT_sum as sum of day.outTemp.avg less than 0 degree C
          #if maee_ano_ts < dat_ts < nov_ano_ts:
          if 3 < anomo < 11:
-             self.filename = '/home/weewx/bin/user/zzcoolSum'
+             #self.filename_cool = '/home/weewx/bin/user/zzcoolSum'
+             self.filename_cool = '/home/weewx/archive/zzcoolSum'
              try:
-                 with open(self.filename) as f:
+                 with open(self.filename_cool) as f:
                      coolS = f.read()
                      coolS = float(coolS)
              except Exception as e:
@@ -260,7 +234,8 @@ class xGreenDay(SearchList):
              except weedb.DatabaseError:
                  pass
 
-             dat_cs = open("/home/weewx/bin/user/zzcoolSum", "w")
+             #dat_cs = open("/home/weewx/bin/user/zzcoolSum", "w")
+             dat_cs = open("/home/weewx/archive/zzcoolSum", "w")
              dat_cs.write(str(coolS))
              dat_cs.close()
 

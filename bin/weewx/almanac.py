@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -26,13 +26,15 @@ except ImportError:
 
 # NB: Have Almanac inherit from 'object'. However, this will cause
 # an 'autocall' bug in Cheetah versions before 2.1.
+
+
 class Almanac(object):
     """Almanac data.
-    
+
     ATTRIBUTES.
-    
+
     As a minimum, the following attributes are available:
-    
+
         sunrise: Time (local) upper limb of the sun rises above the horizon, formatted using the format 'timeformat'.
         sunset: Time (local) upper limb of the sun sinks below the horizon, formatted using the format 'timeformat'.
         moon_phase: A description of the moon phase(eg. "new moon", Waxing crescent", etc.)
@@ -235,9 +237,9 @@ class Almanac(object):
         self.moon_phase = self.moon_phases[self.moon_index]
         self.time_djd     = timestamp_to_djd(self.time_ts)
 
-        # Check to see whether the user has module 'ephem'. 
+        # Check to see whether the user has module 'ephem'.
         if 'ephem' in sys.modules:
-            
+
             self.hasExtras = True
 
         else:
@@ -247,23 +249,26 @@ class Almanac(object):
             (sunrise_utc_h, sunset_utc_h) = weeutil.Sun.sunRiseSet(y, m, d, self.lon, self.lat)
             sunrise_ts = weeutil.weeutil.utc_to_ts(y, m, d, sunrise_utc_h)
             sunset_ts  = weeutil.weeutil.utc_to_ts(y, m, d, sunset_utc_h)
-            self._sunrise = weewx.units.ValueHelper((sunrise_ts, "unix_epoch", "group_time"), 
+            self._sunrise = weewx.units.ValueHelper((sunrise_ts, "unix_epoch", "group_time"),
                                                     context="ephem_day", formatter=self.formatter)
-            self._sunset  = weewx.units.ValueHelper((sunset_ts,  "unix_epoch", "group_time"), 
+            self._sunset  = weewx.units.ValueHelper((sunset_ts,  "unix_epoch", "group_time"),
                                                     context="ephem_day", formatter=self.formatter)
-            self.hasExtras = False            
+            self.hasExtras = False
+
 
     # Shortcuts, used for backwards compatibility
     @property
     def sunrise(self):
         return self.sun.rise if self.hasExtras else self._sunrise
+
     @property
     def sunset(self):
         return self.sun.set if self.hasExtras else self._sunset
+
     @property
     def moon_fullness(self):
         return int(self.moon.moon_fullness+0.5) if self.hasExtras else self._moon_fullness
-    
+
     def __call__(self, **kwargs):
         """Call an almanac object as a functor. This allows overriding the values
         used when the Almanac instance was initialized.
@@ -332,9 +337,11 @@ class Almanac(object):
             # AlmanacBinder
             return AlmanacBinder(self, attr)
 
+
 fn_map = {'rise'    : 'next_rising',
           'set'     : 'next_setting',
           'transit' : 'next_transit'}
+
 
 class AlmanacBinder(object):
     """This class binds the observer properties held in Almanac, with the heavenly
@@ -354,13 +361,13 @@ class AlmanacBinder(object):
         self.moon_phase   = almanac.moon_phase
         self.formatter    = almanac.formatter
 
-        # Calculate and store the start-of-day in Dublin Julian Days. 
-#        self.sod_djd = timestamp_to_djd(weeutil.weeutil.startOfDay(self.time_ts))
-        (y,m,d) = time.localtime(self.time_ts)[0:3]
-        self.sod_djd = timestamp_to_djd(time.mktime((y,m,d,0,0,0,0,0,-1)))
+        # Calculate and store the start-of-day in Dublin Julian Days.
+        # self.sod_djd = timestamp_to_djd(weeutil.weeutil.startOfDay(self.time_ts))
+        (y, m, d) = time.localtime(self.time_ts)[0:3]
+        self.sod_djd = timestamp_to_djd(time.mktime((y, m, d, 0, 0, 0, 0, 0, -1)))
 
-        self.heavenly_body= heavenly_body
-        self.use_center   = False
+        self.heavenly_body = heavenly_body
+        self.use_center = False
         
     def __call__(self, use_center=False):
         self.use_center = use_center
@@ -412,11 +419,11 @@ class AlmanacBinder(object):
             # These functions need the current time in Dublin Julian Days
             observer = _get_observer(self, self.time_djd)
             ephem_body.compute(observer)
-            if attr in ['az', 'alt', 'a_ra', 'a_dec', 'g_ra', 'ra', 'g_dec', 'dec', 
+            if attr in ['az', 'alt', 'a_ra', 'a_dec', 'g_ra', 'ra', 'g_dec', 'dec',
                         'elong', 'radius', 'hlong', 'hlat', 'sublat', 'sublong']:
                 # Return the results in degrees rather than radians
                 return math.degrees(getattr(ephem_body, attr))
-            elif attr=='moon_fullness':
+            elif attr == 'moon_fullness':
                 # The attribute "moon_fullness" is the percentage of the moon surface that is illuminated.
                 # Unfortunately, phephem calls it "moon_phase", so call ephem with that name.
                 # Return the result in percent.
@@ -425,6 +432,7 @@ class AlmanacBinder(object):
                 # Just return the result unchanged. This will raise an AttributeError exception
                 # if the attribute does not exist.
                 return getattr(ephem_body, attr)
+
 
 def _get_observer(almanac_obj, time_ts):
     # Build an ephem Observer object
@@ -442,7 +450,7 @@ def _get_observer(almanac_obj, time_ts):
 def _get_ephem_body(heavenly_body):
     # The library 'ephem' refers to heavenly bodies using a capitalized
     # name. For example, the module used for 'mars' is 'ephem.Mars'.
-    cap_name = heavenly_body.capitalize()
+    cap_name = heavenly_body.title()
     
     # If the heavenly body is a star, or if the body does not exist, then an
     # exception will be raised. Be prepared to catch it.
@@ -459,19 +467,22 @@ def _get_ephem_body(heavenly_body):
 
     return ephem_body
 
+
 def timestamp_to_djd(time_ts):
     """Convert from a unix time stamp to the number of days since 12/31/1899 12:00 UTC
     (aka "Dublin Julian Days")"""
     # The number 25567.5 is the start of the Unix epoch (1/1/1970). Just add on the
     # number of days since then
     return 25567.5 + time_ts/86400.0
-    
+
+
 def djd_to_timestamp(djd):
     """Convert from number of days since 12/31/1899 12:00 UTC ("Dublin Julian Days") to unix time stamp"""
     return (djd-25567.5) * 86400.0
 
+
 if __name__ == '__main__':
-    
+
     import doctest
 
     if not doctest.testmod().failed:

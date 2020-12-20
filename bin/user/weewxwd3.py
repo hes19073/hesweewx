@@ -771,16 +771,6 @@ class WdSuppArchive(weewx.engine.StdService):
         # holder dictionary for our gathered data
         _data = {}
         # Vantage forecast icon
-        if 'forecastIcon' in self.loop_packet:
-            _data['vantageForecastIcon'] = self.loop_packet['forecastIcon']
-        # Vantage forecast rule
-        if 'forecastRule' in self.loop_packet:
-            try:
-                _data['vantageForecastRule'] = davis_fr_dict[self.loop_packet['forecastRule']]
-                _data['vantageForecastNumber'] = self.loop_packet['forecastRule']
-            except:
-                _data['vantageForecastRule'] = ""
-                log.info("WdSuppArchive Could not decode Vantage forecast code")
 
         # Vantage stormRain
         if 'stormRain' in self.loop_packet:
@@ -788,42 +778,7 @@ class WdSuppArchive(weewx.engine.StdService):
         # Vantage stormStart
         if 'stormStart' in self.loop_packet:
             _data['stormStart'] = self.loop_packet['stormStart']
-        # data Vantage pro 2
-        #if 'windSpeed10' in self.loop_packet:
-        #    _data['windSpeed10'] = self.loop_packet['windSpeed10']
 
-        #if 'dayRain' in self.loop_packet:
-        #    _data['dayRain'] = self.loop_packet['dayRain']
-
-        #if 'monthRain' in self.loop_packet:
-        #    _data['monthRain'] = self.loop_packet['monthRain']
-
-        #if 'yearRain' in self.loop_packet:
-        #    _data['yearRain'] = self.loop_packet['yearRain']
-
-        #if 'dayET' in self.loop_packet:
-        #    _data['dayET'] = self.loop_packet['dayET']
-
-        #if 'monthET' in self.loop_packet:
-        #    _data['monthET'] = self.loop_packet['monthET']
-
-        #if 'yearET' in self.loop_packet:
-        #    _data['yearET'] = self.loop_packet['yearET']
-
-        if 'forecastRule' in self.loop_packet:
-            _data['forecastRule'] = self.loop_packet['forecastRule']
-
-        #if 'rain15' in self.loop_packet:
-        #    _data['rain15'] = self.loop_packet['rain15']
-
-        #if 'rain24' in self.loop_packet:
-        #    _data['rain24'] = self.loop_packet['rain24']
-
-        #if 'bar_reduction' in self.loop_packet:
-        #    _data['bar_reduction'] = self.loop_packet['bar_reduction']
-
-        #if 'bar_offset' in self.loop_packet:
-        #    _data['bar_offset'] = self.loop_packet['bar_offset']
 
         return _data
 
@@ -908,16 +863,6 @@ class WdSuppArchive(weewx.engine.StdService):
         # update our stashed loop packet data
         # wrap in a try..except just in case
         try:
-            if 'forecastIcon' in event.packet:
-                self.loop_packet['forecastIcon'] = event.packet['forecastIcon']
-            else:
-                self.loop_packet['forecastIcon'] = None
-
-            if 'forecastRule' in event.packet:
-                self.loop_packet['forecastRule'] = event.packet['forecastRule']
-            else:
-                self.loop_packet['forecastRule'] = None
-
             if 'stormRain' in event.packet:
                 self.loop_packet['stormRain'] = event.packet['stormRain']
             else:
@@ -928,60 +873,6 @@ class WdSuppArchive(weewx.engine.StdService):
             else:
                 self.loop_packet['stormStart'] = None
 
-            #if 'windSpeed10' in event.packet:
-            #    self.loop_packet['windSpeed10'] = event.packet['windSpeed10']
-            #else:
-            #    self.loop_packet['windSpeed10'] = None
-
-            #if 'dayRain' in event.packet:
-            #    self.loop_packet['dayRain'] = event.packet['dayRain']
-            #else:
-            #    self.loop_packet['dayRain'] = None
-
-            #if 'monthRain' in event.packet:
-            #    self.loop_packet['monthRain'] = event.packet['monthRain']
-            #else:
-            #    self.loop_packet['monthRain'] = None
-
-            #if 'yearRain' in event.packet:
-            #    self.loop_packet['yearRain'] = event.packet['yearRain']
-            #else:
-            #    self.loop_packet['yearRain'] = None
-
-            #if 'dayET' in event.packet:
-            #    self.loop_packet['dayET'] = event.packet['dayET']
-            #else:
-            #    self.loop_packet['dayET'] = None
-
-            #if 'monthET' in event.packet:
-            #    self.loop_packet['monthET'] = event.packet['monthET']
-            #else:
-            #    self.loop_packet['monthET'] = None
-
-            #if 'yearET' in event.packet:
-            #    self.loop_packet['yearET'] = event.packet['yearET']
-            #else:
-            #    self.loop_packet['yearET'] = None
-
-            #if 'rain15' in event.packet:
-            #    self.loop_packet['rain15'] = event.packet['rain15']
-            #else:
-            #    self.loop_packet['rain15'] = None
-
-            #if 'rain24' in event.packet:
-            #    self.loop_packet['rain24'] = event.packet['rain24']
-            #else:
-            #    self.loop_packet['rain24'] = None
-
-            #if 'bar_reduction' in event.packet:
-            #    self.loop_packet['bar_reduction'] = event.packet['bar_reduction']
-            #else:
-            #    self.loop_packet['bar_reduction'] = None
-
-            #if 'bar_offset' in event.packet:
-            #    self.loop_packet['bar_offset'] = event.packet['bar_offset']
-            #else:
-            #    self.loop_packet['bar_offset'] = None
 
         except:
             log.info("WdSuppArchive Loop packet data error. Cannot decode packet: %s", e)

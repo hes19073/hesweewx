@@ -129,7 +129,6 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
 
         # Make a deep copy of the skin dictionary (we will be modifying it):
         gen_dict = deep_copy(self.skin_dict)
-        #gen_dict = configobj.ConfigObj(self.skin_dict.dict())
 
         # Look for options in [CheetahGenerator],
         section_name = "CheetahGenerator"
@@ -314,13 +313,17 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                 # Under Python 2, Cheetah V2 will crash if given a template file name in Unicode,
                 # so make sure it's a string first, using six.ensure_str().
                 compiled_template = Cheetah.Template.Template(
-                    file=six.ensure_str(template, encoding='utf-8'),
+                    file=six.ensure_str(template),
                     searchList=searchList,
                     filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
 
+                # We have a compiled template in hand. Evaluate it. The result will be a long
+                # Unicode string.
                 unicode_string = compiled_template.respond()
 
+                # Time to write it out. Determine the strategy for encoding any non-ascii
+                # chartacters.
                 if encoding == 'html_entities':
                     byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
                 elif encoding == 'strict_ascii':
@@ -392,7 +395,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             _yr_str = "%4d" % ref_tt[0]
             _mo_str = "%02d" % ref_tt[1]
             _day_str = "%02d" % ref_tt[2]
-            _week_str = "%02d" % datetime.date(ref_tt[0], ref_tt[1], ref_tt[2]).isocalendar()[1];
+            _week_str = "%02d" % datetime.date(ref_tt[0], ref_tt[1], ref_tt[2]).isocalendar()[1]
             # Replace any instances of 'YYYY' with the year string
             _filename = _filename.replace('YYYY', _yr_str)
             # Do the same thing with the month...
@@ -618,17 +621,38 @@ class AssureUnicode(Cheetah.Filters.Filter):
     """Assures that whatever a search list extension might return, it will be converted into
     Unicode. """
 
-    def filter(self, val, **dummy_kw):
+    def filter(self, val, **kwargs):
+        """Convert the expression 'val' to unicode."""
+        # There is a 2x4 matrix of possibilities:
+        # input        PY2                 PY3
+        # _____        ________            _______
+        # bytes        decode()            decode()
+        # str          decode()           -done-
+        # unicode      -done-             N/A
+        # object       unicode()          str()
         if val is None:
-            filtered = u''
+            return u''
+
+        # Is it already unicode? This takes care of cells 4 and 5.
+        if isinstance(val, six.text_type):
+            filtered = val
+        # This conditional covers cells 1,2, and 3. That is, val is a byte string
+        elif isinstance(val, six.binary_type):
+            filtered = val.decode('utf-8')
+        # That leaves cells 7 and 8, that is val is an object, such as a ValueHelper
         else:
+            # Must be an object. Convert to unicode string
             try:
-                # Assume val is some kind of string. Try coercing it directly into unicode
-                filtered = six.ensure_text(val, encoding='utf-8')
-            except TypeError:
-                # It's not Unicode nor a byte-string. Must be a primitive or a ValueHelper.
-                #   Under Python 2, six.text_type is equivalent to calling unicode(val).
-                #   Under Python 3, it is equivalent to calling str(val).
-                # So, the results always end up as Unicode.
+                # For late tag bindings under Python 2, the following forces the invocation of
+                # __unicode__(). Under Python 3, it invokes __str__(). Either way, it can force
+                # an XTypes query. For a tag such as $day.foobar.min, where 'foobar' is an unknown
+                # type, this will cause an attribute error. Be prepared to catch it.
                 filtered = six.text_type(val)
+            except AttributeError as e:
+                # Offer a debug message.
+                log.debug("Unrecognized: %s", kwargs.get('rawExpr', e))
+                # Return the raw expression, if available. Otherwise, the exception message
+                # concatenated with a question mark.
+                filtered = kwargs.get('rawExpr', str(e) + '?')
+
         return filtered

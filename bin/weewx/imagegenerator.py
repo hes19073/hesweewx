@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 #                    Class ImageGenerator
 # =============================================================================
 
+
 class ImageGenerator(weewx.reportengine.ReportGenerator):
     """Class for managing the image generator."""
 
@@ -173,7 +174,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
                     # Now its time to find and hit the database:
                     binding = line_options['data_binding']
                     db_manager = self.db_binder.get_manager(binding)
-                    start_vec_t, stop_vec_t ,data_vec_t = weewx.xtypes.get_series(var_type,
+                    start_vec_t, stop_vec_t, data_vec_t = weewx.xtypes.get_series(var_type,
                                                                                   TimeSpan(minstamp, maxstamp),
                                                                                   db_manager,
                                                                                   aggregate_type=aggregate_type,
@@ -273,6 +274,7 @@ class ImageGenerator(weewx.reportengine.ReportGenerator):
         if log_success:
             log.info("Generated %d images for report %s in %.2f seconds", ngen, self.skin_dict['REPORT_NAME'], t2 - t1)
 
+
 def skipThisPlot(time_ts, aggregate_interval, img_file):
     """A plot can be skipped if it was generated recently and has not changed.
     This happens if the time since the plot was generated is less than the
@@ -289,5 +291,5 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
 
     # Finally, if we're on an aggregation boundary, regenerate.
     time_dt = datetime.datetime.fromtimestamp(time_ts)
-    tdiff = time_dt -  time_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    tdiff = time_dt - time_dt.replace(hour=0, minute=0, second=0, microsecond=0)
     return abs(tdiff.seconds % aggregate_interval) > 1

@@ -7,9 +7,8 @@
     [Extras]
         dwd_enabled = 1 or 0
         dwd_stale = 3600 # alle Stunde
-        dwd_id = 813076071   # Gemeinde Klein Rogahn 813075001 LK LWL alt
+        dwd_id = 913076001   # Gemeinde Klein Rogahn 913075001 LK LWL alt
         dwd_url = https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json
-
 
         Gemeinde WARNCELLID 8 + AGS
         LK                  1 + AGS
@@ -34,7 +33,6 @@ import weeutil.weeutil
 
 from weewx.cheetahgenerator import SearchList
 from weeutil.weeutil import TimeSpan
-from weewx.units import obs_group_dict
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +47,6 @@ class getWarnung(SearchList):
         SearchList.__init__(self, generator)
 
     def get_extension_list(self, timespan, db_lookup):
-
         """ Download the warnung data by DWD warnings.json
             to file to warnung.json
             This is not a json file so that at the
@@ -58,33 +55,34 @@ class getWarnung(SearchList):
             leere Warnmeldung vom DWD
             warnWetter.loadWarnings({"time":1598865395000,"warnings":{}, \
             "vorabInformation":{},"copyright":"Copyright Deutscher Wetterdienst"});
-
         """
-
         # Return right away if we're not going to use the forecast.
         if self.generator.skin_dict['Extras']['dwd_enabled'] == "0":
             # Return an empty SLE
-            warnung_updated = datetime.now()
+            warnung_updated = time.time()
             w_headline = ''
             search_list_extension = {
-                                     'warn_update' : warnung_updated,
+                                     'warn_update': warnung_updated,
                                      'warn_kopf': w_headline,
                                     }
 
             return [search_list_extension]
-
 
         warnung_file = "/home/weewx/archive/warnung.txt"
         dwd_file = '/home/weewx/archive/warn.json'
         #latitude = self.generator.config_dict['Station']['latitude']
         #longitude = self.generator.config_dict['Station']['longitude']
         warnung_stale_timer = self.generator.skin_dict['Extras']['dwd_stale']
-        warnung_id = self.generator.skin_dict['Extras']['dwd_id']
+        warn_cell_id = self.generator.skin_dict['Extras']['dwd_id']
         warnung_url = "https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json"
-
-        obs_group_dict["warn_start"] = "group_time"
-        obs_group_dict["warn_end"] = "group_time"
-
+        w_start = ''
+        w_end = ''
+        w_type = ''
+        w_level = ''
+        w_desc = ''
+        w_event = ''
+        w_head = ''
+        w_inst = ''
         warnung_is_stale = False
 
         # Determine if the file exists and get it's modified time
@@ -118,83 +116,50 @@ class getWarnung(SearchList):
 
         outfile.close()
 
-        #log.info("DWD Wetter Warnungen einlesen")
-
+        # log.info("DWD Wetter Warnungen einlesen")
         # Datei dataJson als Json-String-Daten verarbeiten
         with open(dwd_file, encoding="utf8") as read_file:
             data = json.loads(read_file.read())
 
         # Datum der Aktualisierung der warnung_file Datei
         warnung_updated = time.strftime("%d.%m.%Y %H:%M", time.localtime(int(data["time"] / 1000)))
-
         # wenn der json-String kleiner als 200 Zeichen lang ist
         # KEINE Wetterwarnungen vom DWD vorhanden
-        if len(data) < 200:
-            w_start = ''
-            w_end = ''
-            w_type = ''
-            w_level = ''
-            w_description = ''
-            w_event = ''
-            w_headline = ''
-            w_instruction = ''
-            # region = ''
-            # w_state = ''
-            # w_stateShort = ''
-            # altitudeStart = ''
-            # altitudeEnd = ''
+        for warni in data['warnings']:
 
-        else:
-            i = 0
-            # WARNCELLID = 113076000 NEU für Kreis Ludwiglust-Parchim
-            # WARNCELLID = 913076001 ALT für Kreis Ludwigslust-Parchim West
-            # todo int(WARNCELLID) for if '913076001' in obj:
-            # and in data['warnings']['913076001'][0]
-            for obj in data['warnings']:
-                i = +1
-                if '913076001' in obj:
-                    w_start = time.strftime("%d.%m.%Y %H:%M", time.localtime(int(data['warnings']['913076001'][0]['start']) / 1000))
-                    w_end = time.strftime("%d.%m.%Y %H:%M", time.localtime(int(data['warnings']['913076001'][0]['end']) / 1000))
-                    w_type = data['warnings']['913076001'][0]['type']
-                    w_level = data['warnings']['913076001'][0]['level']
-                    w_description = data['warnings']['913076001'][0]['description']
-                    w_event = data['warnings']['913076001'][0]['event']
-                    w_headline = data['warnings']['913076001'][0]['headline']
-                    w_instruction = data['warnings']['913076001'][0]['instruction']
-                    # region = data['warnings']['913076001'][0]['regionName']
-                    # w_state = data['warnings']['913076001'][0]['state']
-                    # w_stateShort = data['warnings']['913076001'][0]['stateShort']
-                    # altitudeStart = data['warnings']['913076001'][0]['altitudeStart']
-                    # altitudeEnd = data['warnings']['913076001'][0]['altitudeEnd']
+            if int(warni) == 913076001:
+                w_start = time.strftime("%d.%m.%Y %H:%M", time.localtime(int(data['warnings']['913076001'][0]['start']) / 1000))
+                w_end = time.strftime("%d.%m.%Y %H:%M", time.localtime(int(data['warnings']['913076001'][0]['end']) / 1000))
+                w_type = data['warnings']['913076001'][0]['type']
+                w_level = data['warnings']['913076001'][0]['level']
+                w_desc = data['warnings']['913076001'][0]['description']
+                w_event = data['warnings']['913076001'][0]['event']
+                w_head = data['warnings']['913076001'][0]['headline']
+                w_inst = data['warnings']['913076001'][0]['instruction']
+                break
 
+            else:
+                w_start = ''
+                w_end = ''
+                w_type = ''
+                w_level = ''
+                w_desc = ''
+                w_event = ''
+                w_head = ''
+                w_inst = ''
 
-                else:
-                    # No DWD data
-                    w_start = ''
-                    w_end = ''
-                    w_type = ''
-                    w_level = ''
-                    w_description = ''
-                    w_event = ''
-                    w_headline = ''
-                    w_instruction = ''
-                    # region = ''
-                    # w_state = ''
-                    # w_stateShort = ''
-                    # altitudeStart = ''
-                    # altitudeEnd = ''
 
         # Put into a dictionary to return
         search_list_extension  = {
-                                  'warn_update' : warnung_updated,
-                                  'warn_meldung' : w_description,
-                                  'warn_start' : w_start,
+                                  'warn_update': warnung_updated,
+                                  'warn_meldung': w_desc,
+                                  'warn_start': w_start,
                                   'warn_end': w_end,
                                   'warn_type': w_type,
                                   'warn_event': w_event,
                                   'warn_level': w_level,
-                                  'warn_kopf': w_headline,
-                                  'warn_inst': w_instruction,
+                                  'warn_kopf': w_head,
+                                  'warn_inst': w_inst,
                                   #'warn_region': region,
                                   #'warn_stateS': w_stateShort,
                                   #'warn_state': w_state,

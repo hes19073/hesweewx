@@ -8,7 +8,7 @@
 from __future__ import absolute_import
 from functools import reduce
 
-_table=[
+_table = [
 0x0000,  0x1021,  0x2042,  0x3063,  0x4084,  0x50a5,  0x60c6,  0x70e7,  # 0x00
 0x8108,  0x9129,  0xa14a,  0xb16b,  0xc18c,  0xd1ad,  0xe1ce,  0xf1ef,  # 0x08  
 0x1231,  0x0210,  0x3273,  0x2252,  0x52b5,  0x4294,  0x72f7,  0x62d6,  # 0x10
@@ -55,14 +55,14 @@ def crc16(bytes, crc_start=0):
         # Python 3
         byte_iter = bytes
 
-    crc_sum = reduce(lambda crc, ch : (_table[(crc >> 8) ^ ch] ^ (crc << 8)) & 0xffff, byte_iter, crc_start)
+    crc_sum = reduce(lambda crc, ch: (_table[(crc >> 8) ^ ch] ^ (crc << 8)) & 0xffff, byte_iter, crc_start)
 
     return crc_sum
 
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     import struct
     # This is the example given in the Davis documentation:
     test_bytes = struct.pack("<HH", 0xCEC6, 0x03A2)
     crc = crc16(test_bytes)
-    assert(crc==0xe2b4)
+    assert(crc == 0xe2b4)

@@ -1196,9 +1196,9 @@ def tobool(x):
     """
 
     try:
-        if x.lower() in ['true', 'yes']:
+        if x.lower() in ['true', 'yes', 'y']:
             return True
-        elif x.lower() in ['false', 'no']:
+        elif x.lower() in ['false', 'no', 'n']:
             return False
     except AttributeError:
         pass
@@ -1245,7 +1245,7 @@ def to_float(x):
     >>> print(to_float(None))
     None
     """
-    if isinstance(x, str) and x.lower() == 'none':
+    if isinstance(x, six.string_types) and x.lower() == 'none':
         x = None
     return float(x) if x is not None else None
 
