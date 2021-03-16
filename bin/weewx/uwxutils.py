@@ -344,10 +344,10 @@ class TWxUtils(object):
         Result = (TWxUtils.earthRadius45 * 1000 * geometricAltitudeM) / ((TWxUtils.earthRadius45 * 1000) + geometricAltitudeM)
         return Result
 
+
 # ==============================================================================
 #                              class TWxUtilsUS
 # ==============================================================================
-
 
 class TWxUtilsUS(object):
 

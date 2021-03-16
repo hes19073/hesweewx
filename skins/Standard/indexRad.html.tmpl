@@ -41,11 +41,16 @@
 
 #include $Extras.header
 #include $Extras.cwarn
+#include 'index_warn.inc'
 
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
 
 #include "links_forecast.inc"
+
+#if $Extras.has_key('pollen_enabled') and $Extras.pollen_enabled == '1'
+#include 'pollen.inc'
+#end if
 
 #if $day($data_binding='geiger_binding').rad_nsvh.has_data
   <div class="hes">
@@ -88,7 +93,7 @@
      <td class='hes1_vallo'>$yesterday($data_binding='geiger_binding').rad_nsvh.min.formatted</td>
     </tr>
     <tr>
-     <td class='hes1_m' colspan='2'>Tagessumme</td>
+     <td class='hes1_kopfb' colspan='2'>Tagessumme</td>
      <td class='hes1_valhi' colspan='3'>$day($data_binding='geiger_binding').rad_nsvh.sum</td>
     </tr>
     <tr>
@@ -149,7 +154,7 @@
      <td class='hes1_vallo'>$yesterday($data_binding='geiger_binding').rad_cpm.min.formatted</td>
     </tr>
     <tr>
-     <td class='hes1_m' colspan='2'>Tagessumme</td>
+     <td class='hes1_kopfb' colspan='2'>Tagessumme</td>
      <td class='hes1_valhi' colspan='3'>$day($data_binding='geiger_binding').rad_cpm.sum</td>
     </tr>
     <tr>
@@ -168,6 +173,206 @@
   </div>
 </div> <!-- ende cpm -->
 #end if
+
+#if $day.lighting.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Helligkeit</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+        <a href='daylighting.png' class='popup'>$current.lighting</a></td>
+    #if $trend.lighting.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.lighting.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.lighting.formatted</td>
+    #elif $trend.lighting.raw == 0
+     <td class="hes1_trendhi"><b>=</b></td>
+     <td class="hes1_valhi">$trend.lighting.formatted</td>
+    #elif $trend.lighting.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.lighting.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi' colspan='2'>$day.lighting.max.formatted</td>
+     <td class='hes1_vallo'>&nbsp;</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi' colspan='2'>$yesterday.lighting.max.formatted</td>
+     <td class='hes1_vallo'>&nbsp;</td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daylighting.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende lighting -->
+
+#if $day($data_binding='air_binding').sound.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Sound-Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='daySound.png' class='popup'>
+             $latest($data_binding='air_binding').sound.formatted</a></td>
+   #if $trend($data_binding='air_binding').sound.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='air_binding').sound.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
+   #elif $trend($data_binding='air_binding').sound.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='air_binding').sound.format("%.1f")</td>
+   #elif $trend($data_binding='air_binding').sound.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi'>$day($data_binding='air_binding').sound.max.format("%.1f")</td>
+     <td class="hes1_m">min</td>
+     <td class='hes1_vallo'>$day($data_binding='air_binding').sound.min.format("%.1f")</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td class='hes1_m'>max</td>
+     <td class='hes1_valhi'>$yesterday($data_binding='air_binding').sound.max.format("%.1f")</td>
+     <td class="hes1_m">min</td>
+     <td class='hes1_vallo'>$yesterday($data_binding='air_binding').sound.min.format("%.1f")</td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daySound.png" alt="sound" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende sound -->
+
+##if $day($data_binding='lightning_binding').distance.has_data
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Blitz-Sensor</td>
+     <td class='hes1_kopf' colspan='2'>Entfernung</td>
+     <td class="hes1_kopf" colspan="2">Uhrzeit</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>
+              $latest($data_binding='lightning_binding').distance</a></td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M") Uhr</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
+     <td class='hes1_m'>am</td>
+     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</td>
+     <td class="hes1_m">um</td>
+     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td class='hes1_m'>Tag</td>
+     <td class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Woche</td>
+     <td class='hes1_vallo'>$week($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td class='hes1_m'>Monat</td>
+     <td class='hes1_valhi'>$month($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Jahr</td>
+     <td class='hes1_vallo'>$year($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende Blitz-Sensor -->
+##end if
+
+#if $day.inTemp.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Büro</td>
+        <td class='hes1_kopf' >Aktuell</td>
+        <td class='hes1_kopf' colspan='2'>Trend</td>
+    </tr>
+    <tr><td>Temperatur</td>
+        <td class='hes1_bigval'><a href='dayainTemp.png' class='popup'>$current.inTemp</a></td>
+    #if $trend.inTemp.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.inTemp.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class='hes1_vallo'>$trend.inTemp</td>
+    #elif $trend.inTemp.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.inTemp</td>
+    #elif $trend.inTemp.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class='hes1_valhi'>$trend.inTemp</td>
+    #end if
+    </tr>
+    <tr><td class='hes1_kopfa'>&nbsp;</td>
+        <td class='hes1_kopf'>Aktuell</td>
+        <td class='hes1_kopf' colspan='2'>Trend</td></tr>
+    <tr><td>Luftfeuchte</td>
+        <td class='hes1_bigval'><a href='dayainHumid.png' class='popup'>$current.inHumidity</a></td>
+    #if $trend.inHumidity.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.inHumidity.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class='hes1_vallo'>$trend.inHumidity</td>
+    #elif $trend.inHumidity.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.inHumidity</td>
+    #elif $trend.inHumidity.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class='hes1_valhi'>$trend.inHumidity</td>
+    #end if
+    </tr>
+    <tr><td class='hes1_kopfa'>&nbsp;</td>
+        <td class='hes1_kopf' >Aktuell</td>
+        <td class='hes1_kopf' colspan='2'>Trend</td></tr>
+    <tr><td>Taupunkt</td>
+        <td class='hes1_bigval'><a href='dayaindew.png' class='popup'>$current.inDewpoint</a></td>
+    #if $trend.inDewpoint.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.inDewpoint.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class='hes1_vallo'>$trend.inDewpoint</td>
+    #elif $trend.inDewpoint.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.inDewpoint</td>
+    #elif $trend.inDewpoint.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class='hes1_valhi'>$trend.inDewpoint</td>
+    #end if
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende Buero -->
 
 <div class="hes">
  <div class='hesbox'>

@@ -1,47 +1,48 @@
 /* styles for the forecast_iconic */
-.iconic-horizontal td {
+.fc_iconic .iconic-horizontal td {
     vertical-align: top;
+    text-align: right;
 }
-.col-outlook {
-    min-width: 36px;
+.fc_iconic .col-outlook {
+    min-width: 32px;
 }
-.col-day {
-    min-width: 36px;
+.fc_iconic .col-day {
+    min-width: 32px;
     text-transform: uppercase;
 }
-.col-precip {
+.fc_iconic .col-precip {
+    text-align: left;
 }
-.col-obvis {
+.fc_iconic .col-obvis {
 }
-.row-outlook {
+.fc_iconic .row-outlook {
 }
-.row-day {
+.fc_iconic .row-day {
     text-transform: uppercase;
 }
-.row-precip {
+.fc_iconic .row-precip {
 }
-.row-obvis {
+.fc_iconic .row-obvis {
 }
-.date {
+.fc_iconic .date {
     font-size: 80%;
 }
-.outlook-img {
-    width: 36px;
+.fc_iconic .outlook-img {
+    width: 32px;
 }
-.precip-img {
-    width: 36px;
+.fc_iconic .precip-img {
+    width: 32px;
 }
-.obvis-img {
-    width: 36px;
+.fc_iconic .obvis-img {
+    width: 32px;
 }
-.temp1 {
+.fc_iconic .temp {
     float: left;
 }
-.temp-range {
-    min-width: 15px;
-    min-height: 15px;
-    background-color: #888888;
-    border: 1px solid #444444;
+.fc_iconic .temp-range {
+    min-width: 32px;
+    background-color: #aaaaaa;
+    border: 1px solid #666666;
     webkit-radius: 10px;
     moz-radius: 10px;
     border-radius: 10px;

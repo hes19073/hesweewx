@@ -855,10 +855,13 @@ function topFunction() {
    <h2>Apogäum, Perigäum, Finsternis, Aphel und Perihel</h2>
    <ul>
     <li>Der Mond</li>
-    <li>Das nächste Apogäum am<b>&nbsp;$next_apogee_ts&nbsp;</b>Uhr mit eine Enfernung <b>$next_apogee_dist_km </b></li>
+    #import locale
+    #set $next_apogee_dist = locale.format('%.3f', $next_apogee_dist_km, 1)
+    #set $next_perigee_dist = locale.format('%.3f', $next_perigee_dist_km, 1)
+    <li>Das nächste Apogäum am<b>&nbsp;$next_apogee_ts&nbsp;</b>Uhr mit eine Enfernung <b>$next_apogee_dist&nbsp;km</b></li>
     <li> (Die Erdferne oder das Apogäum bezeichnet den größten Abstand zur Erde.) </li>
     <li>&nbsp;</li>
-    <li>Das nächste Perigäum am<b>&nbsp; $next_perigee_ts&nbsp;</b>Uhr mit einer Entfernung <b>$next_perigee_dist_km </b></li>
+    <li>Das nächste Perigäum am<b>&nbsp; $next_perigee_ts&nbsp;</b>Uhr mit einer Entfernung <b>$next_perigee_dist&nbsp;km</b></li>
     <li> (Die Erdnähe oder das Perigäum bezeichnet den geringsten Abstand zur Erde.)</li>
     <li>&nbsp;</li>
     <li>Finsternis</li>
@@ -874,10 +877,21 @@ function topFunction() {
    </ul>
    <hr />
 <h2>Sternzeit und co.</h2>
-<ul>
- <li>julianisches Datum: $yy</li>
- <li>Sternzeit :   </li>
-</ul>
+<table>
+ <tr><td>&nbsp;</td>
+  <td>Julianisches Datum: $yy</td>
+  <td>Sternzeit WeeWx: $almanac.sidereal_time</td>
+ </tr>
+ <tr>
+  <td>Weltzeit (UTC): $utc00</td>
+  <td>Julianisches Datum (0h UTC):  $jd00</td>
+  <td>Julianisches Datum  + UTC  :  $jdutc</td>
+ </tr>
+ <tr><td>&nbsp;</td>
+  <td>Greenwich Mittlere Sternzeit:  $gmst</td>
+  <td>Örtliche Mittlere Sternzeit :  $lmst</td>
+ </tr>
+</table>
 <hr />
 
 <h2>Sternenbilder&nbsp;&nbsp;&frasl;&nbsp;&nbsp;Tierkreis</h2>

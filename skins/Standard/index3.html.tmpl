@@ -49,6 +49,7 @@
 
 #include $Extras.header
 #include $Extras.cwarn
+#include 'index_warn.inc'
 
 ##set $summary = $forecast.weather_summary('DS')
 
@@ -56,6 +57,33 @@
   <div id='popupanchor' style='float:left'></div>
 
 #include "links_forecast.inc"
+
+ <div class="hes">
+   <div class='hesbox'>
+    <table>
+     <tr><td class='hes1_kopfa' colspan='2'>Grünland-<br />temperatursumme</td></tr>
+     <tr><td colspan="2"><a href='https://github.com/roe-dl/weewx-GTS'>by Johanna Roedenbeck, weewx-GTS.py </a></td></tr>
+    #if $current.GTS.raw < 200
+     <tr><td>Summe aktuell</td><td>$current.GTS</td></tr>
+     <tr><td>&nbsp;</td>
+         <td>&nbsp;</td></tr>
+    #else
+     <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+     <tr><td><a href='indexGTS.html'>200 </a> wurde erreicht am:</td>
+         <td><b>$current.GTSdate</b></td></tr>
+    #end if
+   </table>
+   <hr />
+   <img src="monthGTS.png" alt="GTS" style="width:300px; height:175px;" />
+   <hr />
+   <p>Die Summe aller Tagesmittelwerten &gt; 0°C.<br />
+      Januarwerte * 0,5 + Februarwerte * 0,75<br />
+      + Märzwerte * 1.0, ist die Summe &gt;200, <br />
+      beginnt die <b>Vegetation</b> (max bis 31.Mai).</p>
+   <hr />
+   <p>letzte Berechnung: $current.LMTtime.raw Uhr</p>
+   </div>
+  </div> <!-- GTS gruenlandtempsum -->
 
  <div class="hes">
   <div class='hesbox'>
@@ -74,6 +102,7 @@
      <li> Jahr  <a href='Cydia/C_growth-2017.html'> 2017 </a></li>
      <li> Jahr  <a href='Cydia/C_growth-2018.html'> 2018 </a></li>
      <li> Jahr  <a href='Cydia/C_growth-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth-2020.html'> 2020 </a></li>
      <li> Jahr  <a href='Cydia/C_growth.html'> Aktuell </a></li>
   </ul>
  </div>
@@ -96,12 +125,11 @@
      <li> Jahr  <a href='Cydia/C_green-2017.html'> 2017 </a></li>
      <li> Jahr  <a href='Cydia/C_green-2018.html'> 2018 </a></li>
      <li> Jahr  <a href='Cydia/C_green-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_green-2020.html'> 2020 </a></li>
      <li> Jahr  <a href='Cydia/C_green.html'> Aktuell </a></li>
   </ul>
    </div>
-  </div> <!-- gruenlandtempsumme -->
-
-
+ </div> <!-- gruenlandtempsumme -->
  <div class="hes">
    <div class='hesbox'>
     <table>
@@ -119,10 +147,11 @@
      <li> Jahr  <a href='Cydia/C_pomonella-2017.html'> 2017 </a></li>
      <li> Jahr  <a href='Cydia/C_pomonella-2018.html'> 2018 </a></li>
      <li> Jahr  <a href='Cydia/C_pomonella-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_pomonella-2020.html'> 2020 </a></li>
      <li> Jahr  <a href='Cydia/C_pomonella.html'> Aktuell </a></li>
   </ul>
    </div>
-  </div> <!-- Apfelwickler entwicklung -->
+ </div> <!-- Apfelwickler entwicklung -->
 
  <div class="hes">
    <div class='hesbox'>
@@ -131,6 +160,14 @@
    </table>
    <hr />
    <img src="Cydia/C_growth4.png" alt="WGT Basis 4" style="width:300px; height:175px;" />
+  <hr />
+  <p>Aufzeichnungen aus den Jahren  </p>
+   <ul>
+     <li> Jahr  <a href='Cydia/C_growth4-2018.html'> 2018 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth4-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth4-2020.html'> 2020 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth4.html'> Aktuell </a></li>
+  </ul>
    </div>
   </div> <!-- Tulpen 4 degree tag -->
 
@@ -141,7 +178,14 @@
    </table>
    <hr />
    <img src="Cydia/C_growth5.png" alt="WGT Basis 5" style="width:300px; height:175px;" />
-
+  <hr />
+  <p>Aufzeichnungen aus den Jahren  </p>
+   <ul>
+     <li> Jahr  <a href='Cydia/C_growth5-2018.html'> 2018 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth5-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth5-2020.html'> 2020 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth5.html'> Aktuell </a></li>
+  </ul>
    </div>
   </div> <!-- Gras 5 degree tag -->
 
@@ -152,20 +196,25 @@
    </table>
    <hr />
    <img src="Cydia/C_growth6.png" alt="WGT Basis 6" style="width:300px; height:175px;" />
-
+  <hr />
+  <p>Aufzeichnungen aus den Jahren  </p>
+   <ul>
+     <li> Jahr  <a href='Cydia/C_growth6-2018.html'> 2018 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth6-2019.html'> 2019 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth6-2020.html'> 2020 </a></li>
+     <li> Jahr  <a href='Cydia/C_growth6.html'> Aktuell </a></li>
+  </ul>
    </div>
   </div> <!-- wachstum 6 degree tag -->
 
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr><td class='hes1_kopfa'>Der aktuelle<br />
-                              Tag</td></tr>
+   <tr><td class='hes1_kopfa'>Der aktuelle<br />Tag</td></tr>
    <tr><td><a href='day.html'> weiter</a></td></tr>
   </table>
  </div>
 </div> <!-- end day -->
-
 
 </div> <!-- ende container -->
 

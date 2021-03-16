@@ -59,6 +59,9 @@ function topFunction() {
   <div id='hes11'>
     #include $Extras.header
     #include $Extras.cwarn
+    #include 'index_warn.inc'
+    #include 'index_alerts.inc'
+
    <div id="stats_group">
 
     #include $Extras.current
@@ -112,6 +115,7 @@ function topFunction() {
      </div>
      <div>
        #include $Extras.about
+       #include $Extras.upweewx
      </div>
     </div> <!--End class "stats_group" -->
     <div id="content">
@@ -355,7 +359,13 @@ function topFunction() {
          Teich ca. 20 m³<br />Wassertemperatur
         </td>
         <td>&nbsp;</td>
-        <td><img src="dayFischTemp.png"    alt="Goldfischteich" /></td></tr>
+        <td><img src="dayFischTemp.png"    alt="Goldfischteich" /></td>
+       </tr>
+       <tr>
+        <td>Wassertonne:&nbsp;$current.extraTempO0</td>
+        <td></td>
+        <td><img src="dayTonne.png"        alt="Tag Wassertonne Index"/></td>
+       </tr>
        <tr><td>&nbsp;</td><td>&nbsp;</td><td>Licht- / Solarsensor</td></tr>
        <tr>
         <td>Helligkeit:&nbsp;$current.lighting</td>
@@ -374,21 +384,30 @@ function topFunction() {
         <td><img src="daysun.png"        alt="Tag Sonne"/></td>
        </tr>
        <tr>
+        <td>Sonnenenergie:&nbsp;$day.radiation.energy_integral</td>
+        <td></td>
+        <td><img src="monthRadiationEnergy.png"   alt="Monat Sonne Energie"/></td>
+       </tr>
+       <tr>
         <td>UV-Index:&nbsp;$current.UV</td>
         <td></td>
         <td><img src="dayuv.png"        alt="Tag UV Index"/></td>
        </tr>
        <tr><td>&nbsp;</td><td>&nbsp;</td><td>one-wire OWFS Temperatursensor</td></tr>
        <tr>
-        <td>Wassertonne:&nbsp;$current.extraTempO0</td>
+        <td>Temperatur +100 +5 und -5 cm</td>
         <td></td>
-        <td><img src="dayTonne.png"        alt="Tag Wassertonne Index"/></td>
+        <td><img src="dayBoden0.png"  alt="Boden +5cm -5cm" /></td>
        </tr>
        <tr>
-        <td>Bodentemperatur +5 -5 -10 -20 -50 -100 cm</td>
+        <td>Temperatur +5 cm über Boden</td>
         <td></td>
-        <td><img src="dayBoden5.png"      alt="Boden 5cm Luft" /><br />
-            <img src="daysoilT.png"    alt="Bodentemperatur" /></td>
+        <td><img src="dayBoden5.png"  alt="Boden 5cm" /></td>
+       </tr>
+       <tr>
+        <td>Bodentemperatur -5 -10 -20 -50 -100 cm</td>
+        <td></td>
+        <td><img src="daysoilT.png"   alt="Bodentemperatur" /></td>
        </tr>
        <tr><td>&nbsp;</td><td>&nbsp;</td><td>Davis Sensorstation 6345OVCS</td></tr>
        <tr>
@@ -500,6 +519,34 @@ function topFunction() {
         </td>
         <td><img src="dayPM10C.png" alt="PM 10 Quality" /></td>
        </tr>
+       <tr>
+        <td>
+         AQI Index Aeris&nbsp; $latest($data_binding='aerisaqi_binding').aqi
+        </td>
+        <td>
+         &nbsp;
+        </td>
+        <td><img src="dayAQI.png" alt="AQI Index" /></td>
+       </tr>
+       <tr>
+        <td>
+         PM 2,5 Aeris&nbsp; $latest($data_binding='aerisaqi_binding').pm25<br>
+         PM 10 Aeris&nbsp; $latest($data_binding='aerisaqi_binding').pm10
+        </td>
+        <td>
+         &nbsp;
+        </td>
+        <td><img src="dayPM.png" alt="PM 10 PM 2,5" /></td>
+       <tr>
+        <td>
+         Gase Aeris
+        </td>
+        <td>
+         &nbsp;
+        </td>
+        <td><img src="dayGAS.png" alt="Gase Quality" /></td>
+       </tr>
+       </tr>
        <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
        <tr>
         <td>
@@ -529,17 +576,6 @@ function topFunction() {
         <td>&nbsp;</td>
         <td><img src="dayapptemp.png"    alt="temp scheinbar" /></td>
        </tr>
-       #if $day.extraHumid1.has_data or $day.extraHumid2.has_data
-       <tr>
-        <td>
-         Feuchtesensor 2 und 3
-        </td>
-        <td>
-         &nbsp;
-        </td>
-        <td><img src="dayhumid1.png" alt="Feuchte 2 und 3" /></td>
-       </tr>
-       #end if
        #if $day($data_binding='air_binding').sound.has_data
        <tr>
         <td>
@@ -565,13 +601,6 @@ function topFunction() {
         </td>
         <td>&nbsp;</td>
         <td><img src="daywindrun.png"    alt="Windrun" /></td>
-       </tr>
-       <tr>
-        <td>
-         $current.beaufort
-        </td>
-        <td>&nbsp;</td>
-        <td><img src="daywindB.png"    alt="WindBeaufort" /></td>
        </tr>
        <tr>
         <td>

@@ -12,6 +12,7 @@ from __future__ import print_function
 import logging
 import collections
 
+import cmath
 import math
 import time
 import ephem
@@ -98,8 +99,8 @@ def windchillF(T_F, V_mph):
     return WcF
 
 
-def windchillC(T_C, V_kph):
-    """Wind chill, metric version.
+def windchillMetric(T_C, V_kph):
+    """Wind chill, metric version, with wind in kph.
 
     T: Temperature in Celsius
 
@@ -118,9 +119,34 @@ def windchillC(T_C, V_kph):
     return FtoC(WcF) if WcF is not None else None
 
 
+# For backwards compatibility
+windchillC = windchillMetric
+
+
+def windchillMetricWX(T_C, V_mps):
+    """Wind chill, metric version, with wind in mps.
+
+    T: Temperature in Celsius
+
+    V: Wind speed in mps
+
+    Returns wind chill in Celsius"""
+
+    if T_C is None or V_mps is None:
+        return None
+
+    T_F = CtoF(T_C)
+    V_mph = 2.237 * V_mps
+
+    WcF = windchillF(T_F, V_mph)
+
+    return FtoC(WcF) if WcF is not None else None
+
+
 def heatindexF(T, R, algorithm='new'):
     """Calculate heat index.
-    https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
+
+    The 'new' algorithm uses: https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
 
     T: Temperature in Fahrenheit
 
@@ -212,7 +238,7 @@ def cooling_degrees(t, base):
 def altimeter_pressure_US(SP_inHg, Z_foot, algorithm='aaASOS'):
     """Calculate the altimeter pressure, given the raw, station pressure in inHg and the altitude
     in feet.
-        
+
     Examples:
     >>> print("%.2f" % altimeter_pressure_US(28.0, 0.0))
     28.00
@@ -569,31 +595,40 @@ def beaufort(ws_kts):
     """Return the beaufort number given a wind speed in knots"""
     if ws_kts is None:
         return None
-    elif ws_kts < 1:
-        return 0
-    elif ws_kts < 4:
-        return 1
-    elif ws_kts < 7:
-        return 2
-    elif ws_kts < 11:
-        return 3
-    elif ws_kts < 17:
-        return 4
-    elif ws_kts < 22:
-        return 5
-    elif ws_kts < 28:
-        return 6
-    elif ws_kts < 34:
-        return 7
-    elif ws_kts < 41:
-        return 8
-    elif ws_kts < 48:
-        return 9
-    elif ws_kts < 56:
-        return 10
-    elif ws_kts < 64:
-        return 11
-    return 12
+    mag_knts = abs(ws_kts)
+    if mag_knts is None:
+        beaufort_mag = None
+    elif mag_knts < 1:
+        beaufort_mag = 0
+    elif mag_knts < 4:
+        beaufort_mag = 1
+    elif mag_knts < 7:
+        beaufort_mag = 2
+    elif mag_knts < 11:
+        beaufort_mag = 3
+    elif mag_knts < 17:
+        beaufort_mag = 4
+    elif mag_knts < 22:
+        beaufort_mag = 5
+    elif mag_knts < 28:
+        beaufort_mag = 6
+    elif mag_knts < 34:
+        beaufort_mag = 7
+    elif mag_knts < 41:
+        beaufort_mag = 8
+    elif mag_knts < 48:
+        beaufort_mag = 9
+    elif mag_knts < 56:
+        beaufort_mag = 10
+    elif mag_knts < 64:
+        beaufort_mag = 11
+    else:
+        beaufort_mag = 12
+
+    if isinstance(ws_kts, complex):
+        return cmath.rect(beaufort_mag, cmath.phase(ws_kts))
+    else:
+        return beaufort_mag
 
 
 weewx.units.conversionDict['mile_per_hour']['beaufort'] = lambda x: beaufort(mph_to_knot(x))

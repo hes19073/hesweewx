@@ -47,6 +47,7 @@ function topFunction() {
  <div id="container">
    
  #include $Extras.header
+ ##include 'index_warn.inc'
             
   <div id="stats_group">
     #set global $period1 = $yesterday
@@ -69,6 +70,7 @@ function topFunction() {
 
    <div id='fc_pane_dwd' class='fc_pane'>
      <h3>Vom Deutschen Wetterdienst DWD</h3>
+      ##include $Extras.tag00
      <hr />
     #include $Extras.tag0
      <hr />
@@ -85,20 +87,33 @@ function topFunction() {
     #if len($forecastHTML) > 2.0
    <div>
     <hr />
-     <h3>Vom Wetterdienst DarkSky</h3>
+     <h3>Prognose von AerisWeather</h3>
+     letzte Aktualisierung: $forecast_updated<br><hr />
      $forecastHTML
-   </div> <!-- Text Dark Sky -->
+   </div> <!-- Text AerisWeather -->
+   <br><br>
     #end if
 #end if  
 
-  </div><!-- Ende containt -->
+#if $varExists('$forecastDSHTML')
+    #if len($forecastDSHTML) > 2.0
+   <div>
+    <hr />
+     <h3>Prognose von DarkSky</h3>
+     letzte Aktualisierung: $forecastDS_updated<br>
+     $forecastDSHTML
+   </div> <!-- Text DarkSky Weather -->
+    #end if
+#end if
+
+ </div><!-- Ende containt -->
 
     #include $Extras.footer
 
 </div> <!-- hes11 -->
 </div>
 
-#include $Extras.cookie
+##include $Extras.cookie
 
 </body>
 

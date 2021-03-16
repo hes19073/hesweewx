@@ -41,6 +41,7 @@
 
 #include $Extras.header
 #include $Extras.cwarn
+#include 'index_warn.inc'
 
 <section>
 <div id='hescontainer'>
@@ -123,24 +124,24 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='airCar_binding').pm_25.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
+      <td class="hes1_trendlo" colspan='3' >kein Wert</td>
+      <td class="hes1_vallo" colspan='2' >
     #elif $day($data_binding='airCar_binding').pm_25.avg.raw <= 10
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
-    #else if $day($data_binding='airCar_binding').pm_25.avg.raw > 10 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 20
+    #elif $day($data_binding='airCar_binding').pm_25.avg.raw > 10 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 20
       <td class='hes1_winbo' colspan='3' style="background-color: yellow">Mittel</td>
       <td class='hes1_m' colspan='2' style="background-color: yellow">
-    #else if $day($data_binding='airCar_binding').pm_25.avg.raw > 20 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 30
+    #elif $day($data_binding='airCar_binding').pm_25.avg.raw > 20 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 30
       <td class='hes1_winbo' colspan='3' style="background-color: orange">Sensibel</td>
       <td class='hes1_m' colspan='2' style="background-color: orange">
-    #else if $day($data_binding='airCar_binding').pm_25.avg.raw > 30 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 40
+    #elif $day($data_binding='airCar_binding').pm_25.avg.raw > 30 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 40
       <td class='hes1_winbo' colspan='3' style="background-color: red">Ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='airCar_binding').pm_25.avg.raw > 40 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 60
+    #elif $day($data_binding='airCar_binding').pm_25.avg.raw > 40 and $day($data_binding='airCar_binding').pm_25.avg.raw <= 60
       <td class='hes1_winbo' colspan='3' style="background-color: red">sehr ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='airCar_binding').pm_25.avg.raw > 60
+    #elif $day($data_binding='airCar_binding').pm_25.avg.raw > 60
       <td class='hes1_winbo' colspan='3' style="background-color: maroon">Gefährlich</td>
       <td class='hes1_m' colspan='2' style="background-color: maroon">
     #end if
@@ -149,24 +150,24 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='airCar_binding').pm_25.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw <= 15
+      <td class="hes1_trendlo" colspan='3' >kein Wert</td>
+      <td class="hes1_vallo" colspan='2' >
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw <= 15
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw > 15 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 30
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw > 15 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 30
       <td class='hes1_winbo' colspan='3' style="background-color: yellow">Mittel</td>
       <td class='hes1_m' colspan='2' style="background-color: yellow">
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw > 30 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 55
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw > 30 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 55
       <td class='hes1_winbo' colspan='3' style="background-color: orange">Sensibel</td>
       <td class='hes1_m' colspan='2' style="background-color: orange">
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw > 55 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 70
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw > 55 and $hour($data_binding='airCar_binding').pm_25.avg.raw <= 70
       <td class='hes1_winbo' colspan='3' style="background-color: red">Ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw > 70 and $hour($data_binding='airCar_binding').pm_25.avg.raw < 110
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw > 70 and $hour($data_binding='airCar_binding').pm_25.avg.raw < 110
       <td class='hes1_winbo' colspan='3' style="background-color: red">sehr ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $hour($data_binding='airCar_binding').pm_25.avg.raw > 110
+    #elif $hour($data_binding='airCar_binding').pm_25.avg.raw > 110
       <td class='hes1_winbo' colspan='3' style="background-color: maroon">Gefährlich</td>
       <td class='hes1_m' colspan='2' style="background-color: maroon">
     #end if
@@ -218,8 +219,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='airCar_binding').pm_10.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
+      <td class="hes1_trendlo" colspan='3' >kein Wert</td>
+      <td class="hes1_vallo" colspan='2' >
     #else if $day($data_binding='airCar_binding').pm_10.avg.raw <= 25
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -244,8 +245,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='airCar_binding').pm_10.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
+      <td class="hes1_trendlo" colspan='3' >kein Wert</td>
+      <td class="hes1_vallo" colspan='2' >
     #else if $hour($data_binding='airCar_binding').pm_10.avg.raw <= 25
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -342,7 +343,7 @@
   <div class='hesbox'>
    <table class='hes_lufe'>
     <tr>
-     <td class='hes1_kopfa'>Air Quality <br />Sensor</td>
+     <td class='hes1_kopfa'>Airquality<br />Sensor</td>
      <td class='hes1_kopf' colspan='2'>Aktuell</td>
      <td class="hes1_kopf" colspan="2">Trend</td>
     </tr>
@@ -380,8 +381,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air_binding').air_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #elif $day($data_binding='air_binding').air_sensor.avg.raw <= 50
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -406,8 +407,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air_binding').air_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air_binding').air_sensor.avg.raw <= 50
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -438,7 +439,7 @@
  <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>LPG, CH4<br />Sensor</td>
+    <tr><td class='hes1_kopfa'>Erdgas<br />Sensor</td>
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
         <td class='hes1_kopf' colspan="2">Trend</td></tr>
     <tr>
@@ -475,24 +476,24 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air_binding').gas_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw <= 5000
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw > 5000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 7500
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw > 5000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 7500
       <td class='hes1_winbo' colspan='3' style="background-color: yellow">Mittel</td>
       <td class='hes1_m' colspan='2' style="background-color: yellow">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw > 7500 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 10000
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw > 7500 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 10000
       <td class='hes1_winbo' colspan='3' style="background-color: orange">Sensibel</td>
       <td class='hes1_m' colspan='2' style="background-color: orange">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw > 10000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 20000
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw > 10000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 20000
       <td class='hes1_winbo' colspan='3' style="background-color: red">Ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw > 20000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 30000
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw > 20000 and $day($data_binding='air_binding').gas_sensor.avg.raw <= 30000
       <td class='hes1_winbo' colspan='3' style="background-color: red">sehr ungesund</td>
       <td class='hes1_m' colspan='2' style="background-color: red">
-    #else if $day($data_binding='air_binding').gas_sensor.avg.raw > 30000
+    #elif $day($data_binding='air_binding').gas_sensor.avg.raw > 30000
       <td class='hes1_winbo' colspan='3' style="background-color: maroon">Gefährlich</td>
       <td class='hes1_m' colspan='2' style="background-color: maroon">
     #end if
@@ -501,8 +502,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air_binding').gas_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air_binding').gas_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -572,8 +573,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air_binding').hcho_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $day($data_binding='air_binding').hcho_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -598,8 +599,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air_binding').hcho_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air_binding').hcho_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -667,8 +668,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air_binding').gasC_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $day($data_binding='air_binding').gasC_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -693,8 +694,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air_binding').gasC_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air_binding').gasC_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -809,8 +810,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air_binding').gasN_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $day($data_binding='air_binding').gasN_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -835,8 +836,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air_binding').gasN_sensor.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air_binding').gasN_sensor.avg.raw <= 5000
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -939,8 +940,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air2_binding').pm_25.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $day($data_binding='air2_binding').pm_25.avg.raw <= 10
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -965,8 +966,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air2_binding').pm_25.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air2_binding').pm_25.avg.raw <= 15
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -1034,8 +1035,8 @@
     <tr><td colspan='5'>Tagesmittelwert</td></tr>
     <tr>
     #if $day($data_binding='air2_binding').pm_10.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $day($data_binding='air2_binding').pm_10.avg.raw <= 25
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -1060,8 +1061,8 @@
     <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
     <tr>
     #if $hour($data_binding='air2_binding').pm_10.avg.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='2'>
     #else if $hour($data_binding='air2_binding').pm_10.avg.raw <= 25
       <td class='hes1_winbo' colspan='3' style="background-color: limegreen">Gut</td>
       <td class='hes1_m' colspan='2' style="background-color: limegreen">
@@ -1153,112 +1154,106 @@
 </div> <!-- ende inTemp inHumidity Air Innen -->
 #end if
 
-#include 'pollen.inc'
-
-#if $day($data_binding='air_binding').sound.has_data
+#if $day($data_binding='aerisaqi_binding').aqi.has_data
  <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Sound-Sensor<br />&nbsp;</td>
+   <tr><td class='hes1_kopfa' colspan='5'>
+    <a href='https://wx.aerisweather.com/local/de/klein%20rogahn/airquality' target='_blank'>Aeris Weather</a></td></tr>
+    <tr><td class='hes1_kopfa'>AQI-Index</td>
         <td class='hes1_kopf' colspan='2'>Aktuell</td>
-        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+        <td class='hes1_kopf' colspan="2">Trend</td>
+    </tr>
     <tr>
-     <td class='hes1_bigval' colspan='3'><a href='daySound.png' class='popup'>
-             $latest($data_binding='air_binding').sound.formatted</a></td>
-   #if $trend($data_binding='air_binding').sound.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
-   #elif $trend($data_binding='air_binding').sound.raw < 0
+     <td class='hes1_winbo' colspan='2' style='$decorator_color('aqi', $latest($data_binding='aerisaqi_binding').aqi.raw)'>
+                  $decorator_text('aqi', $latest($data_binding='aerisaqi_binding').aqi.raw)</td>
+     <td class='hes1_bigval'><a href='dayAQI.png' class='popup'>
+            $latest($data_binding='aerisaqi_binding').aqi</a></td>
+   #if $trend($data_binding='aerisaqi_binding').aqi.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='aerisaqi_binding').aqi.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
-      <td class='hes1_vallo'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
-   #elif $trend($data_binding='air_binding').sound.raw == 0
+      <td class='hes1_vallo'>$trend($data_binding='aerisaqi_binding').aqi</td>
+   #elif $trend($data_binding='aerisaqi_binding').aqi.raw == 0
       <td class="hes1_trendhi"><b>=</b></td>
-      <td class="hes1_valhi">$trend($data_binding='air_binding').sound.format("%.1f")</td>
-   #elif $trend($data_binding='air_binding').sound.raw > 0
+      <td class="hes1_valhi">$trend($data_binding='aerisaqi_binding').aqi</td>
+   #elif $trend($data_binding='aerisaqi_binding').aqi.raw > 0
       <td class="hes1_trendhi"> &#8679;</td>
-      <td class='hes1_valhi'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
+      <td class='hes1_valhi'>$trend($data_binding='aerisaqi_binding').aqi</td>
    #end if
     </tr>
-    <tr>
-     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi'>$day($data_binding='air_binding').sound.max.format("%.1f")</td>
-     <td class="hes1_m">min</td>
-     <td class='hes1_vallo'>$day($data_binding='air_binding').sound.min.format("%.1f")</td>
+    <tr><td colspan="3">Primärschadstoff</td>
+   #if $latest($data_binding='aerisaqi_binding').aqidominats.raw == 1
+        <td colspan="2">Ozone (O³)</td>
+   #elif $latest($data_binding='aerisaqi_binding').aqidominats.raw == 2 
+        <td colspan="2">Feinstaub PM 2,5</td> 
+   #elif $latest($data_binding='aerisaqi_binding').aqidominats.raw == 3 
+        <td colspan="2">Feinstaub PM 10</td>
+   #elif $latest($data_binding='aerisaqi_binding').aqidominats.raw == 4 
+        <td colspan="2">Kohlenstoffmonoxid (CO)</td>
+   #elif $latest($data_binding='aerisaqi_binding').aqidominats.raw == 5 
+        <td colspan="2">Stickstoffdioxid (NO2)</td>
+   #elif $latest($data_binding='aerisaqi_binding').aqidominats.raw == 6 
+        <td colspan="2">Schwefeldioxid (SO2)</td>
+   #end if
     </tr>
-    <tr>
-     <td class='hes1_kopfb'>Werte<br />Gestern</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi'>$yesterday($data_binding='air_binding').sound.max.format("%.1f")</td>
-     <td class="hes1_m">min</td>
-     <td class='hes1_vallo'>$yesterday($data_binding='air_binding').sound.min.format("%.1f")</td>
-    </tr>
-    <tr>
-    <td colspan='5' style="$decorator_color('insound', $latest($data_binding='air_binding').sound.raw)">
-            Tagesmittelwert:&nbsp;$day($data_binding='air_binding').sound.avg.format("%.2f")</td>
-    </tr>
-   </table>
+  </table>
+   <hr />
+   <img src="dayAQI.png" alt="Aeris AQI" style="width:300px; height:160px;" />
   </div>
- </div>
+ </div><!-- ende Luftqualitaet Aeris AQI -->
 #end if
-<!-- ende sound -->
 
-##if $day($data_binding='lightning_binding').distance.has_data
-<div class="hes">
+#if $day($data_binding='aerisaqi_binding').pm25.has_data
+ <div class='hes'>
   <div class='hesbox'>
-   <table class='hes_lufe'>
-    <tr>
-     <td class='hes1_kopfa'>Blitz-Sensor<br />&nbsp;</td>
-     <td class='hes1_kopf' colspan='2'>Entfernung</td>
-     <td class="hes1_kopf" colspan="2">Uhrzeit</td>
-    </tr>
-    <tr>
-     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>
-              $latest($data_binding='lightning_binding').distance</a></td>
-     <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M") Uhr</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
-     <td class='hes1_m'>am</td>
-     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</td>
-     <td class="hes1_m">um</td>
-     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
-     <td class='hes1_m'>Tag</td>
-     <td class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-     <td class="hes1_m">Woche</td>
-     <td class='hes1_vallo'>$week($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
-     <td class='hes1_m'>Monat</td>
-     <td class='hes1_valhi'>$month($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-     <td class="hes1_m">Jahr</td>
-     <td class='hes1_vallo'>$year($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-    </tr>
+   <table>
+    <tr><td class='hes1_kopfa' colspan='2'>
+     <a href='https://wx.aerisweather.com/local/de/klein%20rogahn/airquality' target='_blank'>Aeris Weather</a></td></tr>
+    <tr><td colspan='2'> -PM 2.5 / PM 10-</td></tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
+    <tr><td>PM 2,5</td><td>$latest($data_binding='aerisaqi_binding').pm25
+          ($yesterday($data_binding='aerisaqi_binding').pm25.avg.formatted)</td></tr>
+    <tr><td>PM 10</td><td>$latest($data_binding='aerisaqi_binding').pm10
+          ($yesterday($data_binding='aerisaqi_binding').pm10.avg.formatted) </td></tr>
+    <tr><td colspan="2">&nbsp;</td></tr>
    </table>
+   <hr />
+   <img src="dayPM.png" alt="Aeris PM" style="width:300px; height:160px;" />
   </div>
-</div> <!-- ende Blitz-Sensor -->
-##end if
+ </div><!-- ende Luftqualitaet Aeris PM -->
+#end if
+
+#if $day($data_binding='aerisaqi_binding').o3.has_data
+ <div class='hes'>
+  <div class='hesbox'>
+   <table>
+   <tr><td class='hes1_kopfa' colspan='2'>
+    <a href='https://wx.aerisweather.com/local/de/klein%20rogahn/airquality' target='_blank'>Aeris Weather</a></td></tr>
+   <tr><td colspan='2'> - GAS -</td></tr>
+   <tr><td>Ozon (O³)</td><td>$latest($data_binding='aerisaqi_binding').o3
+     ($yesterday($data_binding='aerisaqi_binding').o3.avg.formatted)</td></tr>
+   <tr><td>Kohlenmonoxid (CO)</td><td>$latest($data_binding='aerisaqi_binding').co
+      ($yesterday($data_binding='aerisaqi_binding').co.avg.formatted)</td></tr>
+   <tr><td>Stickstoffdioxid (NO²)</td><td>$latest($data_binding='aerisaqi_binding').no2
+      ($yesterday($data_binding='aerisaqi_binding').no2.avg.formatted)</td></tr>
+   <tr><td>Schwefeldioxid (SO²)</td><td>$latest($data_binding='aerisaqi_binding').so2
+       ($yesterday($data_binding='aerisaqi_binding').so2.avg.formatted)</td></tr>
+   </table>
+   <hr />
+   <img src="dayGAS.png" alt="Aeris Gas" style="width:300px; height:160px;" />
+ </div>
+</div>
+#end if
 
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
-   <tr>
-     <td class='hes1_kopfa'>Radioaktivität</td>
-   </tr>
-   <tr>
-     <td>GQ GMC-300E</td>
-   </tr>
-   <tr>
-     <td>Geigerzähler</td>
-   </tr>
-   <tr>
-     <td><a href='indexRad.html'>weiter</a></td>
-   </tr>
+   <tr><td class='hes1_kopfa'>Blitz & Pollen</td></tr>
+   <tr><td>GQ GMC-300E Geigerzähler</td></tr>
+   <tr><td>Blitz/ Sound/ Büro</td></tr>
+   <tr><td><a href='indexRad.html'>weiter</a></td></tr>
   </table>
  </div>
 </div> <!-- end Rad -->

@@ -6,10 +6,10 @@
    <p>
     <a href = 'https://www.wunderground.com/dashboard/pws/IMECKLEN20'>
          <img style="width: 160px; height: 55px;" alt="wunderground" src="xicons/logo/wundergroundLogo_4c.png"  /></a> 
-    <!-- <a href="https://www.wunderground.com/dashboard/pws/IMECKLEN20">
-         <img src="http://banners.wunderground.com/cgi-bin/banner/ban/wxBanner?bannertype=WeatherStationCount&weatherstationcount=IMECKLEN20" height="160" width="163" border="0" alt="Weather Underground PWS IMECKLEN20" /></a> -->
     <a href = 'http://www.pwsweather.com/obs/heskrfrr38.html'>
          <img style="width: 78px; height: 55px;" alt="pws" src="xicons/logo/stnicon_basic.png"  /></a>
+    <a href = 'https://wx.aerisweather.com/local/de/klein%20rogahn'>
+         <img style="width: 151px; height: 58px;" alt="aeris" src="xicons/logo/aeris.png"  /></a>
     <a href = 'http://www.findu.com/cgi-bin/wxpage.cgi?call=EW3693'>
          <img style="width: 48px; height: 48px;" alt="findu" src="xicons/logo/CWOP.jpg"  /></a>
     <a href = 'http://www.windfinder.com/forecast/klein-rogahn'>

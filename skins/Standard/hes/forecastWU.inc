@@ -15,22 +15,22 @@
 
 ## Which columns should be displayed?
 #set $show_legend = 1
-#set $show_hourly = 1
+#set $show_hourly = 0
 #set $show_date = 1
 #set $show_outlook = 1
 #set $show_temp = 1
-#set $show_dewpoint = 1
+#set $show_dewpoint = 0
 #set $show_humidity = 1
 #set $show_wind = 1
-#set $show_uv = 1
-#set $show_feelslike = 1
+#set $show_uv = 0
+#set $show_feelslike = 0
 #set $show_barometer = 1
 #set $show_tides = 0
 #set $show_sun = 1
 #set $show_moon = 1
-#set $show_pop = 1
-#set $show_precip = 1
-#set $show_obvis = 1
+#set $show_pop = 0
+#set $show_precip = 0
+#set $show_obvis = 0
 
 #set $wloc = ''
 #set $wts = ''

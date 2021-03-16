@@ -39,7 +39,7 @@
                         },
 
                         title: {
-                                text: '2014-19 Monat Temperatur'
+                                text: '2015-20 Monat Temperatur'
                         },
 
                         subtitle: {
@@ -74,21 +74,21 @@
                                 }
                         },
                   
-                        series: [{ name: '2014', pointPadding: 0.25 },
-                                 { name: '2015', pointPadding: 0.25 },
+                        series: [{ name: '2015', pointPadding: 0.25 },
                                  { name: '2016', pointPadding: 0.25 },
                                  { name: '2017', pointPadding: 0.25 },
                                  { name: '2018', pointPadding: 0.25 },
-                                 { name: '2019', pointPadding: 0.26 }]
+                                 { name: '2019', pointPadding: 0.25 },
+                                 { name: '2020', pointPadding: 0.26 }]
                 };
 
-                $.getJSON('Data/Data-2014.json', function(data) {options.series[0].data = data; 
-                           $.getJSON('Data/Data-2015.json', function(data) { options.series[1].data = data;
-                                      $.getJSON('Data/Data-2016.json', function(data) { options.series[2].data = data; 
-                                                 $.getJSON('Data/Data-2017.json', function(data) {options.series[3].data = data; 
-                                                            $.getJSON('Data/Data-2018.json', function(data) {options.series[4].data = data;
+                $.getJSON('Data/Data-2015.json', function(data) {options.series[0].data = data; 
+                           $.getJSON('Data/Data-2016.json', function(data) { options.series[1].data = data;
+                                      $.getJSON('Data/Data-2017.json', function(data) { options.series[2].data = data; 
+                                                 $.getJSON('Data/Data-2018.json', function(data) {options.series[3].data = data; 
+                                                            $.getJSON('Data/Data-2019.json', function(data) {options.series[4].data = data;
                                                                        var chart = new Highcharts.Chart(options); 
-                                                                       $.getJSON('Data/Data-2019.json', function(data) {options.series[5].data = data;
+                                                                       $.getJSON('Data/Data-2020.json', function(data) {options.series[5].data = data;
                                                                                   var chart = new Highcharts.Chart(options);
                                                                        });
                                                             });

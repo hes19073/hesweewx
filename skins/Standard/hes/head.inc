@@ -36,7 +36,8 @@
  <ul>
   <li>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</li> 
   <li>L&auml;ngengrad:&nbsp;$station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]</li>
-  <li>H&ouml;he:&nbsp;$station.altitude&nbsp;m ü. NHN</li>
+  <li>H&ouml;he:&nbsp;$station.altitude&nbsp; ü. NHN</li>
+  <li>Ortszeit: $current.LMTtime.raw </li>
  </ul>
 </div> <!-- ende Breite Laenge Hoehe -->
 
@@ -64,6 +65,7 @@
   <li><input type="button" value=" Blitz " onclick="openURL('indexRad.html')" /></li>
   <li><input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <ul>
+    <li><input type="button" value=" Phenology " onclick="openURL('indexP.html')" /></li>
     <li><input type="button" value=" WTG 10°C " onclick="openURL('Cydia/C_growth.html')" /></li>
     <li><input type="button" value=" GLT      " onclick="openURL('Cydia/C_green.html')" /></li>
     <li><input type="button" value=" Cydia    " onclick="openURL('Cydia/C_pomonella.html')" /></li>
@@ -87,7 +89,7 @@
   </li>
   <li><input type="button" value=" Prognose " onclick="openURL('forecast.html')" />
    <ul>
-    <li><input type="button" value=" WeeWx Prognose " onclick="openURL('forecastT.html')" /></li>
+    <!-- <li><input type="button" value=" WeeWx Prognose " onclick="openURL('forecastT.html')" /></li> -->
     <li><input type="button" value=" Wetter Warnung " onclick="openURL('indexWarn.html')" /></li>
     <li><input type="button" value=" Wetter Infos   " onclick="openURL('indexInfo.html')" /></li>
     <li><input type="button" value=" Wetter Wissen  " onclick="openURL('wissen.html')" /></li>
@@ -171,7 +173,7 @@
     <li><input type="button" value=" Nutzerforum " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-user')" /></li>
     <li><input type="button" value=" Entwicklung " onclick="openURL('http://groups.google.com/forum/#!forum/weewx-development')" /></li>
     <li><input type="button" value=" GitHub Hes  " onclick="openURL('https://github.com/hes19073/hesweewx.git')" /></li>
-    <li><input type="button" value=" Doc 4.0 " onclick="openURL('docs/setup.htm')" /></li>
+    <li><input type="button" value=" Doc WeeWx 4 " onclick="openURL('docs/usersguide.htm')" /></li>
    </ul>
   </li>
   <li><input type="button" value=" Impressum " onclick="openURL('http://blog.hes61.de/?page_id=111')" />

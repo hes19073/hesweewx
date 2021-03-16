@@ -821,7 +821,7 @@ tr.odd {
 
 .hesSonne {
     float: left;
-    width: 630px;
+    width: 680px;
     margin: 10px;
     padding: 2px;
     border-radius: 12px;
@@ -935,10 +935,10 @@ td.hes1_wind {
 
 .hesso {
     position: absolute;
-    width: 100px;
+    width: 220px;
     height: 100px;
     top: 30px;
-    left: 50px;
+    left: 0px;
     text-align: center;
 }
 .hesso, th, td {
@@ -947,10 +947,10 @@ td.hes1_wind {
 
 .hesmo {
     position: absolute;
-    width: 100px;
-    height: 100px;
-    top: 30px;
-    right: 80px;
+    width: 250px;
+    height: 200px;
+    top: 40px;
+    right: 120px;
     text-align: center;
 }
 
@@ -1551,6 +1551,17 @@ td.hes1_wind {
     animation: fadeIn 1s
 }
 
+/* .col-sm-1-5 { */
+.wuforecast {
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+     width: 10%; 
+     float:left; 
+    display: inline-block;
+    width: 148px;
+}
 
 /* Add animation (fade in the popup) 
 @-webkit-keyframes fadeIn {

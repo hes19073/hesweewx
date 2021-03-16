@@ -1,0 +1,352 @@
+#errorCatcher Echo
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: indexOWFS.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+#encoding UTF-8
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 min" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location OWFS Sensoren</title>
+
+     <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script src='js/hesweewx.js'></script>
+     <script>
+       window.onload = function() { applypopups(); }
+     </script>
+ </head>
+
+<body>
+
+<div id='hes11'>
+
+#include $Extras.header
+#include $Extras.cwarn
+#include 'index_warn.inc'
+
+<div id='hescontainer'>
+ <div id='popupanchor' style='float:left'></div>
+
+#include "links_forecast.inc"
+
+#if $day.extraTempO0.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Wasser-<br>tonne</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+      <a href='dayTonne.png' class='popup'>$current.extraTempO0</a>
+     </td>
+    #if $trend.extraTempO0.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTempO0.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTempO0.formatted</td>
+    #elif $trend.extraTempO0.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTempO0.formatted</td>
+    #elif $trend.extraTempO0.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTempO0.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTempO0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTempO0.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTempO0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTempO0.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+   <img src="dayTonne.png" alt="Wassertonne-temp" style="width:300px; height:175px;" />
+  </div>
+ </div><!-- ende extraTempO0 wassertonne -->
+#end if
+
+#if $day.extraTemp1.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Teich 0,75m³<br />bei 20cm</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+          <a href='dayTeichTemp.png' class='popup'>$current.extraTemp1</a>
+     </td>
+    #if $trend.extraTemp1.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTemp1.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp1.formatted</td>
+    #elif $trend.extraTemp1.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp1</td>
+    #elif $trend.extraTemp1.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp1.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp1.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp1.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp1.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+   <img src="dayTeichTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp1 -->
+
+#if $day.extraTemp6.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Teich 22m³<br />bei 50cm</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+       <a href='dayFischTemp.png' class='popup'>$current.extraTemp6</a></td>
+    #if $trend.extraTemp6.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTemp6.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp6.formatted</td>
+    #elif $trend.extraTemp6.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp6.formatted</td>
+    #elif $trend.extraTemp6.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp6.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp6.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'> $day.extraTemp6.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp6.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'> $yesterday.extraTemp6.min.formatted</span></td>
+    </tr>
+   </table>
+  <hr />
+    <img src="dayFischTemp.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp6 -->
+
+#if $day.extraTemp2.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Teich 96m³<br />bei 50cm</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+         <a href='dayBadTemp2.png' class='popup'>$current.extraTemp2</a></td>
+    #if $trend.extraTemp2.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTemp2.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp2.formatted</td>
+    #elif $trend.extraTemp2.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp2.formatted</td>
+    #elif $trend.extraTemp2.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp2.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp2.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp2.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayBadTemp2.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extraTemp2 -->
+
+#if $day.extraTemp3.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Teich 96m³<br />bei 180cm</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+            <a href='dayBadTemp3.png' class='popup'>$current.extraTemp3</a></td>
+    #if $trend.extraTemp3.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTemp3.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp3.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp3.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp3.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayBadTemp3.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extra temp3 -->
+
+#if $day.extraTemp3.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class='hes1_kopfa'>Teich 96m³<br />Filter</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+            <a href='dayBadTemp.png' class='popup'>$current.extraTemp3</a></td>
+    #if $trend.extraTemp3.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+    #elif $trend.extraTemp3.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw == 0
+     <td class="hes1_trendhi">=</td>
+     <td class="hes1_valhi">$trend.extraTemp3.formatted</td>
+    #elif $trend.extraTemp3.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend.extraTemp3.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $day.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day.extraTemp3.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'> $yesterday.extraTemp3.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday.extraTemp3.min.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="dayTonne.png" alt="carport-temp" style="width:300px; height:175px;" />
+  </div>
+ </div>
+#end if
+<!-- ende extra temp3 Teichfilter-->
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Boden/Blatt<br /> 
+                              Sensoren Davis</td></tr>
+   <tr><td><a href='index1.html'> weiter</a></td></tr>
+  </table>
+ </div>
+</div> <!-- end owfs -->
+
+</div> <!-- ende container -->
+
+#include $Extras.footer
+
+ </div> 
+</body>
+
+</html>
+
+

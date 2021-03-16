@@ -28,10 +28,15 @@ from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
 
+# weewx.units.obs_group_dict['earthquake_time'] = 'group_time'
+weewx.units.obs_group_dict['earthquake_magnitude'] = 'group_anzahl1'
+weewx.units.obs_group_dict['earthquake_tief'] = 'group_distance'
+weewx.units.obs_group_dict['earthquake_dist'] = 'group_distance'
+
 log = logging.getLogger(__name__)
 
 # Print version in syslog for easier troubleshooting
-VERSION = "3.1.1"
+VERSION = "3.1.2"
 
 log.info("version %s", VERSION)
 
@@ -99,7 +104,7 @@ class getEarthquake(SearchList):
     def get_cardinal_direction(self, degree, return_only_labels=False):
         default_ordinate_names = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N/A']
         try:
-            ordinate_names = weeutil.weeutil.option_as_list(self.generator.skin_dict['Units']['Ordinates']['directions'])
+            ordinate_names = weeutil.weeutil.option_as_list(self.generator.config_dict['StdReport']['Defaults']['Units']['Ordinates']['directions'])
             try:
                 ordinate_names = [unicode(x, "utf-8") for x in ordinate_names] # Python 2, convert to unicode
             except:
@@ -147,7 +152,7 @@ class getEarthquake(SearchList):
 
     def get_extension_list(self, timespan, db_lookup):
         """
-        Parse the Earthquake data.
+        Earthquake data.
         """
 
         # Return right away if we're not going to use the earthquake.
@@ -156,22 +161,14 @@ class getEarthquake(SearchList):
             search_list_extension = { }
             return [search_list_extension]
 
-        # Setup the converter
-        # Get the target unit nickname (something like 'US' or 'METRIC'):
-        ## target_unit_nickname = self.generator.config_dict['StdConvert']['target_unit']
-        # Get the target unit: weewx.US, weewx.METRIC, weewx.METRICWX
-        ## target_unit = weewx.units.unit_constants[target_unit_nickname.upper()]
-        # Bind to the appropriate standard converter units
-        ## converter = weewx.units.StdUnitConverters[target_unit]
-
+        # Only if Earthquake is enable
         earthquake_file = "/home/weewx/archive/earthquake.json"
         earthquake_stale_timer = self.generator.skin_dict['Extras']['earthquake_stale']
         latitude = self.generator.config_dict['Station']['latitude']
         longitude = self.generator.config_dict['Station']['longitude']
-        distance_unit = self.generator.converter.group_unit_dict["group_distance"]
-        # distance_unit = 'km'
-        eq_distance_label = self.generator.skin_dict['Units']['Labels'].get(distance_unit, "")
-        eq_distance_round = self.generator.skin_dict['Units']['StringFormats'].get(distance_unit, "%.1f")
+        distance_unit = 'km'
+        eq_distance_label = ''
+        eq_distance_round = '%.2f'
         earthquake_maxradiuskm = self.generator.skin_dict['Extras']['earthquake_maxradiuskm']
         # Sample URL from Belchertown Weather:
         # http://earthquake.usgs.gov/fdsnws/event/1/query?limit=1&lat=53.605963&lon=11.341407&maxradiuskm=10000&format=geojson&nodata=204&minmag=2
@@ -197,18 +194,18 @@ class getEarthquake(SearchList):
         with open(earthquake_file, encoding="utf8") as read_file:
             eqdata= json.loads(read_file.read())
 
-        eqtime = time.strftime( "%d.%m.%Y %H:%M %Z", time.localtime( eqdata["features"][0]["properties"]["time"] / 1000 ) )
-        #eqtime = eqdata["features"][0]["properties"]["time"] / 1000
+        eqtime = time.strftime("%d.%m.%Y %H:%M %Z", time.localtime(eqdata["features"][0]["properties"]["time"] / 1000))
+        # eqtime = eqdata["features"][0]["properties"]["time"] / 1000
         equrl = eqdata["features"][0]["properties"]["url"]
         eqplace = eqdata["features"][0]["properties"]["place"]
         eqmag = eqdata["features"][0]["properties"]["mag"]
-        eqlat = str( round( eqdata["features"][0]["geometry"]["coordinates"][0], 4 ) )
-        eqlon = str( round( eqdata["features"][0]["geometry"]["coordinates"][1], 4 ) )
-        eqtief = str( round( eqdata["features"][0]["geometry"]["coordinates"][2], 2 ) )
+        eqlat = str(round(eqdata["features"][0]["geometry"]["coordinates"][1], 4))
+        eqlon = str(round(eqdata["features"][0]["geometry"]["coordinates"][0], 4))
+        eqtief = str(round(eqdata["features"][0]["geometry"]["coordinates"][2], 2))
         eqdistance_bearing = self.get_gps_distance((float(latitude), float(longitude)),
                                                    (float(eqlat), float(eqlon)),
                                                     distance_unit)
-        # eqdistance = eq_distance_round % eqdistance_bearing[0]
+
         eqdistance = locale.format("%g", float(eq_distance_round % eqdistance_bearing[0]))
         eqbearing = eqdistance_bearing[1]
         eqbearing_raw = eqdistance_bearing[2]

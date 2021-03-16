@@ -86,13 +86,13 @@
        <td>$month.rain.sum</td>
       </tr>
      </table>
-  #if $latest($data_binding='wdsupp_binding')stormRain is not None
+  #if $latest.stormRain is not None
      <table>
       <tr>
        <td>Niederschlag Vantage Storm Rain</td>
-       <td>$latest($data_binding='wdsupp_binding')stormStart.format("%d.%m.%Y")</td>
+       <td>$latest.stormStart.format("%d.%m.%Y")</td>
        <td>Niederschlagmenge</td>
-       <td>$latest($data_binding='wdsupp_binding')stormRain</td>
+       <td>$latest.stormRain</td>
       </tr>
      </table>
   #else
@@ -458,7 +458,7 @@ Niederschlägen ab 0,2 mm.</p>
                    },
 
                    title: {
-                           text: '2014-19 Monatliche Regenmengen'
+                           text: '2015-20 Monatliche Regenmengen'
                         },
 
                    legend: {
@@ -485,8 +485,6 @@ Niederschlägen ab 0,2 mm.</p>
 
 
                    series: [{
-                             name: '2014'
-                        }, {
                              name: '2015'
                         }, {
                              name: '2016'
@@ -494,23 +492,25 @@ Niederschlägen ab 0,2 mm.</p>
                              name: '2017'
                         }, {
                              name: '2018'
-                        }, { 
+                        }, {
                              name: '2019'
+                        }, { 
+                             name: '2020'
                         }]
                 };
 
-                $.getJSON('Data/Rain-2014.json', function(data) {
+                $.getJSON('Data/Rain-2015.json', function(data) {
                         options.series[0].data = data;
-                        $.getJSON('Data/Rain-2015.json', function(data) {
+                        $.getJSON('Data/Rain-2016.json', function(data) {
                                 options.series[1].data = data;
-                                $.getJSON('Data/Rain-2016.json', function(data) {
+                                $.getJSON('Data/Rain-2017.json', function(data) {
                                         options.series[2].data = data;
-                                        $.getJSON('Data/Rain-2017.json', function(data) {
+                                        $.getJSON('Data/Rain-2018.json', function(data) {
                                                 options.series[3].data = data;
-                                                $.getJSON('Data/Rain-2018.json', function(data) {
+                                                $.getJSON('Data/Rain-2019.json', function(data) {
                                                         options.series[4].data = data;
                                                         var chart = new Highcharts.Chart(options);
-                                                        $.getJSON('Data/Rain-2019.json', function(data) {
+                                                        $.getJSON('Data/Rain-2020.json', function(data) {
                                                                 options.series[5].data = data;
                                                                 var chart = new Highcharts.Chart(options);
 

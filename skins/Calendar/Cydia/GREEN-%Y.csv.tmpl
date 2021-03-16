@@ -1,0 +1,14 @@
+#errorCatcher Echo
+##def round1(val): $eval('%6.1f' % $round($val, 1))
+##def round2(val): $eval('%6.2f' % $round($val, 2))
+#set $Wind="%6.1f"
+#set $Dir="%6.0f"
+#set $NONE="#N/A"
+YR,MO,DAY,TMPAVG_C,TMPMAX_C,TMPMIN_C
+#for $month in $year.months
+#for $day in $month.days
+#if $day.outTemp.count.raw
+$day.dateTime.format("%Y"),$day.dateTime.format("%m"),$day.dateTime.format("%d"),$day.outTemp.avg.raw,$day.outTemp.max.raw,$day.outTemp.min.raw
+#end if
+#end for
+#end for

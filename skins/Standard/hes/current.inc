@@ -410,18 +410,22 @@
    </tr>
 #end if
    <tr><td>Davis<br />Blattfeuchtigkeit</td><td>Seit dem 03.02.2017</td></tr>
+#if $day.leafWet1.has_data
    <tr>
     <td class="stats_label">Blattfeuchte 1<br />Blick Nord</td>
     <!-- <td class="stats_data">$current.leafWet1</td> -->
     <td class="stats_data" style="$decorator_color('leafwet', $current.leafWet1.raw)">$current.leafWet1
      &nbsp; $decorator_text('leafwet', $current.leafWet1.raw)</td>
    </tr>
+#end if
+#if $day.leafWet2.has_data
    <tr>
     <td class="stats_label">Blattfeuchte 2<br />Blick Süd</td>
     <!-- <td class="stats_data">$current.leafWet2</td> -->
     <td class="stats_data" style="$decorator_color('leafwet', $current.leafWet2.raw)">$current.leafWet2
      &nbsp; $decorator_text('leafwet', $current.leafWet2.raw)</td>
    </tr>
+#end if
    <tr>
     <td>Station<br /> Büro</td><td>Server</td>
    </tr>

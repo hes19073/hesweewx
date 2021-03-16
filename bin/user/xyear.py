@@ -1,7 +1,7 @@
 # coding=utf-8
 #
 #    Copyright (c) 2009-2015 Tom Keffer <tkeffer@gmail.com>
-#
+#    new by 2021 by Hartmut Schweidler
 #    See the file LICENSE.txt for your full rights.
 #
 """Extended stats based on the xsearch example
@@ -23,9 +23,10 @@ import sys
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan
-from datetime import date
+from datetime import date, tzinfo
 from datetime import timedelta
 from weewx.units import ValueHelper, getStandardUnitType, ValueTuple
+
 
 class xMyEaster(SearchList):
     """calc easter for year"""
@@ -42,36 +43,43 @@ class xMyEaster(SearchList):
         #
         # Easter. Calculate date for Easter Sunday this year
         #
-        def calcEaster(years):
+        def calc_easter(year):
+            """Calculate Easter date.
+            Uses a modified version of Butcher's Algorithm.
+            Refer New Scientist, 30 March 1961 pp 828-829
+            https://books.google.co.uk/books?id=zfzhCoOHurwC&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false
+            """
 
-            g = years % 19
-            e = 0
-            century = years / 100
-            h = (century - century / 4 - (8 * century + 13) / 25 + 19 * g + 15) % 30
-            i = h - (h / 28) * (1 - (h / 28) * (29 / (h + 1)) * ((21 - g) / 11))
-            j = (years + years / 4 + i + 2 - century + century / 4) % 7
-            p = i - j + e
-            _days = int(1 + (p + 27 + (p + 6) / 40) % 31)
-            _months = int(3 + (p + 26) / 30)
-            #Easter_dt = datetime.datetime(year=years, month=_months, day=_days)
-            Easter_dt = datetime.date(years, _months, _days)
-            Easter_ts = time.mktime(Easter_dt.timetuple())
-            return Easter_ts
+            a = year % 19
+            b = year // 100
+            c = year % 100
+            d = b // 4
+            e = b % 4
+            g = (8 * b + 13) // 25
+            h = (19 * a + b - d - g + 15) % 30
+            i = c // 4
+            k = c % 4
+            l = (2 * e + 2 * i - h - k + 32) % 7
+            m = (a + 11 * h + 19 * l) // 433
+            n = (h + l - 7 * m + 90) // 25
+            p = (h + l - 7 * m + 33 * n + 19) % 32
+            _dt = datetime.datetime(year=year, month=n, day=p)
+            _ts = time.mktime(_dt.timetuple())
+            return _ts
 
-        _years = date.today().year
-        Easter_ts = calcEaster(_years)
-
-        # Check to see if we have past this calculated date
-        # If so we want next years date so increment year and recalculate
-        if date.fromtimestamp(Easter_ts) < date.today():
-            Easter_ts = calcEaster(_years + 1)
-        Easter_vt = ValueTuple(Easter_ts, 'unix_epoch', 'group_time')
-        Easter_vh = ValueHelper(Easter_vt,
+        _year = date.today().year
+        easter_ts = calc_easter(_year)
+        # check to see if we have past this calculated date, if so we want next
+        # years date so increment year and recalculate
+        if date.fromtimestamp(easter_ts) < date.today():
+            easter_ts = calc_easter(_year + 1)
+        easter_vt = ValueTuple(easter_ts, 'unix_epoch', 'group_time')
+        easter_vh = ValueHelper(easter_vt,
                                 formatter=self.generator.formatter,
                                 converter=self.generator.converter)
 
         # Create a small dictionary with the tag names (keys) we want to use
-        search_list_extension = {'Easter' : Easter_vh,
+        search_list_extension = {'Easter' : easter_vh,
                                 }
 
         return [search_list_extension]
@@ -86,38 +94,43 @@ class xMyFeier(SearchList):
           Returns:
           day00:          Feiertag Deutschland M-V
         """
-        #
-        # Easter. Calculate date for Easter Sunday this year
-        # Berechnung Ostersonntag nach Lichtenberg
-        # (http://de.wikipedia.org/wiki/Gau%C3%9Fsche_Osterformel)
-        # (Korrektur wenn Ostersonntag nach dem 25.April
 
-        def calc_easter_day(years):
+        def calc_easter_day(year):
+            """Calculate Easter date.
+            Uses a modified version of Butcher's Algorithm.
+            Refer New Scientist, 30 March 1961 pp 828-829
+            https://books.google.co.uk/books?id=zfzhCoOHurwC&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false
+            """
 
-            g = years % 19
-            e = 0
-            century = years / 100
-            h = (century - century / 4 - (8 * century + 13) / 25 + 19 * g + 15) % 30
-            i = h - (h / 28) * (1 - (h / 28) * (29 / (h + 1)) * ((21 - g) / 11))
-            j = (years + years / 4 + i + 2 - century + century / 4) % 7
-            p = i - j + e
-            _days = int(1 + (p + 27 + (p + 6) / 40) % 31)
-            _months = int(3 + (p + 26) / 30)
-            #easter_day_dt = datetime.datetime(year=years, month=_months, day=_days)
-            easter_day_dt = datetime.date(years, _months, _days)
-            #easter_dt = date.fromtimestamp(easter_day_dt)
-            return easter_day_dt
+            a = year % 19
+            b = year // 100
+            c = year % 100
+            d = b // 4
+            e = b % 4
+            g = (8 * b + 13) // 25
+            h = (19 * a + b - d - g + 15) % 30
+            i = c // 4
+            k = c % 4
+            l = (2 * e + 2 * i - h - k + 32) % 7
+            m = (a + 11 * h + 19 * l) // 433
+            n = (h + l - 7 * m + 90) // 25
+            p = (h + l - 7 * m + 33 * n + 19) % 32
+            _dt = datetime.date(year=year, month=n, day=p)
+
+            return _dt
 
 
         today = datetime.date.today()
         _years = today.year
-        Easter_year = calc_easter_day(_years)
+        easter_year = calc_easter_day(_years)
 
         if today == datetime.date(_years, 1, 1):
             # feste Feiertage:
             #day01 = datetime.date(self.year, 1, 1)
             # day00 =  u'Neujahr'
             day00 = u'Neujahr'
+        elif today == datetime.date(_years, 2, 14):
+            day00 = u'Valentinstag'
         elif today == datetime.date(_years, 5, 1):
             day00 = u'1. Mai'
         elif today == datetime.date(_years, 5, 11):
@@ -152,25 +165,25 @@ class xMyFeier(SearchList):
             day00 = u'Silvester'
 
             #bewegliche Feiertage:
-        elif today == (Easter_year - datetime.timedelta(days=52)):
+        elif today == (easter_year - datetime.timedelta(days=52)):
             day00 =  u'Weiberfastnacht'
-        elif today == (Easter_year - datetime.timedelta(days=48)):
+        elif today == (easter_year - datetime.timedelta(days=48)):
             day00 =  u'Rosenmontag'
-        elif today == (Easter_year - datetime.timedelta(days=47)):
+        elif today == (easter_year - datetime.timedelta(days=47)):
             day00 =  u'Fastnacht'
-        elif today == (Easter_year - datetime.timedelta(days=46)):
+        elif today == (easter_year - datetime.timedelta(days=46)):
             day00 =  u'Aschermittwoch'
-        elif today == (Easter_year - datetime.timedelta(days=2)):
+        elif today == (easter_year - datetime.timedelta(days=2)):
             day00 =  u'Karfreitag'
-        elif today == Easter_year:
+        elif today == easter_year:
             day00 = u'Ostersonntag'
-        elif today == (Easter_year + datetime.timedelta(days=1)):
+        elif today == (easter_year + datetime.timedelta(days=1)):
             day00 = u'Ostermontag'
-        elif today == (Easter_year + datetime.timedelta(days=39)):
+        elif today == (easter_year + datetime.timedelta(days=39)):
             day00 = u'Christi Himmelfahrt'
-        elif today == (Easter_year + datetime.timedelta(days=49)):
+        elif today == (easter_year + datetime.timedelta(days=49)):
             day00 = u'Pfingstsonntag'
-        elif today == (Easter_year + datetime.timedelta(days=50)):
+        elif today == (easter_year + datetime.timedelta(days=50)):
             day00 = u'Pfingstmontag'
         else:
             day00 = u' '
@@ -188,7 +201,8 @@ class xSternzeit(SearchList):
 
     def get_extension_list(self, timespan, db_lookup):
 
-        now = datetime.utcnow()
+        # now = datetime.utcnow()
+        now = datetime.datetime.now()
         year = now.year
         month = now.month
         day = now.day
@@ -206,8 +220,9 @@ class xSternzeit(SearchList):
             else:
                 y = year - 1
                 m = month + 12
-                d = day
-                h = utc / 24
+
+            d = day
+            h = utc / 24
 
             if year <= 1582 and month <= 10 and day <= 4:
                 # Julian calendar
@@ -249,11 +264,11 @@ class xSternzeit(SearchList):
         lmst   = SiderialTime(year, month, day, utc, long)
 
 
-        search_list_extension = {'jd00': jd,
-                                 'jdutc' : jd_utc,
+        search_list_extension = {'jd00' : jd,
+                                 'jdutc': jd_utc,
                                  'gmst' : gmst,
                                  'lmst' : lmst,
-                                 'utc00' : utc,
+                                 'utc00': utc,
                                 }
 
         return [search_list_extension]

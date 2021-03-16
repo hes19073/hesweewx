@@ -1,0 +1,88 @@
+## ==================================================boilerplate»=====
+## WeeWX Home Page Template
+## 
+## This script is distributed as part of the Phenology Extension to
+## WeeWX.  WeeWX is maintained by Tom Keffer and Matthew Wall.  This
+## script is maintained by Chuck Rhode although it may contain
+## portions copied from Keffer and Wall or directly inspired by them.
+## 
+## Copyright 2018—2021 by Chuck Rhode.
+## 
+## See LICENSE.txt for your rights.
+## 
+## =================================================«boilerplate======
+## Copyright 2009-2018 Tom Keffer, Matthew Wall
+## Distributed under terms of GPLv3.  See LICENSE.txt for your rights.
+#errorCatcher Echo
+##
+## Specifying an encoding of UTF-8 is usually safe:
+#encoding UTF-8
+##
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    ## This choice should match the #encoding directive above
+    <meta charset="UTF-8">
+    <title>$station.location</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="css/hesweewx.css"/>
+    <script src="js/hesweewx.js"></script>
+  </head>
+
+  <body>
+<button onclick="topFunction()" id="hesBtn" title="Go to top">Top</button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("hesBtn").style.display = "block";
+    } else {
+        document.getElementById("hesBtn").style.display = "none";
+    }
+}
+    
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+</script>
+
+<div id="hes11">
+
+ #include $Extras.header
+
+ <div id="stats_group">
+
+  #set global $period1 = $yesterday
+  #set global $period2 = $day
+  #set global $period1Name = "Gestern"
+  #set global $period2Name = "Heute"
+
+  #include $Extras.chart
+
+ </div> <!--End class "stats_group" -->
+
+ <div id="content">
+  <div id="about">
+   <div class="header">
+    <h3>Jahresrhythmus der Entwicklungen</h3>
+    <p>Neuberechnung erfolgt alle drei Stunden / Recalculation takes place every three hours</p>
+   </div> <!-- End id "header" -->
+  </div> <!-- End id "about" -->
+
+  <div id="plots">
+
+   #include "cgdd.inc"
+
+  </div> <!-- End id "plots" -->
+ </div> <!-- End id "content" -->
+     
+ #include $Extras.footer
+
+</body>
+
+</html>

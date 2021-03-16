@@ -48,35 +48,36 @@
     <br />
     <h2>Wind-Werte nach Vantage Pro 2 (LOOP2)</h2>
     <ul>
-     <li>Windgeschwindigkeit in den letzten 2 Minuten:&nbsp;<b>$current.windSpeed2</b></li>
-     <li>Windgeschwindigkeit in den letzten 10 Minuten:&nbsp;<b>$current.windSpeed10</b></li>
+     <li>Windgeschwindigkeit in den letzten 2 Minuten:&nbsp;<b>$current.windSpeed2</b> ( $current.windSpeed2.beaufort )</li>
+     <li>Windgeschwindigkeit in den letzten 10 Minuten:&nbsp;<b>$current.windSpeed10</b> ( $current.windSpeed10.beaufort )</li>
      <li>&nbsp;</li>
-      <li>Windböe der letzten 10 Minuten:&nbsp;<b>$current.windGust10</b>&nbsp;aus&nbsp;$current.windGustDir10</li>
+     <li>Windböe der letzten 10 Minuten:&nbsp;<b>$current.windGust10</b>&nbsp;aus&nbsp;$current.windGustDir10</li>
+     <li>in Beaufort:&nbsp;$current.windGust10.beaufort </li>
     </ul>
     <hr />
     <div class="header">Wind Kalender</div>
      <ul>
-      <li>Windgeschwindigkeit in den letzten 5 Minuten:&nbsp;<b>$current.windSpeed</b>&nbsp;aus Richtung:
-          &nbsp;<b>$current.windDir ($current.windDir.ordinal_compass)</b></li>
+      <li>Windgeschwindigkeit in den letzten 5 Minuten:&nbsp;<b>$current.windSpeed</b>&nbsp; ( $current.windSpeed.beaufort )</li>
+      <li>aus Richtung: &nbsp;<b>$current.windDir ($current.windDir.ordinal_compass)</b></li>
       <li>Die Geschwindigkeit der letzten 10 Minuten:&nbsp;$span($time_delta=600).windGust.avg</li>
       <li>&nbsp;</li>
-      <li>Windböe der letzten 5 Minuten:&nbsp;<b>$current.windGust</b>&nbsp;aus&nbsp;$current.windGustDir</li>
+      <li>Windböe der letzten 5 Minuten:&nbsp;<b>$current.windGust</b>&nbsp;( $current.windGust.beaufort ) aus&nbsp;$current.windGustDir</li>
      </ul>
      <hr />
      <ul>
-      <li>Stärkste Windböe des Tages:&nbsp;<b>$day.windGust.max</b>&nbsp;um:&nbsp;<b>$day.windGust.maxtime</b></li>
+      <li>Stärkste Windböe des Tages:&nbsp;<b>$day.windGust.max</b>&nbsp;( $day.windGust.max.beaufort ) um:&nbsp;<b>$day.windGust.maxtime</b></li>
       <li>&nbsp;</li>
-      <li>Spitzenwindgeschwindigkeit Heute:&nbsp;<b>$day.wind.max</b></li>
+      <li>Spitzenwindgeschwindigkeit Heute:&nbsp;<b>$day.windSpeed.max</b></li>
       <li>aus Richtung:&nbsp;<b>$day.windDir.avg</b>&nbsp;um:&nbsp;<b>$day.windSpeed.maxtime</b></li>
-      <li>in Beaufort:&nbsp;$day.beaufort.max</li>
+      <li>in Beaufort:&nbsp;$day.windSpeed.max.beaufort</li>
      </ul>
      <hr />
      <ul>
-      <li>Stärkste Windböe Gestern:&nbsp;<b>$yesterday.windGust.max</b>&nbsp;um:&nbsp;<b>$yesterday.windGust.maxtime</b></li>
+      <li>Stärkste Windböe Gestern:&nbsp;<b>$yesterday.windGust.max</b>&nbsp; ( $yesterday.windGust.max.beaufort ) um:&nbsp;<b>$yesterday.windGust.maxtime</b></li>
       <li>&nbsp;</li>
       <li>Spitzenwindgeschwindigkeit Gestern:&nbsp;<b>$yesterday.wind.max</b></li>
       <li>aus Richtung:&nbsp;<b>$yesterday.windDir.avg</b>&nbsp;um:&nbsp;<b>$yesterday.windSpeed.maxtime</b></li>
-      <li>in Beaufort:&nbsp;$yesterday.beaufort.max</li>
+      <li>in Beaufort:&nbsp;$yesterday.windSpeed.max.beaufort</li>
     </ul>
     <hr />
 <h2>Windgeschwindigkeiten</h2><h3>nach Jahren, seit Beginn meiner Wetteraufzeichnungen </h3>

@@ -1,7 +1,7 @@
 #errorCatcher Echo
 #encoding UTF-8
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
-## $Id: index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+## index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
 ## Standard for hes61.de
 <!DOCTYPE html>
 <html lang="de">
@@ -37,6 +37,23 @@
      <script>
        window.onload = function() { applypopups(); }
      </script>
+
+<!-- Matomo -->
+<script type="text/javascript">
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//wx2013.pelikan.frrkr/matomo/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '1']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+
  </head>
 
 <body>
@@ -56,13 +73,14 @@
 #set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
 
 #set $summary = $forecast.weather_summary('DS')
+
 #set $dd = $forecast.label('Weather', $summary.windDir)
 #set $wind_text = $windT_dir_dict.get($dd)
 
 #include $Extras.header
 #include $Extras.cwarn
 #include 'index_warn.inc'
-
+#include 'index_alerts.inc'
 
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
@@ -163,7 +181,7 @@
  </div>
 </div> <!-- end appTemp -->
   
-#if $current.outTemp.raw < 10.1
+#if $current.outTemp.raw < 26.6
 <div class="hes">
   <div class='hesbox'>
    <table class='hes_temp'>
@@ -470,13 +488,23 @@
    </tr>
    <tr>
      <td class='hes1_bigval' colspan='3' >
-      <a href='daysnow.png' class='popup'>$current.snow</a>
+      <a href='daysnow.png' class='popup'>$current.snowTotal</a>
      </td>
      <td colspan='2'>$day.snowTotal.max</td>
    </tr>
    <tr>
      <td colspan='2'><span class='hes1_m'>Schneeprognose</span></td>
-     <td colspan='3'>&nbsp;</td>
+     #if $summary.qsf.raw is None
+       <td colspan='3'>&nbsp;</td>
+     #elif $summary.qsf.raw > 0
+     <td> $summary.qsf</td>
+     <td>max</td>
+     <td>
+         <img class='pop-img' src='xicons/snowflake.png' alt='schnee' />
+      </td>
+    #else
+       <td colspan='3'>&nbsp;</td>
+     #end if
    </tr>
    <tr>
     <td><span class='hes1_m'>Gestern</span></td>
@@ -543,7 +571,7 @@
         <a href='daywinddir.png' class='popup'>$current.windDir.ordinal_compass<br />
      <span style='font-size:100%'>$current.windDir</span></a>
      </td> <!-- hes1_wind -->
-     <td class='hes1_m' style='padding-left:8px; font-size:220%;'>
+     <td class='hes1_m' style='padding-left:8px; font-size:245%;'>
      <a href='daywindvec.png' class='popup'>
 #if $current.windDir.raw is None:
       -
@@ -686,6 +714,182 @@
    <img src="daysunklein.png" alt="Sonne" />
  </div>
 </div> <!-- end Sonne -->
+
+
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr>
+     <td class="hes1_kopfa" colspan="3">&sum;&nbsp;Sonnenenergie</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>
+        <a href='monthRadiationEnergy.png' class='popup'>$day.radiation.energy_integral</a></td>
+ #if $trend.radiationEnergy.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+ #elif $trend.radiationEnergy.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class="hes1_vallo">$trend.radiationEnergy.formatted</td>
+ #elif $trend.radiationEnergy.raw == 0
+     <td class="hes1_trendhi"><b>=</b></td>
+     <td class="hes1_valhi">$trend.radiationEnergy.formatted</td>
+ #elif $trend.radiationEnergy.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class="hes1_valhi">$trend.radiationEnergy.formatted</td>
+ #end if
+    </tr>
+    <tr>
+     <td><span class='hes1_m'>Vortag kWh/m²</span></td>
+     <td><span class='temphi' colspan="2">$yesterday.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted </span></td>
+     <td><span class="hes1_m">Woche kWh/m²</span></td>
+     <td><span class='temphi' colspan="2">$week.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_m'>Monat kWh/m²</td>
+     <td><span class='temphi' colspan="2">$month.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
+     <td class='hes1_m'>Jahr kWh/m²</td>
+     <td><span class='temphi' colspan="2">$year.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
+    </tr>
+   </table>
+   <hr />
+    <img src="daysuneklein.png" alt="sonne Energie" style="width:300px; height:180px;" />
+ </div>
+</div> <!-- end Sonne Energie-->
+
+
+<div class='hes'>
+ <div class='hesbox'>
+ <table class='hes1'>
+  <tr><td class="hes1_kopfa" colspan="2">Berechnete Werte</td></tr>
+  <tr><td colspan='2'>&nbsp;</td></tr>
+  <tr><td colspan='2'>WeeWx</td></tr>
+  <tr>
+   <td class='re_data'>Wolkenuntergrenze:</td>
+   <td class="re_data"> $current.cloudbase (ASL)</td>
+  </tr>
+  <tr>
+    <td class='re_data'>Wasserbilanz&nbsp;$current.dateTime.format("%Y")</td>
+    #set $wasser_year = $year.rain.sum.raw - $year.ET.sum.raw
+    #set $WasserYear = ("{:.2f}".format($wasser_year));
+    <td class="stats_data">$WasserYear&nbsp;mm</td>
+  </tr>
+  <tr>
+   <td class="re_data">&nbsp;</td>
+   <td class="re_data">&nbsp;</td>
+  </tr> 
+  <tr>
+   <td class="re_data">THW-Index:</td>
+   <td class="re_data"> $current.thwIndex</td>
+  </tr>
+  <tr>
+   <td class='re_data'>THSW-Index</td>
+   <td class='re_data'>$current.thswIndex</td>
+  </tr>
+  <tr>
+   <td class='re_data'>THSW-Davis</td>
+   <td class='re_data'>$current.THSW</td>
+  </tr>
+  <tr>
+   <td class="re_data">&nbsp;</td>
+   <td class="re_data">&nbsp;</td>
+  </tr>
+  <tr>
+   <td class='re_data'>Wachstumstage Monat</td>
+   <td class='re_data'>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+  </tr>
+  <tr>
+   <td class='re_data'>Wachstumstage Jahr</td>
+   <td class='re_data'>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+  </tr>
+  <tr>
+   <td class='re_data'>&nbsp;</td>
+   <td class='re_data'>&nbsp;</td>
+  </tr>
+  <tr>
+   <td class='re_data'>VantagePro2 Empfang</td>
+   <td class='re_data'>$current.rxCheckPercent</td>
+  </tr>
+  <tr>
+   <td class='re_data'>VantagePro2 Batt-Status</td>
+   #if $current.txBatteryStatus.raw == 0
+   <td class='re_data'><font color='blue'>i.O.</font></td>
+   #else
+   <td class='re_data'><font color='red'>Null</font></td>
+   #end if
+  </tr>
+  <tr>
+   <td class='re_data'>VantagePro2 Console</td>
+   <td class='re_data'>$current.consBatteryVoltage</td>
+  </tr>
+  <!-- <tr>
+   <td class='re_data'>&nbsp;</td>
+   <td class='re_data'>&nbsp;</td>
+  </tr> -->
+#if len($day00) > 3
+  <tr>
+   <td class='re_data'>Heute</td>
+   <td class='re_data'><b> $day00 </b></td>
+  </tr>
+#else
+  <tr>
+   <td class='re_data'>&nbsp;</td>
+   <td class='re_data'>&nbsp;</td>
+  </tr>
+#end if
+ </table>
+ </div>
+</div> <!-- end werte  -->
+
+#if $Extras.has_key('earthquake_enabled') and $Extras.earthquake_enabled == '1'
+<div class='hes'>
+ <div class='hesbox'>
+  <table class='hes1'>
+   <tr><td class="hes1_kopfa" colspan="2">Erdbeben</td></tr>
+   <tr><td colspan='2'>&nbsp;</td></tr> 
+   <tr><td colspan='2'>(Radius ca. 2 000,00 km) </td></tr>
+   <tr><td colspan='2'>Info by USGS.gov</td></tr>
+   <tr><td colspan='2'>&nbsp;</td></tr>
+   <tr>
+    <td>Zeitpunkt</td><td>$earthquake_time</td>
+   </tr>
+   <tr>
+    <td>Epizentrum</td><td> <a href="$earthquake_url" target="_blank">$earthquake_place</a></td>
+   </tr>
+   <tr>
+    <td>Magnitude</td><td><b>$earthquake_magnitude</b></td>
+   </tr>
+   <tr>
+    <td>Tiefe ca.</td><td><b>$earthquake_tief km</b></td>
+   </tr>
+   <tr>
+    <td>Breitengrad</td><td>$earthquake_lat &deg; N</td>
+   </tr>
+   <tr>
+#if float($earthquake_lon) > 0
+    <td>Längengrad</td><td>$earthquake_lon &deg; O</td>
+#else
+    <td>Längengrad</td><td>$earthquake_lon &deg; W</td>
+#end if
+   </tr>
+   <tr>
+    <td>Quelle:</td><td> <a href="http://usgs.gov" target="_blank">USGS.gov</a></td>
+   </tr>
+   <tr><td colspan='2'>berechnet</td></tr>
+   <tr>
+    <td>Entfernung</td><td>$earthquake_dist km</td>
+   </tr>
+   <tr>
+    <td>Peilung__</td><td>$earthquake_lage</td>
+   </tr>
+#set $erde_richt = ("{:.2f}".format($earthquake_lag));
+   <tr><td>bei</td><td>$erde_richt &deg;</td></tr>
+   <tr><td colspan='2'>&nbsp;</td></tr>
+  </table>
+ </div>
+</div> <!-- end Erdbeben -->
+#end if
 
 <div class="hes">
  <div class='hesbox'>
@@ -836,91 +1040,6 @@
 </div>
 </div> <!-- ende  mond -->
 
-
-<div class='hes'>
- <div class='hesbox'>
- <h3>Berechnete Werte</h3>
- <table class='hes1'>
-  <tr>
-   <td>Wolkenuntergrenze:&nbsp;</td>
-   <td class="re_data"> $current.cloudbase (ASL)</td>
-  </tr>
-  <tr>
-    <td>Wasserbilanz&nbsp;$current.dateTime.format("%Y")</td>
-    #set $wasser_year = $year.rain.sum.raw - $year.ET.sum.raw
-    #set $WasserYear = ("{:.2f}".format($wasser_year));
-    #if $wasser_year < 0.0
-    <td class="stats_data" style="background-color: coral">$WasserYear&nbsp;mm</td>
-    #else
-    <td class="stats_data" style="background-color: limegreen">$WasserYear&nbsp;mm</td>
-    #end if
-  </tr>
-  <tr>
-   <td class="re_data">&nbsp;</td>
-   <td class="re_data">&nbsp;</td>
-  </tr>
-  <tr>
-   <td class="re_data">THW-Index:</td>
-   <td class="re_data"> $current.thwIndex</td>
-  </tr>
-  <tr>
-   <td class='re_data'>THSW-Index</td>
-   <td class='re_data'>$current.thswIndex</td>
-  </tr>
-  <tr>
-   <td class='re_data'>THSW-Davis</td>
-   <td class='re_data'>$current.THSW</td>
-  </tr>
-  <tr>
-   <td class='re_data'>Windweg aktuell</td>
-   <td class='re_data'>$current.windrun</td>
-  </tr>
-  <tr>
-   <td class='re_data'>Windweg Heute</td>
-   <td class='re_data'>$day.windrun.sum</td>
-  </tr>
-  <tr>
-   <td>Wachstumstage Monat</td>
-   <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
-  </tr>
-  <tr>
-   <td>Wachstumstage Jahr</td>
-   <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
-  </tr>
-  <tr>
-   <td class='re_data'>&nbsp;</td>
-   <td class='re_data'>&nbsp;</td>
-  </tr>
-  <tr>
-   <td class='re_data'>VantagePro2 Empfang</td>
-   <td class='re_data'>$current.rxCheckPercent</td>
-  </tr>
-  <tr>
-   <td class='re_data'>VantagePro2 Batt-Status</td>
-   #if $current.txBatteryStatus.raw == 0
-       <td class='re_data'><font color='blue'>i.O.</font></td>
-   #else
-       <td class='re_data'><font color='red'>Null</font></td>
-   #end if
-  </tr>
-  <tr>
-   <td class='re_data'>VantagePro2 Console</td>
-   <td class='re_data'>$current.consBatteryVoltage</td>
-  </tr>
-  <tr>
-   <td class='re_data'>&nbsp;</td>
-   <td class='re_data'>&nbsp;</td>
-  </tr>
-#if len($day00) > 3
-  <tr>
-   <td class='re_data'>Heute</td>
-   <td class='re_data'><b> $day00 </b></td>
-  </tr>
-#end if
- </table>
- </div>
-</div> <!-- end werte  -->
-
 <div class="hes">
  <div class='hesbox'>
   <h3>Regen Radar</h3>
@@ -943,7 +1062,7 @@
 
  <div class="hes">
  <div class='hesbox'>
-  <h3>Wetterwarnung</h3>
+  <h3>Wetterwarnung BRD</h3>
   <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html?ort=Klein%20Rogahn"> 
   <!-- <a href="http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html"> -->
   <!-- new view-source:https://wettwarn.de/txt/LPW.html -->
@@ -959,43 +1078,11 @@
  </div>
 </div> <!-- end dwd.de Landkreis LUP wetter -->
 
-#if $Extras.has_key('earthquake_enabled') and $Extras.earthquake_enabled == '1'
-<div class="hes">
- <div class='hesbox'>
-  <h3>Erdbeben</h3><p> (Radius ca. 1000km) </p>
-   <!-- Earthquake data -->
-  <table>
-  <tr>
-   <td>Zeitpunkt</td><td>$earthquake_time</td>
-  </tr>
-  <tr>
-    <td>Epizentrum</td><td> <a href="$earthquake_url" target="_blank">$earthquake_place</a></td>
-  </tr>
-  <tr>
-   <td>Magnitude</td><td><b>$earthquake_magnitude</b></td>
-  </tr>
-  <tr>
-   <td>in einer Tiefe von</td><td><b>$earthquake_tief km</b></td>
-  </tr>
-  <tr>
-    <td>Längengrad</td><td>$earthquake_lat &deg;</td>
-   </tr>
-   <tr>
-    <td>Breitengrad</td><td>$earthquake_lon &deg;</td>
-   </tr>
-   <tr>
-    <td>Quelle:</td><td> <a href="http://usgs.gov" target="_blank">USGS.gov</a></td>
-   </tr>
- </table>
- </div>
-</div> <!-- end Erdbeben -->
-#end if
-
 <div class="hes">
  <div class='hesbox'>
   <h3>Weather365</h3>
   <p>
- <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="750" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
+ <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="880" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
     <p>Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie können die eingebettete Seite über den folgenden Verweis aufrufen: 
         <a href="http://www.weather365.net"> WEATHER365.net </a></p> </iframe>
   </p>

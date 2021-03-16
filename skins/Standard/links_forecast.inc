@@ -1,16 +1,10 @@
 #encoding UTF-8
 ##  links_forecast.inc 2749 2018-11-26 18:15:24Z hes $
 #import time
-#set $windT_dir_dict = {"N" : "Nord", "NNE" : "Nordnordost", "NE" : "Nordost", "ENE" : "Ostnordost", "E" : "Ost", "ESE" : "Ostsüdost", "SE" : "Südost", "SSE" : "Südsüdost", "S" : "Süd", "SSW" : "Südsüdwest", "SW" : "Südwest", "WSW" : "Westsüdwest", "W" : "West", "WNW" : "Westnordwest", "NW" : "Nordwest", "NNW" : "Nordnordwest"}
-
-## DS = Aeris
-#set $summaryDS = $forecast.weather_summary('Aeris')
-#set $ddDS = $forecast.label('Weather', $summaryDS.windDir)
-#set $windDS_text = $windT_dir_dict.get($ddDS)
 
 #set $timeFormat = "%H:%M"
 #try
-    #set $timenextupdate=time.strftime($timeFormat,time.localtime($time.time() + float($current.interval.raw)*60))
+    #set $timenextupdate=time.strftime($timeFormat,time.localtime($time.time() + float($current.interval.raw) * 60))
 #except
     #set $timenextupdate = 0
 #end try
@@ -46,26 +40,6 @@
   #end if
 <hr />
 
-<!-- AerisWeather Prognose -->
-  <p>
-    #if $summaryDS.clouds is not None
-        #set $simgDS = 'xicons/' + $summaryDS.clouds + '.png'
-        <img src='$simgDS' alt='$summaryDS.clouds' title='$forecast.label('Weather', $summaryDS.clouds)' />
-    #end if
-    <br>
-    <b>AerisWeather:</b>
-    $forecast.label('Weather', $summaryDS.clouds)<br>
-    Temperatur Max: $forecast.label('Weather', $summaryDS.tempMax) bis Min: $forecast.label('Weather', $summaryDS.tempMin)<br>
-    Wind bei: $forecast.label('Weather', $summaryDS.windSpeed)&nbsp;
-    in Spitzen: $forecast.label('Weather', $summaryDS.windGust)<br>
-    Windrichtung: <b>$windDS_text</b><br>
-    Regenrisiko: $forecast.label('Weather', $summaryDS.pop)<br>
-    <br />
-    Wetter:
-    <a href='https://wx.aerisweather.com/local/de/klein%20rogahn' target='_blank'><b> Powerd by AerisWeather</b></a>
-  </p>
-   <hr />
-
 <!-- Bild Wetter Dach -->
   <h3>Wetter Kamera Richtung SW</h3>
    <a href="xicons/wet/snapshot.jpg">
@@ -77,9 +51,9 @@
    <p>WeeWX Aktualisierung:&nbsp;$timenextupdate Uhr</p>
    <hr />
    DWD Warnungen: $warn_update Uhr<br>
-   Aeris Warnung: $alerts_update Uhr<br>
-   Aeris  Wetter: $forecast_updated Uhr
-   
+   <!-- Aeris   Warnung: $alerts_update  Uhr<br> 
+   AerisWeather: $forecast_updated Uhr<br> -->
+   Aeris AQI: $latest($data_binding='aerisaqi_binding').aqitime Uhr
    <hr />
  </div>
 </div>

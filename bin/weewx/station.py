@@ -14,9 +14,9 @@ import weewx.units
 
 class StationInfo(object):
     """Readonly class with static station information. It has no formatting information. Just a POS.
-    
+
     Attributes:
-    
+
     altitude_vt:     Station altitude as a ValueTuple
     hardware:        A string holding a hardware description
     rain_year_start: The start of the rain year (1=January)
@@ -99,8 +99,8 @@ class Station(object):
 
     @property
     def db_uptime(self):
-        """Lazy evaluation of weewx uptime."""
-        delta_time = time.time() - 1383254340
+        """Lazy evaluation of weewx uptime. weewx start 1383250000"""
+        delta_time = time.time() - 1383250000         # 1383254340
 
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
                                        formatter=self.formatter,

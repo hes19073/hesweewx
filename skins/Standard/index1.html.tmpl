@@ -40,6 +40,7 @@
 
 #include $Extras.header
 #include $Extras.cwarn
+#include 'index_warn.inc'
 
 <div id='hescontainer'>
   <div id='popupanchor' style='float:left'></div>
@@ -142,7 +143,8 @@
     #elif $current.soilMoist1.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">5 cm im Boden</td><td style="background-color: #d65700;">
     #end if
-       <b>$current.soilMoist1</b></td>
+       $current.soilMoist1</td>
+
  #if $trend.soilMoist1.raw is None
         <td class="hes1_trendlo">&nbsp;</td>
         <td class="hes1_vallo">N/A</td>
@@ -173,8 +175,9 @@
     #elif $current.soilMoist2.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">10 cm im Boden</td><td style="background-color: #d65700;">
     #end if
-       <b>$current.soilMoist2</b></td>
-  #if $trend.soilMoist2.raw is None
+       $current.soilMoist2</td>
+
+ #if $trend.soilMoist2.raw is None
         <td class="hes1_trendlo">&nbsp;</td>
         <td class="hes1_vallo">N/A</td>
  #elif $trend.soilMoist2.raw < 0
@@ -204,8 +207,9 @@
     #elif $current.soilMoist3.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">20 cm im Boden</td><td style="background-color: #d65700;">
     #end if
-       <b>$current.soilMoist3</b></td>
-  #if $trend.soilMoist3.raw is None
+       $current.soilMoist3</td>
+
+ #if $trend.soilMoist3.raw is None
         <td class="hes1_trendlo">&nbsp;</td>
         <td class="hes1_vallo">N/A</td>
  #elif $trend.soilMoist3.raw < 0
@@ -235,7 +239,7 @@
     #elif $current.soilMoist4.raw > 100
       <td class='hes1_kopfc' colspan='2' style="background-color: #d65700;">50 cm im Boden</td><td style="background-color: #d65700;">
     #end if
-       <b>$current.soilMoist4</b></td>
+       $current.soilMoist4</td>
 
  #if $trend.soilMoist4.raw is None
         <td class="hes1_trendlo">&nbsp;</td>
@@ -295,50 +299,49 @@
         <td class="hes1_valhi">$trend.leafWet2</td>
  #end if
     </tr>
-  </table>
-  <hr />
-  Sensoren 80 cm über Boden<br />
-     Richtung Nord und Süd 
-  <hr />
-  <p>Blatttemperatur:&nbsp;$current.leafTemp1</p>
- </div>
-</div> <!-- end Davis Blatt Feuchte -->
+    <tr>
+      <td class='hes1_kopfc' colspan='2'>Blatttemperatur (1)</td><td>$current.leafTemp1</td>
 
-<div class="hes">
-  <div class='hesbox'>
-   <table class='hes_lufe'>
-    <tr>
-     <td class='hes1_kopfa'>Regen<br />Vantage Pro2</td>
-     <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class="hes1_kopf" colspan="2">Heute</td>
+ #if $trend.leafWet1.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.leafTemp1.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class="hes1_vallo">$trend.leafTemp1</td>
+ #elif $trend.leafTemp1.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.leafTemp1</td>
+ #elif $trend.leafTemp1.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class="hes1_valhi">$trend.leafTemp1</td>
+ #end if
     </tr>
     <tr>
-      <td class='hes1_bigval' colspan='3'><a href='dayTHSW.png' class='popup'>$current.rain</a></td>
-      <td colspan='2'>$day.rain.sum</td>
+      <td class='hes1_kopfc' colspan='2'>Blatttemperatur (2)</td><td>$current.leafTemp2</td>
+
+ #if $trend.leafTemp2.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+ #elif $trend.leafTemp2.raw < 0
+        <td class="hes1_trendlo"> &#8681;</td>
+        <td class="hes1_vallo">$trend.leafTemp2</td>
+ #elif $trend.leafTemp2.raw == 0
+        <td class="hes1_trendhi"><b>=</b></td>
+        <td class="hes1_valhi">$trend.leafTemp2</td>
+ #elif $trend.leafTemp2.raw > 0
+        <td class="hes1_trendhi"> &#8679;</td>
+        <td class="hes1_valhi">$trend.leafTemp2</td>
+ #end if
     </tr>
-    <tr>
-     <td>Regen <br>Intervall</td>
-     <td>Tag</td>
-     <td>$current.dayRain</td>
-     <td>Monat</td>
-     <td>$latest($data_binding='wd_binding').monthRain</td>
-    </tr>
-    <tr>
-     <td>Regen <br>Intervall</td>
-     <td>Jahr</td>
-     <td>$latest($data_binding='wd_binding').yearRain</td>
-     <td>24 h</span></td>
-     <td>$latest($data_binding='wd_binding').dayRain</td>
-    </tr>
-   </table>
-  </div>
-</div> <!-- ende Regen Davis -->
+  </table>
+ </div>
+</div> <!-- end Davis Blatt Feuchte Temp -->
 
  <div class="hes">
   <div class='hesbox'>
    <table class='hes_lufe'>
     <tr>
-     <td class='hes1_kopfa'>THSW<br />Vantage Pro2</td>
+     <td class='hes1_kopfa'>THSW<br />Station</td>
      <td class='hes1_kopf' colspan='2'>Aktuell</td>
      <td class="hes1_kopf" colspan="2">Trend</td>
     </tr>
@@ -372,10 +375,136 @@
      <td><span class="hes1_m">max</span></td>
      <td><span class='hes1_vallo'>$yesterday.THSW.max</span> </td>
     </tr>
+    <tr><td>&nbsp;</td><td> </td></tr>
    </table>
   </div>
 </div> <!-- ende THSW -->
 
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>ET <br />Station</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayET.png' class='popup'>$current.dayET</a></td>
+    #if $trend.dayET.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.dayET.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.dayET.formatted</td>
+    #elif $trend.dayET.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.dayET.formatted</td>
+    #elif $trend.dayET.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.dayET.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>Tag</span></td>
+     <td><span class='hes1_valhi'>$day.dayET.max.formatted</span></td>
+     <td><span class="hes1_m">Gestern</span></td>
+     <td><span class='hes1_vallo'>$yesterday.dayET.max.formatted</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>&nbsp;</td>
+     <td><span class='hes1_m'>Monat</span></td>
+     <td><span class='hes1_valhi'>$current.monthET.formatted</span></td>
+     <td><span class="hes1_m">Jahr</span></td>
+     <td><span class='hes1_vallo'>$current.yearET.formatted</span> </td>
+    </tr>
+   </table>
+  </div>
+</div>  <!-- end davis ET format(add_label=False) -->
+
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>THSW<br />Index (cal.)</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daythswIndex.png' class='popup'>$current.thswIndex</a></td>
+    #if $trend.thswIndex.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.thswIndex.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.thswIndex</td>
+    #elif $trend.thswIndex.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.thswIndex</td>
+    #elif $trend.thswIndex.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.thswIndex</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'> $day.thswIndex.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day.thswIndex.max</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$yesterday.thswIndex.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$yesterday.thswIndex.max</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende thswIndex -->
+
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>THW<br />Index (cal.)</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daythwIndex.png' class='popup'>$current.thwIndex</a></td>
+    #if $trend.thwIndex.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+    #elif $trend.thwIndex.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend.thwIndex</td>
+    #elif $trend.thwIndex.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend.thwIndex</td>
+    #elif $trend.thwIndex.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend.thwIndex</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'> $day.thwIndex.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day.thwIndex.max</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$yesterday.thwIndex.min</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$yesterday.thwIndex.max</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende thwIndex -->
 
  <div class="hes">
   <div class='hesbox'>
@@ -392,35 +521,28 @@
         <td class="hes1_vallo">N/A</td>
     #elif $trend.ET.raw < 0
       <td class="hes1_trendlo"> &#8681;</td>
-      <td class='hes1_vallo'>$trend.ET</td>
+      <td class='hes1_vallo'>$trend.ET.formatted</td>
     #elif $trend.ET.raw == 0
       <td class="hes1_trendhi">=</td>
-      <td class="hes1_valhi">$trend.ET</td>
+      <td class="hes1_valhi">$trend.ET.formatted</td>
     #elif $trend.ET.raw > 0
       <td class="hes1_trendhi"> &#8679;</td>
-      <td class='hes1_valhi'>$trend.ET</td>
+      <td class='hes1_valhi'>$trend.ET.formatted</td>
     #end if
     </tr>
     <tr>
      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
      <td><span class='hes1_m'>Summe</span></td>
-     <td><span class='hes1_valhi'> $day.ET.sum</span></td>
+     <td><span class='hes1_valhi'> $day.ET.sum.formatted</span></td>
      <td><span class="hes1_m">max</span></td>
-     <td><span class='hes1_vallo'>$day.ET.max</span> </td>
+     <td><span class='hes1_vallo'>$day.ET.max.formatted</span> </td>
     </tr>
     <tr>
      <td class='hes1_kopfb'>Werte<br />Gestern</td>
      <td><span class='hes1_m'>Summe</span></td>
-     <td><span class='hes1_valhi'> $yesterday.ET.sum</span></td>
+     <td><span class='hes1_valhi'> $yesterday.ET.sum.formatted</span></td>
      <td><span class="hes1_m">max</span></td>
-     <td><span class='hes1_vallo'>$yesterday.ET.max</span> </td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Davis seit<br />Mitternacht</td>
-     <td><span class='hes1'>Tag</span></td>
-     <td><span class='hes1'>$current.dayET</span></td>
-     <td><span class="hes1">Woche</span></td>
-     <td><span class='hes1'>$day.dayET.sum</span></td>
+     <td><span class='hes1_vallo'>$yesterday.ET.max.formatted</span> </td>
     </tr>
    </table>
   </div>
@@ -432,15 +554,18 @@
      <tr><td class='hes1_kopfa' colspan='2'>Grünland-<br />temperatursumme</td></tr>
      <tr>
     #import locale
-    #set $gltaktformat = locale.format('%.2f', $green_sum, 1)
-    #if $green_day is None
-      <td>Summe aktuell</td><td>$green_sum</td>
-    </tr><tr>
+    #set $gltaktformat = locale.format('%.1f', $green_sum, 1)
+    #if len(str($green_day)) < 8
+      <td>Summe aktuell</td><td>$gltaktformat</td>
+    </tr>
+    <tr>
       <td>&nbsp;</td><td>&nbsp;</td>
     #else
-      <td>Summe bis 31.05</td><td>$gltaktformat</td>
-   </tr><tr>
-      <td>200 wurde erreicht am:</td><td>$green_day.format("%d.%m.%Y")</td>
+      <td>&nbsp;</td><td>&nbsp;</td>
+   </tr>
+   <tr>
+      <td><a href='Cydia/C_green.html'>200 </a> wurde erreicht am:</td>
+      <td><b>$green_day.format("%d.%m.%Y")</b></td>
     #end if
      </tr>
    </table>
@@ -448,7 +573,7 @@
    <p>Die Summe aller Tagesmittelwerten &gt; 0°C.<br />
       Januarwerte * 0,5 + Februarwerte * 0,75<br />
       + Märzwerte * 1.0, ist die Summe &gt;200, <br />
-      beginnt die <b>Vegetation</b> (max bis 31.Mai).</p>
+      beginnt die <b>Vegetation</b><br />(max bis 31.Mai).</p>
    </div>
   </div> <!-- gruenlandtempsum -->
 
@@ -528,74 +653,6 @@
    </div>
  </div> <!-- waermesumme -->
 
-#if $day.inTemp.has_data
- <div class="hes">
-  <div class='hesbox'>
-   <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Büro</td>
-        <td class='hes1_kopf' >Aktuell</td>
-        <td class='hes1_kopf' colspan='2'>Trend</td>
-    </tr>
-    <tr><td>Temperatur</td>
-        <td class='hes1_bigval'><a href='dayainTemp.png' class='popup'>$current.inTemp</a></td>
-    #if $trend.inTemp.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
-    #elif $trend.inTemp.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class='hes1_vallo'>$trend.inTemp</td>
-    #elif $trend.inTemp.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.inTemp</td>
-    #elif $trend.inTemp.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class='hes1_valhi'>$trend.inTemp</td>
-    #end if
-    </tr>
-    <tr><td class='hes1_kopfa'>&nbsp;</td>
-        <td class='hes1_kopf'>Aktuell</td>
-        <td class='hes1_kopf' colspan='2'>Trend</td></tr>
-    <tr><td>Luftfeuchte</td>
-        <td class='hes1_bigval'><a href='dayainHumid.png' class='popup'>$current.inHumidity</a></td>
-    #if $trend.inHumidity.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
-    #elif $trend.inHumidity.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class='hes1_vallo'>$trend.inHumidity</td>
-    #elif $trend.inHumidity.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.inHumidity</td>
-    #elif $trend.inHumidity.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class='hes1_valhi'>$trend.inHumidity</td>
-    #end if
-    </tr>
-    <tr><td class='hes1_kopfa'>&nbsp;</td>
-        <td class='hes1_kopf' >Aktuell</td>
-        <td class='hes1_kopf' colspan='2'>Trend</td></tr>
-    <tr><td>Taupunkt</td>
-        <td class='hes1_bigval'><a href='dayaindew.png' class='popup'>$current.inDewpoint</a></td>
-    #if $trend.inDewpoint.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
-    #elif $trend.inDewpoint.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class='hes1_vallo'>$trend.inDewpoint</td>
-    #elif $trend.inDewpoint.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.inDewpoint</td>
-    #elif $trend.inDewpoint.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class='hes1_valhi'>$trend.inDewpoint</td>
-    #end if
-    </tr>
-   </table>
-  </div>
- </div>
-#end if
-<!-- ende Buero -->
-
 <div class="hes">
  <div class='hesbox'>
   <table class='hes_temp'>
@@ -617,13 +674,11 @@
 
 </div> <!-- ende container -->
 
-
-     #include $Extras.footer
+#include $Extras.footer
 
  </div> 
 
 ##include $Extras.cookie
-
 </body>
 
 </html>
