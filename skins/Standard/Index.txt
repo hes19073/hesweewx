@@ -1,0 +1,22 @@
+
+#if $day($data_binding='airq_binding').airqUptime.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>AirQ <br>Neustart</td>
+        <td class='hes1_kopf' colspan='2'>vor</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'>$latest($data_binding='airq_binding').airqUptime</a></td>
+    </tr>
+    <tr><td colspan='2'>Laufzeit</td><td>$latest($data_binding='airq_binding').airqMeasuretime</td></tr>
+    <tr><td colspan='3'>relevant nach 120 s</td></tr>
+    <tr><td colspan='2'>Änderungsrate der <br>absoluten Luftfeuchtigkeit<br>in mg/m3/s</td>
+    <td>$latest($data_binding='airq_binding').airqHumAbsDelta</td></tr>
+    <tr><td colspan='2'>CO2-Änderungsrate<br> in ppb/s</td>
+    <td>$latest($data_binding='airq_binding').airqCO2delta</td></tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airq Time and Uptime -->
+

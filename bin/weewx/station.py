@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2021 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -14,9 +14,9 @@ import weewx.units
 
 class StationInfo(object):
     """Readonly class with static station information. It has no formatting information. Just a POS.
-
+    
     Attributes:
-
+    
     altitude_vt:     Station altitude as a ValueTuple
     hardware:        A string holding a hardware description
     rain_year_start: The start of the rain year (1=January)
@@ -94,15 +94,17 @@ class Station(object):
         delta_time = time.time() - weewx.launchtime_ts if weewx.launchtime_ts else None
 
         return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
+                                       context="long_delta",
                                        formatter=self.formatter,
                                        converter=self.converter)
 
     @property
     def db_uptime(self):
-        """Lazy evaluation of weewx uptime. weewx start 1383250000"""
-        delta_time = time.time() - 1383250000         # 1383254340
+        """Lazy evaluation of weewx uptime."""
+        delta_t = time.time() - 1383254340
 
-        return weewx.units.ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
+        return weewx.units.ValueHelper(value_t=(delta_t, "second", "group_deltatime"),
+                                       context="long_delta",
                                        formatter=self.formatter,
                                        converter=self.converter)
 
@@ -111,6 +113,7 @@ class Station(object):
         """Lazy evaluation of the server uptime."""
         os_uptime_secs = _os_uptime()
         return weewx.units.ValueHelper(value_t=(os_uptime_secs, "second", "group_deltatime"),
+                                       context="long_delta",
                                        formatter=self.formatter,
                                        converter=self.converter)
 

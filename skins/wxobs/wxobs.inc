@@ -5,6 +5,7 @@
 ## in Latin-1, then you should replace the string "UTF-8" with "latin-1".  If
 ## you do this, you should also change the charset in 'Content-Type' as well.
 #encoding UTF-8
+## Copyright 2017-2020 Glenn McKechnie
 ## php inclusion to create wxobs.php.tmpl by glenn.mckechnie@gmail.com
 ## available at https://github.com/glennmckechnie/weewx-wxobs
 ## 06-09-2017 initial releas @0.01
@@ -25,11 +26,22 @@
 ## 06-02-2018 allow both files to be moved as a set, to any writable position, create
 ##              nested directories on first pass. add tooltip
 ## 08-02-2018 Tweak display, add rsync_options (undocumented except in wxobs.py)
-## 11-03-2018 Merge with the master branch - bump Version
+## 11-03-2018 Merge with the master branch - bump Version v0.6.4
 ## 12-03-2018 Bug fix -  was missing the creation of the local database symlink when
-##            using the remote feature.
+##            using the remote feature. v0.6.5
+## 15-03-2018 Simplify logic, and explanation, for single and average capabilty of
+##            the displayed, Periodic Stats table values.
+## 17-03-2018 option to use [RSYNC] from weewx.conf. Option to add error reporting to
+##            index.php. Use dest_dir as switch.
+## 14-01-2020 Python3 tweaks. Work around missing /usr/share/php directory. Fix mode
+##            on os.mkdir
+## 00-01-2020 Runs with python2.7 or python3 ie:- runs under weewx4
+## 00-06-2020 Available as release 0.7.2 Add weewx4 style logging
+## 07-08-2020 Minor change to remedy missing labels when units other than defaults are used.
+##            Available as release 0.7.3
 ##
-## Version 0.6.5
+##
+## Version 0.7.3
 
    <!-- wxobs version $wxobs_version -->
    <!-- This weewx extension is available at github: https://github.com/glennmckechnie/weewx-wxobs -->
@@ -56,17 +68,21 @@ $start = microtime(true);
 
 if ((@include '$include_file') === false) {
     echo "<div class=\"alert\">";
-    echo "<p>The database config file has gone missing! &nbsp;&nbsp;&nbsp; That shouldn't happen.</p>";
-    echo "We use a php default for include files of /usr/share/php, but we can use <i>include_path</i> in <b>wxobs/skin.conf</b> to change that.<br>";
+    echo "<p>The database config file has gone missing! &nbsp;&nbsp;&nbsp; That shouldn't happen unless you've been changing your configuration files</p>";
+    echo "We initially use a php default for include files of /usr/share/php, but this doesn't seem to suit all webservers or installations.</p>";
+    echo "As of version 0.7.1,  /usr/share/php will be created if it's found to be missing. </p>";
+    echo "Check that the directory $inc_path does actually exist, if it doesn't then create it - and report this scripts failure.</p>";
+    echo "Check that its read | write permissions are suitable - 0755, owned by root <br><br>";
     echo "The file should have been accessable as<br> <i>$include_file</i><br>";
-    echo "Check that the directory $inc_path exists, if it doesn't then create it. Check its read | write permissions<br>";
+    echo "We can use <i>include_path</i> in <b>wxobs/skin.conf</b> to change that.<br>";
     echo" The include file will be regenerated on weewx's next report run, (unless you're using the undocumented feature - ";
-    echo " view the source Luke.)<br> Or when report_timing allows.<br>";
-    echo "If the problem persists, consider changing";
+    echo " view the source Luke.) Or when report_timing allows.</p>";
+    echo "<p>If the problem persists, consider changing";
     echo " its location as <b>wxobs/skin.conf</b> will accept<br>";
-    echo "<i>include_path = /tmp</i> or <i>include_path = /new_path/your_choice</i><br>";
-    echo "where the path and name can be anything allowable by php, readable by the webserver, and preferably secure.<br>";
-    echo "If all else fails, report the problem as an issue";
+    echo "<i>include_path = /new_path/your_choice</i><br>";
+    echo "where the path and name can be anything allowable by php, readable by the webserver, and preferably secure.</p><p>";
+    echo "If you are using the [Remote] section - where the sqlite database and wxobs files are viewable from a remote server then the include file will be transferred into the dest_directory that is specified. Populating dest_directory allow the remote transfer to be considered.</p>";
+    echo "<p>If all else fails, report the problem as an issue";
     echo " - to <a href=\"https://github.com/glennmckechnie/weewx-wxobs/issues\">its github site, or contact me directly.</a><br>";
     echo "There are also <a href=\"https://github.com/glennmckechnie/weewx-wxobs/wiki/Remote-installation\">Wiki notes</a> that may help for this, and setting up remote servers.</p></div>";
 }
@@ -339,15 +355,6 @@ function deltaT($Tc, $RH, $P, $debug)
     $E = (6.11 * pow(10, (7.5 * $Tdc / (237.7 + $Tdc))));
     $WBc = (((0.00066 * $P) * $Tc) + ((4098 * $E) / (pow(($Tdc + 237.7), 2))
         * $Tdc)) / ((0.00066 * $P) + (4098 * $E) / (pow(($Tdc + 237.7), 2)));
-    //        ((2.5 + 0.007 * $Tc) * (1 - (0.01 * $RH))) ** 3 -
-    //        (15.9 + 0.117 * $Tc) * (1 - (0.01 * $RH)) ** 14));
-    //    $E = (6.11 * 10 ** (7.5 * $Tdc / (237.7 + $Tdc)));
-    //    $WBc = (((0.00066 * $P) * $Tc) + ((4098 * $E) / (($Tdc + 237.7) ** 2)
-    //        * $Tdc)) / ((0.00066 * $P) + (4098 * $E) / (($Tdc + 237.7) ** 2));
-    // $WetBulb = "%.1f" % $WBc + $unit.label.outTemp
-    // $WetBulb = "%.1f" % ($WBc*9/5+32) + $unit.label.outTemp // degrees F
-    //echo "Tdc = $Tdc E = $E WBc = $WBc :: T=$Tc : RH=$RH : P=$P<br>";
-    //$DeltaT = $Tc - $WBc;
     $dT = abs(round($Tc - $WBc, 1));
 }
 
@@ -368,28 +375,28 @@ function theader($avflag)
 
 $debug='$wxobs_debug';
 $tr_bgrnd="";
-//global $label_plc;
 
 // Attempt to get some meaningful table headings, dependent on xxx_interval options
-if ('$arch_interval' === '$ext_interval') {
-    $tflag="Total";
-    $avflag="(Durchschnitt)";
-    $iflag=" (durchschnitt per Interval)";
-} else {
+if ($disp_single) { //single
     $tflag="";
     $avflag="";
-    $iflag=" (als einzelne Daten)";
+    $iflag=" (as $display_type readings)";
+} else { //average
+    $tflag="Total";
+    //$avflag="(Average)";
+    $avflag="";
+    $iflag=" ($display_type over each interval)";
 }
 
 // then define a bunch of long strings for use in <th> @ 3 locations
 
 if ($php_dbase === 'mysql') {
     $st_date = "<th class=\"wxheadr\" rowspan=\"2\"><a title=\"".
-              "Date (in day-month-year format) and Time.\">".
+              "Date (in day-month-year format) and Time\">".
               "Datum&nbsp;&nbsp;&nbsp;&nbsp; Zeit</a></th>";
 } elseif ($php_dbase === 'sqlite') {
     $st_date = "<th class=\"wxheadr\" rowspan=\"2\"><a title=\"".
-              "Date (in year-month-day format) and Time.\">".
+              "Date (in year-month-day format) and Time\">".
               "Datum&nbsp;&nbsp;&nbsp;&nbsp; Zeit</a></th>";
 }
 
@@ -461,7 +468,7 @@ if ('$app_temp' === 'appTemp') {
 }
 
 if ($debug=='1') {
-    echo "<p class=\"debug\">ext_interval is $ext_interval <br>".
+    echo "<p class=\"debug\">disp_interval is $disp_interval <br>".
          "arch_interval is $arch_interval<br> appTemp is defined ".
          "as $app_temp with $app_label used as the units.</p>";
 }
@@ -680,12 +687,6 @@ if ($debug =='1') {
     }
 
 
-    /*    if (date_default_timezone_get()) {
-    *       echo 'date_default_timezone_set: ' . date_default_timezone_get() . '<br />';
-    *       $systemTimeZone = system('date +%Z');
-    *   echo "System TimeZone is $systemTimeZone <br>";
-    *   }
-    */
     //Create Latest table headers - ugly layout but ok in html source
     echo "<div class=\"wxdata\">\n<!-- start data tables -->\n
  <H2><A Title=\"Todays latest weather observations, at the displayed time.\">Die aktuellen Werte</a></h2>
@@ -768,15 +769,12 @@ if ($debug =='1') {
     if (!empty($_REQUEST['datepicker'])) {
         $m_numb = '';
         list ($dd, $m_nth, $yy)  = explode("-", $_REQUEST['datepicker']);
-        //echo "<br>STARTing as m_nth = $m_nth : m_numb = $m_numb<br>";
-        //var_dump((strlen($m_nth))==3);
         // should be in short month format
         if ((strlen($m_nth))==3) {
             for ($i=1; $i<=12; $i++) {
                 //var_dump((strtolower(date("M", mktime(0, 0, 0, $i, 1, 0))) == strtolower($m_nth)));
                 if (strtolower(date("M", mktime(0, 0, 0, $i, 1, 0))) == strtolower($m_nth)) {
                     $m_numb = $i;
-                    //echo "<br>m_nth = $m_nth : m_numb = $m_numb = $i<br>";
                     break;
                 }
             }
@@ -794,12 +792,10 @@ if ($debug =='1') {
         $m_numb = intval($m_numb);
         $dd = intval($dd);
         $yy = intval($yy);
-        //echo "<br><br>Valid & intval:  yy = (checkdate($m_numb, $dd, $yy))<br>";
         if (checkdate($m_numb, $dd, $yy)) {
             // Datepicker returned a valid date, we'll now use the sanitized inputs
             // to reconstruct the date. We will ignore the datepicker input in case an
             // injection attempt was made
-            //$pick_start =  strtotime($_REQUEST['datepicker']);
             $pick_start = mktime('0', '0', '0', $m_numb, $dd, $yy);
             if ($debug =='1') {
                 echo "<p class=\"debug\">Min (Max)<br> Datepicker returned ",
@@ -860,7 +856,6 @@ if ($debug =='1') {
         }
         // include up to the actual $start_label a.m. value
         if ($latest_date <= $today_nine) {
-            //echo "} elseif ".hDate($latest_date)." ($latest_date < $today_nine) {". hDate($today_nine)."<br>";
             $rain_start = $past_nine;
             $rain_end = $past_nine + 86400;
             $t_span = "(since $start_label a.m.)";
@@ -869,7 +864,6 @@ if ($debug =='1') {
                        hDate($rain_start). "\">";
             // start from the $start_label a.m. value
         } elseif ($latest_date > $today_nine) {
-            //echo "} elseif ".hDate($latest_date)." ($latest_date >= $today_nine) {". hDate($today_nine)."<br>";
             $rain_start =$today_nine;
             $rain_end = $today_nine + 86400;
             $t_span = "(since $start_label a.m.)";
@@ -894,8 +888,9 @@ if ($debug =='1') {
         $stats_snap = $db->query(
             "SELECT FROM_UNIXTIME(datetime, '%d-%m-%Y %H:%i'),min(outTemp),
             max(outTemp), min($app_temp), max($app_temp), min(dewPoint),
-            max(dewPoint), min(outHumidity), max(outHumidity), avg(windSpeed),
-            avg(windGust), avg(windDir), min(barometer), max(barometer) FROM archive
+            max(dewPoint), min(outHumidity), max(outHumidity), min(windSpeed),
+            max(windSpeed), min(windGust), max(windGust), avg(windDir),
+            min(barometer), max(barometer) FROM archive
             WHERE dateTime >= $start_time and dateTime < $day_end;"
         );
         $rain_avg = $db->query(
@@ -909,10 +904,11 @@ if ($debug =='1') {
     } else {
         $stats_snap = $db->query(
             "SELECT datetime(min(dateTime), 'unixepoch', 'localtime'),min(outTemp),
-            max(outTemp), min($app_temp), max($app_temp), min(dewPoint), max(dewPoint),
-            min(outHumidity), max(outHumidity), avg(windSpeed), avg(windGust),
-            avg(windDir), min(barometer), max(barometer) FROM archive WHERE dateTime
-            >= $start_time and dateTime < $day_end;"
+            max(outTemp), min($app_temp), max($app_temp), min(dewPoint),
+            max(dewPoint), min(outHumidity), max(outHumidity), min(windSpeed),
+            max(windSpeed), min(windGust), max(windGust), avg(windDir),
+            min(barometer), max(barometer) FROM archive
+            WHERE dateTime >= $start_time and dateTime < $day_end;"
         );
         $rain_avg = $db->query(
             "SELECT datetime(min(dateTime), 'unixepoch', 'localtime'),
@@ -934,7 +930,6 @@ if ($debug =='1') {
     }
     /* Return day-month-year only */
     $this_day = date('d-M-Y', $pick_start);
-    /* $minmax_day = date('d-m-Y'); */
 
     if ($debug == '1') {
         echo "Min Max:<br> latest date = ", hDate($latest_date), " : day_start = ",
@@ -949,10 +944,10 @@ if ($debug =='1') {
     // Create Min Max table headers - ugly layout but ok in html source
 
     //Min (max) wind Observations are always average readings
-    $tmp_flag=$avflag;
-    $avflag="(Durchschnitt)";
-    list ($st_wind, $st_spd, $st_gust) = theader($avflag);
-    $avflag=$tmp_flag;
+    //$tmp_flag=$avflag;
+    //$avflag="(Durchschnitt)";
+    //list ($st_wind, $st_spd, $st_gust) = theader($avflag);
+    //$avflag=$tmp_flag;
 
     echo "<!-- start snapshot summary observations -->
  <h2>Historische Wetterdaten f&uuml;r $this_day</h2>
@@ -960,9 +955,10 @@ if ($debug =='1') {
  <table class=\"wxdata\">
   <thead>
   <tr>
-   $st_date \n   $st_temp
+    <th class=\"wxheadr\" rowspan=\"2\"><a title=\"Date (in day-month-year format)\">Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a></th>
+    \n   $st_temp
    <th class=\"wxheadr\" rowspan=\"2\">$appLabel<br>$app_label</th>
-   $st_dew \n   $st_rh \n   $st_wind \n   $st_baro 
+   $st_dew \n   $st_rh \n   $st_wind \n   $st_baro
    $st_rain $tflag Regen<br>$t_span<br>$unit.label.rain</a></th>
   </tr>
   <tr>
@@ -1002,19 +998,23 @@ if ($debug =='1') {
     $minhumid = round($stats_row[7], 0);
     $maxhumid = round($stats_row[8], 0);
     echo "<td>$minhumid ($maxhumid)</td>";
-    ordinalCompass($stats_row[11], $debug);
+    ordinalCompass($stats_row[13], $debug);
     echo "<td> $compass</td>"; //wind direction ordinal
     list($x, $dec_plc) = $speedConvert ($stats_row[9], $wind_plc);
-    $metWind = round($x, $dec_plc);
-    echo "<td>$metWind</td>";
+    $minWind = round($x, $dec_plc);
     list($x, $dec_plc) = $speedConvert ($stats_row[10], $wind_plc);
-    $metGust = round($x, $dec_plc);
-    echo "<td>$metGust</td>";
-    $windDir = round($stats_row[11], 0);
+    $maxWind = round($x, $dec_plc);
+    echo "<td>$minWind ($maxWind)</td>";
+    list($x, $dec_plc) = $speedConvert ($stats_row[11], $wind_plc);
+    $minGust = round($x, $dec_plc);
+    list($x, $dec_plc) = $speedConvert ($stats_row[12], $wind_plc);
+    $maxGust = round($x, $dec_plc);
+    echo "<td>$minGust ($maxGust)</td>";
+    $windDir = round($stats_row[13], 0);
     echo "<td>$windDir</td>"; //wind direction degrees
-    list($x, $dec_plc) = $pressConvert ($stats_row[12], $press_plc);
+    list($x, $dec_plc) = $pressConvert ($stats_row[14], $press_plc);
     $minPress = round($x, $dec_plc);
-    list($x, $dec_plc) = $pressConvert ($stats_row[13], $press_plc);
+    list($x, $dec_plc) = $pressConvert ($stats_row[15], $press_plc);
     $maxPress = round($x, $dec_plc);
     echo "<td>$minPress ($maxPress)</td>";
     list($x, $dec_plc) = $rainConvert ($rain_row[1], $rain_plc);
@@ -1049,12 +1049,12 @@ if ($debug =='1') {
   </tr>
  </thead><tbody>";
 
-    // extract data for each ext_interval - reverse order (latest at top)
-    $c_ycle=(86400/$ext_interval);
+    // extract data for each disp_interval - reverse order (latest at top)
+    $c_ycle=(86400/$disp_interval);
     // this may appear to include an extra interval - midnight to midnight.
     // but we're counting panels, not fence posts. ie: It's correct.
     for ($t=$c_ycle; $t>=0; $t--) {
-        $start_time = $pick_start + ($t*'$ext_interval');
+        $start_time = $pick_start + ($t*'$disp_interval');
         $end_interval = $start_time + '$arch_interval';
 
         if ($shift_rain) {
@@ -1129,7 +1129,6 @@ if ($debug =='1') {
             $rain_row = $rain_avg->fetchArray();
         }
         // temporary debug for wind / CALM substitution
-        // echo "$row[0], temp = $row[1], speed = $row[5],  direction = $row[7]<br>";
         if ($tr_bgrnd != "wxhint") {
             $tr_bgrnd = "wxhint";
         } else {
@@ -1193,7 +1192,7 @@ if ($debug =='1') {
             echo "$td_rain $metRain</td></tr>";
         }
     }
-    echo "<!-- (debug values) arch_int = $arch_interval ext_int = $ext_interval -->";
+    echo "<!-- (debug values) arch_int = $arch_interval disp_int = $disp_interval -->";
     echo "</tbody></table></div><!-- end snapshot observations -->";
     $db->close();
     unset($db);
@@ -1201,4 +1200,6 @@ if ($debug =='1') {
     $end = microtime(true);
     $creationtime = round(($end - $start), 2);
     echo "<p class=\"footnote\">Time taken to generate page was $creationtime seconds.</p>";
+ //echo "<b>display_type = $display_type <br>display_int = $disp_interval &amp; arch_int = $arch_interval</b>";
     ?>
+

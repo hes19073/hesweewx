@@ -34,10 +34,23 @@ CM_PER_INCH    = MM_PER_INCH / 10.0
 METER_PER_MILE = 1609.34
 METER_PER_FOOT = METER_PER_MILE / 5280.0
 MILE_PER_KM    = 1000.0 / METER_PER_MILE
+SECS_PER_DAY   = 86400
 
 
 def CtoK(x):
     return x + 273.15
+
+
+def KtoC(x):
+    return x - 273.15
+
+
+def KtoF(x):
+    return CtoF(KtoC(x))
+
+
+def FtoK(x):
+    return CtoK(FtoC(x))
 
 
 def CtoF(x):
@@ -45,7 +58,7 @@ def CtoF(x):
 
 
 def FtoC(x):
-    return (x - 32.0) * 5.0 / 9.0
+    return (x - 32.0) / 1.8
 
 
 # Conversions to and from Felsius.
@@ -111,6 +124,67 @@ obs_group_dict = ListOfDicts({
     "absolutF"           : "group_gram",
     "air_sensor"         : "group_ppm",
     "airDensity"         : "group_druck3",
+    "og_cnt0_3"          : "group_count",
+    "og_cnt0_3_e"        : "group_percent",
+    "og_cnt0_5"          : "group_count",
+    "og_cnt0_5_e"        : "group_percent",
+    "og_cnt1_0"          : "group_count",
+    "og_cnt1_0_e"        : "group_percent",
+    "og_cnt2_5"          : "group_count",
+    "og_cnt2_5_e"        : "group_percent",
+    "og_cnt5_0"          : "group_count",
+    "og_cnt5_0_e"        : "group_percent",
+    "og_cnt10_0"         : "group_count",
+    "og_cnt10_0_e"       : "group_percent",
+    "og_co"              : "group_fraction",
+    "og_co_m"            : "group_concentration",
+    "og_co_e"            : "group_percent",
+    "og_co2"             : "group_fraction",
+    "og_co2_e"           : "group_percent",
+    "og_co2_m"           : "group_concentration",
+    "og_h2s"             : "group_concentration",
+    "og_h2s_e"           : "group_percent",
+    "og_no2"             : "group_fraction",
+    "og_no2_e"           : "group_percent",
+    "og_no2_m"           : "group_concentration",
+    "og_noise"           : "group_db",
+    "og_noise_e"         : "group_percent",
+    "og_o3"              : "group_fraction",
+    "og_o3_e"            : "group_percent",
+    "og_o3_m"            : "group_concentration",
+    "og_so2"             : "group_fraction",
+    "og_so2_m"           : "group_concentration",
+    "og_so2_e"           : "group_percent",
+    "og_o2"              : "group_percent",
+    "og_o2_e"            : "group_percent",
+    "og_pm1_0"           : "group_concentration",
+    "og_pm1_0_e"         : "group_percent",
+    "og_pm2_5"           : "group_concentration",
+    "og_pm2_5_e"         : "group_percent",
+    "og_pm10_0"          : "group_concentration",
+    "og_pm10_0_e"        : "group_percent",
+    "og_Dewpoint"        : "group_temperature",
+    "og_Dewpoint_e"      : "group_percent",
+    "og_TVOC"            : "group_fraction",
+    "og_TVOC_e"          : "group_percent",
+    "og_HealthIdx"       : "group_percent",
+    "og_PerfIdx"         : "group_percent",
+    "og_Temp"            : "group_temperature",
+    "og_Temp_e"          : "group_percent",
+    "og_time"            : "group_time",
+    "og_Humidity"        : "group_percent",
+    "og_Humidity_e"      : "group_percent",
+    "og_HumAbs"          : "group_gram",
+    "og_HumAbs_e"        : "group_percent",
+    "og_noise"           : "group_db",
+    "og_noise_e"         : "group_percent",
+    "og_Pressure"        : "group_pressure",
+    "og_Pressure_e"      : "group_percent",
+    "og_Altimeter"       : "group_pressure",
+    "og_Barometer"       : "group_pressure",
+    "og_TypPS"           : "group_anzahl",
+    "og_Uptime"          : "group_count",
+    "og_Measuretime"     : "group_count",
     "altimeter"          : "group_pressure",
     "altimeterRate"      : "group_pressurerate",
     "altitude"           : "group_altitude",
@@ -129,6 +203,12 @@ obs_group_dict = ListOfDicts({
     "co"                 : "group_fraction",
     "co2"                : "group_fraction",
     "consBatteryVoltage" : "group_volt",
+    "cnt0_3"             : "group_count",
+    "cnt0_5"             : "group_count",
+    "cnt1_0"             : "group_count",
+    "cnt2_5"             : "group_count",
+    "cnt5_0"             : "group_count",
+    "cnt10_0"            : "group_count",
     "cooldeg"            : "group_degree_day",
     "coolT_sum"          : "group_anzahl2",
     "core_ampere"        : "group_amp",
@@ -139,11 +219,14 @@ obs_group_dict = ListOfDicts({
     "dampfDruck"         : "group_pressure",
     "dateTime"           : "group_time",
     "dayET"              : "group_rain",
+    "day_ET"             : "group_rain",
     "dayRain"            : "group_rain",
     "dewpoint"           : "group_temperature",
     "dewpoint1"          : "group_temperature",
+    "disk_home_free"     : "group_datadisk",
     "disk_home_total"    : "group_datadisk",
     "disk_home_used"     : "group_datadisk",
+    "disk_root_free"     : "group_datadisk",
     "disk_root_total"    : "group_datadisk",
     "disk_root_used"     : "group_datadisk",
     "distance"           : "group_distance",
@@ -157,6 +240,7 @@ obs_group_dict = ListOfDicts({
     "energyG"            : "group_energy",
     "energyR"            : "group_energy",
     "ET"                 : "group_rain",
+    "ET24"               : "group_rain",
     "extraHumid1"        : "group_percent",
     "extraHumid2"        : "group_percent",
     "extraHumid3"        : "group_percent",
@@ -199,16 +283,17 @@ obs_group_dict = ListOfDicts({
     "extraTempO6"        : "group_temperature",
     "extraTempO7"        : "group_temperature",
     "extraTempO8"        : "group_temperature",
+    "forecastRule"       : "group_count",
     "forecastIcon"       : "group_count",
     "frequency"          : "group_frequenc",
     "gas"                : "group_anzahl3",
-    "gas_m3"             : "group_cubic_meter",
+    "gas_m3"             : "group_meter_cubed",
     "gas_sensor"         : "group_ppm",
     "gasC_sensor"        : "group_ppm",
     "gasN_sensor"        : "group_ppm",
     "gasO_sensor"        : "group_ppm",
     "gasx_sensor"        : "group_ppm",
-    "gasZ_m3"            : "group_cubic_meter",
+    "gasZ_m3"            : "group_meter_cubed",
     "gasZ_preis"         : "group_preis",
     "GDD10"              : "group_degree_day",
     "GDD4"               : "group_degree_day",
@@ -219,6 +304,7 @@ obs_group_dict = ListOfDicts({
     "green_day"          : "group_time",
     "growdeg"            : "group_degree_day",
     "gustdir"            : "group_direction",
+    "h2s"                : "group_fraction",
     "hail"               : "group_rain",
     "hailRate"           : "group_rainrate",
     "hcho_sensor"        : "group_ppm",
@@ -231,6 +317,7 @@ obs_group_dict = ListOfDicts({
     "hourRain"           : "group_rain",
     "humidex"            : "group_temperature",
     "humidex1"           : "group_temperature",
+    "illuminance"        : "group_illuminance",
     "inDewpoint"         : "group_temperature",
     "inHumidity"         : "group_percent",
     "inTemp"             : "group_temperature",
@@ -266,11 +353,14 @@ obs_group_dict = ListOfDicts({
     "mem_used"           : "group_datamem",
     "monthET"            : "group_rain",
     "monthRain"          : "group_rain",
+    "net_enp3s0_rbytes"  : "group_datanet",
+    "net_enp3s0_tbytes"  : "group_datanet",
     "net_eth0_rbytes"    : "group_datanet",
     "net_eth0_tbytes"    : "group_datanet",
     "nh3"                : "group_fraction",
-    "no2"                : "group_fraction",
+    "no2"                : "group_concentration",
     "noise"              : "group_db",
+    "o2"                 : "group_percent",
     "o3"                 : "group_fraction",
     "outHumidity"        : "group_percent",
     "outTemp"            : "group_temperature",
@@ -294,6 +384,7 @@ obs_group_dict = ListOfDicts({
     "radiationEnergy"    : "group_radiation_energy",
     "rain"               : "group_rain",
     "rain_ET"            : "group_rain",
+    "rainET"             : "group_rain",
     "rain15"             : "group_rain",
     "rain24"             : "group_rain",
     "rainRate"           : "group_rainrate",
@@ -359,11 +450,11 @@ obs_group_dict = ListOfDicts({
     "visibility_km"      : "group_distance",
     "warmT_sum"          : "group_anzahl2",
     "was"                : "group_anzahl4",
-    "was_m3"             : "group_cubic_meter",
+    "was_m3"             : "group_meter_cubed",
     "wasA"               : "group_anzahl4",
-    "wasA_m3"            : "group_cubic_meter",
-    "wasAZ_m3"           : "group_cubic_meter",
-    "wasZ_m3"            : "group_cubic_meter",
+    "wasA_m3"            : "group_meter_cubed",
+    "wasAZ_m3"           : "group_meter_cubed",
+    "wasZ_m3"            : "group_meter_cubed",
     "wasZ_preis"         : "group_preis",
     "wdd_deg"            : "group_degree_day",
     "wetBulb"            : "group_temperature",
@@ -402,6 +493,7 @@ agg_group = {
     'min_le'     : "group_count",
     'minmaxtime' : "group_time",
     'mintime'    : "group_time",
+    'not_null'   : "group_boolean",
     'sum_ge'     : "group_count",
     'sum_le'     : "group_count",
     'vecdir'     : "group_direction",
@@ -414,6 +506,7 @@ agg_group = {
 USUnits = ListOfDicts({
     "group_altitude"      : "foot",
     "group_amp"           : "amp",
+    "group_boolean"       : "boolean",
     "group_anzahl"        : "anzahl",
     "group_anzahl1"       : "anzahl1",
     "group_anzahl2"       : "anzahl2",
@@ -422,9 +515,9 @@ USUnits = ListOfDicts({
     "group_concentration" : "microgram_per_meter_cubed",
     "group_count"         : "count",
     "group_cpm"           : "cpm",
-    "group_cubic_meter"   : "cubic_meter",
+    "group_meter_cubed"   : "meter_cubed",
     "group_data"          : "byte",
-    "group_datadisk"      : "kilobyte",
+    "group_datadisk"      : "megabyte",
     "group_datamem"       : "megabyte",
     "group_datanet"       : "megabyte",
     "group_db"            : "dB",
@@ -474,6 +567,7 @@ USUnits = ListOfDicts({
 MetricUnits = ListOfDicts({
     "group_altitude"      : "meter",
     "group_amp"           : "amp",
+    "group_boolean"       : "boolean",
     "group_anzahl"        : "anzahl",
     "group_anzahl1"       : "anzahl1",
     "group_anzahl2"       : "anzahl2",
@@ -482,14 +576,13 @@ MetricUnits = ListOfDicts({
     "group_concentration" : "microgram_per_meter_cubed",
     "group_count"         : "count",
     "group_cpm"           : "cpm",
-    "group_cubic_meter"   : "cubic_meter",
+    "group_meter_cubed"   : "meter_cubed",
     "group_data"          : "byte",
-    "group_datadisk"      : "kilobyte",
+    "group_datadisk"      : "megabyte",
     "group_datamem"       : "megabyte",
     "group_datanet"       : "megabyte",
     "group_db"            : "dB",
     "group_degree_day"    : "degree_C_day",
-    "group_deltatime"     : "second",
     "group_deltatime"     : "second",
     "group_direction"     : "degree_compass",
     "group_distance"      : "km",
@@ -563,33 +656,41 @@ conversionDict = {
                           'mm_per_hour'      : lambda x: x * 10.0},
     'cubic_foot'       : {'gallon'           : lambda x: x * 7.48052,
                           'liter'            : lambda x: x * 28.3168,
-                          'cubic_meter'      : lambda x: x * 0.0283168},
-    'cubic_meter'      : {'gallon'           : lambda x: x * 264.172,
+                          'meter_cubed'      : lambda x: x * 0.0283168},
+    'meter_cubed'      : {'gallon'           : lambda x: x * 264.172,
                           'liter'            : lambda x: x * 1000.0,
                           'cubic_foot'       : lambda x: x * 35.3147},
-    'day'              : {'second'           : lambda x: x * 86400.0,
+    'day'              : {'second'           : lambda x: x * SECS_PER_DAY,
                           'minute'           : lambda x: x * 1440.0,
                           'hour'             : lambda x: x * 24.0},
     'degree_C'         : {'degree_F'         : CtoF,
-                          'degree_E'         : CtoE},
+                          'degree_E'         : CtoE,
+                          'degree_K'         : CtoK},
     'degree_C_day'     : {'degree_F_day'     : lambda x: x * (9.0 / 5.0)},
     'degree_E'         : {'degree_C'         : EtoC,
                           'degree_F'         : EtoF},
     'degree_F'         : {'degree_C'         : FtoC,
-                          'degree_E'         : FtoE},
+                          'degree_E'         : FtoE,
+                          'degree_K'         : FtoK},
     'degree_F_day'     : {'degree_C_day'     : lambda x: x * (5.0 / 9.0)},
+    'degree_K'         : {'degree_C'         : KtoC,
+                          'degreeF'          : KtoF},
     'dollar'           : {'euro'             : lambda x: x * 0.9131},
-    'dublin_jd'        : {'unix_epoch'       : lambda x: (x - 25567.5) * 86400.0},
+    'dublin_jd'        : {'unix_epoch'       : lambda x: (x-25567.5) * SECS_PER_DAY,
+                          'unix_epoch_ms'    : lambda x: (x-25567.5) * SECS_PER_DAY * 1000,
+                          'unix_epoch_ns'    : lambda x: (x-25567.5) * SECS_PER_DAY * 1e06},
     'euro'             : {'cent'             : lambda x: x * 0.01,
                           'dollar'           : lambda x: x * 1.0951},
     'foot'             : {'meter'            : lambda x: x * METER_PER_FOOT},
     'gallon'           : {'liter'            : lambda x: x * 3.78541,
                           'cubic_foot'       : lambda x: x * 0.133681,
-                          'cubic_meter'      : lambda x: x * 0.00378541},
+                          'meter_cubed'      : lambda x: x * 0.00378541},
     'gigabyte'         : {'byte'             : lambda x: x * 1024 * 1024 * 1024,
                           'kilobyte'         : lambda x: x * 1024 * 1024,
                           'megabyte'         : lambda x: x * 1024,
                           'terabyte'         : lambda x: x / 1024},
+    'gram_per_meter_cubed' : {'microgram_per_meter_cubed' : lambda x: x * 1000000,
+                              'milligram_per_meter_cubed' : lambda x: x * 1000},
     'hour'             : {'second'           : lambda x: x * 3600.0,
                           'minute'           : lambda x: x * 60.0,
                           'day'              : lambda x: x / 24.0},
@@ -618,7 +719,8 @@ conversionDict = {
                           'gigabyte'         : lambda x: x / (1024 * 1024),
                           'terabyte'         : lambda x: x / (1024 * 1024 * 1024)},
     'kilowatt'         : {'watt'             : lambda x: x * 1000.0},
-    'kilowatt_hour'    : {'watt_second'      : lambda x: x * 3.6e6,
+    'kilowatt_hour'    : {'mega_joule'       : lambda x: x * 3.6,
+                          'watt_second'      : lambda x: x * 3.6e6,
                           'watt_hour'        : lambda x: x * 1000.0},
     'km'               : {'meter'            : lambda x: x * 1000.0,
                           'mile'             : lambda x: x * 0.621371192},
@@ -643,7 +745,7 @@ conversionDict = {
                           'hPa_per_hour'     : lambda x: x * 10.0},
     'liter'            : {'gallon'           : lambda x: x * 0.264172,
                           'cubic_foot'       : lambda x: x * 0.0353147,
-                          'cubic_meter'      : lambda x: x * 0.001},
+                          'meter_cubed'      : lambda x: x * 0.001},
     'm_amp'            : {'amp'              : lambda x: x * 0.001},
     'mbar'             : {'inHg'             : lambda x: x * INHG_PER_MBAR,
                           'mmHg'             : lambda x: x * 0.75006168,
@@ -677,6 +779,10 @@ conversionDict = {
     'mile_per_hour2'   : {'km_per_hour2'     : lambda x: x * 1.609344,
                           'knot2'            : lambda x: x * 0.868976242,
                           'meter_per_second2': lambda x: x * 0.44704},
+    'microgram_per_meter_cubed' : {'gram_per_meter_cubed'      : lambda x: x * 0.000001,
+                                   'milligram_per_meter_cubed' : lambda x: x * 0.001},
+    'milligram_per_meter_cubed' : {'microgram_per_meter_cubed' : lambda x: x * 1000,
+                                   'gram_per_meter_cubed'      : lambda x: x * 0.001},
     'minute'           : {'second'           : lambda x: x * 60.0,
                           'hour'             : lambda x: x / 60.0,
                           'day'              : lambda x: x / 1440.0},
@@ -700,16 +806,24 @@ conversionDict = {
                           'mSv_per_hour'     : lambda x: x / 1000000},
     'ohm'              : {'kohm'             : lambda x: x / 1000.0,
                           'Mohm'             : lambda x: x / 1000000.0},
+    'ppb'              : {'ppm'              : lambda x: x * 0.001},
+    'ppm'              : {'ppb'              : lambda x: x * 1000},
     'second'           : {'hour'             : lambda x: x / 3600.0,
                           'minute'           : lambda x: x / 60.0,
-                          'day'              : lambda x: x / 86400.0},
+                          'day'              : lambda x: x / SECS_PER_DAY},
     'terabyte'         : {'byte'             : lambda x: x * 1024 * 1024 * 1024 * 1024,
                           'kilobyte'         : lambda x: x * 1024 * 1024 * 1024,
                           'megabyte'         : lambda x: x * 1024 * 1024,
                           'gigabyte'         : lambda x: x * 1024},
-    'unix_epoch'       : {'dublin_jd'        : lambda x: x / 86400.0 + 25567.5,
-                          'unix_epoch_ms'    : lambda x : x * 1000.0,
-                          'unix_epoch_ns'    : lambda x : x * 1e6},
+    'unix_epoch'       : {'dublin_jd'        : lambda x: x / SECS_PER_DAY + 25567.5,
+                          'unix_epoch_ms'    : lambda x: x * 1000,
+                          'unix_epoch_ns'    : lambda x: x * 1000000},
+    'unix_epoch_ms'    : {'dublin_jd'        : lambda x: x / (SECS_PER_DAY * 1000) + 25567.5,
+                          'unix_epoch'       : lambda x: x / 1000,
+                          'unix_epoch_ns'    : lambda x: x * 1000},
+    'unix_epoch_ns'    : {'dublin_jd'        : lambda x: x / (SECS_PER_DAY * 1e06) + 25567.5,
+                          'unix_epoch'       : lambda x: x / 1000000,
+                          'unix_epoch_ms'    : lambda x: x / 1000},
     'watt'             : {'kilowatt'         : lambda x: x / 1000.0},
     'watt_hour'        : {'kilowatt_hour'    : lambda x: x / 1000.0,
                           'mega_joule'       : lambda x: x * 0.0036,
@@ -731,6 +845,7 @@ default_unit_format_dict = {
     "anzahl3"            : "%.3f",
     "anzahl4"            : "%.4f",
     "bit"                : "%.0f",
+    "boolean"            : "%d",
     "byte"               : "%.0f",
     "centibar"           : "%.0f",
     "cm"                 : "%.2f",
@@ -738,7 +853,6 @@ default_unit_format_dict = {
     "count"              : "%d",
     "cpm"                : "%.1f",
     "cubic_foot"         : "%.1f",
-    "cubic_meter"        : "%.3f",
     "day"                : "%.1f",
     "dB"                 : "%.0f",
     "degree_C"           : "%.1f",
@@ -747,10 +861,12 @@ default_unit_format_dict = {
     "degree_E"           : "%.1f",
     "degree_F"           : "%.1f",
     "degree_F_day"       : "%.1f",
+    "degree_K"           : "%.1f",
     "dollar"             : "%.2f",
     "euro"               : "%.2f",
     "foot"               : "%.0f",
-    "g_per_meter_qubic"  : "%.3f",
+    "g_per_meter_qubic"  : "%.1f",
+    "gram_per_meter_cubed" : "%.1f",
     "gallon"             : "%.1f",
     "gigabyte"           : "%.2f",
     "herz"               : "%.2f",
@@ -783,6 +899,7 @@ default_unit_format_dict = {
     "mega_joule"         : "%.0f",
     "megabyte"           : "%.2f",
     "meter"              : "%.0f",
+    "meter_cubed"        : "%.3f",
     "meter_per_second"   : "%.0f",
     "meter_per_second2"  : "%.1f",
     "microgram_per_meter_cubed" : "%.1f",
@@ -790,6 +907,7 @@ default_unit_format_dict = {
     "mile"               : "%.1f",
     "mile_per_hour"      : "%.0f",
     "mile_per_hour2"     : "%.1f",
+    "milligram_per_meter_cubed" : "%.1f",
     "mm"                 : "%.1f",
     "mm_per_hour"        : "%.1f",
     "mmHg"               : "%.1f",
@@ -801,6 +919,7 @@ default_unit_format_dict = {
     "ohm"                : "%.1f",
     "percent"            : "%.0f",
     "ppm"                : "%.0f",
+    "ppb"                : "%.0f",
     "second"             : "%.0f",
     "terabyte"           : "%.2f",
     "uv_index"           : "%.1f",
@@ -830,7 +949,6 @@ default_unit_label_dict = {
     "count"             : u" ",
     "cpm"               : u" CPM",
     "cubic_foot"        : u" ft³",
-    "cubic_meter"       : u" m³",
     "day"               : (u" day", u" days"),
     "dB"                : u" dB",
     "degree_C"          : u"°C",
@@ -839,10 +957,12 @@ default_unit_label_dict = {
     "degree_E"          : u"°E",
     "degree_F"          : u"°F",
     "degree_F_day"      : u"°F-day",
+    "degree_K"          : u"°K",
     "dollar"            : u" $",
     "euro"              : u" €",
     "foot"              : u" feet",
     "g_per_meter_qubic" : u" g/m³",
+    "gram_per_meter_cubed" : u" g/m³",
     "gallon"            : u" gal",
     "gigabyte"          : u" GB",
     "herz"              : u" Hz",
@@ -875,6 +995,7 @@ default_unit_label_dict = {
     "megabyte"          : u" MB",
     "mega_joule"        : u" MJ",
     "meter"             : u" m",
+    "meter_cubed"       : u" m³",
     "meter_per_second"  : u" m/s",
     "meter_per_second2" : u" m/s",
     "microgram_per_meter_cubed": u" µg/m³",
@@ -882,6 +1003,7 @@ default_unit_label_dict = {
     "mile"              : u" mile",
     "mile_per_hour"     : u" mph",
     "mile_per_hour2"    : u" mph",
+    "milligram_per_meter_cubed": u" mg/m³",
     "minute"            : (u" minute", u" minutes"),
     "mm"                : u" mm",
     "mm_per_hour"       : u" mm/h",
@@ -894,6 +1016,7 @@ default_unit_label_dict = {
     "ohm"               : u" Ohm",
     "percent"           : u" %",
     "ppm"               : u" ppm",
+    "ppb"               : u" ppb",
     "second"            : (u" second", u" seconds"),
     "terabyte"          : u" TB",
     "uv_index"          : u" ",
@@ -906,9 +1029,8 @@ default_unit_label_dict = {
     "NONE"              : u" N/A",
 }
 
-# Default strftime formatting to be used in the absence of a skin
-# configuration file. The entry for delta_time uses a special
-# encoding.
+# Default strftime formatting to be used in the absence of a skin configuration file. The entries
+# for short_delta and long_delta use special encodings.
 default_time_format_dict = {
     "day"        : "%H:%M",
     "week"       : "%H:%M on %A",
@@ -918,9 +1040,14 @@ default_time_format_dict = {
     "current"    : "%d-%b-%Y %H:%M",
     "ephem_day"  : "%H:%M",
     "ephem_year" : "%d-%b-%Y %H:%M",
-    "delta_time" : "%(day)d%(day_label)s, %(hour)d%(hour_label)s, "
+    "brief_delta": "%(minute)d%(minute_label)s, %(second)d%(second_label)s",
+    "short_delta": "%(hour)d%(hour_label)s, %(minute)d%(minute_label)s, "
+                   "%(second)d%(second_label)s",
+    "long_delta" : "%(day)d%(day_label)s, %(hour)d%(hour_label)s, "
                    "%(minute)d%(minute_label)s"
 }
+# Backwards compatibility:
+default_time_format_dict['delta_time'] = default_time_format_dict['long_delta']
 
 # Default mapping from compass degrees to ordinals
 default_ordinate_names = [
@@ -937,55 +1064,56 @@ complex_conversions = {
     'polar': lambda c: (abs(c), weeutil.weeutil.dirN(c)) if c is not None else None,
 }
 
-#==============================================================================
-#                        class ValueTuple
-#==============================================================================
-
-# A value, along with the unit it is in, can be represented by a 3-way tuple
-# called a value tuple. All weewx routines can accept a simple unadorned
-# 3-way tuple as a value tuple, but they return the type ValueTuple. It is
-# useful because its contents can be accessed using named attributes.
-#
-# Item   attribute   Meaning
-#    0    value      The data value(s). Can be a series (eg, [20.2, 23.2, ...])
-#                    or a scalar (eg, 20.2).
-#    1    unit       The unit it is in ("degree_C")
-#    2    group      The unit group ("group_temperature")
-#
-# It is valid to have a datum value of None.
-#
-# It is also valid to have a unit type of None (meaning there is no information
-# about the unit the value is in). In this case, you won't be able to convert
-# it to another unit.
-
 class ValueTuple(tuple):
+    """
+    A value, along with the unit it is in, can be represented by a 3-way tuple called a value
+    tuple. All weewx routines can accept a simple unadorned 3-way tuple as a value tuple, but they
+    return the type ValueTuple. It is useful because its contents can be accessed using named
+    attributes.
+
+    Item   attribute   Meaning
+       0    value      The data value(s). Can be a series (eg, [20.2, 23.2, ...])
+                       or a scalar (eg, 20.2).
+       1    unit       The unit it is in ("degree_C")
+       2    group      The unit group ("group_temperature")
+
+    It is valid to have a datum value of None.
+
+    It is also valid to have a unit type of None (meaning there is no information about the unit
+    the value is in). In this case, you won't be able to convert it to another unit.
+    """
     def __new__(cls, *args):
         return tuple.__new__(cls, args)
+
     @property
     def value(self):
         return self[0]
+
     @property
     def unit(self):
         return self[1]
+
     @property
     def group(self):
         return self[2]
+
     # ValueTuples have some modest math abilities: subtraction and addition.
     def __sub__(self, other):
         if self[1] != other[1] or self[2] != other[2]:
             raise TypeError("Unsupported operand error for subtraction: %s and %s"
                             % (self[1], other[1]))
         return ValueTuple(self[0] - other[0], self[1], self[2])
+
     def __add__(self, other):
         if self[1] != other[1] or self[2] != other[2]:
             raise TypeError("Unsupported operand error for addition: %s and %s"
                             % (self[1], other[1]))
         return ValueTuple(self[0] + other[0], self[1], self[2])
 
+
 # ==============================================================================
 #                        class Formatter
 # ==============================================================================
-
 
 class Formatter(object):
     """Holds formatting information for the various unit types.
@@ -1181,19 +1309,24 @@ class Formatter(object):
                     # Coerce to a string.
                     val_str = str(None_string)
             addLabel = False
-        elif val_t[1] == "unix_epoch":
+        elif val_t[1] in {"unix_epoch", "unix_epoch_ms", "unix_epoch_ns"}:
             # Different formatting routines are used if the value is a time.
+            t = val_t[0]
+            if val_t[1] == "unix_epoch_ms":
+                t /= 1000.0
+            elif val_t[1] == "unix_epoch_ns":
+                t /= 1000000.0
             if useThisFormat is None:
                 val_str = time.strftime(self.time_format_dict.get(context, "%d-%b-%Y %H:%M"),
-                                        time.localtime(val_t[0]))
+                                        time.localtime(t))
             else:
-                val_str = time.strftime(useThisFormat, time.localtime(val_t[0]))
+                val_str = time.strftime(useThisFormat, time.localtime(t))
             addLabel = False
         elif val_t[2] == "group_deltatime":
             # Get a delta-time format string. Use a default if the user did not supply one:
             if useThisFormat is None:
-                format_string = self.time_format_dict.get("delta_time",
-                                                          default_time_format_dict["delta_time"])
+                format_string = self.time_format_dict.get(context,
+                                                          default_time_format_dict[context])
             else:
                 format_string = useThisFormat
             # Now format the delta time, using the function delta_secs_to_string:
@@ -1220,7 +1353,7 @@ class Formatter(object):
         # Add a label, if requested:
         if addLabel:
             # Make sure the label is in unicode before tacking it on to the end
-            label = self.get_label_string(val_t[1], plural=(not val_t[0] == 1))
+            label = self.get_label_string(val_t[1], plural=(not val_t[0]==1))
             val_ustr += six.ensure_text(label)
 
         return val_ustr
@@ -1243,11 +1376,15 @@ class Formatter(object):
         3 days, 21 hours, 7 minutes
         """
         etime_dict = {}
+        secs = abs(secs)
         for (label, interval) in (('day', 86400), ('hour', 3600), ('minute', 60), ('second', 1)):
             amt = int(secs // interval)
             etime_dict[label] = amt
             etime_dict[label + '_label'] = self.get_label_string(label, not amt == 1)
             secs %= interval
+        if 'day' not in label_format:
+            # If 'day' does not appear in the formatting string, add its time to hours
+            etime_dict['hour'] += 24 * etime_dict['day']
         ans = locale.format_string(label_format, etime_dict)
         return ans
 
@@ -1322,7 +1459,7 @@ class Converter(object):
         # Determine which units (eg, "mbar") this group should be in.
         # If the user has not specified anything, then fall back to US Units.
         new_unit_type = self.group_unit_dict.get(val_t[2], USUnits[val_t[2]])
-        # Now convert to this new unit type: 
+        # Now convert to this new unit type:
         new_val_t = convert(val_t, new_unit_type)
         return new_val_t
 
@@ -1359,6 +1496,7 @@ class Converter(object):
             target_dict[obs_type] = self.convert(as_value_tuple(obs_dict, obs_type))[0]
         return target_dict
 
+
     def getTargetUnit(self, obs_type, agg_type=None):
         """Given an observation type and an aggregation type, return the 
         target unit type and group, or (None, None) if they cannot be determined.
@@ -1388,22 +1526,7 @@ StdUnitConverters = {weewx.US       : Converter(USUnits),
                      weewx.METRIC   : Converter(MetricUnits),
                      weewx.METRICWX : Converter(MetricWXUnits)}
 
-# ==============================================================================
-#                        class FixedConverter
-# ==============================================================================
 
-
-class FixedConverter(object):
-    """Dirt simple converter that can only convert to a specified unit."""
-    def __init__(self, target_units):
-        """Initialize an instance of FixedConverter
-        
-        target_units: The new, target unit (eg, "degree_C")"""
-        self.target_units = target_units
-        
-    def convert(self, val_t):
-        return convert(val_t, self.target_units)
-    
 # ==============================================================================
 #                      class ValueHelper
 # ==============================================================================
@@ -1434,24 +1557,31 @@ class ValueHelper(object):
     >>> print("%.1f" % vh.raw)
     20.0
     """
-    def __init__(self, value_t, context='current', formatter=Formatter(), converter=Converter()):
+    def __init__(self, value_t, context='current', formatter=Formatter(), converter=None):
         """Initialize a ValueHelper
 
         Args:
-            value_t (ValueTuple): An instance of a ValueTuple. The "value" part can be either a
-                scalar, or a series.
+            value_t (ValueTuple or UnknownType): This parameter can be either a ValueTuple,
+                or an instance of UnknownType. If a ValueTuple, the "value" part can be either a
+                scalar, or a series. If a converter is given, it will be used to convert the
+                ValueTuple before storing. If the parameter is 'UnknownType', it is an error ot
+                perform any operation on the resultant ValueHelper, except ask it to be formatted
+                as a string. In this case, the name of the unknown type will be included in the
+                resultant string.
             context (str): The time context. Something like 'current', 'day', 'week'.
                 [Optional. If not given, context 'current' will be used.]
             formatter (Formatter): An instance of class Formatter.
                 [Optional. If not given, then the default Formatter() will be used]
             converter (Converter):  An instance of class Converter.
-                [Optional. If not given, then the default Converter() will be used,
-                which will convert to US units]
+                [Optional.]
         """
-        self.value_t   = value_t
+        # If there's a converter, then perform the conversion:
+        if converter and not isinstance(value_t, UnknownType):
+            self.value_t = converter.convert(value_t)
+        else:
+            self.value_t = value_t
         self.context   = context
         self.formatter = formatter
-        self.converter = converter
 
     def toString(self,
                  addLabel=True,
@@ -1466,8 +1596,8 @@ class ValueHelper(object):
             addLabel (bool):  If True, add a unit label
             useThisFormat (str):  String with a format to be used when formatting the value.
                 If None, then a format will be supplied. Default is None.
-            None_string (str): If the value is not None, then this string will be used. If None,
-                then a default string from skin.conf will be used. Default is None.
+            None_string (str): A string to be used if the value is None. If None, then a default
+                string from skin.conf will be used. Default is None.
             localize (bool):  If True, localize the results. Default is True
             NONE_string (str): Supplied for backwards compatibility. Identical semantics to
                 None_string.
@@ -1481,11 +1611,9 @@ class ValueHelper(object):
         # Check NONE_string for backwards compatibility:
         if None_string is None and NONE_string is not None:
             None_string = NONE_string
-        # Get the value tuple in the target units:
-        vtx = self._raw_value_tuple
         # Then do the format conversion:
-        s = self.formatter.toString(vtx, self.context, addLabel=addLabel, 
-                                    useThisFormat=useThisFormat, None_string=None_string, 
+        s = self.formatter.toString(self.value_t, self.context, addLabel=addLabel,
+                                    useThisFormat=useThisFormat, None_string=None_string,
                                     localize=localize)
         return s
 
@@ -1507,23 +1635,36 @@ class ValueHelper(object):
         """Returns an ordinal compass direction (eg, 'NNW')"""
         # Get the raw value tuple, then ask the formatter to look up an
         # appropriate ordinate:
-        return self.formatter.to_ordinal_compass(self._raw_value_tuple)
+        return self.formatter.to_ordinal_compass(self.value_t)
 
     def json(self, **kwargs):
-        return json.dumps(self._raw_value_tuple[0], cls=ComplexEncoder, **kwargs)
+        return json.dumps(self.raw, cls=ComplexEncoder, **kwargs)
+
+    def round(self, ndigits=None):
+        """Round the data part to ndigits decimal digits."""
+        # Create a new ValueTuple with the rounded data
+        vt = ValueTuple(weeutil.weeutil.rounder(self.value_t[0], ndigits),
+                        self.value_t[1],
+                        self.value_t[2])
+        # Use it to create a new ValueHelper
+        return ValueHelper(vt, self.context, self.formatter)
 
     @property
     def raw(self):
-        """Returns the raw value without any formatting."""
-        return self._raw_value_tuple[0]
+        """Returns just the data part, without any formatting."""
+        return self.value_t[0]
 
-    @property
-    def _raw_value_tuple(self):
-        """Return a value tuple in the target units."""
-        # ... Do the unit conversion ...
-        vtx = self.converter.convert(self.value_t)
-        # ... and then return it
-        return vtx
+    def convert(self, target_unit):
+        """Return a ValueHelper in a new target unit.
+
+        Args:
+            target_unit (str): The unit (eg, 'degree_C') to which the data will be converted
+
+        Returns:
+            ValueHelper.
+        """
+        value_t = convert(self.value_t, target_unit)
+        return ValueHelper(value_t, self.context, self.formatter)
 
     def __getattr__(self, target_unit):
         """Convert to a new unit type.
@@ -1532,28 +1673,20 @@ class ValueHelper(object):
             target_unit (str): The new target unit
 
         Returns:
-            ValueHelper. The returned ValueHelper uses an instance of FixedConverter to insure that
-                the data will be in the selected unit.
+            ValueHelper. The data in the new ValueHelper will be in the desired units.
         """
 
         # This is to get around bugs in the Python version of Cheetah's namemapper:
         if target_unit in ['__call__', 'has_key']:
             raise AttributeError
 
-        if target_unit in complex_conversions:
-            return ValueHelper(convert(self.value_t, target_unit),
-                               self.context,
-                               self.formatter,
-                               self.converter)
-        # If we are being asked to perform a conversion, make sure it's a
-        # legal one:
-        if self.value_t[1] != target_unit:
-            try:
-                conversionDict[self.value_t[1]][target_unit]
-            except KeyError:
-                raise AttributeError("Illegal conversion from '%s' to '%s'"
-                                     % (self.value_t[1], target_unit))
-        return ValueHelper(self.value_t, self.context, self.formatter, FixedConverter(target_unit))
+        # Convert any illegal conversions to an AttributeError:
+        try:
+            converted = self.convert(target_unit)
+        except KeyError:
+            raise AttributeError("Illegal conversion from '%s' to '%s'"
+                                 % (self.value_t[1], target_unit))
+        return converted
 
     def __iter__(self):
         """Return an iterator that can iterate over the elements of self.value_t."""
@@ -1561,7 +1694,7 @@ class ValueHelper(object):
             # Form a ValueTuple using the value, plus the unit and unit group
             vt = ValueTuple(row, self.value_t[1], self.value_t[2])
             # Form a ValueHelper out of that
-            vh = ValueHelper(vt, self.context, self.formatter, self.converter)
+            vh = ValueHelper(vt, self.context, self.formatter)
             yield vh
 
     def exists(self):
@@ -1595,70 +1728,66 @@ class ValueHelper(object):
 # ==============================================================================
 
 class SeriesHelper(object):
+    """Convenience class that binds the series data, along with start and stop times."""
+
     def __init__(self, start, stop, data):
-        """A convenience class that holds starting times, stopping times, and data for a series.
+        """Initializer
 
         Args:
-            start: A ValueHelper holding the start times of the data.
-            stop: A ValueHelper holding the stop times of the data.
-            data: A ValueHelper holding the data.
+            start (ValueHelper): A ValueHelper holding the start times of the data. None if
+                there is no start series.
+            stop (ValueHelper): A ValueHelper holding the stop times of the data. None if
+                there is no stop series
+            data (ValueHelper): A ValueHelper holding the data.
         """
         self.start = start
         self.stop = stop
         self.data = data
 
-    def json(self, order_by='row', time_series='both', time_unit='unix_epoch', **kwargs):
+    def json(self, order_by='row', **kwargs):
         """Return the data in this series as JSON.
 
         Args:
-            order_by: A string that determines whether the generated string is ordered by
+            order_by (str): A string that determines whether the generated string is ordered by
                 row or column. Either 'row' or 'column'.
-            time_series: What to include for the time series. Either 'start', 'stop', or
-                'both'.
-            **kwargs: These arguments are passed on to json.loads()
+            **kwargs (Any): Any extra arguments are passed on to json.loads()
 
         Returns:
-            A string with the encoded JSON.
+            str. A string with the encoded JSON.
         """
 
-        time_series = time_series.lower()
-        if time_series not in ['both', 'start', 'stop']:
-            raise ValueError("Unknown option '%s' for parameter 'time_series'" % time_series)
-
-        # Convert the time series to the desired time unit. When done, start_series and
-        # stop_series will be ValueTuples with the converted series as their value.
-        if time_series in ['start', 'both']:
-            start_series = convert(self.start.value_t, time_unit)
-        if time_series in ['stop', 'both']:
-            stop_series = convert(self.stop.value_t, time_unit)
-            # Sanity checks
-            assert start_series[1] == time_unit
-            assert stop_series[1] == time_unit
-
         if order_by == 'row':
-            if time_series == 'both':
-                json_data = [[start_, stop_, data_.raw]
-                             for start_, stop_, data_
-                             in zip(start_series[0], stop_series[0], self.data)]
-            elif time_series == 'start':
-                json_data = [[start_, data_.raw]
-                             for start_, data_
-                             in zip(start_series[0], self.data)]
+            if self.start and self.stop:
+                json_data = list(zip(self.start.raw, self.stop.raw, self.data.raw))
+            elif self.start and not self.stop:
+                json_data = list(zip(self.start.raw, self.data.raw))
             else:
-                json_data = [[stop_, data_.raw]
-                             for stop_, data_
-                             in zip(stop_series[0], self.data)]
+                json_data = list(zip(self.stop.raw, self.data.raw))
         elif order_by == 'column':
-            if time_series == 'both':
-                json_data = [start_series[0], stop_series[0], self.data.raw]
-            elif time_series == 'start':
-                json_data = [start_series[0], self.data.raw]
+            if self.start and self.stop:
+                json_data = [self.start.raw, self.stop.raw, self.data.raw]
+            elif self.start and not self.stop:
+                json_data = [self.start.raw, self.data.raw]
             else:
-                json_data = [stop_series[0], self.data.raw]
+                json_data = [self.stop.raw, self.data.raw]
         else:
             raise ValueError("Unknown option '%s' for parameter 'order_by'" % order_by)
 
         return json.dumps(json_data, cls=ComplexEncoder, **kwargs)
+
+    def round(self, ndigits=None):
+        """
+        Round the data part to ndigits number of decimal digits.
+
+        Args:
+            ndigits (int): The number of decimal digits to include in the data. Default is None,
+                which means keep all digits.
+
+        Returns:
+            SeriesHelper: A new SeriesHelper, with the data part rounded to the requested number of
+                decimal digits.
+        """
+        return SeriesHelper(self.start, self.stop, self.data.round(ndigits))
 
     def __str__(self):
         """Return as the native string type for the version of Python being run."""
@@ -1669,34 +1798,83 @@ class SeriesHelper(object):
         """Return as unicode. This function is called only under Python 2."""
         return self.format()
 
+    def __len__(self):
+        return len(self.start)
+
     def format(self, format_string=None, None_string=None, add_label=True,
                localize=True, order_by='row'):
+        """Format a series as a string.
+
+        Args:
+            format_string (str):  String with a format to be used when formatting the values.
+                If None, then a format will be supplied. Default is None.
+            None_string (str): A string to be used if a value is None. If None,
+                then a default string from skin.conf will be used. Default is None.
+            add_label (bool):  If True, add a unit label to each value.
+            localize (bool):  If True, localize the results. Default is True
+            order_by (str): A string that determines whether the generated string is ordered by
+                row or column. Either 'row' or 'column'.
+
+        Returns:
+            str. The formatted and labeled string
+        """
 
         if order_by == 'row':
             rows = []
-            for start_, stop_, data_ in zip(self.start, self.stop, self.data):
-                rows += ["%s, %s, %s" \
-                         % (str(start_),
-                            str(stop_),
-                            data_.format(format_string, None_string, add_label, localize))
-                ]
+            if self.start and self.stop:
+                for start_, stop_, data_ in self:
+                    rows += ["%s, %s, %s"
+                             % (str(start_),
+                                str(stop_),
+                                data_.format(format_string, None_string, add_label, localize))
+                    ]
+            elif self.start and not self.stop:
+                for start_, data_ in zip(self.start, self.data):
+                    rows += ["%s, %s"
+                             % (str(start_),
+                                data_.format(format_string, None_string, add_label, localize))
+                    ]
+            else:
+                for stop_, data_ in zip(self.stop, self.data):
+                    rows += ["%s, %s"
+                             % (str(stop_),
+                                data_.format(format_string, None_string, add_label, localize))
+                    ]
             return "\n".join(rows)
+
         elif order_by == 'column':
-            return "%s\n%s\n%s" \
-                   % (str(self.start),
-                      str(self.stop),
-                      self.data.format(format_string, None_string, add_label, localize))
+            if self.start and self.stop:
+                return "%s\n%s\n%s" \
+                       % (str(self.start),
+                          str(self.stop),
+                          self.data.format(format_string, None_string, add_label, localize))
+            elif self.start and not self.stop:
+                return "%s\n%s" \
+                       % (str(self.start),
+                          self.data.format(format_string, None_string, add_label, localize))
+            else:
+                return "%s\n%s" \
+                       % (str(self.stop),
+                          self.data.format(format_string, None_string, add_label, localize))
         else:
-            raise ValueError('Unknown order by option %s' % order_by)
+            raise ValueError("Unknown option '%s' for parameter 'order_by'" % order_by)
 
     def __getattr__(self, target_unit):
-        """Convert the data part of the series to a new unit. Only the data part gets converted."""
+        """Return a new SeriesHelper, with the data part converted to a new unit
+
+        Args:
+            target_unit (str): The data part of the returned SeriesHelper will be in this unit.
+
+        Returns:
+            SeriesHelper. The data in the new SeriesHelper will be in the target unit.
+        """
 
         # This is to get around bugs in the Python version of Cheetah's namemapper:
         if target_unit in ['__call__', 'has_key']:
             raise AttributeError
 
-        converted_data = getattr(self.data, target_unit)
+        # This will be a ValueHelper.
+        converted_data = self.data.convert(target_unit)
 
         return SeriesHelper(self.start, self.stop, converted_data)
 
@@ -1812,15 +1990,15 @@ def convert(val_t, target_unit):
 
     Args:
         val_t (ValueTuple): A ValueTuple containing the value to be converted. The first element
-            can be either a scalar or iterable.
+            can be either a scalar or an iterable.
         target_unit (str): The unit type (e.g., "meter", or "mbar") to which the value is to be
          converted. If the ValueTuple holds a complex number, target_unit can be a complex
          conversion nickname, such as 'polar'.
 
     Returns:
         ValueTuple. An instance of ValueTuple, where the desired conversion has been performed.
-
     """
+
     # Is the "target_unit" really a conversion for complex numbers?
     if target_unit in complex_conversions:
         # Yes. Get the conversion function. Also, note that these operations do not change the
@@ -1840,11 +2018,12 @@ def convert(val_t, target_unit):
         except KeyError:
             log.debug("Unable to convert from %s to %s", val_t[1], target_unit)
             raise
-    # Try converting a sequence first. A TypeError exception will occur if
-    # the value is actually a scalar:
-    try:
+    # Are we converting a list, or a simple scalar?
+    if isinstance(val_t[0], (list, tuple)):
+        # A list
         new_val = [conversion_func(x) if x is not None else None for x in val_t[0]]
-    except TypeError:
+    else:
+        # A scalar
         new_val = conversion_func(val_t[0]) if val_t[0] is not None else None
 
     # Add on the unit type and the group type and return the results:
@@ -1870,7 +2049,6 @@ def convertStd(val_t, target_std_unit_system):
 
     Returns:
         ValueTuple. A value tuple in the given standardized unit system.
-    
     """
     return StdUnitConverters[target_std_unit_system].convert(val_t)
 
@@ -2005,9 +2183,20 @@ def to_std_system(datadict, unit_system):
 
 
 def as_value_tuple(record_dict, obs_type):
-    """Look up an observation type in a record, returning the result
-    as a ValueTuple. If the observation type is not recognized, an object of
-    type UnknownType will be returned."""
+    """Look up an observation type in a record, returning the result as a ValueTuple.
+
+    Args:
+        record_dict (dict): A record. May be None. If it is not None, then it must contain an
+            entry for `usUnits`.
+        obs_type (str): The observation type to be returned
+
+    Returns:
+        ValueTuple.
+
+    Raises:
+        KeyIndex, If the observation type cannot be found in the record, a KeyIndex error is
+            raised.
+    """
 
     # Is the record None?
     if record_dict is None:
@@ -2016,7 +2205,7 @@ def as_value_tuple(record_dict, obs_type):
         std_unit_system = weewx.US
     else:
         # There is a record. Get the value, and the unit system.
-        val = record_dict.get(obs_type)
+        val = record_dict[obs_type]
         std_unit_system = record_dict['usUnits']
 
     # Given this standard unit system, what is the unit type of this
@@ -2032,7 +2221,8 @@ class ComplexEncoder(json.JSONEncoder):
     """Custom encoder that knows how to encode complex objects"""
     def default(self, obj):
         if isinstance(obj, complex):
-            return [obj.real, obj.imag]
+            # Return as tuple
+            return obj.real, obj.imag
         # Otherwise, let the base class handle it
         return json.JSONEncoder.default(self, obj)
 

@@ -23,6 +23,10 @@
     </tr>
     <tr>
       <td class="label">Hardware:</td>
+      <td class="data">Davis Station 6345 OV</td>
+    </tr>
+    <tr>
+      <td class="label">Hardware:</td>
       <td class="data">Temp.-Sensor DS18B20</td>
     </tr>
     <tr>
@@ -39,11 +43,11 @@
     </tr>
     <tr>
       <td class="label">Inbetriebnahme:</td>
-      <td class="data">$start_time</td>
+      <td class="data">$db_sttime</td>
     </tr>
     <tr>
       <td class="label">Start DB:</td>
-      <td class="data">$station.db_uptime</td>
+      <td class="data">$db_uptime</td>
     </tr>
     <tr>
       <td class="label">WeeWx uptime:</td>
@@ -160,7 +164,7 @@
     </tr>
     <tr>
       <td class="label">Grünland GTS:</td>
-      <td class="data">0.4.1</td>
+      <td class="data">0.5.1</td>
     </tr>
     <tr>
       <td class="label">Phenology:</td>

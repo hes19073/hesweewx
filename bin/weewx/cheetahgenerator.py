@@ -1,6 +1,8 @@
 #
 #    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
 #
+#    Class Gettext is Copyright (C) 2021 Johanna Karen Roedenbeck
+#
 #    See the file LICENSE.txt for your full rights.
 #
 """Generate files from templates using the Cheetah template engine.
@@ -58,6 +60,7 @@ Example:
 from __future__ import absolute_import
 
 import datetime
+import json
 import logging
 import os.path
 import time
@@ -76,7 +79,7 @@ import weewx.station
 import weewx.tags
 import weewx.units
 from weeutil.config import search_up, accumulateLeaves, deep_copy
-from weeutil.weeutil import to_bool, to_int, timestamp_to_string
+from weeutil.weeutil import to_bool, to_int, timestamp_to_string, KeyDict
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +91,9 @@ default_search_list = [
     "weewx.cheetahgenerator.Current",
     "weewx.cheetahgenerator.Stats",
     "weewx.cheetahgenerator.UnitInfo",
-    "weewx.cheetahgenerator.Extras"]
+    "weewx.cheetahgenerator.Extras",
+    "weewx.cheetahgenerator.JSONHelpers",
+    "weewx.cheetahgenerator.Gettext"]
 
 
 # =============================================================================
@@ -147,7 +152,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         self.initExtensions(gen_dict[section_name])
 
         # Generate any templates in the given dictionary:
-        ngen = self.generate(gen_dict[section_name], self.gen_ts)
+        ngen = self.generate(gen_dict[section_name], section_name, self.gen_ts)
 
         self.teardown()
 
@@ -193,10 +198,11 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
     def teardown(self):
         """Delete any extension objects we created to prevent back references
         from slowing garbage collection"""
-        while len(self.search_list_objs):
+        while self.search_list_objs:
+            self.search_list_objs[-1].finalize()
             del self.search_list_objs[-1]
 
-    def generate(self, section, gen_ts):
+    def generate(self, section, section_name, gen_ts):
         """Generate one or more reports for the indicated section.  Each
         section in a period is a report.  A report has one or more templates.
 
@@ -217,7 +223,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                 if subsection in CheetahGenerator.generator_dict:
                     section[subsection]['summarize_by'] = subsection
             # Call recursively, to generate any templates in this subsection
-            ngen += self.generate(section[subsection], gen_ts)
+            ngen += self.generate(section[subsection], subsection, gen_ts)
 
         # We have finished recursively processing any subsections in this
         # section. Time to do the section itself. If there is no option
@@ -306,9 +312,12 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                     pass
 
             searchList = self._getSearchList(encoding, timespan,
-                                             default_binding)
-            tmpname = _fullname + '.tmp'
+                                             default_binding, section_name,
+                                             os.path.join(
+                                               os.path.dirname(report_dict['template']),
+                                               _filename))
 
+            # First, compile the template
             try:
                 # TODO: Look into caching the compiled template.
                 # Under Python 2, Cheetah V2 will crash if given a template file name in Unicode,
@@ -318,46 +327,58 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                     searchList=searchList,
                     filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
-
-                # We have a compiled template in hand. Evaluate it. The result will be a long
-                # Unicode string.
-                unicode_string = compiled_template.respond()
-
-                # Time to write it out. Determine the strategy for encoding any non-ascii
-                # chartacters.
-                if encoding == 'html_entities':
-                    byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
-                elif encoding == 'strict_ascii':
-                    byte_string = unicode_string.encode('ascii', 'ignore')
-                elif encoding == 'normalized_ascii':
-                    # Normalize the string, replacing accented characters with non-accented
-                    # equivalents
-                    normalized = unicodedata.normalize('NFD', unicode_string)
-                    byte_string = normalized.encode('ascii', 'ignore')
-                else:
-                    byte_string = unicode_string.encode(encoding)
-
-                # Open in binary mode. We are writing a byte-string, not a string
-                with open(tmpname, mode='wb') as fd:
-                    fd.write(byte_string)
-                os.rename(tmpname, _fullname)
-
             except Exception as e:
-                # We would like to get better feedback when there are cheetah
-                # compiler failures, but there seem to be no hooks for this.
-                # For example, if we could get cheetah to emit the source
-                # on which the compiler is working, one could compare that with
-                # the template to figure out exactly where the problem is.
-                # In Cheetah.Compile.ModuleCompiler the source is manipulated
-                # a bit then handed off to parserClass.  Unfortunately there
-                # are no hooks to intercept the source and spit it out.  So
-                # the best we can do is indicate the template that was being
-                # processed when the failure ocurred.
-                log.error("Generate failed with exception '%s'", type(e))
+                log.error("Compilation of template %s failed with exception '%s'", template, type(e))
                 log.error("**** Ignoring template %s", template)
                 log.error("**** Reason: %s", e)
                 weeutil.logger.log_traceback(log.error, "****  ")
+                continue
+
+            # Second, evaluate the compiled template
+            try:
+                # We have a compiled template in hand. Evaluate it. The result will be a long
+                # Unicode string.
+                unicode_string = compiled_template.respond()
+            except Cheetah.Parser.ParseError as e:
+                log.error("Parse error while evaluating file %s", template)
+                log.error("**** Ignoring template %s", template)
+                log.error("**** Reason: %s", e)
+                continue
+            except Cheetah.NameMapper.NotFound as e:
+                log.error("Evaluation of template %s failed.", template)
+                log.error("**** Ignoring template %s", template)
+                log.error("**** Reason: %s", e)
+                log.error("**** To debug, try inserting '#errorCatcher Echo' at top of template")
+                continue
+            except Exception as e:
+                log.error("Evaluation of template %s failed with exception '%s'", template, type(e))
+                log.error("**** Ignoring template %s", template)
+                log.error("**** Reason: %s", e)
+                weeutil.logger.log_traceback(log.error, "****  ")
+                continue
+
+            # Third, convert the results to a byte string, using the strategy chosen by the user.
+            if encoding == 'html_entities':
+                byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
+            elif encoding == 'strict_ascii':
+                byte_string = unicode_string.encode('ascii', 'ignore')
+            elif encoding == 'normalized_ascii':
+                # Normalize the string, replacing accented characters with non-accented
+                # equivalents
+                normalized = unicodedata.normalize('NFD', unicode_string)
+                byte_string = normalized.encode('ascii', 'ignore')
             else:
+                byte_string = unicode_string.encode(encoding)
+
+            # Finally, write the byte string to the target file
+            try:
+                # Write to a temporary file first
+                tmpname = _fullname + '.tmp'
+                # Open it in binary mode. We are writing a byte-string, not a string
+                with open(tmpname, mode='wb') as fd:
+                    fd.write(byte_string)
+                # Now move the temporary file into place
+                os.rename(tmpname, _fullname)
                 ngen += 1
             finally:
                 try:
@@ -367,14 +388,16 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
 
         return ngen
 
-    def _getSearchList(self, encoding, timespan, default_binding):
+    def _getSearchList(self, encoding, timespan, default_binding, section_name, file_name):
         """Get the complete search list to be used by Cheetah."""
 
         # Get the basic search list
         timespan_start_tt = time.localtime(timespan.start)
         searchList = [{'month_name' : time.strftime("%b", timespan_start_tt),
                        'year_name'  : timespan_start_tt[0],
-                       'encoding'   : encoding},
+                       'encoding'   : encoding,
+                       'page'       : section_name,
+                       'filename'   : file_name},
                       self.outputted_dict]
 
         # Bind to the default_binding:
@@ -401,7 +424,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             _yr_str = "%4d" % ref_tt[0]
             _mo_str = "%02d" % ref_tt[1]
             _day_str = "%02d" % ref_tt[2]
-            _week_str = "%02d" % datetime.date(ref_tt[0], ref_tt[1], ref_tt[2]).isocalendar()[1]
+            _week_str = "%02d" % datetime.date(ref_tt[0], ref_tt[1], ref_tt[2]).isocalendar()[1];
             # Replace any instances of 'YYYY' with the year string
             _filename = _filename.replace('YYYY', _yr_str)
             # Do the same thing with the month...
@@ -480,6 +503,9 @@ class SearchList(object):
         """
         return [self]
 
+    def finalize(self):
+        """Called when the extension is no longer needed"""
+
 
 class Almanac(SearchList):
     """Class that implements the '$almanac' tag."""
@@ -534,7 +560,8 @@ class Almanac(SearchList):
                                              temperature=temperature_C,
                                              pressure=pressure_mbar,
                                              moon_phases=self.moonphases,
-                                             formatter=generator.formatter)
+                                             formatter=generator.formatter,
+                                             converter=generator.converter)
 
 
 class Station(SearchList):
@@ -618,10 +645,74 @@ class Extras(SearchList):
         self.Extras = ExtraDict(generator.skin_dict['Extras'] if 'Extras' in generator.skin_dict else {})
 
 
+class JSONHelpers(SearchList):
+    """Helper functions for formatting JSON"""
+
+    @staticmethod
+    def jsonize(arg):
+        """
+        Format my argument as JSON
+
+        Args:
+            arg (iterable): An iterable, such as a list, or zip structure
+
+        Returns:
+            str: The argument formatted as JSON.
+        """
+        val = list(arg)
+        return json.dumps(val, cls=weewx.units.ComplexEncoder)
+
+    @staticmethod
+    def rnd(arg, ndigits):
+        """Round a number, or sequence of numbers, to a specified number of decimal digits
+
+        Args:
+            arg (None, float, complex, list): The number or sequence of numbers to be rounded.
+                If the argument is None, then None will be returned.
+            ndigits (int): The number of decimal digits to retain.
+
+        Returns:
+            None, float, complex, list: Returns the number, or sequence of numbers, with the
+                requested number of decimal digits
+        """
+        return weeutil.weeutil.rounder(arg, ndigits)
+
+    @staticmethod
+    def to_int(arg):
+        """Convert the argument into an integer, honoring 'None'
+
+        Args:
+            arg (None, float, str):
+
+        Returns:
+            int: The argument converted to an integer.
+        """
+        return weeutil.weeutil.to_int(arg)
+
+
+class Gettext(SearchList):
+    """Values provided by $gettext() are found in the [Texts] section of the localization file."""
+
+    def gettext(self, key):
+        try:
+            v = self.generator.skin_dict['Texts'].get(key, key)
+        except KeyError:
+            v = key
+        return v
+
+    def pgettext(self, context, key):
+        try:
+            v = self.generator.skin_dict['Texts'][context].get(key, key)
+        except KeyError:
+            v = key
+        return v
+
+    # An underscore is a common alias for gettext:
+    _ = gettext
+
 # =============================================================================
 # Filter
 # =============================================================================
-
 
 class AssureUnicode(Cheetah.Filters.Filter):
     """Assures that whatever a search list extension might return, it will be converted into

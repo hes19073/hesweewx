@@ -1,6 +1,5 @@
 """
-xastro.py
-original  wdastro.py by  gjr80
+wdastro.py
 
 Astronomical search list extensions for WeeWX-WD
 
@@ -13,10 +12,20 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Version: 2.0.0                                      Date: 20 June 2020
+Version: 2.1.3                                          Date: 15 February 2021
 
 Revision History
-    20 June 2020        v2.0.0
+    15 February 2021    v2.1.3
+        - no change, version number change only
+    17 November 2020    v2.1.2
+        - no change, version number change only
+    11 November 2020    v2.1.1
+        - no change, version number change only
+    1 November 2020     v2.1.0
+        - logging is now WeeWX 3 and 4 compatible
+    30 August 2020      v2.0.1
+        - no change, version number change only
+    20 August 2020      v2.0.0
       - minor formatting changes
       - WeeWX 3.2+/4.x python2/3 compatible
 
@@ -38,7 +47,6 @@ Previous bitbucket revision history
 from array import array
 import bisect
 import datetime
-import logging
 import math
 import time
 
@@ -50,12 +58,32 @@ import weewx
 from weewx.cheetahgenerator import SearchList
 from weewx.units import ValueHelper
 
-log = logging.getLogger(__name__)
+# import/setup logging, WeeWX v3 is syslog based but WeeWX v4 is logging based,
+# try v4 logging and if it fails use v3 logging
+try:
+    # WeeWX4 logging
+    import logging
 
-WEEWXWD_ASTRO_VERSION = '2.0.0'
+    log = logging.getLogger(__name__)
+
+    def logdbg(msg):
+        log.debug(msg)
+
+except ImportError:
+    # WeeWX legacy (v3) logging via syslog
+    import syslog
+
+    def logmsg(level, msg):
+        syslog.syslog(level, 'wdastro: %s' % msg)
 
 
-class MyXMoonApsis(SearchList):
+    def logdbg(msg):
+        logmsg(syslog.LOG_DEBUG, msg)
+
+WEEWXWD_ASTRO_VERSION = '2.1.3'
+
+
+class MoonApsis(SearchList):
     """WeeWX SLE to provide various lunar apogee/perigee details.
 
        Code to calculate apogee and perigee details based on public domain
@@ -369,12 +397,12 @@ class MyXMoonApsis(SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            log.debug("MoonApsis SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("MoonApsis SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
 
 
-class MyXEclipse(SearchList):
+class Eclipse(SearchList):
 
     def __init__(self, generator):
         SearchList.__init__(self, generator)
@@ -590,12 +618,12 @@ class MyXEclipse(SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            log.debug("Eclipse SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("Eclipse SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
 
 
-class MyXEarthApsis(SearchList):
+class EarthApsis(SearchList):
 
     def __init__(self, generator):
         SearchList.__init__(self, generator)
@@ -669,12 +697,12 @@ class MyXEarthApsis(SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            log.debug("EarthApsis SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("EarthApsis SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
 
 
-class MyXChineseNewYear(SearchList):
+class ChineseNewYear(SearchList):
 
     def __init__(self, generator):
         SearchList.__init__(self, generator)
@@ -729,7 +757,7 @@ class MyXChineseNewYear(SearchList):
 
         t2 = time.time()
         if weewx.debug >= 2:
-            log.debug("ChineseNewYear SLE executed in %0.3f seconds" % (t2-t1))
+            logdbg("ChineseNewYear SLE executed in %0.3f seconds" % (t2-t1))
 
         return [search_list_extension]
 

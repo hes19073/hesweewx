@@ -347,7 +347,6 @@ class WindSpeedRecalculation(DatabaseFix):
 #                             class CalcMissing
 # ============================================================================
 
-
 class CalcMissing(DatabaseFix):
     """Class to calculate and store missing derived observations.
 

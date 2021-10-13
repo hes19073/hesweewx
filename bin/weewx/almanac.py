@@ -1,5 +1,5 @@
 #
-#    Copyright (c) 2009-2020 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2021 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -26,15 +26,13 @@ except ImportError:
 
 # NB: Have Almanac inherit from 'object'. However, this will cause
 # an 'autocall' bug in Cheetah versions before 2.1.
-
-
 class Almanac(object):
     """Almanac data.
-
+    
     ATTRIBUTES.
-
+    
     As a minimum, the following attributes are available:
-
+    
         sunrise: Time (local) upper limb of the sun rises above the horizon, formatted using the format 'timeformat'.
         sunset: Time (local) upper limb of the sun sinks below the horizon, formatted using the format 'timeformat'.
         moon_phase: A description of the moon phase(eg. "new moon", Waxing crescent", etc.)
@@ -80,7 +78,7 @@ class Almanac(object):
     
     Test backwards compatibility with attribute 'moon_fullness':
     >>> print("Fullness of the moon (rounded) is %.2f%% [%s]" % (almanac._moon_fullness, almanac.moon_phase))
-    Fullness of the moon (rounded) is 5.00% [waxing crescent (increasing to full)]
+    Fullness of the moon (rounded) is 3.00% [new (totally dark)]
     
     Now get a more precise result for fullness of the moon:
     >>> print("Fullness of the moon (more precise) is %.2f%%" % almanac.moon.moon_fullness)
@@ -198,27 +196,34 @@ class Almanac(object):
                  pressure=None,
                  horizon=None,
                  moon_phases=weeutil.Moon.moon_phases,
-                 formatter=weewx.units.Formatter()):
+                 formatter=weewx.units.Formatter(),
+                 converter=weewx.units.Converter()):
         """Initialize an instance of Almanac
 
-        time_ts: A unix epoch timestamp with the time of the almanac. If None, the
-        present time will be used.
-        
-        lat, lon: Observer's location in degrees.
-        
-        altitude: Observer's elevation in **meters**. [Optional. Default is 0 (sea level)]
-        
-        temperature: Observer's temperature in **degrees Celsius**. [Optional. Default is 15.0]
-        
-        pressure: Observer's atmospheric pressure in **mBars**. [Optional. Default is 1010]
-        
-        horizon: Angle of the horizon in degrees [Optional. Default is zero]
-        
-        moon_phases: An array of 8 strings with descriptions of the moon 
-        phase. [optional. If not given, then weeutil.Moon.moon_phases will be used]
-        
-        formatter: An instance of weewx.units.Formatter() with the formatting information
-        to be used.
+        Args:
+
+            time_ts (int): A unix epoch timestamp with the time of the almanac. If None, the
+            present time will be used.
+
+            lat (float): Observer's latitude in degrees.
+
+            lon (float): Observer's longitude in degrees.
+
+            altitude: (float) Observer's elevation in **meters**. [Optional. Default is 0 (sea level)]
+
+            temperature (float): Observer's temperature in **degrees Celsius**. [Optional. Default is 15.0]
+
+            pressure (float): Observer's atmospheric pressure in **mBars**. [Optional. Default is 1010]
+
+            horizon (float): Angle of the horizon in degrees [Optional. Default is zero]
+
+            moon_phases (list): An array of 8 strings with descriptions of the moon
+            phase. [optional. If not given, then weeutil.Moon.moon_phases will be used]
+
+            formatter (weewx.units.Formatter): An instance of weewx.units.Formatter() with the formatting information
+            to be used.
+
+            converter (weewx.units.Converter): An instance of weewx.units.Converter with the conversion information to be used.
         """
         self.time_ts      = time_ts if time_ts else time.time()
         self.lat          = lat
@@ -229,11 +234,12 @@ class Almanac(object):
         self.horizon      = horizon if horizon is not None else 0.0
         self.moon_phases  = moon_phases
         self.formatter    = formatter
+        self.converter    = converter
         self._precalc()
 
     def _precalc(self):
         """Precalculate local variables."""
-        (self.moon_index, self._moon_fullness) = weeutil.Moon.moon_phase_ts(self.time_ts)
+        self.moon_index, self._moon_fullness = weeutil.Moon.moon_phase_ts(self.time_ts)
         self.moon_phase = self.moon_phases[self.moon_index]
         self.time_djd     = timestamp_to_djd(self.time_ts)
 
@@ -249,26 +255,27 @@ class Almanac(object):
             (sunrise_utc_h, sunset_utc_h) = weeutil.Sun.sunRiseSet(y, m, d, self.lon, self.lat)
             sunrise_ts = weeutil.weeutil.utc_to_ts(y, m, d, sunrise_utc_h)
             sunset_ts  = weeutil.weeutil.utc_to_ts(y, m, d, sunset_utc_h)
-            self._sunrise = weewx.units.ValueHelper((sunrise_ts, "unix_epoch", "group_time"),
-                                                    context="ephem_day", formatter=self.formatter)
-            self._sunset  = weewx.units.ValueHelper((sunset_ts,  "unix_epoch", "group_time"),
-                                                    context="ephem_day", formatter=self.formatter)
-            self.hasExtras = False
-
+            self._sunrise = weewx.units.ValueHelper((sunrise_ts, "unix_epoch", "group_time"), 
+                                                    context="ephem_day",
+                                                    formatter=self.formatter,
+                                                    converter=self.converter)
+            self._sunset  = weewx.units.ValueHelper((sunset_ts,  "unix_epoch", "group_time"), 
+                                                    context="ephem_day",
+                                                    formatter=self.formatter,
+                                                    converter=self.converter)
+            self.hasExtras = False            
 
     # Shortcuts, used for backwards compatibility
     @property
     def sunrise(self):
         return self.sun.rise if self.hasExtras else self._sunrise
-
     @property
     def sunset(self):
         return self.sun.set if self.hasExtras else self._sunset
-
     @property
     def moon_fullness(self):
         return int(self.moon.moon_fullness+0.5) if self.hasExtras else self._moon_fullness
-
+    
     def __call__(self, **kwargs):
         """Call an almanac object as a functor. This allows overriding the values
         used when the Almanac instance was initialized.
@@ -309,21 +316,23 @@ class Almanac(object):
             raise AttributeError("Unknown attribute %s" % attr)
 
         # We do have extended capability. Check to see if the attribute is a calendar event:
-        elif attr in ['previous_equinox', 'next_equinox', 
+        elif attr in {'previous_equinox', 'next_equinox',
                       'previous_solstice', 'next_solstice',
-                      'previous_autumnal_equinox', 'next_autumnal_equinox', 
-                      'previous_vernal_equinox', 'next_vernal_equinox', 
-                      'previous_winter_solstice', 'next_winter_solstice', 
+                      'previous_autumnal_equinox', 'next_autumnal_equinox',
+                      'previous_vernal_equinox', 'next_vernal_equinox',
+                      'previous_winter_solstice', 'next_winter_solstice',
                       'previous_summer_solstice', 'next_summer_solstice',
                       'previous_new_moon', 'next_new_moon',
                       'previous_first_quarter_moon', 'next_first_quarter_moon',
                       'previous_full_moon', 'next_full_moon',
-                      'previous_last_quarter_moon', 'next_last_quarter_moon']:
+                      'previous_last_quarter_moon', 'next_last_quarter_moon'}:
             # This is how you call a function on an instance when all you have
             # is the function's name as a string
             djd = getattr(ephem, attr)(self.time_djd)
             return weewx.units.ValueHelper((djd, "dublin_jd", "group_time"), 
-                                           context="ephem_year", formatter=self.formatter)
+                                           context="ephem_year",
+                                           formatter=self.formatter,
+                                           converter=self.converter)
         # Check to see if the attribute is sidereal time
         elif attr == 'sidereal_time':
             # sidereal time is obtained from an ephem Observer method, first get
@@ -346,33 +355,58 @@ fn_map = {'rise'    : 'next_rising',
 class AlmanacBinder(object):
     """This class binds the observer properties held in Almanac, with the heavenly
     body to be observed."""
-    
-    def __init__(self, almanac, heavenly_body):
-        # Transfer all values over
-        self.time_ts      = almanac.time_ts
-        self.time_djd     = almanac.time_djd
-        self.lat          = almanac.lat
-        self.lon          = almanac.lon
-        self.altitude     = almanac.altitude
-        self.temperature  = almanac.temperature
-        self.pressure     = almanac.pressure
-        self.horizon      = almanac.horizon
-        self.moon_phases  = almanac.moon_phases
-        self.moon_phase   = almanac.moon_phase
-        self.formatter    = almanac.formatter
 
-        # Calculate and store the start-of-day in Dublin Julian Days.
-        # self.sod_djd = timestamp_to_djd(weeutil.weeutil.startOfDay(self.time_ts))
-        (y, m, d) = time.localtime(self.time_ts)[0:3]
+    def __init__(self, almanac, heavenly_body):
+        self.almanac = almanac
+
+        # Calculate and store the start-of-day in Dublin Julian Days. 
+        y, m, d = time.localtime(self.almanac.time_ts)[0:3]
         self.sod_djd = timestamp_to_djd(time.mktime((y, m, d, 0, 0, 0, 0, 0, -1)))
 
-        self.heavenly_body = heavenly_body
-        self.use_center = False
-        
+        self.heavenly_body= heavenly_body
+        self.use_center   = False
+
     def __call__(self, use_center=False):
         self.use_center = use_center
         return self
-    
+
+    @property
+    def visible(self):
+        """Calculate how long the body has been visible today"""
+        ephem_body = _get_ephem_body(self.heavenly_body)
+        observer = _get_observer(self.almanac, self.sod_djd)
+        try:
+            time_rising_djd = observer.next_rising(ephem_body, use_center=self.use_center)
+            time_setting_djd = observer.next_setting(ephem_body, use_center=self.use_center)
+        except ephem.AlwaysUpError:
+            visible = 86400
+        except ephem.NeverUpError:
+            visible = 0
+        else:
+            visible = (time_setting_djd - time_rising_djd) * weewx.units.SECS_PER_DAY
+
+        return weewx.units.ValueHelper((visible, "second", "group_deltatime"),
+                                       context="short_delta",
+                                       formatter=self.almanac.formatter,
+                                       converter=self.almanac.converter)
+
+    def visible_change(self, days_ago=1):
+        """Change in visibility of the heavenly body compared to 'days_ago'."""
+        # Visibility for today:
+        today_visible = self.visible
+        # The time to compare to
+        then_time = self.almanac.time_ts - days_ago * 86400
+        # Get a new almanac, set up for the time back then
+        then_almanac=self.almanac(almanac_time=then_time)
+        # Find the visibility back then
+        then_visible = getattr(then_almanac, self.heavenly_body).visible
+        # Take the difference
+        diff = today_visible.raw - then_visible.raw
+        return weewx.units.ValueHelper((diff, "second", "group_deltatime"),
+                                       context="brief_delta",
+                                       formatter=self.almanac.formatter,
+                                       converter=self.almanac.converter)
+
     def __getattr__(self, attr):
         """Get the requested observation, such as when the body will rise."""
 
@@ -384,13 +418,13 @@ class AlmanacBinder(object):
         # Many of these functions have the unfortunate side effect of changing the state of the body
         # being examined. So, create a temporary body and then throw it away
         ephem_body = _get_ephem_body(self.heavenly_body)
-        
+
         if attr in ['rise', 'set', 'transit']:
             # These verbs refer to the time the event occurs anytime in the day, which
             # is not necessarily the *next* sunrise.
             attr = fn_map[attr]
             # These functions require the time at the start of day
-            observer = _get_observer(self, self.sod_djd)
+            observer = _get_observer(self.almanac, self.sod_djd)
             # Call the function. Be prepared to catch an exception if the body is always up.
             try:
                 if attr in ['next_rising', 'next_setting']:
@@ -399,12 +433,16 @@ class AlmanacBinder(object):
                     time_djd = getattr(observer, attr)(ephem_body)
             except (ephem.AlwaysUpError, ephem.NeverUpError):
                 time_djd = None
-            return weewx.units.ValueHelper((time_djd, "dublin_jd", "group_time"), context="ephem_day", formatter=self.formatter)
-        
-        elif attr in ['next_rising', 'next_setting', 'next_transit', 'next_antitransit',
-                      'previous_rising', 'previous_setting', 'previous_transit', 'previous_antitransit']:
+            return weewx.units.ValueHelper((time_djd, "dublin_jd", "group_time"),
+                                           context="ephem_day",
+                                           formatter=self.almanac.formatter,
+                                           converter=self.almanac.converter)
+
+        elif attr in {'next_rising', 'next_setting', 'next_transit', 'next_antitransit',
+                      'previous_rising', 'previous_setting', 'previous_transit',
+                      'previous_antitransit'}:
             # These functions require the time of the observation
-            observer = _get_observer(self, self.time_djd)
+            observer = _get_observer(self.almanac, self.almanac.time_djd)
             # Call the function. Be prepared to catch an exception if the body is always up.
             try:
                 if attr in ['next_rising', 'next_setting', 'previous_rising', 'previous_setting']:
@@ -413,17 +451,20 @@ class AlmanacBinder(object):
                     time_djd = getattr(observer, attr)(ephem_body)
             except (ephem.AlwaysUpError, ephem.NeverUpError):
                 time_djd = None
-            return weewx.units.ValueHelper((time_djd, "dublin_jd", "group_time"), context="ephem_day", formatter=self.formatter)
+            return weewx.units.ValueHelper((time_djd, "dublin_jd", "group_time"),
+                                           context="ephem_day",
+                                           formatter=self.almanac.formatter,
+                                           converter=self.almanac.converter)
 
         else:
             # These functions need the current time in Dublin Julian Days
-            observer = _get_observer(self, self.time_djd)
+            observer = _get_observer(self.almanac, self.almanac.time_djd)
             ephem_body.compute(observer)
-            if attr in ['az', 'alt', 'a_ra', 'a_dec', 'g_ra', 'ra', 'g_dec', 'dec',
-                        'elong', 'radius', 'hlong', 'hlat', 'sublat', 'sublong']:
+            if attr in {'az', 'alt', 'a_ra', 'a_dec', 'g_ra', 'ra', 'g_dec', 'dec',
+                        'elong', 'radius', 'hlong', 'hlat', 'sublat', 'sublong'}:
                 # Return the results in degrees rather than radians
                 return math.degrees(getattr(ephem_body, attr))
-            elif attr == 'moon_fullness':
+            elif attr=='moon_fullness':
                 # The attribute "moon_fullness" is the percentage of the moon surface that is illuminated.
                 # Unfortunately, phephem calls it "moon_phase", so call ephem with that name.
                 # Return the result in percent.
@@ -432,7 +473,6 @@ class AlmanacBinder(object):
                 # Just return the result unchanged. This will raise an AttributeError exception
                 # if the attribute does not exist.
                 return getattr(ephem_body, attr)
-
 
 def _get_observer(almanac_obj, time_ts):
     # Build an ephem Observer object
@@ -467,23 +507,21 @@ def _get_ephem_body(heavenly_body):
 
     return ephem_body
 
-
 def timestamp_to_djd(time_ts):
     """Convert from a unix time stamp to the number of days since 12/31/1899 12:00 UTC
     (aka "Dublin Julian Days")"""
     # The number 25567.5 is the start of the Unix epoch (1/1/1970). Just add on the
     # number of days since then
     return 25567.5 + time_ts/86400.0
-
-
+    
 def djd_to_timestamp(djd):
     """Convert from number of days since 12/31/1899 12:00 UTC ("Dublin Julian Days") to unix time stamp"""
     return (djd-25567.5) * 86400.0
 
-
 if __name__ == '__main__':
-
+    
     import doctest
 
     if not doctest.testmod().failed:
         print("PASSED")
+

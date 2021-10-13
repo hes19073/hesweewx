@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 #
-#    Copyright (c) 2009-2018 Tom Keffer <tkeffer@gmail.com>
+#    Copyright (c) 2009-2021 Tom Keffer <tkeffer@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
@@ -250,6 +250,15 @@ class TimeSpan(tuple):
         return 0 if self.start == other.start else 1
 
 
+nominal_intervals = {
+    'hour': 3600,
+    'day': 86400,
+    'week': 7 * 86400,
+    'month': int(365.25 / 12 * 86400),
+    'year': int(365.25 * 86400),
+}
+
+
 def nominal_spans(label):
     """Convert a (possible) string into an integer time."""
     if label is None:
@@ -259,13 +268,7 @@ def nominal_spans(label):
         interval = int(label)
     except ValueError:
         # Is it in our list of nominal spans? If not, fail hard.
-        interval = {
-            'hour' : 3600,
-            'day': 86400,
-            'week': 7 * 86400,
-            'month': 365.25 / 12 * 86400,
-            'year': 365.25 * 86400,
-        }[label.lower()]
+        interval = nominal_intervals[label.lower()]
     return interval
 
 
@@ -708,6 +711,18 @@ def archiveRainYearSpan(time_ts, sory_mon, grace=1):
     _year = _day_date.year if _day_date.month >= sory_mon else _day_date.year - 1
     return TimeSpan(int(time.mktime((_year, sory_mon, 1, 0, 0, 0, 0, 0, -1))),
                     int(time.mktime((_year + 1, sory_mon, 1, 0, 0, 0, 0, 0, -1))))
+
+
+def timespan_by_name(label, time_ts, **kwargs):
+    """Calculate an an appropriate TimeSpan"""
+    return {
+        'hour' : archiveHoursAgoSpan,
+        'day' : archiveDaySpan,
+        'week' : archiveWeekSpan,
+        'month' : archiveMonthSpan,
+        'year' : archiveYearSpan,
+        'rainyear' : archiveRainYearSpan
+    }[label](time_ts, **kwargs)
 
 
 def genHourSpans(start_ts, stop_ts):
@@ -1194,6 +1209,46 @@ class GenWithPeek(object):
     __next__ = next
 
 
+class GenByBatch(object):
+    """Generator wrapper. Calls the wrapped generator in batches of a specified size."""
+
+    def __init__(self, generator, batch_size=0):
+        """Initialize an instance of GenWithConvert
+
+        generator: An iterator which will be wrapped.
+
+        batch_size: The number of items to fetch in a batch.
+        """
+        self.generator = generator
+        self.batch_size = batch_size
+        self.batch_buffer = []
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        # If there isn't anything in the buffer, fetch new items
+        if not self.batch_buffer:
+            # Fetch in batches of 'batch_size'.
+            count = 0
+            for item in self.generator:
+                self.batch_buffer.append(item)
+                count += 1
+                # If batch_size is zero, that means fetch everything in one big batch, so keep
+                # going. Otherwise, break when we have fetched 'batch_size" items.
+                if self.batch_size and count >= self.batch_size:
+                    break
+        # If there's still nothing in the buffer, we're done. Stop the iteration. Otherwise,
+        # return the first item in the buffer.
+        if self.batch_buffer:
+            return self.batch_buffer.pop(0)
+        else:
+            raise StopIteration
+
+    # For Python 2:
+    next = __next__
+
+
 def tobool(x):
     """Convert an object to boolean.
     
@@ -1291,6 +1346,10 @@ def to_complex(magnitude, direction):
     return value
 
 
+def to_text(x):
+    """Ensure the results are in unicode, while honoring 'None'."""
+    return six.ensure_text(x) if x is not None else None
+
 def dirN(c):
     """Given a complex number, return its phase as a compass heading"""
     if c is None:
@@ -1298,6 +1357,32 @@ def dirN(c):
     else:
         value = (450 - math.degrees(cmath.phase(c))) % 360.0
     return value
+
+
+def rounder(x, ndigits):
+    """Round a number, or sequence of numbers, to a specified number of decimal digits
+
+    Args:
+        x (None, float, complex, list): The number or sequence of numbers to be rounded. If the
+            argument is None, then None will be returned.
+        ndigits (int): The number of decimal digits to retain.
+
+    Returns:
+        None, float, complex, list: Returns the number, or sequence of numbers, with the requested
+            number of decimal digits. If 'None', no rounding is done, and the function returns
+            the original value.
+    """
+    if ndigits is None:
+        return x
+    elif x is None:
+        return None
+    elif isinstance(x, complex):
+        return complex(round(x.real, ndigits), round(x.imag, ndigits))
+    elif isinstance(x, float):
+        return round(x, ndigits) if ndigits else int(x)
+    elif hasattr(x, '__iter__'):
+        return [rounder(v, ndigits) for v in x]
+    return x
 
 
 def min_with_none(x_seq):
@@ -1416,12 +1501,24 @@ except ImportError:
         def prepend(self, m):
             self.maps.insert(0, m)
 
+        def copy(self):
+            return self.__class__(self.maps[0].copy(), *self.maps[1:])
+
+        __copy__ = copy
+
 
 class KeyDict(dict):
     """A dictionary that returns the key for an unsuccessful lookup."""
 
+    class IndexStr(str):
+        def __getitem__(self, key):
+            try:
+                return super(KeyDict.IndexStr, self).__getitem__(key)
+            except TypeError:
+                return KeyDict.IndexStr(key)
+
     def __missing__(self, key):
-        return key
+        return KeyDict.IndexStr(key)
 
 
 def to_sorted_string(rec):

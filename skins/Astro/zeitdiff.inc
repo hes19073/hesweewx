@@ -28,6 +28,20 @@
     #set $dayornight = "Nacht"
 #end if
 
+#if $day.sunshineS.sum.raw > 0.0
+#set $sunh = int($day.sunshineS.sum.raw / 3600)
+#set $sunm = int((($day.sunshineS.sum.raw / 3600) - $sunh) * 60 + 0.5)
+
+#if $sunh < 0
+#set $daysunlight_str = "%d Minuten" % ($sunm)
+#elif $sunh == 1
+#set $daysunlight_str = "%d Stunde und %d Minuten" % ($sunh, $sunm)
+#else
+#set $daysunlight_str = "%d Stunden und %d Minuten" % ($sunh, $sunm)
+#end if
+
+#end if
+
 ## moonAge and moonDays calculations for the day
 ## das Mondalter und die Mond Tage
 
@@ -113,18 +127,6 @@
 #if $almanac.previous_winter_solstice.raw > $almanac.previous_summer_solstice.raw
 
 #set $t_diff_Rise = relativedelta($t_b_r, $t_a_r)     ## later/end time comes first!
-#set $diffRisedh = $t_diff_Rise.hours
-#set $diffRisedm = $t_diff_Rise.minutes
-#set $diffRisesec = $t_diff_Rise.seconds
-
-#set $t_diff_Set = relativedelta($t_b_s, $t_a_s)      ## later/end time comes first!
-#set $diff_Setdh = $t_diff_Set.hours
-#set $diff_Setdm = $t_diff_Set.minutes
-#set $diff_Setsec = $t_diff_Set.seconds
-
-#else
-
-#set $t_diff_Rise = relativedelta($t_b_r, $t_a_r)     ## later/end time comes first!
 #set $diffRisedh = 23 - $t_diff_Rise.hours
 #set $diffRisedm = 59 - $t_diff_Rise.minutes
 #set $diffRisesec = 59 - $t_diff_Rise.seconds
@@ -134,32 +136,93 @@
 #set $diff_Setdm = $t_diff_Set.minutes
 #set $diff_Setsec = $t_diff_Set.seconds
 
+#else
+
+#set $t_diff_Rise = relativedelta($t_b_r, $t_a_r)     ## later/end time comes first!
+#set $diffRisedh = $t_diff_Rise.hours
+#set $diffRisedm = $t_diff_Rise.minutes
+#set $diffRisesec = $t_diff_Rise.seconds
+
+#set $t_diff_Set = relativedelta($t_b_s, $t_a_s)      ## later/end time comes first!
+#set $diff_Setdh = 23 - $t_diff_Set.hours
+#set $diff_Setdm = 59 - $t_diff_Set.minutes
+#set $diff_Setsec = 59 - $t_diff_Set.seconds
 #end if
 
-<p>
+###if $len($current.dateTime.format("%Z")) > 2
+#if $current.dateTime.format("%Z") == 'CEST'
+#set $ws = "Sommerzeit"
+#else
+#set $ws = "Normalzeit"
+#end if
+<table>
+ <tr>
+  <td colspan='8'>
 Heute ist der<b>&nbsp;$current.dateTime.format("%j")&nbsp;</b>Tag des Jahres
-<b>&nbsp;$current.dateTime.format("%Y")</b>
+<b>&nbsp;$current.dateTime.format("%Y")</b>, gegenwärtig&nbsp;(($ws)),&nbsp;nach Sonnenstand ist&nbsp;
+#if $current.dateTime.raw < $almanac.previous_summer_solstice.raw
+<b>Frühling</b>
+#elif $current.dateTime.raw < $almanac.next_autumnal_equinox.raw
+<b>Sommer</b>
+#elif $current.dateTime.raw < $almanac.next_winter_solstice.raw
+<b>Herbst</b>
+#elif $current.dateTime.raw < $almanac.next_vernal_equinox.raw
+<b>Winter</b>
+#end if
+und 
+  </td>
 ##if len($day00) > 3
 ##     und es ist: <b>$day00</b>&nbsp;.
 ##else
 ##    &nbsp;.
 ##end if
-<br />
-
-Aktuell ist es <b>$dayornight</b>
+ </tr>
+ <tr>
+#if $almanac(horizon=-18).sun(use_center=1).rise.raw is not None
+  <td class="ametric_name">$almanac(horizon=-18).sun(use_center=1).rise&nbsp;Uhr</td>
+#else
+  <td class="ametric_name">Kein</td>
+#end if
+  <td class="ametric_value">Beginn der astronomische D&auml;mmerung,</td>
+  <td class="ametric_name">$almanac(horizon=-12).sun(use_center=1).rise&nbsp;Uhr</td>
+  <td class="ametric_value">Beginn der nautische D&auml;mmerung,</td>
+  <td class="ametric_name">$almanac(horizon=-6).sun(use_center=1).rise&nbsp;Uhr</td>
+  <td class="ametric_value">Start der b&uuml;rgerlichen D&auml;mmerung<br />und Beginn der blauen Stunde,</td>
+  <td class="ametric_name">$almanac.sun.rise&nbsp;Uhr</td>
+  <td class="ametric_value">Ende der blauen Stunde<br />und Sonnenaufgang,</td>
+ </tr>
+ </tr>
+ <tr>
+  <td class="ametric_name">$almanac.sun.set&nbsp;Uhr</td>
+  <td class="ametric_value">Sonnenuntergang und<br />Beginn der blauen Stunde,</td>
+  <td class="ametric_name">$almanac(horizon=-6).sun(use_center=1).set&nbsp;Uhr</td>
+  <td class="ametric_value">Ende der blauen Stunde und<br />Ende der b&uuml;rgerlichen D&auml;mmerung,</td>
+  <td class="ametric_name">$almanac(horizon=-12).sun(use_center=1).set&nbsp;Uhr</td>
+  <td class="ametric_value">Ende der nautischen D&auml;mmerung,</td>
+#if $almanac(horizon=-18).sun(use_center=1).set.raw is not None
+  <td class="ametric_name">$almanac(horizon=-18).sun(use_center=1).set&nbsp;</td>
+#else
+  <td class="ametric_name">Kein&nbsp;</td>
+#end if
+  <td class="ametric_value">Ende der astronomischen D&auml;mmerung.</td>
+ </tr>
+ <tr>
 #if $dayornight == "Tag"
+  <td colspan='8' bgcolor=#FFFF00>Aktuell ist es <b>$dayornight</b>
     und bisher gab es
     #if $day.sunshineS.sum.hour.raw > 0.0
-        <b>$day.sunshineS.sum.hour&nbsp;</b>
+        <b>$day.sunshineS.sum.hour&nbsp;</b> oder (<b>$daysunlight_str</b>)
     #else
         keinen
     #end if
     Sonnenschein.
 #else
-    am Standort.
+  <td colspan='8' bgcolor=#00FFFF>Aktuell ist es <b>$dayornight</b>
+    in Klein Rogahn am Standort den Wetterstation.
 #end if
-</p>
-
+  </td>
+ </tr>
+</table>
 <hr />
 <p>
 Die theoretische oder astronomische Sonnenscheindauer beträgt heute
@@ -211,9 +274,9 @@ Die theoretische oder astronomische Sonnenscheindauer beträgt heute
    
 <p>
 #if $diffWinter  > 0
-    Am $almanac.previous_winter_solstice (Wintersonnenwende)
+    Am $almanac.previous_winter_solstice.format("%d.%m.%Y") (Wintersonnenwende)
 #else
-    Am $almanac.previous_summer_solstice (Sommersonnenwende)
+    Am $almanac.previous_summer_solstice.format("%d.%m.%Y") (Sommersonnenwende)
 #end if  
 
 ging die Sonne um $almanac($almanac_time=$daywiso).sun.rise Uhr auf und 
@@ -221,45 +284,46 @@ um $almanac($almanac_time=$daywiso).sun.set Uhr unter,<br />
 heute geht die Sonne um $almanac.sun.rise Uhr auf und 
 um $almanac.sun.set Uhr unter.<br />
 
-Die Sonne geht heute 
+## frueher oder spaeter sonnenaufgang
+    Die Sonne geht heute <b>
 
-#if $diffWinter > 0
+    #if $diffWinter > 0
 
-    #if $diffRisedh < 1
+        #if $diffRisedh < 1
         $("%d Minuten und %d Sekunden " % ($diffRisedm, $diffRisesec))
-    #else
+        #else
         $("%d Stunden, %d Minuten und %d Sekunden " % ($diffRisedh, $diffRisedm, $diffRisesec))
-    #end if
+        #end if
 
-    <b>früher</b> auf und
+        früher</b> auf und <b>
 
-    #if $diff_Setdh < 1
+        #if $diff_Setdh < 1
         $("%d Minuten und %d Sekunden " % ($diff_Setdm, $diff_Setsec))
-    #else
+        #else
         $("%d Stunden, %d Minuten und %d Sekunden " % ($diff_Setdh, $diff_Setdm, $diff_Setsec))
-    #end if
+        #end if
 
-    <b>später</b> unter.<br />
+        später</b> unter.<br />
 
-#else
+    #else
 
-    #if $diffRisedh < 1
+        #if $diffRisedh < 1
         $("%d Minuten und %d Sekunden " % ($diffRisedm, $diffRisesec))
-    #else
+        #else
         $("%d Stunden, %d Minuten und %d Sekunden " % ($diffRisedh, $diffRisedm, $diffRisesec))
-    #end if
+        #end if
 
-    <b>später</b> auf und
+        später</b> auf und <b>
 
-    #if $diff_Setdh < 1
+        #if $diff_Setdh < 1
         $("%d Minuten und %d Sekunden " % ($diff_Setdm, $diff_Setsec))
-    #else
+        #else
         $("%d Stunden, %d Minuten und %d Sekunden " % ($diff_Setdh, $diff_Setdm, $diff_Setsec))
+        #end if
+
+        früher</b> unter.<br />
+
     #end if
-
-    <b>früher</b> unter.<br />
-
-#end if
 
 <br><small>Die berechneten Zeiten beziehen sich auf den geographischen Standort der Wetterstaton $station.location
 bei&nbsp;$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]&nbsp;,

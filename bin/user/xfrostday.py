@@ -30,7 +30,6 @@ from weewx.tags import TimespanBinder
 from weeutil.weeutil import TimeSpan, genDaySpans
 from weewx.units import ValueHelper, getStandardUnitType
 from datetime import date, timedelta
-#from weeutil.log import logdbg, loginf, logerr, logcrt
 
 log = logging.getLogger(__name__)
 
@@ -299,10 +298,10 @@ class MyFrostDays(SearchList):
 
         _delta_time = time.time() - _lastfrost_ts if _lastfrost_ts else None
         _delta_time_vt = (_delta_time, 'second', 'group_deltatime')
-        _delta_time_vh = ValueHelper(_delta_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _delta_time_vh = ValueHelper(_delta_time_vt, context="long_delta", formatter=self.generator.formatter, converter=self.generator.converter)
         _delta_eistime = time.time() - _lasteis_ts if _lasteis_ts else None
         _delta_eistime_vt = (_delta_eistime, 'second', 'group_deltatime')
-        _delta_eistime_vh = ValueHelper(_delta_eistime_vt, formatter=self.generator.formatter, converter=self.generator.converter)
+        _delta_eistime_vh = ValueHelper(_delta_eistime_vt, context="long_delta", formatter=self.generator.formatter, converter=self.generator.converter)
 
         _year_minE_time_vt = (_year_minE_time_ts, dateTime_type, dateTime_group)
         _year_minE_time_vh = ValueHelper(_year_minE_time_vt, formatter=self.generator.formatter, converter=self.generator.converter)

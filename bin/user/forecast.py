@@ -4113,7 +4113,7 @@ DEFAULT_UNITS = {
         'group_altitude': 'meter',
         'group_temperature': 'degree_C',
         'group_speed': 'km_per_hour',
-        'group_rain': 'cm',
+        'group_rain': 'mm',
         'group_percent': 'percent',
         'group_uv': 'uv_index',
         'group_pressure': 'hPa',

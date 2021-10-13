@@ -366,6 +366,11 @@ function topFunction() {
         <td></td>
         <td><img src="dayTonne.png"        alt="Tag Wassertonne Index"/></td>
        </tr>
+       <tr>
+        <td>Teichfilter:&nbsp;$current.leafTemp1</td>
+        <td></td>
+        <td><img src="dayfilter.png"        alt="Tag WasserFilter"/></td>
+       </tr>
        <tr><td>&nbsp;</td><td>&nbsp;</td><td>Licht- / Solarsensor</td></tr>
        <tr>
         <td>Helligkeit:&nbsp;$current.lighting</td>
@@ -447,45 +452,29 @@ function topFunction() {
         <td>&nbsp;</td>
         <td><img src="dayPM10C.png" alt="Air-Quality-Index" /></td>
        </tr>
-       <tr>
-        <td>
-         Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor
-        </td>
-        <td>
-          &nbsp;
-        </td>
+       <!-- <tr>
+        <td>Air-Sensor&nbsp; $latest($data_binding='air_binding').air_sensor</td>
+        <td> &nbsp; </td>
         <td><img src="dayAir.png" alt="Air-Quality" /></td>
        </tr> 
        <tr>
-        <td>
-         HCHO-Sensor&nbsp; $latest($data_binding='air_binding').hcho_sensor
-        </td>
-        <td>
-         &nbsp;
-        </td>
+        <td>HCHO-Sensor&nbsp; $latest($data_binding='air_binding').hcho_sensor</td>
+        <td> &nbsp; </td>
         <td><img src="dayHCHO.png" alt="HCHO-Quality" /></td>
        </tr>
        <tr>
-        <td>
-         Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor
-        </td>
-        <td>
-         &nbsp;
-        </td>
+        <td>Gas-Sensor(MQ-9)&nbsp; $latest($data_binding='air_binding').gas_sensor</td>
+        <td> &nbsp; </td>
         <td><img src="dayGas.png" alt="Gas-Sensor-Quality" /></td>
        </tr>
        <tr>
-        <td>
-         Gas-Sensor(MQ-2)&nbsp; $latest($data_binding='air_binding').gasC_sensor
-        </td>
-        <td>
-         &nbsp;
-        </td>
+        <td>Gas-Sensor(MQ-2)&nbsp; $latest($data_binding='air_binding').gasC_sensor</td>
+        <td> &nbsp; </td>
         <td><img src="dayGasC.png" alt="Gas-Sensor-Quality" /></td>
-       </tr>
+       </tr> -->
        <tr>
         <td>
-         PM 2.5 Sensor&nbsp; $latest($data_binding='air2_binding').pm_25
+         PM 2.5 Sensor&nbsp;B&nbsp; $latest($data_binding='air2_binding').pm_25
         </td>
         <td>
          &nbsp;
@@ -494,30 +483,12 @@ function topFunction() {
        </tr>
        <tr>
         <td>
-         PM 10 Sensor&nbsp; $latest($data_binding='air2_binding').pm_10
+         PM 10 Sensor&nbsp;B&nbsp; $latest($data_binding='air2_binding').pm_10
         </td>
         <td>
          &nbsp;
         </td>
         <td><img src="dayPM10.png" alt="PM 10 Quality" /></td>
-       </tr>
-       <tr>
-        <td>
-         PM 2.5 Carport&nbsp; $latest($data_binding='airCar_binding').pm_25
-        </td>
-        <td>
-         &nbsp;
-        </td>
-        <td><img src="dayPM25C.png" alt="PM 2.5 Quality" /></td>
-       </tr>
-       <tr>
-        <td>
-         PM 10 Carport&nbsp; $latest($data_binding='airCar_binding').pm_10
-        </td>
-        <td>
-         &nbsp;
-        </td>
-        <td><img src="dayPM10C.png" alt="PM 10 Quality" /></td>
        </tr>
        <tr>
         <td>
@@ -537,17 +508,14 @@ function topFunction() {
          &nbsp;
         </td>
         <td><img src="dayPM.png" alt="PM 10 PM 2,5" /></td>
+       </tr>
        <tr>
-        <td>
-         Gase Aeris
-        </td>
-        <td>
-         &nbsp;
-        </td>
-        <td><img src="dayGAS.png" alt="Gase Quality" /></td>
+        <td>Gase Aeris</td> <td>&nbsp;</td> <td><img src="dayGASOCO.png" alt="Gase o3 co Quality" /></td>
+        <td>Gase Aeris</td> <td>&nbsp;</td> <td><img src="dayGANOSO.png" alt="Gase no so Quality" /></td>
        </tr>
+       <tr>
+        <td>&nbsp;</td><td>&nbsp;</td><td>Innen</td>
        </tr>
-       <tr><td>&nbsp;</td><td>&nbsp;</td><td>Innen</td></tr>
        <tr>
         <td>
         <canvas id="temin" width="250" height="250"></canvas>

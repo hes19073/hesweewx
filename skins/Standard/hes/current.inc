@@ -13,6 +13,16 @@
      &nbsp;&nbsp; $decorator_text('tempO', $current.outTemp.raw)&nbsp;&nbsp;&nbsp;($current.outTemp.degree_F)</td>
    </tr>
    <tr>
+    <td class="stats_label">Temperatur<br />Tag</td>
+    <td class="stats_data">$day($data_binding='wd_binding').outTempDay.max (max)<br />
+      $day($data_binding='wd_binding').outTempDay.min (min)</td>
+   </tr>
+   <tr>
+    <td class="stats_label">Temperatur<br />Nacht</td>
+    <td class="stats_data">$day($data_binding='wd_binding').outTempNight.max (max)<br />
+     $day($data_binding='wd_binding').outTempNight.min (min)</td>
+   </tr>
+   <tr>
     <td class="stats_label">maximale Temperatur<br />&nbsp;</td>
     <td class="stats_data">$day.outTemp.historical_max
         im Jahre $day.outTemp.historical_maxtime.format("%Y") </td>
@@ -107,10 +117,22 @@
      &nbsp;&nbsp; $decorator_text('barotrend', $trend.barometer.raw)
     </td>
    </tr>
- <!--  <tr>
-    <td class="stats_label">Luftdruck<br />Änderungsrate</td>
-    <td class="stats_data">$current.barometerRate</td>
-   </tr> -->
+ <tr>
+    <td class="stats_label">Luftdruck (QNH)<br />&nbsp;</td>
+    <td class="stats_data">$current.altimeter</td>
+   </tr>
+ <tr>
+    <td class="stats_label">Luftdruck (QNH)<br />Änderung</td>
+    <td class="stats_data">$trend.altimeter</td>
+   </tr>
+  <tr>
+    <td class="stats_label">abs. Luftdruck (QFE)<br />&nbsp;</td>
+    <td class="stats_data">$current.pressure</td>
+   </tr> 
+  <tr>
+    <td class="stats_label">abs. Luftdruck (QFE)<br />Änderung</td>
+    <td class="stats_data">$trend.pressure</td>
+   </tr>
 #if $latest($data_binding='airCar_binding').presAir is not None
    <tr>
     <td class="stats_label">Luftdruck<br />Carport (BMP 180)</td>
@@ -189,7 +211,7 @@
   </tr>
   <tr>
     <td class="stats_label">Letzter Niederschlag<br />&nbsp;</td>
-    <td class="stats_data">$lastrain_day <br /> $lastrain_delta_time</td>
+    <td class="stats_data">$time_at('rain>0') <br />vor:&nbsp;$time_since('rain>0')</td>
   </tr>
   <tr>
     <td class="stats_label">Schneefall<br />aktuell&nbsp;</td>
@@ -201,7 +223,7 @@
   </tr>
   <tr>
     <td class="stats_label">Letzter Schneefall<br />&nbsp;</td>
-    <td class="stats_data">$lastsnow_day <br /> $lastsnow_delta_time</td>
+    <td class="stats_data">$time_at('snow>0') <br />vor:&nbsp;$time_since('snow>0')</td>
   </tr>
   <tr>
     <td class="stats_label">Schneedecke<br />aktuell bei ca.</td>
@@ -209,7 +231,7 @@
   </tr>
   <tr>
     <td class="stats_label">Letzte Schneedecke<br />&nbsp;</td>
-    <td class="stats_data">$lastsnowT_day <br /> $lastsnowT_delta_time</td>
+    <td class="stats_data">$time_at('snowTotal>0') <br />vor:&nbsp;$time_since('snowTotal>0')</td>
   </tr>
    <tr>
     <td class="stats_label">ET am Tag<br />Evapotranspiration</td>
@@ -285,6 +307,18 @@
   <tr>
    <td class="stats_label">Schwimmteich<br />1,80 m Tiefe</td>
    <td class="stats_data">$current.extraTemp3</td>
+  </tr>
+#end if
+#if $day.leafTemp1.has_data
+  <tr>
+   <td class="stats_label">Teichfilter<br />Zulauf</td>
+   <td class="stats_data">$current.leafTemp1</td>
+  </tr>
+#end if
+#if $day.leafTemp2.has_data
+  <tr>
+   <td class="stats_label">Teichfilter<br />Ablauf</td>
+   <td class="stats_data">$current.leafTemp2</td>
   </tr>
 #end if
   <tr><td>Sonne<br />&nbsp;</td><td>Seit dem 03.02.2017</td></tr>

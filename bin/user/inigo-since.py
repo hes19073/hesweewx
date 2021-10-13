@@ -1,21 +1,33 @@
-# indigo-since.py
+# since.py
 #
 # A Search List Extension to provide aggregates since a given hour.
 #
 # python imports
-
-from __future__ import absolute_import
-import logging
 import datetime
+import syslog
 import time
 
-# WeeWX imports
-import weeutil.logger
+# weeWX imports
 import weeutil.weeutil
 import weewx.cheetahgenerator
 import weewx.units
 
-log = logging.getLogger(__name__)
+def logmsg(level, msg):
+    syslog.syslog(level, 'since: %s' % msg)
+
+def logdbg(msg):
+    logmsg(syslog.LOG_DEBUG, msg)
+
+def logdbg2(msg):
+   if weewx.debug >= 2:
+        logmsg(syslog.LOG_DEBUG, msg)
+
+def loginf(msg):
+    logmsg(syslog.LOG_INFO, msg)
+
+def logerr(msg):
+    logmsg(syslog.LOG_ERR, msg)
+
 
 class Since(weewx.cheetahgenerator.SearchList):
     """SLE to provide aggregates since a given time of day."""
@@ -107,8 +119,7 @@ class Since(weewx.cheetahgenerator.SearchList):
                 tspan = weeutil.weeutil.TimeSpan(start_ts, timespan.stop)
 
                 if today:
-                    #log.debug("Since Start {}, Since stop {}".format(start_ts, timespan.stop))
-                    log.info("Start inigo-since")
+                    logdbg2("Since Start {}, Since stop {}".format(start_ts, timespan.stop))
                 else:
                     # now subtract 1 day from our new datetime object
                     yest_dt = hour_dt + datetime.timedelta(days=-1)
@@ -118,7 +129,7 @@ class Since(weewx.cheetahgenerator.SearchList):
                     # and put together our timespan as a TimeSpan object
                     tspan = weeutil.weeutil.TimeSpan(yest_ts, start_ts)
 
-                    #log.debug("SinceYesterday Start {}, Since stop {}".format(yest_ts, start_ts))
+                    logdbg2("SinceYesterday Start {}, Since stop {}".format(yest_ts, start_ts))
 
                 # now return a TimespanBinder object, using the timespan we
                 # just calculated
@@ -135,6 +146,6 @@ class Since(weewx.cheetahgenerator.SearchList):
                                 self.generator.converter)
 
         t2 = time.time()
-        log.debug("Since SLE executed in %0.3f seconds", t2 - t1)
+        logdbg2("Since SLE executed in %0.3f seconds" % (t2-t1))
 
         return [tspan_binder]

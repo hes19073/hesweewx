@@ -67,6 +67,9 @@ weewxwd_schema = [
     ('stormRain',    'REAL'),
     ('stormStart',   'INTEGER'),
     ('forecastRule', 'REAL'),
+    ('rxCheckPercent',       'REAL'),
+    ('txBatteryStatus',      'REAL'),
+    ('consBatteryVoltage',   'REAL'),
     ]
 
 

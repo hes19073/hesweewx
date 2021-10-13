@@ -3,6 +3,8 @@
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
 ## index.html.tmpl 743 2013-12-22 23:24:18Z mwall $
 ## Standard for hes61.de
+## Version: 4.6.0b4
+##
 <!DOCTYPE html>
 <html lang="de">
  <head>
@@ -37,22 +39,6 @@
      <script>
        window.onload = function() { applypopups(); }
      </script>
-
-<!-- Matomo -->
-<script type="text/javascript">
-  var _paq = window._paq = window._paq || [];
-  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="//wx2013.pelikan.frrkr/matomo/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '1']);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<!-- End Matomo Code -->
 
  </head>
 
@@ -123,7 +109,7 @@
     <tr>
      <td><span class='hes1_m'>&nbsp;</span></td>
      <td><span class='hes1_m'>max</span></td>
-     <td><span class='temphi'>&nbsp:</span></td>
+     <td><span class='temphi'>&nbsp;</span></td>
      <td><span class="hes1_m">min</span></td>
      <td><span class='templo'>&nbsp;</span></td>
     </tr>
@@ -167,14 +153,20 @@
        <td class="hes1_valhi">$trend.appTemp</td>
     #end if
     </tr>
-    <tr><td colspan='5'>&nbsp;</td></tr>
-     <tr>
-      <td><span class='hes1_m'>Gestern</span></td>
-      <td><span class='hes1_m'>max</span></td>
-      <td><span class='temphi'>$yesterday.appTemp.max</span></td>
-      <td><span class="hes1_m">min</span></td>
-      <td><span class='templo'>$yesterday.appTemp.min</span></td>
-     </tr>
+    <tr>
+     <td><span class='hes1_m'>Heute</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$day.appTemp.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$day.appTemp.min</span></td>
+    </tr>
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$yesterday.appTemp.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$yesterday.appTemp.min</span></td>
+    </tr>
    </table>
    <hr />
    <img src="dayappklein.png" alt="app Temp" />
@@ -208,14 +200,20 @@
         <td class="hes1_valhi">$trend.windchill</td>
   #end if
     </tr>
-    <tr><td colspan='5'>&nbsp;</td></tr>
-     <tr>
-      <td><span class='hes1_m'>Gestern</span></td>
-      <td><span class='hes1_m'>max</span></td>
-      <td><span class='temphi'>$yesterday.windchill.max</span></td>
-      <td><span class="hes1_m">min</span></td>
-      <td><span class='templo'>$yesterday.windchill.min</span></td>
-     </tr>
+    <tr>
+     <td><span class='hes1_m'>Heute</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$day.windchill.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$day.windchill.min</span></td>
+    </tr>
+    <tr>
+     <td><span class='hes1_m'>Gestern</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$yesterday.windchill.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$yesterday.windchill.min</span></td>
+    </tr>
   </table>
     <hr />
    <img src="daychillklein.png" alt="Windchill" />
@@ -251,7 +249,13 @@
        <td class="hes1_valhi">$trend.heatindex</td>
   #end if
     </tr>
-    <tr><td colspan='5'>&nbsp;</td></tr>
+    <tr>
+     <td><span class='hes1_m'>Heute</span></td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='temphi'>$day.heatindex.max</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='templo'>$day.heatindex.min</span></td>
+    </tr>
      <tr>
       <td><span class='hes1_m'>Gestern</span></td>
       <td><span class='hes1_m'>max</span></td>
@@ -686,17 +690,16 @@
  #end if
     </tr>
     <tr>
-     <td><span class='hes1_m'>theor. Strahlung</span></td>
-     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_m'>theor. Strahlung max</span></td>
      <td><span class='temphi'>$current.maxSolarRad.formatted</span></td>
      <td><span class="hes1_m">erreicht</span></td>
      #if $current.radiation.raw > 0.0 and $current.maxSolarRad.raw > 0.0
          #set $anteil = $current.radiation.raw * 100 / $current.maxSolarRad.raw
-         #set $anteil = ("{:.2f}".format($anteil));
+         #set $anteil = ("{:.1f}".format($anteil));
      #else
          #set $anteil = 0.0
      #end if
-     <td><span class='templo'>$anteil %</span></td>
+     <td><span solspan="2" class='templo'>$anteil %</span></td>
     </tr>
 #if $day.sunshineS.sum.raw is not None   
     #set $sun_hours = int($day.sunshineS.sum.raw / 3600)
@@ -741,16 +744,16 @@
  #end if
     </tr>
     <tr>
-     <td><span class='hes1_m'>Vortag kWh/m²</span></td>
-     <td><span class='temphi' colspan="2">$yesterday.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted </span></td>
-     <td><span class="hes1_m">Woche kWh/m²</span></td>
-     <td><span class='temphi' colspan="2">$week.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
+     <td><span class='hes1_m'>Vortag</span></td>
+     <td><span class='temphi' colspan="2">$yesterday.radiation.energy_integral.formatted </span></td>
+     <td><span class="hes1_m">Woche</span></td>
+     <td><span class='temphi' colspan="2">$week.radiation.energy_integral.formatted</span></td>
     </tr>
     <tr>
-     <td class='hes1_m'>Monat kWh/m²</td>
-     <td><span class='temphi' colspan="2">$month.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
-     <td class='hes1_m'>Jahr kWh/m²</td>
-     <td><span class='temphi' colspan="2">$year.radiation.energy_integral.kilowatt_hour_per_meter_squared.formatted</span></td>
+     <td class='hes1_m'>Monat</td>
+     <td><span class='temphi' colspan="2">$month.radiation.energy_integral.formatted</span></td>
+     <td class='hes1_m'>Jahr</td>
+     <td><span class='temphi' colspan="2">$year.radiation.energy_integral.formatted</span></td>
     </tr>
    </table>
    <hr />
@@ -766,130 +769,104 @@
   <tr><td colspan='2'>&nbsp;</td></tr>
   <tr><td colspan='2'>WeeWx</td></tr>
   <tr>
-   <td class='re_data'>Wolkenuntergrenze:</td>
-   <td class="re_data"> $current.cloudbase (ASL)</td>
+   <td>Wolkenuntergrenze:</td>
+   <td>$current.cloudbase (ASL)</td>
   </tr>
   <tr>
-    <td class='re_data'>Wasserbilanz&nbsp;$current.dateTime.format("%Y")</td>
+    <td>Wasserbilanz&nbsp;$current.dateTime.format("%Y")</td>
     #set $wasser_year = $year.rain.sum.raw - $year.ET.sum.raw
     #set $WasserYear = ("{:.2f}".format($wasser_year));
-    <td class="stats_data">$WasserYear&nbsp;mm</td>
+    <td>$WasserYear&nbsp;cm</td>
   </tr>
   <tr>
-   <td class="re_data">&nbsp;</td>
-   <td class="re_data">&nbsp;</td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
   </tr> 
   <tr>
-   <td class="re_data">THW-Index:</td>
-   <td class="re_data"> $current.thwIndex</td>
+   <td>THW-Index:</td>
+   <td> $current.thwIndex</td>
   </tr>
   <tr>
-   <td class='re_data'>THSW-Index</td>
-   <td class='re_data'>$current.thswIndex</td>
+   <td>THSW-Index</td>
+   <td>$current.thswIndex</td>
   </tr>
   <tr>
-   <td class='re_data'>THSW-Davis</td>
-   <td class='re_data'>$current.THSW</td>
+   <td>THSW-Davis</td>
+   <td>$current.THSW</td>
   </tr>
   <tr>
-   <td class="re_data">&nbsp;</td>
-   <td class="re_data">&nbsp;</td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
   </tr>
   <tr>
-   <td class='re_data'>Wachstumstage Monat</td>
-   <td class='re_data'>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   <td>Wachstumstage Monat</td>
+   <td>$month.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   </tr>
   <tr>
-   <td class='re_data'>Wachstumstage Jahr</td>
-   <td class='re_data'>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
+   <td>Wachstumstage Jahr</td>
+   <td>$year.outTemp.max_ge((10.0, "degree_C", "group_temperature")).format("%.0f")</td>
   </tr>
   <tr>
-   <td class='re_data'>&nbsp;</td>
-   <td class='re_data'>&nbsp;</td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
   </tr>
   <tr>
-   <td class='re_data'>VantagePro2 Empfang</td>
-   <td class='re_data'>$current.rxCheckPercent</td>
+   <td>VantagePro2 Empfang</td>
+   <td>$current.rxCheckPercent</td>
   </tr>
   <tr>
-   <td class='re_data'>VantagePro2 Batt-Status</td>
+   <td>VantagePro2 Batt-Status</td>
    #if $current.txBatteryStatus.raw == 0
-   <td class='re_data'><font color='blue'>i.O.</font></td>
+   <td><font color='blue'>i.O.</font></td>
    #else
-   <td class='re_data'><font color='red'>Null</font></td>
+   <td><font color='red'>Null</font></td>
    #end if
   </tr>
   <tr>
-   <td class='re_data'>VantagePro2 Console</td>
-   <td class='re_data'>$current.consBatteryVoltage</td>
+   <td>VantagePro2 Console</td>
+   <td>$current.consBatteryVoltage</td>
   </tr>
   <!-- <tr>
-   <td class='re_data'>&nbsp;</td>
-   <td class='re_data'>&nbsp;</td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
   </tr> -->
 #if len($day00) > 3
   <tr>
-   <td class='re_data'>Heute</td>
-   <td class='re_data'><b> $day00 </b></td>
+   <td>Heute</td>
+   <td><b> $day00 </b></td>
   </tr>
 #else
   <tr>
-   <td class='re_data'>&nbsp;</td>
-   <td class='re_data'>&nbsp;</td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
   </tr>
 #end if
  </table>
  </div>
 </div> <!-- end werte  -->
 
-#if $Extras.has_key('earthquake_enabled') and $Extras.earthquake_enabled == '1'
 <div class='hes'>
  <div class='hesbox'>
   <table class='hes1'>
-   <tr><td class="hes1_kopfa" colspan="2">Erdbeben</td></tr>
-   <tr><td colspan='2'>&nbsp;</td></tr> 
-   <tr><td colspan='2'>(Radius ca. 2 000,00 km) </td></tr>
-   <tr><td colspan='2'>Info by USGS.gov</td></tr>
-   <tr><td colspan='2'>&nbsp;</td></tr>
-   <tr>
-    <td>Zeitpunkt</td><td>$earthquake_time</td>
-   </tr>
-   <tr>
-    <td>Epizentrum</td><td> <a href="$earthquake_url" target="_blank">$earthquake_place</a></td>
-   </tr>
-   <tr>
-    <td>Magnitude</td><td><b>$earthquake_magnitude</b></td>
-   </tr>
-   <tr>
-    <td>Tiefe ca.</td><td><b>$earthquake_tief km</b></td>
-   </tr>
-   <tr>
-    <td>Breitengrad</td><td>$earthquake_lat &deg; N</td>
-   </tr>
-   <tr>
-#if float($earthquake_lon) > 0
-    <td>Längengrad</td><td>$earthquake_lon &deg; O</td>
-#else
-    <td>Längengrad</td><td>$earthquake_lon &deg; W</td>
-#end if
-   </tr>
-   <tr>
-    <td>Quelle:</td><td> <a href="http://usgs.gov" target="_blank">USGS.gov</a></td>
-   </tr>
-   <tr><td colspan='2'>berechnet</td></tr>
-   <tr>
-    <td>Entfernung</td><td>$earthquake_dist km</td>
-   </tr>
-   <tr>
-    <td>Peilung__</td><td>$earthquake_lage</td>
-   </tr>
-#set $erde_richt = ("{:.2f}".format($earthquake_lag));
-   <tr><td>bei</td><td>$erde_richt &deg;</td></tr>
-   <tr><td colspan='2'>&nbsp;</td></tr>
+   <tr><td class="hes1_kopfa" colspan="2">air-Q</td></tr>
+   <tr><td colspan='2'><a href="https://www.air-q.com/">Luftanalyse und Feinstaub</a></td></tr>
+   <tr><td>Gesundheitsindex </td><td>$latest($data_binding='airq_binding').og_HealthIdx.format("%.2f")</td></tr>
+   <tr><td>Leistungsindex   </td><td>$latest($data_binding='airq_binding').og_PerfIdx.format("%.2f")</td></tr>
+   <tr><td colspan='2'><b>Gase</b></td></tr>
+   <tr><td>Sauerstoff       </td><td>$latest($data_binding='airq_binding').og_o2.format("%.2f")</td></tr>
+   <tr><td>Kohlendioxid     </td><td>$latest($data_binding='airq_binding').og_co2</td></tr>
+   <tr><td>Stickstoffdioxid </td><td>$latest($data_binding='airq_binding').og_no2.ppb</td></tr>
+   <tr><td>Ozon             </td><td>$latest($data_binding='airq_binding').og_o3_m</td></tr>
+   <tr><td>Schwefeldioxid   </td><td>$latest($data_binding='airq_binding').og_so2.ppb</td></tr>
+   <tr><td>Kohlenmonoxid    </td><td>$latest($data_binding='airq_binding').og_co_m.milligram_per_meter_cubed</td></tr>
+   <tr><td>VOC              </td><td>$latest($data_binding='airq_binding').og_TVOC.ppb</td></tr>
+   <tr><td colspan='2'><b>Feinstaub</b></td></tr>
+   <tr><td>PM&nbsp;<sub>1</sub></td><td>$latest($data_binding='airq_binding').og_pm1_0</td></tr>
+   <tr><td>PM&nbsp;<sub>2,5</sub></td><td>$latest($data_binding='airq_binding').og_pm2_5</td></tr>
+   <tr><td>PM&nbsp;<sub>10</sub></td><td>$latest($data_binding='airq_binding').og_pm10_0</td></tr>
   </table>
  </div>
-</div> <!-- end Erdbeben -->
-#end if
+</div> <!-- end Luftanalyse -->
 
 <div class="hes">
  <div class='hesbox'>
@@ -1055,8 +1032,8 @@
   <a href="http://www.heavens-above.com/">
   <img src="http://www.heavens-above.com/orbitdisplay.aspx?icon=iss&width=300&height=300&satid=25544" width="250" height="250" alt="ISS" /></a>
   <hr />
-  <p>Zeit: $iss_time : Dauer: $duration&nbsp;s<br>
-     Zeit: $iss_time_n : Dauer: $duration_n&nbsp;s</p>
+  <p> &nbsp;  &nbsp;<br>
+      &nbsp;  &nbsp;</p>
  </div>
 </div> <!-- end ISS -->
 
@@ -1080,6 +1057,13 @@
 
 <div class="hes">
  <div class='hesbox'>
+  <h3>Deutscher Wetterdienst</h3>
+  #include "warn-MV.inc"
+ </div>
+</div> <!-- end dwd warnungen -->
+
+<div class="hes">
+ <div class='hesbox'>
   <h3>Weather365</h3>
   <p>
  <iframe src='//api.weather365.net/foreign/citygeoip.php?tm=3&hpw=0&cityid=19409 width="99%" height="880" align="center" scrolling="no" frameborder="0" allowtransparency="true" name="Weather365" '>
@@ -1095,7 +1079,6 @@
   #include "bekannt.inc"
  </div>
 </div> <!-- end bekannt -->
-
 
 <div class="hes">
  <div class='hesbox'>
@@ -1140,6 +1123,18 @@
   </table>
  </div>
 </div> <!-- end Air -->
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>air-Q Luftanalyse</td></tr>
+   <tr><td>PM<sub>2,5</sub>&nbsp;<sub>10</sub> Sensor</td></tr>
+   <tr><td>CO, CO<sub>2</sub> VOC Sensor</td></tr>
+   <tr><td><a href='indexAirQ.html'>weiter</a></td></tr>
+  </table>
+ </div>
+</div> <!-- end AirQ -->
+
 
 <div class="hes">
  <div class='hesbox'>

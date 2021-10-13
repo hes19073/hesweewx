@@ -1,0 +1,109 @@
+## Copyright 2009-2018 Tom Keffer, Matthew Wall
+## Distributed under terms of GPLv3.  See LICENSE.txt for your rights.
+## Version: 4.6.0b4
+#errorCatcher Echo
+##
+<!DOCTYPE html>
+<html lang="$gettext('lang')">
+  <head>
+    ##
+    <meta charset="UTF-8">
+    <title>$station.location</title>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="seasons.css"/>
+    #if $station.station_url
+    <link rel="canonical" href="$station.station_url/$filename" />
+    #end if
+    <script src="seasons.js"></script>
+  </head>
+
+  <body onload="setup();">
+    #include "titlebar.inc"
+    
+    <div id="contents">
+      <div id="widget_group">
+        #include "current.inc"
+        #include "sunmoon.inc"
+        #include "hilo.inc"
+        #include "sensors.inc"
+        #include "about.inc"
+        #include "radar.inc"
+        #include "satellite.inc"
+        #include "map.inc"
+      </div>
+
+      <div id="plot_group">
+        <div id="history_widget" class="widget">
+          <div id="plot_title" class="widget_title">$gettext("History"):&nbsp;&nbsp;
+            <a class="button_selected" id="button_history_day"
+               onclick="choose_history('day')">$gettext("Day")</a>
+            <a class="button" id="button_history_week"
+               onclick="choose_history('week')">$gettext("Week")</a>
+            <a class="button" id="button_history_month"
+               onclick="choose_history('month')">$gettext("Month")</a>
+            <a class="button" id="button_history_year"
+               onclick="choose_history('year')">$gettext("Year")</a>
+          </div>
+
+#for x in ['day', 'week', 'month', 'year']
+          <div id="history_${x}" class="plot_container">
+            <img src="${x}barometer.png" alt="$obs.label.barometer"/>
+            <img src="${x}tempdew.png"   alt="$obs.label.outTemp" />
+            <img src="${x}tempfeel.png"  alt="$obs.label.feel" />
+            <img src="${x}hum.png"       alt="$obs.label.outHumidity" />
+            <img src="${x}wind.png"      alt="$obs.label.windSpeed" />
+            <img src="${x}winddir.png"   alt="$obs.label.windDir" />
+            <img src="${x}windvec.png"   alt="$obs.label.windvec" />
+            <img src="${x}rain.png"      alt="$obs.label.rain" />
+            #if $year.ET.has_data
+            <img src="${x}ET.png"        alt="$obs.label.ET"/>
+            #end if
+            #if $year.UV.has_data
+            <img src="${x}uv.png"        alt="$obs.label.UV" />
+            #end if
+            #if $year.radiation.has_data
+            <img src="${x}radiation.png" alt="$obs.label.radiation" />
+            #end if
+            #if $year.inTemp.has_data
+            <img src="${x}tempin.png"    alt="$obs.label.inTemp" />
+            #end if
+            #if $year.inHumidity.has_data
+            <img src="${x}humin.png"     alt="$obs.label.inHumidity" />
+            #end if
+            #if $year.extraTemp1.has_data or $year.extraTemp2.has_data or $year.extraTemp3.has_data
+            <img src="${x}tempext.png"      alt="$obs.label.extraTemp1" />
+            #end if
+            #if $year.extraHumid1.has_data or $year.extraHumid2.has_data or $year.extraHumid3.has_data
+            <img src="${x}humext.png"    alt="$obs.label.extraHumid1" />
+            #end if
+            #if $year.leafTemp1.has_data or $year.leafTemp2.has_data
+            <img src="${x}templeaf.png"    alt="$obs.label.leafTemp1" />
+            #end if
+            #if $year.leafWet1.has_data or $year.leafWet2.has_data
+            <img src="${x}wetleaf.png"    alt="$obs.label.leafWet1" />
+            #end if
+            #if $year.soilTemp1.has_data or $year.soilTemp2.has_data or $year.soilTemp3.has_data or $year.soilTemp4.has_data
+            <img src="${x}tempsoil.png"    alt="$obs.label.soilTemp1" />
+            #end if
+            #if $year.soilMoist1.has_data or $year.soilMoist2.has_data or $year.soilMoist3.has_data or $year.soilMoist4.has_data
+            <img src="${x}moistsoil.png"    alt="$obs.label.soilMoist1" />
+            #end if
+            #if $year.pm1_0.has_data or $year.pm2_5.has_data or $year.pm10_0.has_data
+            <img src="${x}pm.png"    alt="$obs.label.pm1_0" />
+            #end if
+          </div>
+#end for
+
+        </div>
+      </div>
+    </div>
+
+    <p class="footnote">
+      $gettext("This station is controlled by <a href='https://weewx.com'>WeeWX</a>, an experimental weather software system written in Python.")
+    </p>
+
+    #include "analytics.inc"
+
+</body>
+
+</html>

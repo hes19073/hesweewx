@@ -321,10 +321,10 @@ class WdWXCalculate(weewx.engine.StdService):
         else:
             data_x['outTempDay'], data_x['outTempNight'] = (None, None)
 
-        if 'rain' in event.packet and 'ET' in event.packet:
-            data_x['rain_ET'] = event.packet['rain'] - event.packet['ET']
-        else:
-            data_x['rain_ET'] = None
+        #if 'rain' in event.packet and 'ET' in event.packet:
+        #    data_x['rain_ET'] = event.packet['rain'] - event.packet['ET']
+        #else:
+        #    data_x['rain_ET'] = None
 
         if 'outTemp' in event.packet:
             data_x['heatdeg'] = weewx.wxformulas.heating_degrees(event.packet['outTemp'], 18.333)

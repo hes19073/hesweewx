@@ -29,40 +29,6 @@ major_comment_block = ["", "####################################################
 
 DEFAULT_URL = 'http://acme.com'
 
-# ==============================================================================
-
-unit_systems = {
-    'us': {'group_altitude': 'foot',
-           'group_degree_day': 'degree_F_day',
-           'group_distance': 'mile',
-           'group_pressure': 'inHg',
-           'group_rain': 'inch',
-           'group_rainrate': 'inch_per_hour',
-           'group_speed': 'mile_per_hour',
-           'group_speed2': 'mile_per_hour2',
-           'group_temperature': 'degree_F'},
-
-    'metric': {'group_altitude': 'meter',
-               'group_degree_day': 'degree_C_day',
-               'group_distance': 'km',
-               'group_pressure': 'mbar',
-               'group_rain': 'cm',
-               'group_rainrate': 'cm_per_hour',
-               'group_speed': 'km_per_hour',
-               'group_speed2': 'km_per_hour2',
-               'group_temperature': 'degree_C'},
-
-    'metricwx': {'group_altitude': 'meter',
-                 'group_degree_day': 'degree_C_day',
-                 'group_distance': 'km',
-                 'group_pressure': 'mbar',
-                 'group_rain': 'mm',
-                 'group_rainrate': 'mm_per_hour',
-                 'group_speed': 'meter_per_second',
-                 'group_speed2': 'meter_per_second2',
-                 'group_temperature': 'degree_C'}
-}
-
 
 class ExtensionError(IOError):
     """Errors when installing or uninstalling an extension"""
@@ -296,9 +262,11 @@ def modify_config(config_dict, stn_info, logger, debug=False):
                 if debug:
                     logger.log("Using %s for %s" % (stn_info[p], p), level=2)
                 config_dict['Station'][p] = stn_info[p]
-        # Update units display with any stn_info overrides
-        if 'units' in stn_info and 'StdReport' in config_dict:
-            update_units(config_dict, stn_info['units'], logger, debug)
+
+        if 'StdReport' in config_dict \
+                and 'unit_system' in stn_info \
+                and stn_info['unit_system'] != 'custom':
+            config_dict['StdReport']['unit_system'] = stn_info['unit_system']
 
         if 'register_this_station' in stn_info \
                 and 'StdRESTful' in config_dict \
@@ -496,7 +464,7 @@ def update_to_v25(config_dict):
     try:
         # V2.5 saw the introduction of the station registry:
         if 'StationRegistry' not in config_dict['StdRESTful']:
-            stnreg_dict = configobj.ConfigObj(StringIO("""[StdRESTful]
+            stnreg_dict = weeutil.config.config_from_str("""[StdRESTful]
 
         [[StationRegistry]]
             # Uncomment the following line to register this weather station.
@@ -512,7 +480,7 @@ def update_to_v25(config_dict):
 
             driver = weewx.restful.StationRegistry
 
-    """), encoding='utf-8')
+    """)
             config_dict.merge(stnreg_dict)
     except KeyError:
         pass
@@ -670,7 +638,7 @@ def update_to_v26(config_dict):
     # Support for the WOW uploader was introduced
     try:
         if 'WOW' not in config_dict['StdRESTful']:
-            config_dict.merge(configobj.ConfigObj(StringIO("""[StdRESTful]
+            config_dict.merge(weeutil.config.config_from_str("""[StdRESTful]
 
             [[WOW]]
                 # This section is for configuring posts to WOW
@@ -683,7 +651,7 @@ def update_to_v26(config_dict):
                 log_success = True
                 log_failure = True
 
-        """), encoding='utf-8'))
+        """))
             config_dict['StdRESTful'].comments['WOW'] = ['']
     except KeyError:
         pass
@@ -691,7 +659,7 @@ def update_to_v26(config_dict):
     # Support for the AWEKAS uploader was introduced
     try:
         if 'AWEKAS' not in config_dict['StdRESTful']:
-            config_dict.merge(configobj.ConfigObj(StringIO("""[StdRESTful]
+            config_dict.merge(weeutil.config.config_from_str("""[StdRESTful]
 
             [[AWEKAS]]
                 # This section is for configuring posts to AWEKAS
@@ -704,7 +672,7 @@ def update_to_v26(config_dict):
                 log_success = True
                 log_failure = True
 
-        """), encoding='utf-8'))
+        """))
             config_dict['StdRESTful'].comments['AWEKAS'] = ['']
     except KeyError:
         pass
@@ -785,7 +753,7 @@ def update_to_v30(config_dict):
 
     if 'DataBindings' not in config_dict:
         # Insert a [DataBindings] section. First create it
-        c = configobj.ConfigObj(StringIO("""[DataBindings]
+        c = weeutil.config.config_from_str("""[DataBindings]
             # This section binds a data store to a database
 
             [[wx_binding]]
@@ -799,7 +767,7 @@ def update_to_v30(config_dict):
                 # It is *only* used when the database is created.
                 schema = schemas.wview.schema
 
-        """), encoding='utf-8')
+        """)
         # Now merge it in:
         config_dict.merge(c)
         # For some reason, ConfigObj strips any leading comments. Put them back:
@@ -819,7 +787,7 @@ def update_to_v30(config_dict):
 
     # StdWXCalculate is new
     if 'StdWXCalculate' not in config_dict:
-        c = configobj.ConfigObj(StringIO("""[StdWXCalculate]
+        c = weeutil.config.config_from_str("""[StdWXCalculate]
     # Derived quantities are calculated by this service.  Possible values are:
     #  hardware        - use the value provided by hardware
     #  software        - use the value calculated by weewx
@@ -833,7 +801,7 @@ def update_to_v30(config_dict):
     heatindex = prefer_hardware
     dewpoint = prefer_hardware
     inDewpoint = prefer_hardware
-    rainRate = prefer_hardware"""), encoding='utf-8')
+    rainRate = prefer_hardware""")
         # Now merge it in:
         config_dict.merge(c)
         # For some reason, ConfigObj strips any leading comments. Put them back:
@@ -1085,23 +1053,22 @@ def update_to_v39(config_dict):
         std_report_comment = config_dict.comments['StdReport']
 
         if 'Defaults' not in config_dict['StdReport']:
-            defaults_dict = configobj.ConfigObj(StringIO(DEFAULTS), encoding='utf-8')
+            defaults_dict = weeutil.config.config_from_str(DEFAULTS)
             weeutil.config.merge_config(config_dict, defaults_dict)
             reorder_sections(config_dict['StdReport'], 'Defaults', 'RSYNC', after=True)
 
         if 'SeasonsReport' not in config_dict['StdReport']:
-            seasons_options_dict = configobj.ConfigObj(StringIO(SEASONS_REPORT), encoding='utf-8')
+            seasons_options_dict = weeutil.config.config_from_str(SEASONS_REPORT)
             weeutil.config.merge_config(config_dict, seasons_options_dict)
             reorder_sections(config_dict['StdReport'], 'SeasonsReport', 'FTP')
 
         if 'SmartphoneReport' not in config_dict['StdReport']:
-            smartphone_options_dict = configobj.ConfigObj(StringIO(SMARTPHONE_REPORT),
-                                                          encoding='utf-8')
+            smartphone_options_dict = weeutil.config.config_from_str(SMARTPHONE_REPORT)
             weeutil.config.merge_config(config_dict, smartphone_options_dict)
             reorder_sections(config_dict['StdReport'], 'SmartphoneReport', 'FTP')
 
         if 'MobileReport' not in config_dict['StdReport']:
-            mobile_options_dict = configobj.ConfigObj(StringIO(MOBILE_REPORT), encoding='utf-8')
+            mobile_options_dict = weeutil.config.config_from_str(MOBILE_REPORT)
             weeutil.config.merge_config(config_dict, mobile_options_dict)
             reorder_sections(config_dict['StdReport'], 'MobileReport', 'FTP')
 
@@ -1279,21 +1246,6 @@ def update_to_v43(config_dict):
     config_dict['version'] = '4.3.0'
 
 
-def update_units(config_dict, unit_system_name, logger=None, debug=False):
-    """Update [StdReport][Defaults] with the desired unit system"""
-
-    if unit_system_name == 'mixed':
-        return
-    elif unit_system_name is not None:
-        try:
-            config_dict['StdReport']['Defaults']['Units']['Groups'].update(unit_systems[unit_system_name])
-        except KeyError:
-            # We are missing the [StdReport] / [[Defaults]] / [[[Units]]] / [[[[Groups]]]] section.
-            # Create a section, then merge it into the ConfigObj.
-            unit_dict = configobj.ConfigObj(StringIO(UNIT_DEFAULTS), encoding='utf-8')
-            weeutil.config.merge_config(config_dict, unit_dict)
-
-
 # ==============================================================================
 #              Utilities that extract from ConfigObj objects
 # ==============================================================================
@@ -1316,7 +1268,7 @@ def get_version_info(config_dict):
     return major, minor
 
 
-def get_station_info(config_dict):
+def get_station_info_from_config(config_dict):
     """Extract station info from config dictionary.
 
     Returns:
@@ -1340,16 +1292,16 @@ def get_station_info(config_dict):
                 if stn_info['station_type'] in config_dict:
                     stn_info['driver'] = config_dict[stn_info['station_type']]['driver']
 
-            # Try to figure out what unit system the user is using.
-            try:
-                # First look for a [Defaults] section.
-                stn_info['units'] = get_unit_info(config_dict['StdReport']['Defaults'])
-            except KeyError:
-                # If that didn't work, look for an override in the [[StandardReport]] section.
-                try:
-                    stn_info['units'] = get_unit_info(config_dict['StdReport']['StandardReport'])
-                except KeyError:
-                    pass
+        try:
+            stn_info['lang'] = config_dict['StdReport']['lang']
+        except KeyError:
+            pass
+        try:
+            # Look for option 'unit_system' in [StdReport]
+            stn_info['unit_system'] = config_dict['StdReport']['unit_system']
+        except KeyError:
+            # Not there. It's a custom system
+            stn_info['unit_system'] = 'custom'
         try:
             stn_info['register_this_station'] \
                 = config_dict['StdRESTful']['StationRegistry']['register_this_station']
@@ -1361,31 +1313,6 @@ def get_station_info(config_dict):
             pass
 
     return stn_info
-
-
-def get_unit_info(test_dict):
-    """Intuit what unit system the reports are in.
-
-    Returns:
-        'us':       US Customary system
-        'metric':   METRIC system
-        'metricwx': METRICWX system
-        'mixed':    Mixed unit system
-        None:       There is no information about the unit system.
-    """
-    try:
-        group_dict = test_dict['Units']['Groups']
-    except KeyError:
-        return None
-
-    # Test all unit systems ('us', 'metric', 'metricwx'):
-    for unit_system in unit_systems:
-        # For this unit system, make sure there is an exact match
-        if all(group_dict[group] == unit_systems[unit_system][group]
-               for group in unit_systems[unit_system]):
-            return unit_system
-    # No exact match. In in a mix of unit systems
-    return 'mixed'
 
 
 # ==============================================================================
@@ -1575,8 +1502,8 @@ def load_driver_editor(driver_module_name):
 #                Utilities that seek info from the command line
 # ==============================================================================
 
-def prompt_for_info(location=None, latitude='90.000', longitude='0.000',
-                    altitude=['0', 'meter'], units='metric',
+def prompt_for_info(location=None, latitude='0.000', longitude='0.000',
+                    altitude=['0', 'meter'], unit_system='metricwx',
                     register_this_station='false',
                     station_url=DEFAULT_URL, **kwargs):
     stn_info = {}
@@ -1645,19 +1572,11 @@ def prompt_for_info(location=None, latitude='90.000', longitude='0.000',
     else:
         stn_info['register_this_station'] = 'false'
 
-    #
-    # Display units. Accept only 'us' or 'metric', where 'metric'
-    # is a synonym for 'metricwx'.
-    #
-    options = ['us', 'metric']
-    if units == 'mixed':
-        options += [units]
+    # Get what unit system the user wants
+    options = ['us', 'metric', 'metricwx']
     print("\nIndicate the preferred units for display: %s" % options)
-    default = units if units != 'metricwx' else 'metric'
-    uni = prompt_with_options("units", default, options)
-    if uni == 'metric':
-        uni = 'metricwx'
-    stn_info['units'] = uni
+    uni = prompt_with_options("unit system", unit_system, options)
+    stn_info['unit_system'] = uni
 
     return stn_info
 
@@ -1705,6 +1624,72 @@ def prompt_for_driver_settings(driver, config_dict):
     except AttributeError:
         pass
     return settings
+
+
+def get_languages(skin_dir):
+    """ Return all languages supported by the skin
+
+    Args:
+        skin_dir (str): The path to the skin subdirectory.
+
+    Returns:
+        (dict): A dictionary where the key is the language code, and the value is the natural
+            language name of the language. The value 'None' is returned if skin_dir does not exist.
+    """
+    # Get the path to the "./lang" subdirectory
+    lang_dir = os.path.join(skin_dir, './lang')
+    # Get all the files in the subdirectory. If the subdirectory does not exist, an exception
+    # will be raised. Be prepared to catch it.
+    try:
+        lang_files = os.listdir(lang_dir)
+    except OSError:
+        # No 'lang' subdirectory. Return None
+        return None
+
+    languages = {}
+
+    # Go through the files...
+    for lang_file in lang_files:
+        # ... get its full path ...
+        lang_full_path = os.path.join(lang_dir, lang_file)
+        # ... make sure it's a file ...
+        if os.path.isfile(lang_full_path):
+            # ... then get the language code for that file.
+            code = lang_file.split('.')[0]
+            # Retrieve the ConfigObj for this language
+            lang_dict = configobj.ConfigObj(lang_full_path, encoding='utf-8')
+            # See if it has a natural language version of the language code:
+            try:
+                language = lang_dict['Texts']['Language']
+            except KeyError:
+                # It doesn't. Just label it 'Unknown'
+                language = 'Unknown'
+            # Add the code, plus the language
+            languages[code] = language
+    return languages
+
+
+def pick_language(languages, default='en'):
+    """
+    Given a choice of languages, pick one.
+
+    Args:
+        languages (list): As returned by function get_languages() above
+        default (str): The language code of the default
+
+    Returns:
+        (str): The chosen language code
+    """
+    keys = sorted(languages.keys())
+    if default not in keys:
+        default = None
+    msg = "Available languages\nCode  | Language\n"
+    for code in keys:
+        msg += "%4s  | %-20s\n" % (code, languages[code])
+    msg += "Pick a code"
+    value = prompt_with_options(msg, default, keys)
+
+    return value
 
 
 def prompt_with_options(prompt, default=None, options=None):
@@ -2033,7 +2018,7 @@ DEFAULTS = UNIT_DEFAULTS + """
             [[[[Generic]]]]
                 barometer      = Barometer
                 dewpoint       = Dew Point
-                ET             = ET
+                ET             = Evapotranspiration
                 heatindex      = Heat Index
                 inHumidity     = Inside Humidity
                 inTemp         = Inside Temperature

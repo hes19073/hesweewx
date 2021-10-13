@@ -1,6 +1,7 @@
 #errorCatcher Echo
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
 ## $Id: index1.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+## Version: 4.6.0b4
 #encoding UTF-8
 <!DOCTYPE html>
 <html lang="de">
@@ -300,38 +301,16 @@
  #end if
     </tr>
     <tr>
-      <td class='hes1_kopfc' colspan='2'>Blatttemperatur (1)</td><td>$current.leafTemp1</td>
+     <td class='hes1_kopfc' colspan='2'>Blatttemperatur (1)</td><td>N/A</td>
 
- #if $trend.leafWet1.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
- #elif $trend.leafTemp1.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class="hes1_vallo">$trend.leafTemp1</td>
- #elif $trend.leafTemp1.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.leafTemp1</td>
- #elif $trend.leafTemp1.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class="hes1_valhi">$trend.leafTemp1</td>
- #end if
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
     </tr>
     <tr>
-      <td class='hes1_kopfc' colspan='2'>Blatttemperatur (2)</td><td>$current.leafTemp2</td>
+     <td class='hes1_kopfc' colspan='2'>Blatttemperatur (2)</td><td>N/A</td>
 
- #if $trend.leafTemp2.raw is None
-        <td class="hes1_trendlo">&nbsp;</td>
-        <td class="hes1_vallo">N/A</td>
- #elif $trend.leafTemp2.raw < 0
-        <td class="hes1_trendlo"> &#8681;</td>
-        <td class="hes1_vallo">$trend.leafTemp2</td>
- #elif $trend.leafTemp2.raw == 0
-        <td class="hes1_trendhi"><b>=</b></td>
-        <td class="hes1_valhi">$trend.leafTemp2</td>
- #elif $trend.leafTemp2.raw > 0
-        <td class="hes1_trendhi"> &#8679;</td>
-        <td class="hes1_valhi">$trend.leafTemp2</td>
- #end if
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
     </tr>
   </table>
  </div>
@@ -373,7 +352,7 @@
      <td><span class='hes1_m'>min</span></td>
      <td><span class='hes1_valhi'>$yesterday.THSW.min</span></td>
      <td><span class="hes1_m">max</span></td>
-     <td><span class='hes1_vallo'>$yesterday.THSW.max</span> </td>
+     <td><span class='hes1_vallo'>$yesterday.THSW.max</span></td>
     </tr>
     <tr><td>&nbsp;</td><td> </td></tr>
    </table>
@@ -406,17 +385,17 @@
     </tr>
     <tr>
      <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-     <td><span class='hes1_m'>Tag</span></td>
-     <td><span class='hes1_valhi'>$day.dayET.max.formatted</span></td>
-     <td><span class="hes1_m">Gestern</span></td>
-     <td><span class='hes1_vallo'>$yesterday.dayET.max.formatted</span> </td>
+     <td><span class='hes1_m'>Summe</span></td>
+     <td><span class='hes1_valhi'>$day.dayET.sum.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day.dayET.max.formatted</span></td>
     </tr>
     <tr>
-     <td class='hes1_kopfb'>&nbsp;</td>
-     <td><span class='hes1_m'>Monat</span></td>
-     <td><span class='hes1_valhi'>$current.monthET.formatted</span></td>
-     <td><span class="hes1_m">Jahr</span></td>
-     <td><span class='hes1_vallo'>$current.yearET.formatted</span> </td>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>Summe</span></td>
+     <td><span class='hes1_valhi'>$yesterday.ET.sum.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$yesterday.ET.max.formatted</span></td>
     </tr>
    </table>
   </div>

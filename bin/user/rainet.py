@@ -47,3 +47,4 @@ class RainET(weewx.xtypes.XType):
 
 # Insert my new class into the xtypes system:
 weewx.xtypes.xtypes.append(RainET())
+

@@ -61,6 +61,7 @@ log_failure = False
         group_volume       = gallon
 
         # The following are used internally and should not be changed:
+        group_boolean      = boolean
         group_count        = count
         group_interval     = minute
         group_time         = unix_epoch
@@ -69,12 +70,14 @@ log_failure = False
     # The following section sets the formatting for each type of unit.
     [[StringFormats]]
 
+        boolean            = %d
         centibar           = %.0f
         cm                 = %.2f
         cm_per_hour        = %.2f
-        count              = %.0f
+        count              = %d
         degree_C           = %.1f
         degree_F           = %.1f
+        degree_K           = %.1f
         degree_compass     = %.0f
         foot               = %.0f
         hPa                = %.1f
@@ -107,12 +110,14 @@ log_failure = False
     # The following section sets the label to be used for each type of unit
     [[Labels]]
 
+        boolean           = ""
         centibar          = " cb"
         cm                = " cm"
         cm_per_hour       = " cm/h"
         count             = " "
         degree_C          =   °C
         degree_F          =   °F
+        degree_K          =   °K
         degree_compass    =   °
         foot              = " feet"
         hPa               = " hPa"
@@ -200,12 +205,13 @@ log_failure = False
         heatindex      = Heat Index
         inHumidity     = Inside Humidity
         inTemp         = Inside Temperature
-        outHumidity    = Humidity
+        outHumidity    = Outside Humidity
         outTemp        = Outside Temperature
         radiation      = Radiation
         rain           = Rain
         rainRate       = Rain Rate
         UV             = UV Index
+        wind           = Wind
         windDir        = Wind Direction
         windGust       = Gust Speed
         windGustDir    = Gust Direction

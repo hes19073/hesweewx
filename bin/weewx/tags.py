@@ -13,7 +13,6 @@ import weewx.xtypes
 from weeutil.weeutil import to_int
 from weewx.units import ValueTuple
 
-
 # Attributes we are to ignore. Cheetah calls these housekeeping functions.
 IGNORE_ATTR = {'mro', 'im_func', 'func_code', '__func__', '__code__', '__init__', '__self__'}
 
@@ -21,7 +20,6 @@ IGNORE_ATTR = {'mro', 'im_func', 'func_code', '__func__', '__code__', '__init__'
 # ===============================================================================
 #                    Class TimeBinder
 # ===============================================================================
-
 
 class TimeBinder(object):
     """Binds to a specific time. Can be queried for time attributes, such as month.
@@ -166,7 +164,7 @@ class TimespanBinder(object):
         data_binding: If non-None, then use this data binding.
 
         context: A tag name for the timespan. This is something like 'current', 'day', 'week', etc.
-        This is used to figure out how to do aggregations, and for picking an appropriate label.
+        This is used to pick an appropriate time label.
 
         formatter: An instance of weewx.units.Formatter() holding the formatting information to be
         used. [Optional. If not given, the default Formatter will be used.]
@@ -320,10 +318,10 @@ class ObservationBinder(object):
         self.converter = converter
         self.option_dict = option_dict
 
-    def __getattr__(self, aggregation_type):
+    def __getattr__(self, aggregate_type):
         """Use the specified aggregation type
 
-        aggregation_type: The type of aggregation over which the summary is to be done. This is
+        aggregate_type: The type of aggregation over which the summary is to be done. This is
         normally something like 'sum', 'min', 'mintime', 'count', etc. However, there are two
         special aggregation types that can be used to determine the existence of data:
           'exists':   Return True if the observation type exists in the database.
@@ -332,9 +330,9 @@ class ObservationBinder(object):
 
         returns: An instance of AggTypeBinder, which is bound to the aggregation type.
         """
-        if aggregation_type in IGNORE_ATTR:
-            raise AttributeError(aggregation_type)
-        return AggTypeBinder(aggregation_type=aggregation_type,
+        if aggregate_type in IGNORE_ATTR:
+            raise AttributeError(aggregate_type)
+        return AggTypeBinder(aggregate_type=aggregate_type,
                              obs_type=self.obs_type,
                              timespan=self.timespan,
                              db_lookup=self.db_lookup,
@@ -351,34 +349,63 @@ class ObservationBinder(object):
     def has_data(self):
         return self.db_lookup(self.data_binding).has_data(self.obs_type, self.timespan)
 
-    def series(self, aggregation_type=None, aggregation_interval=None):
+    def series(self, aggregate_type=None,
+               aggregate_interval=None,
+               time_series='both',
+               time_unit='unix_epoch'):
         """Return a series with the given aggregation type and interval.
 
         Args:
-            aggregation_type (str or None): The type of aggregation to use, if any. Default is None
+            aggregate_type (str or None): The type of aggregation to use, if any. Default is None
                 (no aggregation).
-            aggregation_interval (str or None): The aggregation interval in seconds. Default is
+            aggregate_interval (str or None): The aggregation interval in seconds. Default is
                 None (no aggregation).
+            time_series (str): What to include for the time series. Either 'start', 'stop', or
+                'both'.
+            time_unit (str): Which unit to use for time. Choices are 'unix_epoch', 'unix_epoch_ms',
+                or 'unix_epoch_ns'. Default is 'unix_epoch'.
 
         Returns:
             SeriesHelper.
         """
+        time_series = time_series.lower()
+        if time_series not in ['both', 'start', 'stop']:
+            raise ValueError("Unknown option '%s' for parameter 'time_series'" % time_series)
+
         db_manager = self.db_lookup(self.data_binding)
+
+        # If we cannot calculate the series, we will get an UnknownType or UnknownAggregation
+        # error. Be prepared to catch it.
         try:
-            # If we cannot calculate the series, we will get an UnknownType or
-            # UnknownAggregation error. Be prepared to catch it.
-            start, stop, data = weewx.xtypes.get_series(
+            # The returned values start_vt, stop_vt, and data_vt, will be ValueTuples.
+            start_vt, stop_vt, data_vt = weewx.xtypes.get_series(
                 self.obs_type, self.timespan, db_manager,
-                aggregation_type, aggregation_interval)
+                aggregate_type, aggregate_interval)
         except (weewx.UnknownType, weewx.UnknownAggregation):
-            # Signal Cheetah that we don't know how to do this by raising an AttributeError.
+            # Cannot calculate the series. Convert to AttributeError, which will signal to Cheetah
+            # that this type of series is unknown.
             raise AttributeError(self.obs_type)
 
-        # Form a SeriesHelper, using our existing context, formatter, and converter.
+        # Figure out which time series are desired, and convert them to the desired time unit.
+        # If the conversion cannot be done, a KeyError will be raised.
+        # When done, start_vh and stop_vh will be ValueHelpers.
+        if time_series in ['start', 'both']:
+            start_vt = weewx.units.convert(start_vt, time_unit)
+            start_vh = weewx.units.ValueHelper(start_vt, self.context, self.formatter)
+        else:
+            start_vh = None
+        if time_series in ['stop', 'both']:
+            stop_vt = weewx.units.convert(stop_vt, time_unit)
+            stop_vh = weewx.units.ValueHelper(stop_vt, self.context, self.formatter)
+        else:
+            stop_vh = None
+
+        # Form a SeriesHelper, using our existing context and formatter. For the data series,
+        # use the existing converter.
         sh = weewx.units.SeriesHelper(
-            weewx.units.ValueHelper(start, self.context, self.formatter, self.converter), \
-            weewx.units.ValueHelper(stop, self.context, self.formatter, self.converter), \
-            weewx.units.ValueHelper(data, self.context, self.formatter, self.converter))
+            start_vh,
+            stop_vh,
+            weewx.units.ValueHelper(data_vt, self.context, self.formatter, self.converter))
         return sh
 
 
@@ -390,10 +417,10 @@ class AggTypeBinder(object):
     """This is the final class in the chain of helper classes. It binds everything needed
     for a query."""
 
-    def __init__(self, aggregation_type, obs_type, timespan, db_lookup, data_binding, context,
+    def __init__(self, aggregate_type, obs_type, timespan, db_lookup, data_binding, context,
                  formatter=weewx.units.Formatter(), converter=weewx.units.Converter(),
                  **option_dict):
-        self.aggregation_type = aggregation_type
+        self.aggregate_type = aggregate_type
         self.obs_type = obs_type
         self.timespan = timespan
         self.db_lookup = db_lookup
@@ -406,7 +433,7 @@ class AggTypeBinder(object):
     def __call__(self, *args, **kwargs):
         """Offer a call option for expressions such as $month.outTemp.max_ge((90.0, 'degree_F')).
 
-        In this example, self.aggregation_type would be 'max_ge', and val would be the tuple
+        In this example, self.aggregate_type would be 'max_ge', and val would be the tuple
         (90.0, 'degree_F').
         """
         if len(args):
@@ -431,7 +458,7 @@ class AggTypeBinder(object):
             # If we cannot perform the aggregation, we will get an UnknownType or
             # UnknownAggregation error. Be prepared to catch it.
             result = weewx.xtypes.get_aggregate(self.obs_type, self.timespan,
-                                                self.aggregation_type,
+                                                self.aggregate_type,
                                                 db_manager, **self.option_dict)
         except (weewx.UnknownType, weewx.UnknownAggregation):
             # Signal Cheetah that we don't know how to do this by raising an AttributeError.
@@ -522,7 +549,7 @@ class CurrentObj(object):
                 db_manager = self.db_lookup(self.data_binding)
             except weewx.UnknownBinding:
                 # Don't recognize the binding.
-                vt = weewx.units.UnknownType(self.data_binding)
+                raise AttributeError(self.data_binding)
             else:
                 # Get the record for this timestamp from the database
                 record = db_manager.getRecord(self.current_time, max_delta=self.max_delta)
@@ -597,7 +624,7 @@ class TrendObj(object):
             # Both records exist. Check to see if the observation type is known
             if obs_type not in now_record or obs_type not in then_record:
                 # obs_type is unknown. Signal it
-                trend = weewx.units.UnknownType(obs_type)
+                raise AttributeError(obs_type)
             else:
                 # Both records exist, both types are known. We can proceed.
                 now_vt = weewx.units.as_value_tuple(now_record, obs_type)

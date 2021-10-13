@@ -106,19 +106,21 @@ class ExtendedStatistics(SearchList):
                                           formatter=self.generator.formatter,
                                           converter=self.generator.converter)
 
-        ## Get ts Weewx was launched
-        ##
-        starttime = 1383254340
+        # Get ts Weewx was launched
+        # get first good stamp
+        starttime = 1383250000
         # Start Datenbank
         starttime_vt = (starttime, 'unix_epoch', 'group_time')
         starttime_vh = ValueHelper(starttime_vt,
+                                   context='last_st',
                                    formatter=self.generator.formatter,
                                    converter=self.generator.converter)
 
         """Lazy evaluation of weewx uptime."""
-        delta_time = time.time() -  1383254340
+        delta_time = time.time() -  starttime
 
         db_sta_end = ValueHelper(value_t=(delta_time, "second", "group_deltatime"),
+                                       context='long_delta',
                                        formatter=self.generator.formatter,
                                        converter=self.generator.converter)
 
@@ -126,7 +128,7 @@ class ExtendedStatistics(SearchList):
                  'seven_day': seven_day_stats,
                  'thirty_day': thirty_day_stats,
                  'last_month': last_month_stats,
-                 'start_time': starttime_vh,
+                 'db_sttime': starttime_vh,
                  'db_uptime': db_sta_end,
                  'last_year': last_year_stats,
                  'last_year_today': last_year_todate_stats,

@@ -1,7 +1,14 @@
-## weewx-footer for weewx - Copyright 2013-2014 Hartmut Schweidler
+## weewx-footer for weewx - Copyright 2013-2021 Hartmut Schweidler
 ##  footer.inc 634 2014-09-08 08:34:04Z hes1 $
 ## nach Vorlage von mwall $
 #encoding UTF-8
+
+#set $gmt_date_st = time.gmtime($current.dateTime.raw)
+#set $gmt_date = time.strftime("%d. %b %Y", $gmt_date_st)
+#set $gmt_day = time.strftime("%A", $gmt_date_st)
+#set $gmt_st = time.gmtime($current.dateTime.raw)
+#set $gmt = time.strftime("%H:%M", $gmt_st)
+
 <div id='footer'><footer>
 
 <div style="background-color: gold">
@@ -10,19 +17,23 @@
        $station.latitude[2]&nbsp;&brvbar;&nbsp;
       L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
       $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
-      H&ouml;he:&nbsp;$station.altitude
+      H&ouml;he:&nbsp;$station.altitude&nbsp;ü. NHN&nbsp;&brvbar;&nbsp;
+      Erstellt am&nbsp;$gmt_day, $gmt_date - $gmt UTC
       </p>
 </div>
 
 <div style="background-color:yellow">
-     Start-Wetteraufzeichnung: $start_time &nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     Datenbanklaufzeit:&nbsp; $station.db_uptime&nbsp;&nbsp;<br />&nbsp;&nbsp;
+     Start-Wetteraufzeichnung: $db_sttime &nbsp;&nbsp;&#124;&nbsp;&nbsp;
+     Datenbanklaufzeit:&nbsp; $db_uptime  &nbsp;&nbsp;<br />&nbsp;&nbsp;
      weewx-Laufzeit:&nbsp; $station.uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
      Serverlaufzeit:&nbsp; $station.os_uptime&nbsp;&nbsp;&#124;&nbsp;&nbsp;
-     weewx  Version:&nbsp; $station.version<br /><hr />
-     Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;
-     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung; GQ GMC-300E Plus<br />
-     Luftmessung: Laser PM2.5 Sensor, Modell: SDS011<br />
+     weewx  Version:&nbsp; $station.version<br />
+     <hr />
+     Wetterstation:&nbsp;$station.hardware&nbsp;&#124;&nbsp;Station 6345CSOV&nbsp;&#124;&nbsp;Station 6345OV&nbsp;&#124;&nbsp;<br />
+     Zusatz: forecast; cmon; owfs mit 13 Sensoren; Scheehöhe; DWD-Vorschau; DWD-Warnung&nbsp;&#124;&nbsp;
+     digitaler Geigerzähler: GQ GMC-300E Plus&nbsp;&#124;&nbsp;
+     Luftmessung: Laser PM2.5 Sensor, Modell: SDS011&nbsp;&#124;&nbsp;
+     airQ Pro - Luftanalysator (14 Sensoren)<br />
 #if $varExists('$year00')
      <hr />
      Weewx Zeit: $year00
@@ -31,11 +42,12 @@
 </div>
 
 <p>
- #if $Extras.has_key('station_subtitle')
+#if $Extras.has_key('station_subtitle')
      $Extras.station_subtitle<br />
- #end if
+#end if
 <b>Machen Sie niemals wichtige Entscheidungen von den Daten dieser Seiten abhängig!</b><br />
 </p>
+$gettext("footnote1")&nbsp;<a href="http://weewx.com/">WeeWX</a>&nbsp;$gettext("footnote2")<br />
 <hr />
 
 <div class="navbar">
@@ -45,6 +57,7 @@
    <input type="button" value=" Teiche " onclick="openURL('index2.html')" />
    <input type="button" value=" Boden " onclick="openURL('index1.html')" />
    <input type="button" value=" Air " onclick="openURL('indexAir.html')" />
+   <!-- <input type="button" value=" air-Q " onclick="openURL('indexAirQ.html')" /> -->
    <input type="button" value=" Blitz " onclick="openURL('indexRad.html')" />
    <input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <input type="button" value=" Heute " onclick="openURL('day.html')" />

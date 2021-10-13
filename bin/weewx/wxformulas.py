@@ -1339,8 +1339,8 @@ def da_Metric(t_C, p_mbar):
     # Elevation = 53.6 meter = 175 ft
     # QNH = pressure
     # Druckhoehe(PA_da) = Elevation + (1013.25-QNH) * 30 gerundet faktor 28ft
-    # Dichtehöhe = PA_da + 120 * (aktuelle Temp. - [15 - PA_da * 2°/1000 ft])
-    # allgemein vereinfacht DA =  PA + 120 * ΔT
+    # Dichtehoehe = PA_da + 120 * (aktuelle Temp. - [15 - PA_da * 2 degree / 1000 ft])
+    # allgemein vereinfacht DA =  PA + 120 * deltaT
     # da_ft = (Elevation + (1013.25 - p_mbar) * 30) + ((t_C - (15 - (Elevation + (1013.25 - p_mbar) * 30) * 2 / 1000)) * 120)
 
     if t_C is None or p_mbar is None:

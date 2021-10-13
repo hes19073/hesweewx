@@ -21,7 +21,7 @@ Meine Wetterseiten unter http://wetter.hes61.de
 Nach / after
 #  --- Python 3 ---
 
-install from debian testing (Python3.7.3)
+install from debian testing (Python3.9.3)
 
 sudo apt-get install python3-pil
 sudo apt-get install python3-imaging
@@ -158,3 +158,29 @@ Feb 19 00:04:05 wetter weewx-weewx[18985] INFO weewx.reportengine: Copied 0 file
 Feb 19 00:04:06 wetter weewx-weewx[18985] INFO weewx.cheetahgenerator: Generated 1 files for report InigoReport in 0.68 seconds
 Feb 19 00:04:42 wetter weewx-weewx[18985] INFO weewx.reportengine: ftpgenerator: Ftp'd 335 files in 36.08 seconds
 
+Oct 13 11:25:32 wetter weewx-cmon[5651] INFO weewx.cheetahgenerator: Generated 1 files for report ServerReport in 1.52 seconds
+Oct 13 11:25:47 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 15 files for report StandardReport in 16.87 seconds
+Oct 13 11:25:52 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 37 images for report StandardReport in 4.85 seconds
+Oct 13 11:25:52 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:25:52 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 0 files for report AstroReport in 0.03 seconds
+Oct 13 11:25:52 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 7 images for report AstroReport in 0.29 seconds
+Oct 13 11:25:52 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:25:53 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 0 files for report BasicReport in 0.03 seconds
+Oct 13 11:25:53 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 32 images for report BasicReport in 0.89 seconds
+Oct 13 11:25:53 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:25:54 wetter weewx-weewx[5640] INFO user.wr: WindRose generated 2 images for 'WindRoseReport' in 0.08 seconds
+Oct 13 11:25:54 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 2 files for report RatingsReport in 0.15 seconds
+Oct 13 11:26:04 wetter weewx-cmon[5651] INFO weewx.imagegenerator: Generated 44 images for report ServerReport in 32.29 seconds
+Oct 13 11:26:04 wetter weewx-cmon[5651] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:26:05 wetter weewx-cmon[5651] INFO weewx.cheetahgenerator: Generated 1 files for report wxobsReport in 0.14 seconds
+Oct 13 11:26:05 wetter weewx-cmon[5651] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:26:05 wetter weewx-cmon[5651] INFO weewx.cheetahgenerator: Generated 1 files for report isswatch in 0.52 seconds
+Oct 13 11:26:09 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 49 images for report RatingsReport in 15.62 seconds
+Oct 13 11:26:09 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:26:35 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 11 files for report CalendarReport in 25.72 seconds
+Oct 13 11:27:40 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 136 images for report CalendarReport in 64.63 seconds
+Oct 13 11:27:40 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html
+Oct 13 11:27:41 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 2 files for report InigoReport in 0.86 seconds
+Oct 13 11:27:45 wetter weewx-weewx[5640] INFO weewx.cheetahgenerator: Generated 8 files for report SeasonsReport in 4.88 seconds
+Oct 13 11:28:20 wetter weewx-weewx[5640] INFO weewx.imagegenerator: Generated 84 images for report SeasonsReport in 34.50 seconds
+Oct 13 11:28:20 wetter weewx-weewx[5640] INFO weewx.reportengine: Copied 0 files to /home/weewx/public_html/test

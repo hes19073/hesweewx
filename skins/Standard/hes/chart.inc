@@ -137,7 +137,29 @@
 </td>
 </tr>
 <tr>
-<td class="stats_label"> Windgeschwindigkeit<br /> &nbsp;</td>
+<td class="stats_label"> Windgeschwindigkeit<br />Böe</td>
+<td class="stats_data">
+  $period1.windGust.max aus $period1.wind.gustdir ($period1.wind.gustdir.ordinal_compass)
+  <br />um $period1.windGust.maxtime
+</td>
+<td class="stats_data">
+  $period2.windGust.max aus $period2.wind.gustdir ($period2.wind.gustdir.ordinal_compass)
+  <br />um $period2.windGust.maxtime
+</td>
+</tr>
+<tr>
+<td class="stats_label"> Windgeschwindigkeit<br />Wind</td>
+<td class="stats_data">
+  $period1.windSpeed.max aus $period1.wind.gustdir ($period1.wind.gustdir.ordinal_compass)
+  <br />um $period1.windSpeed.maxtime
+</td>
+<td class="stats_data">
+  $period2.windSpeed.max aus $period2.wind.gustdir ($period2.wind.gustdir.ordinal_compass)
+  <br />um $period2.windSpeed.maxtime
+</td>
+</tr>
+<!-- <tr>
+<td class="stats_label"> Windgeschwindigkeit<br />&nbsp;</td>
 <td class="stats_data">
   $period1.wind.max aus $period1.wind.gustdir ($period1.wind.gustdir.ordinal_compass)
   <br />um $period1.wind.maxtime
@@ -146,7 +168,7 @@
   $period2.wind.max aus $period2.wind.gustdir ($period2.wind.gustdir.ordinal_compass)
   <br />um $period2.wind.maxtime
 </td>
-</tr>
+</tr> -->
 <tr>
 <td class="stats_label">  Windgeschwindigkeit &Oslash;<br />&nbsp;</td>
 <td class="stats_data">
@@ -191,7 +213,7 @@
 <tr><td colspan="3">1-Wire  OWFS USB Wassertemperatur</td></tr>
 #if $period1.extraTemp1.has_data
 <tr>
-<td class="stats_label">  Teich 0,75 m³ (max) / (min) </td>
+<td class="stats_label">Teich 0,75 m³ (max) / (min) </td>
 <td class="stats_data">
   $period1.extraTemp1.max um $period1.extraTemp1.maxtime<br />
   $period1.extraTemp1.min um $period1.extraTemp1.mintime
@@ -204,7 +226,7 @@
 #end if
 #if $period1.extraTemp2.has_data
 <tr>
-<td class="stats_label">  Teich 96 m³ (max) / (min) </td>
+<td class="stats_label">Teich 96 m³ (max) / (min) </td>
 <td class="stats_data">
   $period1.extraTemp2.max um $period1.extraTemp2.maxtime<br />
   $period1.extraTemp2.min um $period1.extraTemp2.mintime
@@ -217,7 +239,7 @@
 #end if
 #if $period1.extraTemp3.has_data
 <tr>
-<td class="stats_label">  Teich 96 m³ Grund (max) / (min) </td>
+<td class="stats_label">Teich 96 m³ Grund (max) / (min) </td>
 <td class="stats_data">
   $period1.extraTemp3.max um $period1.extraTemp3.maxtime<br />
   $period1.extraTemp3.min um $period1.extraTemp3.mintime
@@ -230,7 +252,7 @@
 #end if
 #if $period1.extraTemp6.has_data
 <tr>
-<td class="stats_label">  Teich 22 m³ (max) / (min) </td>
+<td class="stats_label">Teich 22 m³ (max) / (min) </td>
 <td class="stats_data">
   $period1.extraTemp6.max um $period1.extraTemp6.maxtime<br />
   $period1.extraTemp6.min um $period1.extraTemp6.mintime
@@ -238,6 +260,33 @@
 <td class="stats_data">
   $period2.extraTemp6.max um $period2.extraTemp6.maxtime<br />
   $period2.extraTemp6.min um $period2.extraTemp6.mintime
+</td>
+</tr>
+#end if
+<tr><td colspan="3">Davis Temperatur</td></tr>
+#if $period1.leafTemp1.has_data
+<tr>
+<td class="stats_label">Teichfilter Zulauf</td>
+<td class="stats_data">
+  $period1.leafTemp1.max um $period1.leafTemp1.maxtime<br />
+  $period1.leafTemp1.min um $period1.leafTemp1.mintime
+</td>
+<td class="stats_data">
+  $period2.leafTemp1.max um $period2.leafTemp1.maxtime<br />
+  $period2.leafTemp1.min um $period2.leafTemp1.mintime
+</td>
+</tr>
+#end if
+#if $period1.leafTemp2.has_data
+<tr>
+<td class="stats_label">Teichfilter Ablauf</td>
+<td class="stats_data">
+  $period1.leafTemp2.max um $period1.leafTemp2.maxtime<br />
+  $period1.leafTemp2.min um $period1.leafTemp2.mintime
+</td>
+<td class="stats_data">
+  $period2.leafTemp2.max um $period2.leafTemp2.maxtime<br />
+  $period2.leafTemp2.min um $period2.leafTemp2.mintime
 </td>
 </tr>
 #end if
@@ -635,6 +684,9 @@
 <tr><td>Wind<br />in Beaufort</td>
     <td>$period1.windSpeed.max.beaufort</td>
     <td>$period2.windSpeed.max.beaufort</td></tr>
+<tr><td>Böe<br />in Beaufort</td>
+    <td>$period1.windGust.max.beaufort</td>
+    <td>$period2.windGust.max.beaufort</td></tr>
   </tbody>
  </table>
 </div> <!--End class "stats" -->

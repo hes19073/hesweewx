@@ -1,6 +1,7 @@
 #errorCatcher Echo
 ## Standard for weewx - Copyright 2012-2013 Matthew Wall
-## $Id: indexAir.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+## $Id: indexRad.html.tmpl 743 2013-12-22 23:24:18Z mwall $
+## Version: 4.6.0b4
 #encoding UTF-8
 <!DOCTYPE html>
 <html lang="de">
@@ -47,6 +48,86 @@
   <div id='popupanchor' style='float:left'></div>
 
 #include "links_forecast.inc"
+
+##if $day($data_binding='lightning_binding').distance.has_data
+<div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Blitz-Sensor</td>
+     <td class='hes1_kopf' colspan='2'>Entfernung</td>
+     <td class="hes1_kopf" colspan="2">Energie</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>
+              $latest($data_binding='lightning_binding').distance</a></td>
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').energy.format('%.0f')</td>
+    </tr>
+    <tr>
+     <td>Letzter Blitz am</td>
+     <td colspan='2'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</td>
+     <td colspan='2'>um  $latest($data_binding='lightning_binding').dateTime.format("%H:%M") Uhr</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td class='hes1_m'>Tag</td>
+     <td class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Woche</td>
+     <td class='hes1_vallo'>$week($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
+     <td class='hes1_m'>Monat</td>
+     <td class='hes1_valhi'>$month($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+     <td class="hes1_m">Jahr</td>
+     <td class='hes1_vallo'>$year($data_binding='lightning_binding').distance.count.format('%.0f')</td>
+    </tr>
+   </table>
+   <hr />
+     <a href="http://www.lightningmaps.org/realtime?lang=de" title="Quelle der Blitzkarte">
+     <img src="http://images.blitzortung.org/Images/image_b_de.png" title="Blitzkarte für Deutschland" alt="Blitzkarte Deutschland" width="250" height="250"/></a>
+  </div>
+</div> <!-- ende Blitz-Sensor -->
+##end if
+
+#if $Extras.has_key('earthquake_enabled') and $Extras.earthquake_enabled == '1'
+<div class='hes'>
+ <div class='hesbox'>
+  <table class='hes1'>
+   <tr><td class="hes1_kopfa" colspan="2">Erdbeben</td></tr>
+   <tr><td colspan='2'>&nbsp;</td></tr>
+   <tr><td colspan='2'>(Radius ca. 2 000,00 km) </td></tr>
+   <!-- <tr><td colspan='2'>Info by USGS.gov</td></tr> -->
+   <tr><td colspan='2'>&nbsp;</td></tr>
+   <tr><td>Zeitpunkt</td><td>$earthquake_time</td></tr>
+   <tr>
+    <td>Epizentrum</td><td> <a href="$earthquake_url" target="_blank">$earthquake_place</a></td>
+   </tr>
+   <tr><td>Magnitude</td><td><b>$earthquake_magnitude</b></td></tr>
+   <tr><td>Tiefe ca.</td><td><b>$earthquake_tief km</b></td>  </tr>
+   <tr><td>Breitengrad</td><td>$earthquake_lat &deg; N</td>   </tr>
+   <tr>
+#if float($earthquake_lon) > 0
+    <td>Längengrad</td><td>$earthquake_lon &deg; O</td>
+#else
+    <td>Längengrad</td><td>$earthquake_lon &deg; W</td>
+#end if
+   </tr>
+   <tr>
+    <td>Quelle:</td><td> <a href="http://usgs.gov" target="_blank">USGS.gov</a></td>
+   </tr>
+   <tr><td colspan='2'>berechnet</td></tr>
+   <tr><td>Entfernung</td><td>$earthquake_dist km</td>   </tr>
+   <tr><td>Peilung__</td><td>$earthquake_lage</td>       </tr>
+#set $erde_richt = ("{:.2f}".format($earthquake_lag));
+   <tr><td>bei</td><td>$erde_richt &deg;</td></tr>
+   <tr><td colspan='2'>&nbsp;</td></tr>
+  </table>
+ </div>
+</div> <!-- end Erdbeben -->
+#end if
+
 
 #if $Extras.has_key('pollen_enabled') and $Extras.pollen_enabled == '1'
 #include 'pollen.inc'
@@ -98,11 +179,11 @@
     </tr>
     <tr>
      <td class='hes1_kopfb' colspan='2'>Wochensumme</td>
-     <td class='hes1_valhi' colspan='3'>$week($data_binding='geiger_binding').rad_nsvh.sum</td>
+     <td class='hes1_valhi' colspan='3'>$week($data_binding='geiger_binding').rad_nsvh.sum.mSv_per_hour</td>
     </tr>
    <tr>
      <td class='hes1_kopfb' colspan='2'>Monatssumme</td>
-     <td class='hes1_valhi' colspan='3'>$month($data_binding='geiger_binding').rad_nsvh.sum</td>
+     <td class='hes1_valhi' colspan='3'>$month($data_binding='geiger_binding').rad_nsvh.sum.mSv_per_hour</td>
     </tr>
    <tr>
      <td class='hes1_kopfb' colspan='2'>Jahressumme</td>
@@ -173,138 +254,6 @@
   </div>
 </div> <!-- ende cpm -->
 #end if
-
-#if $day.lighting.has_data
- <div class="hes">
-  <div class='hesbox'>
-   <table class='hes_temp'>
-    <tr>
-     <td class='hes1_kopfa'>Helligkeit</td>
-     <td class='hes1_kopf' colspan='2'>Aktuell</td>
-     <td class='hes1_kopf' colspan="2">Trend</td></tr>
-    <tr>
-     <td class='hes1_bigval' colspan='3'>
-        <a href='daylighting.png' class='popup'>$current.lighting</a></td>
-    #if $trend.lighting.raw is None
-     <td class="hes1_trendlo">&nbsp;</td>
-     <td class="hes1_vallo">N/A</td>
-    #elif $trend.lighting.raw < 0
-     <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_vallo'>$trend.lighting.formatted</td>
-    #elif $trend.lighting.raw == 0
-     <td class="hes1_trendhi"><b>=</b></td>
-     <td class="hes1_valhi">$trend.lighting.formatted</td>
-    #elif $trend.lighting.raw > 0
-     <td class="hes1_trendhi"> &#8679;</td>
-     <td class='hes1_valhi'>$trend.lighting.formatted</td>
-    #end if
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi' colspan='2'>$day.lighting.max.formatted</td>
-     <td class='hes1_vallo'>&nbsp;</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Werte<br />Gestern</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi' colspan='2'>$yesterday.lighting.max.formatted</td>
-     <td class='hes1_vallo'>&nbsp;</td>
-    </tr>
-   </table>
-   <hr />
-    <img src="daylighting.png" alt="carport-temp" style="width:300px; height:175px;" />
-  </div>
- </div>
-#end if
-<!-- ende lighting -->
-
-#if $day($data_binding='air_binding').sound.has_data
- <div class="hes">
-  <div class='hesbox'>
-   <table class='hes_temp'>
-    <tr><td class='hes1_kopfa'>Sound-Sensor</td>
-        <td class='hes1_kopf' colspan='2'>Aktuell</td>
-        <td class='hes1_kopf' colspan="2">Trend</td></tr>
-    <tr>
-     <td class='hes1_bigval' colspan='3'><a href='daySound.png' class='popup'>
-             $latest($data_binding='air_binding').sound.formatted</a></td>
-   #if $trend($data_binding='air_binding').sound.raw is None
-      <td class="hes1_trendlo">&nbsp;</td>
-      <td class="hes1_vallo">N/A</td>
-   #elif $trend($data_binding='air_binding').sound.raw < 0
-      <td class="hes1_trendlo"> &#8681;</td>
-      <td class='hes1_vallo'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
-   #elif $trend($data_binding='air_binding').sound.raw == 0
-      <td class="hes1_trendhi"><b>=</b></td>
-      <td class="hes1_valhi">$trend($data_binding='air_binding').sound.format("%.1f")</td>
-   #elif $trend($data_binding='air_binding').sound.raw > 0
-      <td class="hes1_trendhi"> &#8679;</td>
-      <td class='hes1_valhi'>$trend($data_binding='air_binding').sound.format("%.1f")</td>
-   #end if
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi'>$day($data_binding='air_binding').sound.max.format("%.1f")</td>
-     <td class="hes1_m">min</td>
-     <td class='hes1_vallo'>$day($data_binding='air_binding').sound.min.format("%.1f")</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Werte<br />Gestern</td>
-     <td class='hes1_m'>max</td>
-     <td class='hes1_valhi'>$yesterday($data_binding='air_binding').sound.max.format("%.1f")</td>
-     <td class="hes1_m">min</td>
-     <td class='hes1_vallo'>$yesterday($data_binding='air_binding').sound.min.format("%.1f")</td>
-    </tr>
-   </table>
-   <hr />
-    <img src="daySound.png" alt="sound" style="width:300px; height:175px;" />
-  </div>
- </div>
-#end if
-<!-- ende sound -->
-
-##if $day($data_binding='lightning_binding').distance.has_data
-<div class="hes">
-  <div class='hesbox'>
-   <table class='hes_lufe'>
-    <tr>
-     <td class='hes1_kopfa'>Blitz-Sensor</td>
-     <td class='hes1_kopf' colspan='2'>Entfernung</td>
-     <td class="hes1_kopf" colspan="2">Uhrzeit</td>
-    </tr>
-    <tr>
-     <td class='hes1_bigval' colspan='3'><a href='dayBlitz.png' class='popup'>
-              $latest($data_binding='lightning_binding').distance</a></td>
-     <td class="hes1_trendlo"> &#8681;</td>
-     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M") Uhr</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Letzter<br />Blitz</td>
-     <td class='hes1_m'>am</td>
-     <td class='hes1_valhi'>$latest($data_binding='lightning_binding').dateTime.format("%H:%M")</td>
-     <td class="hes1_m">um</td>
-     <td class='hes1_vallo'>$latest($data_binding='lightning_binding').dateTime.format("%d.%m.%Y")</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
-     <td class='hes1_m'>Tag</td>
-     <td class='hes1_valhi'>$day($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-     <td class="hes1_m">Woche</td>
-     <td class='hes1_vallo'>$week($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-    </tr>
-    <tr>
-     <td class='hes1_kopfb'>Anzahl<br />Blitz</td>
-     <td class='hes1_m'>Monat</td>
-     <td class='hes1_valhi'>$month($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-     <td class="hes1_m">Jahr</td>
-     <td class='hes1_vallo'>$year($data_binding='lightning_binding').distance.count.format('%.0f')</td>
-    </tr>
-   </table>
-  </div>
-</div> <!-- ende Blitz-Sensor -->
-##end if
 
 #if $day.inTemp.has_data
  <div class="hes">

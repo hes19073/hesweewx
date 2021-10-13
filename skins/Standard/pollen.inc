@@ -38,13 +38,13 @@
  </table><hr />
    <ul>
      <li><b>&nbsp; 0 &nbsp;</b>  keine &nbsp;
-         <b>0 - 1</b>  bis geringe Belastung</li>
+         <b>0-1</b>  bis geringe Belastung</li>
      <li><b>&nbsp; 1 &nbsp;</b>  geringe &nbsp;
-         <b>1 - 2</b>  bis mittlere Belastung</li>
+         <b>1-2</b>  bis mittlere Belastung</li>
      <li><b>&nbsp; 2 &nbsp;</b>  mittlere &nbsp;
-         <b>2 - 3</b>  bis hohe Belastung</li>
-     <li><b> 3 </b>  hohe Belastung &nbsp;&nbsp|&nbsp;
-     &nbsp <a href='https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json' target='_blank'> Quelle:DWD </a></li>
+         <b>2-3</b>  bis hohe Belastung</li>
+     <li><b> 3 </b>  hohe Belastung &nbsp;&nbsp;|&nbsp;&nbsp; 
+         <a href='https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json' target='_blank'> Quelle:DWD </a></li>
   </ul>
  </div>
 </div> <!-- end pollen -->

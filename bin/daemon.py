@@ -4,7 +4,7 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-'''
+"""
     This module is used to fork the current process into a daemon.
     Almost none of this is necessary (or advisable) if your daemon
     is being started by inetd. In that case, stdin, stdout and stderr are
@@ -24,13 +24,15 @@
       2003/02/24 by Clark Evans
 
       http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/66012
-'''
-import sys, os
+"""
+import sys
+import os
 
 done = False
 
+
 def daemonize(stdout='/dev/null', stderr=None, stdin='/dev/null',
-              pidfile=None, startmsg = 'started with pid %s' ):
+              pidfile=None, startmsg='started with pid %s'):
     '''
         This forks the current process into a daemon.
         The stdin, stdout, and stderr arguments are file names that
@@ -48,7 +50,7 @@ def daemonize(stdout='/dev/null', stderr=None, stdin='/dev/null',
     # Do first fork.
     try:
         pid = os.fork()
-        if pid > 0: sys.exit(0) # Exit first parent.
+        if pid > 0: sys.exit(0)  # Exit first parent.
     except OSError as e:
         sys.stderr.write("fork #1 failed: (%d) %s\n" % (e.errno, e.strerror))
         sys.exit(1)
@@ -61,7 +63,7 @@ def daemonize(stdout='/dev/null', stderr=None, stdin='/dev/null',
     # Do second fork.
     try:
         pid = os.fork()
-        if pid > 0: sys.exit(0) # Exit second parent.
+        if pid > 0: sys.exit(0)  # Exit second parent.
     except OSError as e:
         sys.stderr.write("fork #2 failed: (%d) %s\n" % (e.errno, e.strerror))
         sys.exit(1)
@@ -74,7 +76,7 @@ def daemonize(stdout='/dev/null', stderr=None, stdin='/dev/null',
     pid = str(os.getpid())
 #    sys.stderr.write("\n%s\n" % startmsg % pid)
 #    sys.stderr.flush()
-    if pidfile: open(pidfile,'w+').write("%s\n" % pid)
+    if pidfile: open(pidfile, 'w+').write("%s\n" % pid)
     # Redirect standard file descriptors.
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())

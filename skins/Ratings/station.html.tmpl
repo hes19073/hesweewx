@@ -64,7 +64,7 @@ function topFunction() {
    <div id="content">
     <div id="about">
      <div class="header">
-      Die Wetterstation:
+      Die Wetterstation
      </div>
      <table>
       <caption class="caption">Koordinaten</caption>
@@ -84,13 +84,14 @@ function topFunction() {
       <hr />
       <h3>Messwerterfassung</h3>
       <p>
-       Diese private Wetterstation <a href ="http://weewx.com/stations">'in Klein Rogahn'</a> 
+       Die private Wetterstation <a href ="http://weewx.com/stations">'in Klein Rogahn'</a> 
        verwendet eine Solar-Funk-Wetterstation mit der Bezeichnung  $station.hardware, 
        <br />verwaltet von der Open Source Software  <a href="http://www.weewx.com">'weewx'</a>. 
        <br />Die Software wurde in Python geschrieben. 
        Es werden weitere Sensoren per Bussystem (1-wire) erfasst. 
-       <br />Meine Anpassungen/ Erweiterungen unter <a href =  "https://github.com/hes19073/hesweewx.git">Github/hesweewx </a>.
-      </p>
+       <br />Meine Anpassungen/ Erweiterungen unter <a href =  "https://github.com/hes19073/hesweewx.git">Github/hesweewx,</a>
+        werden zeitversetzt veröffentlicht und erheben keinen Anspruch auf Vollständigkeit. </p>
+
       <h3>Haftung</h3>
       <ul>
        <li><b>Die ver&ouml;ffentlichten Daten sind Eigentum des Betreibers und erheben keinerlei Anspruch auf Richtigkeit,<br />
@@ -100,44 +101,53 @@ function topFunction() {
            bereitgestellten oder berechneten Daten und Bilder</li>
        <li><b>Die Nutzung der Wetterinformationen geschieht auf eigene Gefahr</b></li>
       </ul>
+
       <h3>Standort</h3>
-      <p>Die Gemeinde <a href="http://de.wikipedia.org/wiki/Klein_Rogahn"> Klein Rogahn </a>&nbsp;
+      <p>Die Gemeinde <a href="http://de.wikipedia.org/wiki/Klein_Rogahn"> Klein Rogahn </a>
          liegt ca. 5 km s&uuml;dwestlich der Landeshauptstadt Schwerin.<br />
          Amt Strahlendorf; Landkreis Ludwigslust-Parchim; Bundesland Mecklenburg-Vorpommern; Deutschland</p>
       <hr />
-      <h3>Die Wetterstation</h3> 
+
+      <h3>Wetterstation (alt)</h3>
+      <p>Seit dem 01.10.2013 werden mit der Wetterstation WX-2013 die Werte für Temperatur, Feuchtigkeit, Luftdruck, Regen und Wind erfasst.</p>
+       <ul><li>Spezifikation der WX-2013,  868MHz </li>
+           <li> eingebaute DCF-Funkuhr, Barometer </li>
+           <li> Windgeschwindigkeit und Richtung, Regenmesser</li>
+           <li> Innen-/ Außen Lufttemperatur, Innen-/ Außen Luftfeuchtigkeit</li>
+           <li> USB-Anschluß</li></ul>
+      <p>Zusätzlich werden Temperaturwerte mit 13 one-wire Sensoren (DS18B20) erfasst.</p>
+       <ul><li>1. Bodentemperatur in 5 cm, 10 cm, 20 cm, 50 cm und 100 cm Tiefe</li>
+           <li>2. Wassertemperatur bei 20 cm Tiefe im 0,75 m³ Gartenteich</li>
+           <li>3. Wassertemperatur bei 50 cm Tiefe im 22 m³ Goldfischteich</li>
+           <li>4. Wassertemperatur bei 50 cm und 180 cm Tiefe im 96 m³ Gartenteich</li>
+           <li>5. Lufttemperatur in 200 cm Höhe am Carport, in 100 cm und in 5 cm Höhe im Garten</li></ul>
+      <p>Die WX-2013 wurde am <b>20.06.2016 </b> abgebaut.
+
+      <h3>Wetterstation (neu)</h3>
+      <p>Die Davis Vantage Pro2 Aktiv Plus, 6163EU mit 24 Stunden Aktivbelüftung, UV und Solarstrahlung <br />
+       Seit dem 04.02.2017 werden auch die Bodenfeuchte, die Bodentemperatur und die Blattfeuchte mit einer Davis Sensorstation 6345 OVCS erfasst.<br />
+       Eine weitere Davis Sensorstation 6345 erfasst seit dem 25.03.2021 die Wassertemperaturen der Teichfilteranlage</p>
+
       <p>Die Wetterstation mit der Bezeichnung "Davis Vantage PRO 2" ist eine Solar-Funk-Wetterstation (868MHz),<br />
           mit der Handelsbezeichung "Vantage Pro 2 Aktiv Plus", Modell 6163EU.
-          <br><b>Am 14.03.2020 habe ich den Windmesser der Vantage Pro 2 (6410 Davis) ausgetauscht.</b> 
-          <br />Die Basisstation ist mit einer seriell/USB Schnittstelle (Weather-Link Data-Logger) ausgestattet. Diese ist mit dem
+          <br><br>Am 14.03.2020 habe ich den Windmesser der Vantage Pro 2 (6410 Davis) ausgetauscht.<br><br>
+          Die Basisstation ist mit einer seriell/USB Schnittstelle (Weather-Link Data-Logger) ausgestattet. Diese ist mit dem
           <a href="server.html">Wetterserver</a>&nbsp;verbunden.<br />
-          Die Entfernung zwischen der Sendestation mit den Sensoren und dem Empfangsteil beträgt ca. 60 m. 
-          Die Sensoren der Davis Vantage Pro 2 ermitteln die Lufttemperatur, 
-          die Luftfeuchtigkeit, die Windrichtung, die Windgeschwindigkeit sowie die Niederschlagsmenge 
-          und übermitteln diese drahtlos über Funk (868 MHz) an die Basisstation. </p>
-         <p>Die Davis Vantage Pro 2 Plus&nbsp;Aktiv verfügt als zusätzliche Ausstattung über UV-Index und UV-Dosis, 
-            Sonneneinstrahlungsintensität und Evapotranspiration und den 24 Stunden aktiv belüfteten Bestrahlungsschutzschild.</p> 
-         <p>Solarstrahlung:</p>
-         <ul>
-          <li>Messbereich: 0 bis 1600 W/m²</li>
-          <li>Genauigkeit: +/- 5%</li>
-          <li>Auflösung: 1 W/m²</li>
-         </ul>
-        <p>UV-Index:</p>
-         <ul>
-          <li>Messbereich: 0 bis 16 Index</li>
-          <li>Genauigkeit: +/- 8%</li>
-          <li>Auflösung: 0,1 Index</li>
-         </ul>
-        <p>Aktivbelüftung über Solarpaneel</p>
-         <ul>
-          <li>eigene Stromversorgung mit Akkupufferung</li>
-          <li>24 Stunden Belüftung</li>
-          <li>Luftstrom tagsüber 2,5 m/sec.</li>
-          <li>Luftstrom nachts 1,4 m/sec</li>
-        </ul>
-       <p>Außensensoren</p>
+          Die Entfernung zwischen der Sendestation mit den Sensoren und dem Empfangsteil beträgt ca. 60 m. </p>
+       <ul><li>Spezifikation der Vantage Pro 2 (868 MHz)</li>
+           <li> Lufttemperatur und Luftfeuchtigkeit </li>
+           <li> Windrichtung, Windgeschwindigkeit</li>
+           <li> Niederschlagsmenge </li>
+           <li> Sensor für UV-Strahlung </li>
+           <li> Sensor für Sonneneinstrahlung </li>
+           <li> 24 Stunden aktiv belüfteten Bestrahlungsschutzschild.</li>
+       </ul>
+       <p>Besonderheiten</p>
        <ul>
+        <li>Solarstrahlung: Messbereich: 0 bis 1600 W/m², Genauigkeit: +/- 5%, Auflösung: 1 W/m²</li>
+        <li>UV-Index: Messbereich: 0 bis 16 Index, Genauigkeit: +/- 8%, Auflösung: 0,1 Index</li>
+        <li>Aktivbelüftung über Solarpaneel mit eigener Stromversorgung und Akkupufferung</li>
+        <li>24 Stunden Belüftung; Luftstrom tagsüber 2,5 m/sec. / nachts 1,4 m/sec</li>
         <li>Außentemperatur: Messbereich -40 °C bis +65 ° C; Auflösung: 0,1 °C; Genauigkeit: ± 1 °C </li>
         <li>Außenluftfeuchtigkeit: Messbereich 1 bis 100 % rel. Feuchte, Auflösung: 1 %; Genauigkeit: ± 3% </li>
         <li>Luftdruck: Messbereich: 540 hPa - 1100 hPa, Auflösung: 0,1 hPa, Genauigkeit: 1,0 hPa </li>
@@ -145,7 +155,30 @@ function topFunction() {
         <li>Windgeschwindigkeitssensor: Messbereich Windstärke: 3 km/h bis 290 km/h, Genauigkeit Windstärke: 3 km/h, Auflösung: 1 km/h </li>
         <li>Windrichtungssensor Auflösung Windrichtung grafisch: N, O, S, W mit 3 Zwischenschritten </li>
       </ul>
+
+      <h3>Digitaler Geigerzähler: GQ GMC-300E Plus</h3>
+      <p>Mit dem Geigerzähler (GQ GMC-300E Plus) werden die Umgebungsstrahlungswerte ermittelt.</p>
+      <ul><li>1. Gamma-Strahlung</li>
+          <li>2. Beta-Strahlung</li>
+          <li>3. Alpha-Strahlung</li>
+      </ul>
+
+      <h3>Laser PM2.5 Sensor Modell SDS011</h3>
+      <p>Nova Fitness SDS011 Laser PM2.5 PM10 Staub Feinstaub Sensor Modul Luft Qualitätsdetektor mit eingebautem Ventilator.</p>
+      <ul><li>Auflösung: 0,3µg/m3 </li>
+          <li>Messparameter: PM2,5, PM10;  Bereich: 0,0-999,9 µg/m³</li>
+          <li>Serielle Datenausgabe </li>
+      </ul>
+
+      <h3>air-Q Science</h3>
+      <p>Der air-Q Science mit 14 Sensoren + Science Option und optionalem Zusatzsensor. Quelle: <a href="https://shop.air-q.com/"> air-Q </a></p>
+      <ul><li>Sauerstoff, Kohlendioxid, flüchtige organische Verbindungen wie Formaldehyd, Methan</li>
+          <li>Kohlenmonoxid</li>
+          <li>Feinstaub PM 10, PM 2,5, PM 1</li>
+          <li>Stickstoffdioxid, Schwefeloxid, Ozon</li>
+      </ul>
       <hr />
+
       <h3>Aufstellung der Sensoren der Solar-Funk-Wetterstation</h3>
       <p>
        Die Sendeeinheit mit dem <b>Thermo-/Hygro-/Niederschlagssensor</b> befindet sich 2 m über Grund. <br /> 
@@ -175,6 +208,17 @@ function topFunction() {
         Der Temperatursensor besteht aus einem Epoxy gekapseltem Platin-Thermistor in einem Edelstahlgehäuse.
         Die 2 Blattfeuchtesensor dienen zur Messung der Oberflächenfeuchte von Laub,
         Zur Feststellung der Blattfeuchte-Intensität werden Werte von 0 - 15 ausgegeben. 
+     </p>
+     <h3>Davis Sensorstation 6345 mit Bodentemperatur-Sensoren</h3>
+     <h4>Start am 25.03.2021, 14:30 Uhr</h4>
+     <p>Die DAVIS Wireless Leaf Wetness - Soil Moisture - Temperature Station ist eine Funk-Mess-Station,
+        die die Erfassung der Blattfeuchte, Bodenfeuchte und/oder Temperatur an beliebigen Orten ermöglicht.<br />
+        Hier wurden zwei Temperatursensor und ein Blattfeuchtesensor angeschlossen
+      </p>
+     <h3>air-Q Science</h3>
+     <h4>Start am 18.07.2021, 10:00 Uhr</h4>
+     <p>laut Hersteller; Messwerte: Sauerstoff, Kohlenmonoxid, Kohlendioxid, Feinstaub (PM1; PM2,5; PM10), Stickoxid / Stickstoffdioxid, <br>
+        Ozon, Schwefeldioxid, VOC-Gase (Methan, Formaldehyd, Toluol, u.a.), Temperatur, Luftdruck, absolute und relative Luftfeuchte, Taupunkt, Lärm / Schallpegel.
      </p>
      <h3>Zusätzliche Sensoren über OWFS</h3>
      <p>Als Temperatursensoren verwende ich sowohl die wasserdichte Ausführung des <b>DS18B20</b> mit 1m Anschlussleitung als auch die einfache Form.<br />
@@ -216,13 +260,15 @@ function topFunction() {
          <hr />
          <h3> Der Wetterserver</h3>
          <ul>
-          <li> Banana Pi mit </li>
-          <li>1GB RAM, </li>
-          <li>Festplatte mit 1TB </li>
-          <li>Betriebssystem: debian 8.1</li>
+          <li> ein PC ersetzt den vorherigen Banana Pi</li>
+          <li> 4 GB RAM  statt 1 GB Ram </li>
+          <li>Festplatte mit 1TB dual Raid</li>
+          <li>Betriebssystem: debian 10</li>
+          <li>Python: 3.7.3</li>
           <li>Software: weewx mit den Erweiterungen owfs, forecast, cmon </li>
           <li>Die Wetterdaten werden in einer MYSQL-Datenbank gespeichert.</li>
           <li>Zusätzlich werden die forecast-Daten und die cmon-Daten in einer sqlite-Datei temporär abgelegt.</li>
+          <li>Weitere Sensoren für Gas, Blitz, Feinstaub</li>
           <li>Die Daten von den AIR-Sensoren werden mit einem RasberryPi und einem GrovePi+board erfasst,</li>
           <li>diese Air-Daten werden aus einer eigenen MYSQL-Datenbank importiert und nur angezeigt.</li>
          </ul>

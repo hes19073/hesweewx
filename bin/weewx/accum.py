@@ -28,12 +28,11 @@ from __future__ import absolute_import
 import logging
 import math
 
-import configobj
 import six
-from six.moves import StringIO
 
 import weewx
 from weeutil.weeutil import ListOfDicts, to_float
+import weeutil.config
 
 log = logging.getLogger(__name__)
 
@@ -54,10 +53,6 @@ DEFAULTS_INI = """
     [[hourRain]]
         extractor = last
     [[rain]]
-        extractor = sum
-    [[snow]]
-        extractor = sum
-    [[hail]]
         extractor = sum
     [[rain24]]
         extractor = last
@@ -101,8 +96,7 @@ DEFAULTS_INI = """
     [[lightning_strike_count]]
         extractor = sum
 """
-
-defaults_dict = configobj.ConfigObj(StringIO(DEFAULTS_INI), encoding='utf-8')
+defaults_dict = weeutil.config.config_from_str(DEFAULTS_INI)
 
 accum_dict = ListOfDicts(defaults_dict['Accumulator'].dict())
 
@@ -117,7 +111,7 @@ class OutOfSpan(ValueError):
 
 class ScalarStats(object):
     """Accumulates statistics (min, max, average, etc.) for a scalar value.
-
+    
     Property 'last' is the last non-None value seen. Property 'lasttime' is
     the time it was seen. """
 
@@ -167,10 +161,11 @@ class ScalarStats(object):
         val: A scalar value
         ts:  The timestamp. """
 
-        #  If this is a string, try to convert it to a float.
-        if isinstance(val, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        # If necessary, convert to float. Be prepared to catch an exception if not possible.
+        try:
             val = to_float(val)
+        except ValueError:
+            val = None
 
         # Check for None and NaN:
         if val is not None and val == val:
@@ -187,10 +182,11 @@ class ScalarStats(object):
     def addSum(self, val, weight=1):
         """Add a scalar value to my running sum and count."""
 
-        #  If this is a string, try to convert it to a float.
-        if isinstance(val, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        # If necessary, convert to float. Be prepared to catch an exception if not possible.
+        try:
             val = to_float(val)
+        except ValueError:
+            val = None
 
         # Check for None and NaN:
         if val is not None and val == val:
@@ -206,7 +202,7 @@ class ScalarStats(object):
 
 class VecStats(object):
     """Accumulates statistics for a vector value.
-
+     
     Property 'last' is the last non-None value seen. It is a two-way tuple (mag, dir).
     Property 'lasttime' is the time it was seen. """
 
@@ -271,13 +267,15 @@ class VecStats(object):
         """
         speed, dirN = val
 
-        #  If this is a string, try to convert it to a float.
-        if isinstance(speed, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        # If necessary, convert to float. Be prepared to catch an exception if not possible.
+        try:
             speed = to_float(speed)
-        if isinstance(dirN, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        except ValueError:
+            speed = None
+        try:
             dirN = to_float(dirN)
+        except ValueError:
+            dirN = None
 
         # Check for None and NaN:
         if speed is not None and speed == speed:
@@ -298,13 +296,15 @@ class VecStats(object):
         """
         speed, dirN = val
 
-        #  If this is a string, try to convert it to a float.
-        if isinstance(speed, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        # If necessary, convert to float. Be prepared to catch an exception if not possible.
+        try:
             speed = to_float(speed)
-        if isinstance(dirN, (six.string_types, six.text_type)):
-            # Fail hard if unable to do the conversion:
+        except ValueError:
+            speed = None
+        try:
             dirN = to_float(dirN)
+        except ValueError:
+            dirN = None
 
         # Check for None and NaN:
         if speed is not None and speed == speed:
@@ -414,7 +414,7 @@ class Accum(dict):
 
     def __init__(self, timespan, unit_system=None):
         """Initialize a Accum.
-
+        
         timespan: The time period over which stats will be accumulated.
         unit_system: The unit system used by the accumulator"""
 

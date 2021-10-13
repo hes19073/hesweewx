@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # cydiagenerator.py
-# 2018 Feb 14 . ccr
-
+# 2021 Maerz 19 hes
+# original by Chuck Rhode
+# temp in gegree_C
 """Generate a *.png graph image and an *.html report for the
 Cydia pomonella Flight-Model.
 
@@ -30,9 +31,9 @@ import weewx.units
 import weewx.reportengine
 
 from weewx.units import ValueTuple
-from weewx.units import CtoK, CtoF, FtoC
+# from weewx.units import CtoK, CtoF, FtoC
 from weeutil.weeutil import to_bool, to_int, to_float
-from weeutil.config import search_up
+# from weeutil.config import search_up
 
 log = logging.getLogger(__name__)
 
@@ -82,10 +83,10 @@ def dd(day_max_temp, day_min_temp, base_temp):
 
     return result
 
-def dd_clipped(day_max_temp_f, day_min_temp_f, threshold_temp_f, ceiling_temp_f):
+def dd_clipped(day_max_temp, day_min_temp, threshold_temp, ceiling_temp):
 
-    dd_threshold = dd(day_max_temp_f, day_min_temp_f, threshold_temp_f)
-    dd_ceiling = dd(day_max_temp_f, day_min_temp_f, ceiling_temp_f)
+    dd_threshold = dd(day_max_temp, day_min_temp, threshold_temp)
+    dd_ceiling = dd(day_max_temp, day_min_temp, ceiling_temp)
 
     if None in [dd_threshold, dd_ceiling]:
         result = None
@@ -135,7 +136,6 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         self.title_dict = self.skin_dict.get('Labels', {}).get('Generic', {})
         self.formatter  = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter  = weewx.units.Converter.fromSkinDict(self.skin_dict)
-        self.to_degree_f = weewx.units.FixedConverter('degree_F')
         # determine how much logging is desired
         self.log_success = to_bool(self.image_dict.get('log_success', True))
         # ensure that we are in a consistent right location
@@ -182,9 +182,8 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                 start_date_ts = time.mktime(tuple(new_year_tuple))
 
             image_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
-            #skin_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['SKIN_ROOT'])
             img_file = os.path.join(image_root, '%s.png' % species_name)
-            #html_file = os.path.join(image_root, '%s.html' % species_name)
+
             ai = 86400   #test mit 600 86400 = 24h
 
             # Calculate a suitable min, max time for the requested time.
@@ -192,13 +191,13 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
 
             # Now its time to find and hit the database:
             text_root = os.path.join(self.config_dict['WEEWX_ROOT'], plot_options['HTML_ROOT'])
-            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/NOAA-YYYY.csv.tmpl')
+            tmpl = self.skin_dict.get('CheetahGenerator', {}).get('CydiaDDData', {}).get('template', 'Cydia/GREEN-YYYY.csv.tmpl')
             (csv, ext) = os.path.splitext(tmpl)
             csv_name = csv.replace('YYYY', str(time.localtime(plotgen_ts).tm_year))
             csv_file_name = os.path.join(text_root, '%s' % csv_name)
-            spec_threshold_lo = plot_options.get('threshold_lo', [50, 'degree_F'])
+            spec_threshold_lo = plot_options.get('threshold_lo', [10, 'degree_C'])      # [50, 'degree_F']
             threshold_lo_t = get_float_t(spec_threshold_lo, 'group_temperature')
-            spec_threshold_hi = plot_options.get('threshold_hi', [88, 'degree_F'])
+            spec_threshold_hi = plot_options.get('threshold_hi', [31.1, 'degree_C'])    # [88, 'degree_F']
             threshold_hi_t = get_float_t(spec_threshold_hi, 'group_temperature')
             recs = self.get_vectors((minstamp, maxstamp), csv_file_name, threshold_lo_t, threshold_hi_t)
 
@@ -294,7 +293,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
         if biofix:
             biofix_label = 'Biofix'
         else:
-            biofix = get_float_t(line_options.get('biofix_estimated', [175, 'degree_F_day']), 'group_degree_day')
+            biofix = get_float_t(line_options.get('biofix_estimated', [79.4, 'degree_C_day']), 'group_degree_day')
             biofix_label = 'Biofix (Prognose/ Estimated)'
         horizons.append([biofix, biofix_label])
         offsets = self.cydia_dict[species_name].get('Offsets_from_Biofix')
@@ -388,14 +387,14 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
     def get_vectors(self, stamps, csv_file_name, threshold_lo_t, threshold_hi_t):
 
         (minstamp, maxstamp) = stamps
-        threshold_lo = self.to_degree_f.convert(threshold_lo_t)[ZERO]
-        threshold_hi = self.to_degree_f.convert(threshold_hi_t)[ZERO]
+        threshold_lo = (threshold_lo_t)[ZERO]
+        threshold_hi = (threshold_hi_t)[ZERO]
         result = {
             'date': ValueTuple([], 'unix_epoch', 'group_time'),
-            'daily_max': ValueTuple([], 'degree_F', 'group_temperature'),
-            'daily_min': ValueTuple([], 'degree_F', 'group_temperature'), 
-            'dd': ValueTuple([], 'degree_F_day', 'group_degree_day'), 
-            'dd_cumulative': ValueTuple([], 'degree_F_day', 'group_degree_day'), 
+            'daily_max': ValueTuple([], 'degree_C', 'group_temperature'),
+            'daily_min': ValueTuple([], 'degree_C', 'group_temperature'),
+            'dd': ValueTuple([], 'degree_C_day', 'group_degree_day'),
+            'dd_cumulative': ValueTuple([], 'degree_C_day', 'group_degree_day'),
             }
         try:
             with open(csv_file_name) as csv_file:
@@ -417,9 +416,9 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                     if (minstamp <= stamp) and (stamp <= maxstamp):
                         result['date'][ZERO].append(stamp)
                         try:
-                            daily_max = float(rec.get('TMPMAX_F'))
+                            daily_max = float(rec.get('TMPMAX_C'))
                             result['daily_max'][ZERO].append(daily_max)
-                            daily_min = float(rec.get('TMPMIN_F'))
+                            daily_min = float(rec.get('TMPMIN_C'))
                             result['daily_min'][ZERO].append(daily_min)
                             dd = dd_clipped(daily_max, daily_min, threshold_lo, threshold_hi)
                             result['dd'][ZERO].append(dd)
@@ -430,7 +429,6 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
                         except TypeError:
                             pass
         except IOError as e:
-            #logcrt("cydiagenerator: Unable to read file '%s' %s:" % (csv_file_name, e))
             log.info("Unable to read file '%s' %s:", csv_file_name, e)
 
         return result
@@ -459,9 +457,8 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             remarks = []
             while horizon_labels:
                 (horizon_dd, horizon_event) = horizon_labels[ZERO]
-                #if rec['dd_cumulative'].raw > horizon_dd:
-                cydiaA = rec['dd_cumulative'].raw
-                if cydiaA > horizon_dd:
+                cydia_a = rec['dd_cumulative'].raw
+                if cydia_a > horizon_dd:
                     remarks.append(horizon_event)
                     horizon_labels.pop(ZERO)
                 else:
@@ -470,7 +467,7 @@ class CydiaGenerator(weewx.reportengine.ReportGenerator):
             rec['remark'] = weewx.units.ValueHelper(val_t, 'day', self.formatter, self.converter)
         return result
 
-            
+
 def skipThisPlot(time_ts, aggregate_interval, img_file):
 
     """A plot can be skipped if it was generated recently and has not changed.
@@ -478,7 +475,7 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
     aggregation interval.
 
     """
-    
+
     # Images without an aggregation interval have to be plotted every time.
     # Also, the image definitely has to be generated if it doesn't exist.
     if aggregate_interval is None or not os.path.exists(img_file):
@@ -487,7 +484,7 @@ def skipThisPlot(time_ts, aggregate_interval, img_file):
     # If its a very old image, then it has to be regenerated
     if time_ts - os.stat(img_file).st_mtime >= aggregate_interval:
         return False
-    
+
     # Finally, if we're on an aggregation boundary, regenerate.
     time_dt = datetime.datetime.fromtimestamp(time_ts)
     tdiff = time_dt -  time_dt.replace(hour=ZERO, minute=ZERO, second=ZERO, microsecond=ZERO)
@@ -498,7 +495,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
 
     def _getScaledDraw(self, draw):
         """Returns an instance of ScaledDraw, with the appropriate scaling.
-        
+
         draw: An instance of ImageDraw
         """
         sdraw = ScaledDrawText(
@@ -513,11 +510,11 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             ],
             )
         return sdraw
-        
+
     def render(self):
         """Traverses the universe of things that have to be plotted in this image, rendering
         them and returning the results as a new Image object.
-        
+
         """
 
         # NB: In what follows the variable 'draw' is an instance of an ImageDraw object and is in pixel units.
@@ -525,20 +522,21 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         # (e.g., the horizontal scaling might be for seconds, the vertical for degrees Fahrenheit.)
         image = weeplot.genplot.Image.new("RGB", (self.image_width, self.image_height), self.image_background_color)
         draw = self._getImageDraw(image)
-        draw.rectangle(((self.lmargin,self.tmargin), 
-                        (self.image_width - self.rmargin, self.image_height - self.bmargin)), 
+        draw.rectangle(((self.lmargin,self.tmargin),
+                        (self.image_width - self.rmargin, self.image_height - self.bmargin)),
                         fill=self.chart_background_color)
 
         self._renderBottom(draw)
         self._renderTopBand(draw)
-        
+
         self._calcXScaling()
         self._calcYScaling()
+
         (lo, hi, step) = self.yscale
         self.yscale = (min(self.horizon_min, lo), max(self.horizon_max, hi), max(step, 100.0))
         self._calcXLabelFormat()
         self._calcYLabelFormat()
-        
+
         sdraw = self._getScaledDraw(draw)
         if self.horizons:
             self._renderHorizons(sdraw)
@@ -556,12 +554,12 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
             image.thumbnail((self.image_width / self.anti_alias, self.image_height / self.anti_alias), Image.ANTIALIAS)
 
         return image
-    
+
     def _renderHorizons(self, sdraw):
         """Draw horizontal bands for insect developmental stages and treatments.
 
         """
-        
+
         self.horizons.sort()
         self.horizons.reverse()
         origin = self.yscale[ZERO]
@@ -575,7 +573,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         """Draw horizontal shading.
 
         """
-        
+
         shades = self.horizon_gradient
         overall_height = (self.yscale[1] - self.yscale[ZERO]) * 0.10
         stripe_height = overall_height / shades
@@ -604,7 +602,7 @@ class TimeHorizonPlot(weeplot.genplot.TimePlot):
         label_offset = (self.horizon_label_offset / sdraw.xscale, self.horizon_label_offset / sdraw.yscale)
         sdraw.text(
             (self.xscale[ZERO] + label_offset[ZERO], y_pos - height - label_offset[1]),
-            txt, 
+            txt,
             fill=self.horizon_label_font_color,
             font=horizon_label_font,
             )
@@ -629,12 +627,12 @@ class ScaledDrawText(weeplot.utilities.ScaledDraw):
 # =============================================================================
 
 class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
-    
+
     """Class for generating files from cydia templates.
-    
+
     Useful attributes (some inherited from ReportGenerator):
 
-        config_dict:      The weewx configuration dictionary 
+        config_dict:      The weewx configuration dictionary
         skin_dict:        The dictionary for this skin
         gen_ts:           The generation time
         first_run:        Is this the first time the generator has been run?
@@ -643,12 +641,12 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         formatter:        An instance of weewx.units.Formatter
         converter:        An instance of weewx.units.Converter
         search_list_objs: A list holding search list extensions
-                          
+
     """
 
 
     def run(self):
-        
+
         """Main entry point for file generation using Cydia Templates.
 
         """
@@ -656,13 +654,13 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         t1 = time.time()
 
         self.setup()
-        
+
         # Make a copy of the skin dictionary (we will be modifying it):
         gen_dict = configobj.ConfigObj(self.skin_dict.dict())
-        
+
         # Look for options in [CydiaGenerator],
         cydia_dict = gen_dict["CydiaGenerator"]
-        
+
         # determine how much logging is desired
         log_success = to_bool(cydia_dict.get('log_success', True))
 
@@ -682,18 +680,17 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                        ngen, self.skin_dict['REPORT_NAME'], elapsed_time)
 
     def setup(self):
-        
+
         # This dictionary will hold the formatted dates of all generated files
-        
         self.formatter = weewx.units.Formatter.fromSkinDict(self.skin_dict)
         self.converter = weewx.units.Converter.fromSkinDict(self.skin_dict)
 
     def initExtensions(self, gen_dict):
-        
+
         """Load the search list
 
         """
-        
+
         self.search_list_objs = []
 
         search_list = weeutil.weeutil.option_as_list(gen_dict.get('search_list'))
@@ -716,42 +713,40 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                 class_ = weeutil.weeutil.get_object(x)
                 # Then instantiate the class, passing self as the sole argument
                 self.search_list_objs.append(class_(self))
-                
+
     def teardown(self):
-        
+
         """Delete any extension objects we created to prevent back references
         from slowing garbage collection
 
         """
-        
+
         while self.search_list_objs:
             self.search_list_objs.pop(NA)
-            
+
     def generate(self, cydia_dict, species_name):
-        
+
         """Generate one or more reports for the indicated species.
 
         species_dict: A ConfigObj dictionary, holding the templates to be
         generated.
-        
+
         self.gen_ts: The report will be current to this time.
-        
+
         """
-        
+
         ngen = 0
-        
         # Change directory to the skin subdirectory.  We use absolute paths
         # for cydia, so the directory change is not necessary for generating
         # files.  However, changing to the skin directory provides a known
         # location so that calls to os.getcwd() in any templates will return
         # a predictable result.
-        
         os.chdir(os.path.join(self.config_dict['WEEWX_ROOT'],
                               self.skin_dict['SKIN_ROOT'],
                               self.skin_dict['skin']))
 
         report_dict = weeutil.config.accumulateLeaves(cydia_dict[species_name])
-        
+
         (template, dest_dir, encoding, default_binding) = self._prepGen(species_name, report_dict)
         (dest_file_name, tmpl_ext) = os.path.splitext(os.path.basename(template))
         dest_file = os.path.join(dest_dir, dest_file_name)
@@ -782,7 +777,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
 
         searchList = self._getSearchList(encoding, timespan, default_binding, species_name, report_dict)
         tmpname = dest_file + '.tmp'
-            
+
         try:
             # Cheetah V2 will crash if given a template file name in Unicode. So,
             # be prepared to catch the exception and convert to ascii:
@@ -799,22 +794,22 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                     searchList=searchList,
                     filter='AssureUnicode',
                     filtersLib=weewx.cheetahgenerator)
-                    
+
             unicode_string = compiled_template.respond()
-                    
+
             if encoding == 'html_entities':
                 byte_string = unicode_string.encode('ascii', 'xmlcharrefreplace')
             elif encoding == 'strict_ascii':
                 byte_string = unicode_string.encode('ascii', 'ignore')
             else:
                 byte_string = unicode_string.encode('utf8')
-            
+
             # Open in binary mode. We are writing a byte-string, not a string
             with open(tmpname, mode='wb') as fd:
                 fd.write(byte_string)
-            
+
             os.rename(tmpname, dest_file)
-            
+
         except Exception as e:
             # We would like to get better feedback when there are cheetah
             # compiler failures, but there seem to be no hooks for this.
@@ -842,11 +837,11 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
     def _getSearchList(self, encoding, timespan, default_binding, species_name, report_dict):
         """Get the complete search list to be used by Cydia."""
 
-        spec_threshold_lo = report_dict.get('threshold_lo', [50, 'degree_F'])
+        spec_threshold_lo = report_dict.get('threshold_lo', [10, 'degree_C'])
         threshold_lo_t = get_float_t(spec_threshold_lo, 'group_temperature')
-        spec_threshold_hi = report_dict.get('threshold_hi', [88, 'degree_F'])
+        spec_threshold_hi = report_dict.get('threshold_hi', [31.1, 'degree_C'])
         threshold_hi_t = get_float_t(spec_threshold_hi, 'group_temperature')
-        
+
         # Get the basic search list
         searchList = [
             {'encoding': encoding},
@@ -859,12 +854,12 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
                 'threshold_lo': weewx.units.ValueHelper(threshold_lo_t, 'year', self.formatter, self.converter),
                 'threshold_hi': weewx.units.ValueHelper(threshold_hi_t, 'year', self.formatter, self.converter),
                 },
-            }, 
+            },
             ]
-        
+
 #        # Bind to the default_binding:
         db_lookup = self.db_binder.bind_default(default_binding)
-        
+
 #        # Then add the V3.X style search list extensions
         for obj in self.search_list_objs:
             searchList += obj.get_extension_list(timespan, db_lookup)
@@ -872,7 +867,7 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
 
 
     def _prepGen(self, species_name, report_dict):
-        
+
         """Get the template, destination directory, encoding, and default
         binding.
 
@@ -908,4 +903,3 @@ class CydiaReportGenerator(weewx.reportengine.ReportGenerator):
         default_binding = report_dict['data_binding']
 
         return (template, dest_dir, encoding, default_binding)
-

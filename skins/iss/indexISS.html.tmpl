@@ -87,13 +87,13 @@
 
 <div class="mittetab">
 <!-- The next sighting -->
+#if $issall is not None
  <div>
      <p>Die nächste <strong>$issnext.title</strong> voraussichtlich um <strong>$issnext.time</strong> am <strong>$issnext.date</strong></p>
      <p>Sie erscheint für ca. $issnext.duration,&nbsp; über dem Horizont bei $issnext.approach und wird bei $issnext.departure aus dem Sichtbereich verschwinden,<br /> 
        vorausgesetzt der Himmel ist wolkenfrei. <br />Die maximale Höhe über dem Horizont wird $issnext.maximumelevation&nbsp; betragen. <br />
        Weiteres unter <a href="$issnext.guid"> http://spotthestation.nasa.gov/</a>.</p>
  </div>
-		
 <!-- All the sightings -->
  <table class="gridtable">
   <tr>
@@ -119,6 +119,12 @@
  </tr>
 #end for
  </table>
+#else
+ </table>
+ <hr />
+ <p>Zur Zeit keine nächtliche Beobachtung möglich.</p>
+ <hr />
+#end if
 </div>
 <div id='footer'><footer>
 

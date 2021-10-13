@@ -1,0 +1,1497 @@
+#errorCatcher Echo
+#encoding UTF-8
+## Standard for weewx - Copyright 2012-2013 Matthew Wall
+## $Id: indexAirQ.html.tmpl 743 2021-07-18 08:55:18Z mhes $
+## Version: 4.6.0b4
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+     <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+     <meta name='viewport' content='width=device-width' />
+     <meta name="robots" content="all" />
+     <meta name="keywords" content="Wetter, hes61, Wind, Regen, Wolken, Sonne, Mond, Sternzeichen" />
+     <meta name="description" content="Das Wetter in Klein Rogahn, bei Schwerin im Landkreis Ludwiglust-Parchim mit aktuellen Temperaturen und Prognosen für die nächsten Tage, Bundesland Mecklenburg-Vorpommern" />
+     <meta name="author"           content="Hartmut Schweidler" />
+     <meta name="revisit-after"    content="5 min" />
+
+     <!--  <meta name="ICBM" content="53.605963, 11.341407" />
+     <meta name="geo.position" contant="53.605963, 11.341407" /> -->
+
+      <script>
+         document.createElement("header");
+         document.createElement("nav");
+         document.createElement("section");
+         document.createElement("footer");
+      </script>
+
+     <title>$station.location Aktuelles Wetter</title>
+
+     <link rel='stylesheet' type='text/css' href='css/hesweewx.css' />
+
+     <link rel='icon' type='image/png' href='favicon.ico' />
+     <script src='js/hesweewx.js'></script>
+     <script>
+       window.onload = function() { applypopups(); }
+     </script>
+ </head>
+
+<body>
+
+ <div id='hes11'>
+
+#include $Extras.header
+#include $Extras.cwarn
+#include 'index_warn.inc'
+
+<section>
+<div id='hescontainer'>
+  <div id='popupanchor' style='float:left'></div>
+
+#include "links_forecast.inc"
+
+#if $day($data_binding='airq_binding').og_pm1_0.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Feinstaub<br>PM 1</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqpm.png' class='popup'>
+            $latest($data_binding='airq_binding').og_pm1_0</a></td>
+   #if $trend($data_binding='airq_binding').og_pm1_0.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_pm1_0.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_pm1_0.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm1_0.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_pm1_0.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm1_0.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_pm1_0.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_pm1_0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_pm1_0.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_pm1_0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_pm1_0.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_pm1_0.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw <= 10
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw > 10 and $day($data_binding='airq_binding').og_pm1_0.avg.raw <= 20
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw > 20 and $day($data_binding='airq_binding').og_pm1_0.avg.raw <= 30
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw > 30 and $day($data_binding='airq_binding').og_pm1_0.avg.raw <= 40
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw > 40 and $day($data_binding='airq_binding').og_pm1_0.avg.raw <= 60
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_pm1_0.avg.raw > 60
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_pm1_0.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_pm1_0.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw <= 15
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw > 15 and $hour($data_binding='airq_binding').og_pm1_0.avg.raw <= 30
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw > 30 and $hour($data_binding='airq_binding').og_pm1_0.avg.raw <= 55
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw > 55 and $hour($data_binding='airq_binding').og_pm1_0.avg.raw <= 70
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw > 70 and $hour($data_binding='airq_binding').og_pm1_0.avg.raw < 110
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $hour($data_binding='airq_binding').og_pm1_0.avg.raw > 110
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_pm1_0.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_pm1_0_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_pm1_0_e.min</td></tr>  
+   </table>
+  </div>
+ </div><!-- ende airQ PM 1 sensor -->
+#end if
+ 
+#if $day($data_binding='airq_binding').og_pm2_5.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Feinstaub<br>PM 2,5</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqpm.png' class='popup'>
+            $latest($data_binding='airq_binding').og_pm2_5</a></td>
+   #if $trend($data_binding='airq_binding').og_pm2_5.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_pm2_5.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_pm2_5.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm2_5.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_pm2_5.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm2_5.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_pm2_5.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_pm2_5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_pm2_5.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_pm2_5.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_pm2_5.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_pm2_5.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw <= 25
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw > 25 and $day($data_binding='airq_binding').og_pm2_5.avg.raw <= 30
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw > 30 and $day($data_binding='airq_binding').og_pm2_5.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw > 50 and $day($data_binding='airq_binding').og_pm2_5.avg.raw <= 55
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw > 55 and $day($data_binding='airq_binding').og_pm2_5.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $day($data_binding='airq_binding').og_pm2_5.avg.raw > 100
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_pm2_5.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_pm2_5.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw <= 25
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw > 50 and $hour($data_binding='airq_binding').og_pm2_5.avg.raw < 25
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw > 25 and $hour($data_binding='airq_binding').og_pm2_5.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw > 50 and $hour($data_binding='airq_binding').og_pm2_5.avg.raw <= 90
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw > 90 and $hour($data_binding='airq_binding').og_pm2_5.avg.raw <= 180
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_pm2_5.avg.raw > 180
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_pm2_5.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_pm2_5_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_pm2_5_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ pm 2.5 -->
+#end if
+
+#if $day($data_binding='airq_binding').og_pm10_0.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Feinstaub<br />PM 10</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+    <td class='hes1_bigval' colspan='3'>
+        <a href='day_airqpm.png' class='popup'>$latest($data_binding='airq_binding').og_pm10_0</a></td>
+   #if $trend($data_binding='airq_binding').og_pm10_0.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_pm10_0.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_pm10_0.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm10_0.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_pm10_0.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_pm10_0.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_pm10_0.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_pm10_0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_pm10_0.min.formatted</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_pm10_0.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_pm10_0.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_pm10_0.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw > 50 and $day($data_binding='airq_binding').og_pm10_0.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw > 100 and $day($data_binding='airq_binding').og_pm10_0.avg.raw <= 150
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw > 150 and $day($data_binding='airq_binding').og_pm10_0.avg.raw <= 200
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw > 200 and $day($data_binding='airq_binding').og_pm10_0.avg.raw <= 300
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_pm10_0.avg.raw > 300
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_pm10_0.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_pm10_0.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw > 50 and $hour($data_binding='airq_binding').og_pm10_0.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw > 100 and $hour($data_binding='airq_binding').og_pm10_0.avg.raw <= 150
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw > 150 and $hour($data_binding='airq_binding').og_pm10_0.avg.raw <= 200
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw > 200 and $hour($data_binding='airq_binding').og_pm10_0.avg.raw <= 300
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_pm10_0.avg.raw > 300
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_pm10_0.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_pm10_0_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_pm10_0_e.min</td></tr>
+   </table>
+  </div>
+</div> <!-- ende AirQ PM 10 Sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_cnt0_3.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa' colspan="3">Gesamtzahl der <br>Feinstaub-Partikel</td></tr>
+    <tr><td class='hes1_kopf'>kleiner als</td><td class='hes1_kopf'>Anzahl</td><td class='hes1_kopf'>Fehler</td></tr>
+    <tr><td> 0,3 µm </td><td>$latest($data_binding='airq_binding').og_cnt0_3.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt0_3_e.max</td></tr>
+    <tr><td> 0,5 µm</td><td>$latest($data_binding='airq_binding').og_cnt0_5.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt0_5_e.max</td></tr>
+    <tr><td> 1,0 µm</td><td>$latest($data_binding='airq_binding').og_cnt1_0.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt1_0_e.max</td></tr>
+    <tr><td> 2,5 µm</td><td>$latest($data_binding='airq_binding').og_cnt2_5.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt2_5_e.max</td></tr>
+    <tr><td> 5,0 µm</td><td>$latest($data_binding='airq_binding').og_cnt5_0.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt5_0_e.max</td></tr>
+    <tr><td> 10  µm</td><td>$latest($data_binding='airq_binding').og_cnt10_0.format("%.0f")</td>
+                         <td>$day($data_binding='airq_binding').og_cnt10_0_e.max</td></tr>
+    <tr><td colspan="3">&nbsp;</td></tr>
+   </table>
+   <p>Die Gesamtzahl der Feinstaub-Partikel in einem Volumen von 100 ml bzw. 0,0001 m³.</p>
+  </div>
+</div> <!-- ende AirQ Anteil Feinstaub -->
+#end if
+
+#if $day($data_binding='airq_binding').og_co_m.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Kohlenmonoxid<br />CO-Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqco.png' class='popup'>
+          $latest($data_binding='airq_binding').og_co_m.milligram_per_meter_cubed</a></td>
+   #if $trend($data_binding='airq_binding').og_co_m.raw is None
+     <td class="hes1_trendlo">&nbsp;</td>
+     <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_co_m.raw < 0
+     <td class="hes1_trendlo"> &#8681;</td>
+     <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_co_m.milligram_per_meter_cubed.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_co_m.raw == 0
+     <td class="hes1_trendhi"><b>=</b></td>
+     <td class="hes1_valhi">$trend($data_binding='airq_binding').og_co_m.milligram_per_meter_cubed.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_co_m.raw > 0
+     <td class="hes1_trendhi"> &#8679;</td>
+     <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_co_m.milligram_per_meter_cubed.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='3'>entspricht rund:</td>
+        <td colspan='2'>$latest($data_binding='airq_binding').og_co</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_co_m.max.milligram_per_meter_cubed.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_co_m.min.milligram_per_meter_cubed.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_co_m.max.milligram_per_meter_cubed.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_co_m.min.milligram_per_meter_cubed.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_co_m.avg.raw is None
+      <td class="hes1_trendlo colspan="2">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw <= 8000
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw > 8000 and $day($data_binding='airq_binding').og_co_m.avg.raw <= 10000
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw > 10000 and $day($data_binding='airq_binding').og_co_m.avg.raw <= 25000
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw > 25000 and $day($data_binding='airq_binding').og_co_m.avg.raw <= 35000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw > 35000 and $day($data_binding='airq_binding').og_co_m.avg.raw <= 85000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_co_m.avg.raw > 85000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_co_m.avg.milligram_per_meter_cubed</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_co_m.avg.raw is None
+      <td class="hes1_trendlo colspan="2">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw <= 8000
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw > 8000 and $hour($data_binding='airq_binding').og_co_m.avg.raw <= 10000
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw > 10000 and $hour($data_binding='airq_binding').og_co_m.avg.raw <= 25000
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw > 25000 and $hour($data_binding='airq_binding').og_co_m.avg.raw <= 35000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw > 35000 and $hour($data_binding='airq_binding').og_co_m.avg.raw <= 85000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_co_m.avg.raw > 85000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_co_m.avg.milligram_per_meter_cubed</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_co_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_co_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ CO sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_co2.has_data
+  <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>Kohlendioxid<br>CO<sub>2</sub> Sensor</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqco2.png' class='popup'>
+         $latest($data_binding='airq_binding').og_co2</a></td>
+    #if $trend($data_binding='airq_binding').og_co2.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_co2.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_co2.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_co2.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_co2.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_co2.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_co2.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='2'>entspricht rund:</td><td colspan"3">$latest($data_binding='airq_binding').og_co2_m</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_co2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_co2.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_co2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_co2.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_co2.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $day($data_binding='airq_binding').og_co2.avg.raw <= 1000
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $day($data_binding='airq_binding').og_co2.avg.raw > 1000 and $day($data_binding='airq_binding').og_co2.avg.raw <= 1200
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $day($data_binding='airq_binding').og_co2.avg.raw > 1200 and $day($data_binding='airq_binding').og_co2.avg.raw <= 1500
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $day($data_binding='airq_binding').og_co2.avg.raw > 1500 and $day($data_binding='airq_binding').og_co2.avg.raw <= 5000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $day($data_binding='airq_binding').og_co2.avg.raw > 5000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_co2.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_co2.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $hour($data_binding='airq_binding').og_co2.avg.raw <= 1000
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $hour($data_binding='airq_binding').og_co2.avg.raw > 1000 and $hour($data_binding='airq_binding').og_co2.avg.raw <= 1200
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $hour($data_binding='airq_binding').og_co2.avg.raw > 1200 and $hour($data_binding='airq_binding').og_co2.avg.raw <= 1500
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $hour($data_binding='airq_binding').og_co2.avg.raw > 1500 and $hour($data_binding='airq_binding').og_co2.avg.raw <= 5000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_co2.avg.raw > 5000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_co2.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_co2_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_co2_e.min</td></tr>
+   </table>
+  </div>
+</div> <!-- ende AirQ co2 Sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_no2_m.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Stickstoffdioxid<br>NO<sub>2</sub> Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='day_airqno2.png' class='popup'>
+            $latest($data_binding='airq_binding').og_no2_m</a></td>
+    #if $trend($data_binding='airq_binding').og_no2_m.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_no2_m.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_no2_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_no2_m.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_no2_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_no2_m.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_no2_m.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='2'>entspricht rund:</td><td colspan='3'>$latest($data_binding='airq_binding').og_no2</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_no2_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_no2_m.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_no2_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_no2_m.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_no2_m.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw > 50 and $day($data_binding='airq_binding').og_no2_m.avg.raw <= 75
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw > 75 and $day($data_binding='airq_binding').og_no2_m.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw > 100 and $day($data_binding='airq_binding').og_no2_m.avg.raw <= 200
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw > 200 and $day($data_binding='airq_binding').og_no2_m.avg.raw <= 300
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $day($data_binding='airq_binding').og_no2_m.avg.raw > 300
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_no2_m.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_no2_m.avg.raw is None
+      <td class="hes1_trendlo colspan="3">&nbsp;</td>
+      <td class="hes1_vallo" colspan='3'>
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw > 50 and $hour($data_binding='airq_binding').og_no2_m.avg.raw <= 75
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw > 75 and $hour($data_binding='airq_binding').og_no2_m.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw > 100 and $hour($data_binding='airq_binding').og_no2_m.avg.raw <= 200
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw > 200 and $hour($data_binding='airq_binding').og_no2_m.avg.raw <= 300
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #else if $hour($data_binding='airq_binding').og_no2_m.avg.raw > 300
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_no2_m.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_no2_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_no2_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ no2 sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_so2_m.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Schwefeldioxid<br>SO<sub>2</sub> Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqso2.png' class='popup'>
+            $latest($data_binding='airq_binding').og_so2_m</a></td>
+   #if $trend($data_binding='airq_binding').og_so2_m.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_so2_m.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_so2_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_so2_m.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_so2_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_so2_m.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_so2_m.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='2'>entspricht rund:</td><td colspan='3'>$latest($data_binding='airq_binding').og_so2</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_so2_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_so2_m.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_so2_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_so2_m.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_so2_m.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw <= 3000
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw > 3000 and $day($data_binding='airq_binding').og_so2_m.avg.raw <= 4000
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw > 4000 and $day($data_binding='airq_binding').og_so2_m.avg.raw <= 5000
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw > 5000 and $day($data_binding='airq_binding').og_so2_m.avg.raw <= 8000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw > 8000 and $day($data_binding='airq_binding').og_so2_m.avg.raw <= 10000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_so2_m.avg.raw > 10000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_so2_m.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_so2_m.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw <= 1500
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw > 1500 and $hour($data_binding='airq_binding').og_so2_m.avg.raw <= 3000
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw > 3000 and $hour($data_binding='airq_binding').og_so2_m.avg.raw <= 5500
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw > 5500 and $hour($data_binding='airq_binding').og_so2_m.avg.raw <= 7000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw > 7000 and $hour($data_binding='airq_binding').og_so2_m.avg.raw < 11000
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $hour($data_binding='airq_binding').og_so2_m.avg.raw > 11000
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_so2_m.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_so2_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_so2_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ so2 sensor -->
+#end if
+
+
+#if $day($data_binding='airq_binding').og_o3_m.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Ozon<br>O<sub>3</sub> Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqo3.png' class='popup'>
+            $latest($data_binding='airq_binding').og_o3_m.microgram_per_meter_cubed.format("%.1f")</a></td>
+   #if $trend($data_binding='airq_binding').og_o3_m.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_o3_m.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_o3_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_o3_m.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_o3_m.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_o3_m.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_o3_m.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='2'>entspricht rund:</td><td colspan='3'>$latest($data_binding='airq_binding').og_o3</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_o3_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_o3_m.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_o3_m.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_o3_m.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_o3_m.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $day($data_binding='airq_binding').og_o3_m.avg.raw <= 33
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_o3_m.avg.raw > 33 and $day($data_binding='airq_binding').og_o3_m.avg.raw <= 65
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_o3_m.avg.raw > 65 and $day($data_binding='airq_binding').og_o3_m.avg.raw <= 120
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $day($data_binding='airq_binding').og_o3_m.avg.raw > 120 and $day($data_binding='airq_binding').og_o3_m.avg.raw <= 240
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_o3_m.avg.raw > 240
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_o3_m.avg.microgram_per_meter_cubed.format("%.1f")</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_o3_m.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $hour($data_binding='airq_binding').og_o3_m.avg.raw <= 33
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $hour($data_binding='airq_binding').og_o3_m.avg.raw > 33 and $hour($data_binding='airq_binding').og_o3_m.avg.raw <= 65
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $hour($data_binding='airq_binding').og_o3_m.avg.raw > 65 and $hour($data_binding='airq_binding').og_o3_m.avg.raw <= 120
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $hour($data_binding='airq_binding').og_o3_m.avg.raw > 120 and $hour($data_binding='airq_binding').og_o3_m.avg.raw < 240
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $hour($data_binding='airq_binding').og_o3_m.avg.raw > 240
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $hour($data_binding='airq_binding').og_o3_m.avg.microgram_per_meter_cubed.format("%.1f")</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_o3_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_o3_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ 03 sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_o2.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Sauerstoff<br>O<sub>2</sub> Sensor</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqo2.png' class='popup'>
+            $latest($data_binding='airq_binding').og_o2.format("%.2f")</a></td>
+   #if $trend($data_binding='airq_binding').og_o2.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_o2.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_o2.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_o2.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_o2.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_o2.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_o2.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='5'>&nbsp;</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_o2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_o2.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_o2.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_o2.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr>
+    #if $day($data_binding='airq_binding').og_o2.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $day($data_binding='airq_binding').og_o2.avg.raw <= 30
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $day($data_binding='airq_binding').og_o2.avg.raw > 30 and $day($data_binding='airq_binding').og_o2.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $day($data_binding='airq_binding').og_o2.avg.raw > 50 and $day($data_binding='airq_binding').og_o2.avg.raw <= 90
+      <td class='hes1_winbo' colspan='2' style="background-color: red">sehr ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #elif $day($data_binding='airq_binding').og_o2.avg.raw > 90
+      <td class='hes1_winbo' colspan='2' style="background-color: maroon">Gefährlich</td>
+      <td class='hes1_m' colspan='3' style="background-color: maroon">
+    #end if
+         $day($data_binding='airq_binding').og_o2.avg.format("%.2f")</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr>
+    #if $hour($data_binding='airq_binding').og_o2.avg.raw is None
+      <td class="hes1_trendlo" colspan='2' >kein Wert</td>
+      <td class="hes1_vallo" colspan='3' >
+    #elif $hour($data_binding='airq_binding').og_o2.avg.raw <= 30
+      <td class='hes1_winbo' colspan='2' style="background-color: limegreen">Gut</td>
+      <td class='hes1_m' colspan='3' style="background-color: limegreen">
+    #elif $hour($data_binding='airq_binding').og_o2.avg.raw > 30 and $hour($data_binding='airq_binding').og_o2.avg.raw <= 50
+      <td class='hes1_winbo' colspan='2' style="background-color: yellow">Mittel</td>
+      <td class='hes1_m' colspan='3' style="background-color: yellow">
+    #elif $hour($data_binding='airq_binding').og_o2.avg.raw > 50 and $hour($data_binding='airq_binding').og_o2.avg.raw <= 70
+      <td class='hes1_winbo' colspan='2' style="background-color: orange">Sensibel</td>
+      <td class='hes1_m' colspan='3' style="background-color: orange">
+    #elif $hour($data_binding='airq_binding').og_o2.avg.raw > 70 and $hour($data_binding='airq_binding').og_o2.avg.raw <= 100
+      <td class='hes1_winbo' colspan='2' style="background-color: red">Ungesund</td>
+      <td class='hes1_m' colspan='3' style="background-color: red">
+    #end if
+         $hour($data_binding='airq_binding').og_o2.avg.format("%.2f")</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_o2_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_o2_e.min</td></tr>
+   </table>
+  </div>
+ </div><!-- ende AirQ o2 sensor -->
+#end if
+
+#if $day($data_binding='airq_binding').og_noise.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Sound-<br>sensor<sub>Lärm</sub></td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqnoise.png' class='popup'>
+             $latest($data_binding='airq_binding').og_noise</a></td>
+    #if $trend($data_binding='airq_binding').og_noise.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_noise.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_noise.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_noise.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_noise.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_noise.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_noise.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='5'>&nbsp;</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_noise.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_noise.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_noise.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_noise.min.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr><td colspan="5">$day($data_binding='airq_binding').og_noise.avg</td>
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr><td colspan="5">$hour($data_binding='airq_binding').og_noise.avg</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_noise_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_noise_e.min</td></tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ noise Sensor -->
+
+#if $day($data_binding='airq_binding').og_TVOC.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>VOC<br>Verbindung<sub> +CH4</sub></td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqtvoc.png' class='popup'>
+             $latest($data_binding='airq_binding').og_TVOC.ppb</a></td>
+    #if $trend($data_binding='airq_binding').og_TVOC.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_TVOC.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_TVOC.ppb.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_TVOC.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_TVOC.ppb.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_TVOC.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_TVOC.ppb.formatted</td>
+   #end if
+    </tr>
+    <tr><td colspan='2'>entspricht rund:</td>
+        <td colspan='3'>$latest($data_binding='airq_binding').og_TVOC_m</td></tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_TVOC.max.ppb.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_TVOC.min.ppb.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_TVOC.max.ppb.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_TVOC.min.ppb.formatted</span></td>
+    </tr>
+    <tr><td colspan='5'>Tagesmittelwert</td></tr>
+    <tr><td colspan="5">$day($data_binding='airq_binding').og_TVOC.avg.ppb</td> 
+    </tr>
+    <tr><td colspan='5'>stündlicher Mittelwert</td></tr>
+    <tr><td colspan="5">$hour($data_binding='airq_binding').og_TVOC.avg.ppb</td>
+    </tr>
+    <tr><td>Fehlerwert</td><td>max</td><td>$day($data_binding='airq_binding').og_TVOC_e.max</td>
+                           <td>min</td><td>$day($data_binding='airq_binding').og_TVOC_e.min</td></tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ TVOC -->
+
+#if $day($data_binding='airq_binding').og_CO2delta.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>CO<sub>2</sub>Delta<br>in ppb/s</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+  #if $latest($data_binding='airq_binding').og_CO2delta is not None
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqCO2delta.png' class='popup'>
+             $latest($data_binding='airq_binding').og_CO2delta.format("%.2f")</a></td>
+      #if $trend($data_binding='airq_binding').og_CO2delta.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+      #elif $trend($data_binding='airq_binding').og_CO2delta.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_CO2delta.format("%.2f")</td>
+      #elif $trend($data_binding='airq_binding').og_CO2delta.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_CO2delta.format("%.2f")</td>
+      #elif $trend($data_binding='airq_binding').og_CO2delta.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_CO2delta.format("%.2f")</td>
+      #end if
+    </tr>
+  #else
+    <tr><td colspan='5'>keine Berechnung</td></tr>
+  #end if
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_CO2delta.max.format("%.2f")</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_CO2delta.min.format("%.2f")</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_CO2delta.max.format("%.2f")</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_CO2delta.min.format("%.2f")</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='airq_binding').og_CO2delta.avg.format("%.3f")</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airqCO2delta Sensor -->
+
+#if $day($data_binding='airq_binding').og_HumAbsDelta.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>abs. Luftfeucht<br />Delta in mg/m³/s</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+  #if $latest($data_binding='airq_binding').og_HumAbsDelta is not None
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqHumAbsDelta.png' class='popup'>
+             $latest($data_binding='airq_binding').og_HumAbsDelta.format("%.2f")</a></td>
+      #if $trend($data_binding='airq_binding').og_HumAbsDelta.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+      #elif $trend($data_binding='airq_binding').og_HumAbsDelta.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_HumAbsDelta.format("%.2f")</td>
+      #elif $trend($data_binding='airq_binding').og_HumAbsDelta.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_HumAbsDelta.format("%.2f")</td>
+      #elif $trend($data_binding='airq_binding').og_HumAbsDelta.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_HumAbsDelta.format("%.2f")</td>
+      #end if
+    </tr>
+  #else
+    <tr><td colspan='5'>keine Berechnung</td></tr>
+  #end if
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_HumAbsDelta.max.format("%.2f")</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_HumAbsDelta.min.format("%.2f")</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_HumAbsDelta.max.format("%.2f")</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_HumAbsDelta.min.format("%.2f")</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='airq_binding').og_HumAbsDelta.avg.format("%.3f")</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airqHumAbsDelta Sensor -->
+
+
+#if $day($data_binding='airq_binding').og_PerfIdx.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Leistungs-<br>index</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqperfidx.png' class='popup'>
+             $latest($data_binding='airq_binding').og_PerfIdx</a></td>
+   #if $trend($data_binding='airq_binding').og_PerfIdx.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_PerfIdx.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_PerfIdx.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_PerfIdx.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_PerfIdx.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_PerfIdx.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_PerfIdx.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_PerfIdx.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_PerfIdx.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_PerfIdx.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_PerfIdx.min.formatted</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='airq_binding').og_PerfIdx.avg</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airqPertIdx Sensor -->
+
+#if $day($data_binding='airq_binding').og_HealthIdx.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Gesundheits-<br>index</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqhealthhdx.png' class='popup'>
+             $latest($data_binding='airq_binding').og_HealthIdx</a></td>
+   #if $trend($data_binding='airq_binding').og_HealthIdx.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_HealthIdx.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_HealthIdx.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_HealthIdx.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_HealthIdx.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_HealthIdx.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_HealthIdx.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_HealthIdx.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_HealthIdx.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_HealthIdx.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_HealthIdx.min.formatted</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='airq_binding').og_HealthIdx.avg</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airqHealthIdx Sensor -->
+
+#if $day($data_binding='airq_binding').og_TypPS.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>Feinstaub<br>Partikelgröße (µm)</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqtypps.png' class='popup'>
+             $latest($data_binding='airq_binding').og_TypPS</a></td>
+   #if $trend($data_binding='airq_binding').og_TypPS.raw is None
+        <td class="hes1_trendlo">&nbsp;</td>
+        <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_TypPS.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_TypPS.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_TypPS.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_TypPS.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_TypPS.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_TypPS.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_TypPS.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_TypPS.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_TypPS.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_TypPS.min.formatted</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>Tagesmittelwert:&nbsp;$day($data_binding='airq_binding').og_TypPS.avg</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ TypPS Sensor -->
+
+#if $day($data_binding='airq_binding').og_Temp.has_data
+ <div class='hes'>
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>AirQ <br>Temperatur</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='daytemp.png' class='popup'>$latest($data_binding='airq_binding').og_Temp</a></td>
+    #if $trend($data_binding='airq_binding').og_Temp.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+    #elif $trend($data_binding='airq_binding').og_Temp.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_Temp.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Temp.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_Temp.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Temp.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_Temp.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_Temp.min.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_Temp.max.formatted</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfa'>AirQ <br>Taupunkt</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayhumid.png' class='popup'>$latest($data_binding='airq_binding').og_Dewpoint</a></td>
+    #if $trend($data_binding='airq_binding').og_Dewpoint.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+    #elif $trend($data_binding='airq_binding').og_Dewpoint.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_Dewpoint.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Dewpoint.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_Dewpoint.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Dewpoint.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_Dewpoint.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_Dewpoint.min.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_Dewpoint.max.formatted</span> </td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende AirQ airqTemp airqDewpoint -->
+#end if
+
+#if $day($data_binding='airq_binding').og_Humidity.has_data
+ <div class='hes'>
+  <div class='hesbox'>
+   <table class='hes_lufe'>
+    <tr>
+     <td class='hes1_kopfa'>AirQ <br>Luftfeuchte</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayHumidity.png' class='popup'>$latest($data_binding='airq_binding').og_Humidity</a></td>
+    #if $trend($data_binding='airq_binding').og_Humidity.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+    #elif $trend($data_binding='airq_binding').og_Humidity.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_Humidity.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Humidity.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_Humidity.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_Humidity.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_Humidity.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_Humidity.min.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_Humidity.max.formatted</span> </td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfa'>AirQ abs.<br>Luftfeuchte</td>
+     <td class='hes1_kopf' colspan='2'>Aktuell</td>
+     <td class="hes1_kopf" colspan="2">Trend</td>
+    </tr>
+    <tr>
+      <td class='hes1_bigval' colspan='3'><a href='dayhumid.png' class='popup'>$latest($data_binding='airq_binding').og_HumAbs.gram_per_meter_cubed</a></td>
+    #if $trend($data_binding='airq_binding').og_HumAbs.raw is None
+      <td class="hes1_trendlo">&nbsp;</td>
+      <td class="hes1_vallo">N/A</td>
+    #elif $trend($data_binding='airq_binding').og_HumAbs.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_HumAbs.gram_per_meter_cubed.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_HumAbs.raw == 0
+      <td class="hes1_trendhi">=</td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_HumAbs.gram_per_meter_cubed.formatted</td>
+    #elif $trend($data_binding='airq_binding').og_HumAbs.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_HumAbs.gram_per_meter_cubed.formatted</td>
+    #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>min</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_HumAbs.min.gram_per_meter_cubed.formatted</span></td>
+     <td><span class="hes1_m">max</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_HumAbs.max.gram_per_meter_cubed.formatted</span></td>
+    </tr>
+   </table>
+  </div>
+</div> <!-- ende AirQ airqHumidity airqHumAbs -->
+#end if
+
+#if $day($data_binding='airq_binding').og_Barometer.has_data
+ <div class="hes">
+  <div class='hesbox'>
+   <table class='hes_temp'>
+    <tr><td class='hes1_kopfa'>AirQ <br>Luftdruck</td>
+        <td class='hes1_kopf' colspan='2'>Aktuell</td>
+        <td class='hes1_kopf' colspan="2">Trend</td></tr>
+    <tr>
+     <td class='hes1_bigval' colspan='3'><a href='day_airqqressure.png' class='popup'>
+             $latest($data_binding='airq_binding').og_Barometer</a></td>
+   #if $trend($data_binding='airq_binding').og_Barometer.raw is None
+       <td class="hes1_trendlo">&nbsp;</td>
+       <td class="hes1_vallo">N/A</td>
+   #elif $trend($data_binding='airq_binding').og_Barometer.raw < 0
+      <td class="hes1_trendlo"> &#8681;</td>
+      <td class='hes1_vallo'>$trend($data_binding='airq_binding').og_Barometer.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_Barometer.raw == 0
+      <td class="hes1_trendhi"><b>=</b></td>
+      <td class="hes1_valhi">$trend($data_binding='airq_binding').og_Barometer.formatted</td>
+   #elif $trend($data_binding='airq_binding').og_Barometer.raw > 0
+      <td class="hes1_trendhi"> &#8679;</td>
+      <td class='hes1_valhi'>$trend($data_binding='airq_binding').og_Barometer.formatted</td>
+   #end if
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Heute seit<br />Mitternacht</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$day($data_binding='airq_binding').og_Barometer.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$day($data_binding='airq_binding').og_Barometer.min.formatted</span></td>
+    </tr>
+    <tr>
+     <td class='hes1_kopfb'>Werte<br />Gestern</td>
+     <td><span class='hes1_m'>max</span></td>
+     <td><span class='hes1_valhi'>$yesterday($data_binding='airq_binding').og_Barometer.max.formatted</span></td>
+     <td><span class="hes1_m">min</span></td>
+     <td><span class='hes1_vallo'>$yesterday($data_binding='airq_binding').og_Barometer.min.formatted</span></td>
+    </tr>
+    <tr>
+    <td colspan='5'>&nbsp</td>
+    </tr>    
+    <tr>
+    <td colspan='5'>Altimeter:&nbsp;$latest($data_binding='airq_binding').og_Altimeter</td>
+    </tr>
+    <tr>
+    <td colspan='5'>&nbsp</td>
+    </tr>
+    <tr>
+    <td colspan='5'>Absoluter Luftdruck:&nbsp;$latest($data_binding='airq_binding').og_Pressure</td>
+    </tr>
+   </table>
+  </div>
+ </div>
+#end if
+<!-- ende AirQ airqBarometer -->
+
+
+<div class="hes">
+ <div class='hesbox'>
+  <table class='hes_temp'>
+   <tr><td class='hes1_kopfa'>Blitz & Pollen</td></tr>
+   <tr><td>GQ GMC-300E Geigerzähler</td></tr>
+   <tr><td>Blitz/ Sound/ Büro</td></tr>
+   <tr><td><a href='indexRad.html'>weiter</a></td></tr>
+  </table>
+ </div>
+</div> <!-- end Rad -->
+
+</div> <!-- ende container -->
+
+</section>     
+
+     #include $Extras.footer
+
+ </div> 
+
+</body>
+
+</html>

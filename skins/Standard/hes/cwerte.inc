@@ -218,6 +218,30 @@
                 </td>
               </tr>
             #end if
+            #if $werte.leafTemp1.has_data
+              <tr>
+                <td class="stats_label">
+                  Filter Zulauf (max)<br />
+                  Filter Zulauf (min)
+                </td>
+                <td class="stats_data">
+                  $werte.leafTemp1.max&nbsp;$wertum&nbsp; $werte.leafTemp1.maxtime<br />
+                  $werte.leafTemp1.min&nbsp;$wertum&nbsp; $werte.leafTemp1.mintime
+                </td>
+              </tr>
+            #end if
+            #if $werte.leafTemp2.has_data
+              <tr>
+                <td class="stats_label">
+                  Filter Ablauf (max)<br />
+                  Filter Ablauf (min)
+                </td>
+                <td class="stats_data">
+                  $werte.leafTemp2.max&nbsp;$wertum&nbsp; $werte.leafTemp2.maxtime<br />
+                  $werte.leafTemp2.min&nbsp;$wertum&nbsp; $werte.leafTemp2.mintime
+                </td>
+              </tr>
+            #end if
             #if $werte.extraTemp8.has_data
               <tr>
                 <td class="stats_label">

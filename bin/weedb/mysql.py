@@ -45,6 +45,7 @@ exception_map = {
     None: weedb.DatabaseError
 }
 
+
 def guard(fn):
     """Decorator function that converts MySQL exceptions into weedb exceptions."""
 
@@ -69,6 +70,7 @@ def connect(host='localhost', user='', password='', database_name='',
     """Connect to the specified database"""
     return Connection(host=host, port=int(port), user=user, password=password,
                       database_name=database_name, engine=engine, autocommit=autocommit, **kwargs)
+
 
 def create(host='localhost', user='', password='', database_name='',
            driver='', port=3306, engine=DEFAULT_ENGINE, autocommit=True, **kwargs):

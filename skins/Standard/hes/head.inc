@@ -6,10 +6,8 @@
 
 #if $current.forecastRule.raw is not None
     #set $VPn = $current.forecastRule.raw
-
 #else
     #set $VPn = '46'
-
 #end if
 
     #set $VPn = int($VPn)
@@ -24,36 +22,26 @@
  <div id="masthead">
   <h1>Private Wetterstation&nbsp;$station.location</h1>
   <h2>Aktuelle Messwerte am&nbsp;$current.dateTime.format("%A"), den&nbsp;$current.dateTime&nbsp;Uhr&nbsp;(Zeitzone: $current.dateTime.format("%Z"))</h2>
-  <!-- <p>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]'
-       $station.latitude[2]&nbsp;&brvbar;&nbsp;
-      L&auml;ngengrad:&nbsp;$station.longitude[0]&deg;
-      $station.longitude[1]' $station.longitude[2]&nbsp;&brvbar;&nbsp;
-      H&ouml;he:&nbsp;$station.altitude&nbsp;&brvbar;&nbsp;
-      <a href="http://gpso.de/maps/?z=20;p=53.6061,11.34106,WP01-A;">Map</a>&nbsp;&brvbar;&nbsp;
-      </p> -->
+ <div class='hesmo'>
+  <ul>
+   <li>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</li> 
+   <li>L&auml;ngengrad:&nbsp;$station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]</li>
+   <li>H&ouml;he:&nbsp;$station.altitude&nbsp; ü. NHN</li>
+   <li>Ortszeit: $current.LMTtime.raw </li>
+  </ul>
+ </div> <!-- ende Breite Laenge Hoehe -->
 
-<div class='hesmo'>
- <ul>
-  <li>Breitengrad:&nbsp;$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</li> 
-  <li>L&auml;ngengrad:&nbsp;$station.longitude[0]&deg; $station.longitude[1]' $station.longitude[2]</li>
-  <li>H&ouml;he:&nbsp;$station.altitude&nbsp; ü. NHN</li>
-  <li>Ortszeit: $current.LMTtime.raw </li>
- </ul>
-</div> <!-- ende Breite Laenge Hoehe -->
-
-<div class='hesso'>
- <ul>
-  <li><img style="width: 60px; height: 60px;" alt="Wetter" src="$VPnumber" />
-      <img style="width: 48px; height: 48px;" alt="weewx" src="weewx.png"  /></li>
-  <!-- <li style="$decorator_color('heattemp', $current.appTemp.raw)">&nbsp;$current.appTemp</li>
-  <li style="$decorator_color('heattemp', $current.appTemp.raw)">$decorator_text('heattemp', $current.appTemp.raw)</li> -->
- </ul>
+ <div class='hesso'>
+  <ul>
+   <li><img style="width: 60px; height: 60px;" alt="Wetter" src="$VPnumber" />
+       <img style="width: 48px; height: 48px;" alt="weewx" src="weewx.png"  /></li>
+  </ul>
 #if $varExists('$day00')
     #if len($day00) > 2.0
      <p class="neon">$day00</p>
     #end if
 #end if
-</div> <!-- ende Temp Sonne  -->
+ </div> <!-- ende Temp Sonne  -->
  
 <div class="navbar">
  <ul id="nav">
@@ -65,7 +53,7 @@
   <li><input type="button" value=" Blitz " onclick="openURL('indexRad.html')" /></li>
   <li><input type="button" value=" GDD " onclick="openURL('index3.html')" />
    <ul>
-    <li><input type="button" value=" Phenology " onclick="openURL('indexP.html')" /></li>
+    <!-- <li><input type="button" value=" Phenology " onclick="openURL('indexP.html')" /></li> -->
     <li><input type="button" value=" WTG 10°C " onclick="openURL('Cydia/C_growth.html')" /></li>
     <li><input type="button" value=" GLT      " onclick="openURL('Cydia/C_green.html')" /></li>
     <li><input type="button" value=" Cydia    " onclick="openURL('Cydia/C_pomonella.html')" /></li>
@@ -152,7 +140,7 @@
     <li><input type="button" value=" Kalenderjahre " onclick="openURL('yearhc.html')" /></li>
    </ul>
   </li>
-  <li><input type="button" value=" Netzwerk " onclick="openURL('graphs.html')" />
+  <li><input type="button" value=" Netzwerk " onclick="openURL('test/index.html')" />
    <ul>
     <li><input type="button" value=" wunderground " onclick="openURL('https://www.wunderground.com/dashboard/pws/IMECKLEN20')" /></li>
     <li><input type="button" value=" PWSweather " onclick="openURL('http://www.pwsweather.com/obs/heskrfrr38.html')" /></li>
